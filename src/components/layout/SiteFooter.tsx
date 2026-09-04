@@ -1,0 +1,104 @@
+import { ArrowUp, Mail } from "lucide-react";
+import Link from "next/link";
+import { getPrimaryCta, site, type NavLink } from "@content/site";
+import { InstagramIcon, LinkedinIcon } from "@/components/icons/Social";
+import { Logo } from "@/components/brand/Logo";
+import { isTodo } from "@/lib/utils";
+
+type Column = { title: string; links: (NavLink & { Icon?: typeof Mail })[] };
+
+/** Four-column footer: Explore · Get involved · Connect · Legal. No newsletter. */
+export function SiteFooter() {
+  const cta = getPrimaryCta();
+  const year = new Date().getFullYear();
+
+  const columns: Column[] = [
+    { title: "Explore", links: [...site.footer.explore] },
+    {
+      title: "Get involved",
+      links: [
+        { label: "Students", href: "/students" },
+        { label: "Non-profits", href: "/nonprofits" },
+        cta,
+      ],
+    },
+    {
+      title: "Connect",
+      links: [
+        { label: "Instagram", href: site.socials.instagram, external: true, Icon: InstagramIcon },
+        { label: "LinkedIn", href: site.socials.linkedin, external: true, Icon: LinkedinIcon },
+        { label: "Email", href: `mailto:${site.socials.email}`, Icon: Mail },
+      ].filter((l) => !isTodo(l.href.replace(/^mailto:/, ""))),
+    },
+    { title: "Legal", links: [...site.footer.legal] },
+  ];
+
+  return (
+    <footer className="border-t border-line bg-bg">
+      <div className="container-max container-x py-14 md:py-20">
+        <div className="grid gap-12 lg:grid-cols-[1.4fr_repeat(4,1fr)] lg:gap-8">
+          <div className="max-w-xs">
+            <Logo height={26} />
+            <p className="mt-4 text-sm text-muted">{site.tagline}</p>
+            <p className="mt-2 text-sm text-muted">
+              A student organization at Purdue University building software for nonprofits.
+            </p>
+          </div>
+
+          {columns.map((col) => (
+            <nav key={col.title} aria-labelledby={`footer-${col.title}`}>
+              <h2
+                id={`footer-${col.title}`}
+                className="text-eyebrow font-medium text-muted uppercase"
+              >
+                {col.title}
+              </h2>
+              <ul className="mt-5 space-y-3">
+                {col.links.map((link) => {
+                  const external = link.external || /^https?:\/\//.test(link.href);
+                  const className =
+                    "inline-flex items-center gap-2 text-sm text-text transition-colors hover:text-green";
+                  return (
+                    <li key={link.label}>
+                      {external ? (
+                        <a
+                          href={link.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={className}
+                        >
+                          {link.Icon ? <link.Icon className="size-4 text-muted" /> : null}
+                          {link.label}
+                        </a>
+                      ) : (
+                        <Link href={link.href} className={className}>
+                          {link.Icon ? <link.Icon className="size-4 text-muted" /> : null}
+                          {link.label}
+                        </Link>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+          ))}
+        </div>
+      </div>
+
+      <div className="border-t border-line">
+        <div className="container-max flex flex-col gap-4 container-x py-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            © {year} {site.legalName}. All rights reserved.
+          </p>
+          <a
+            href="#main"
+            className="inline-flex items-center gap-2 self-start transition-colors hover:text-text sm:self-auto"
+          >
+            Back to top
+            <ArrowUp className="size-3.5" aria-hidden="true" />
+          </a>
+        </div>
+      </div>
+    </footer>
+  );
+}
