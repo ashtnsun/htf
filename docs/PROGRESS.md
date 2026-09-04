@@ -45,7 +45,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 ## Session 1 — 2026-09-04
 
-**Built:** everything in Phase 0 above. Six commits on `main`; no remote yet.
+**Built:** everything in Phase 0 above. Pushed to `git@github.com:ashtnsun/htf.git` (`main`); Vercel project not created yet.
 
 **Decisions made this session**
 
