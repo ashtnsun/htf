@@ -1,26 +1,209 @@
 @import "tailwindcss";
 
+/* ------------------------------------------------------------------
+   Brand tokens (raw values). Usable in any CSS as var(--green) etc.
+   Tailwind utilities are mapped from these in the @theme block below.
+------------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #0b0b0b;
+  --surface: #141414;
+  --surface-2: #1c1c1c;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --text: #f5f5f5;
+  --muted: #a3a3a3;
+  --green: #03c652;
+  --green-deep: #277d4a;
+  --mint: #00eb88;
+  --cyan: #00e0ff;
+  /* Lime is an interaction accent only (split-button arrow cell), never a brand color. */
+  --lime: #c8ff3d;
+
+  /* Typography. Poppins is loaded by next/font as --font-poppins (see app/layout.tsx).
+     To swap to the brand faces later, point --font-display at Cunia and --font-body at
+     Josefin Sans; nothing else in the codebase references a family by name. */
+  --font-brand: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-brand);
+  --font-body: var(--font-brand);
+
+  --header-h: 3.5rem;
+  color-scheme: dark;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Only brand colors exist as utilities (bg-bg, text-muted, text-green, border-line ...). */
+  --color-*: initial;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-green: var(--green);
+  --color-green-deep: var(--green-deep);
+  --color-mint: var(--mint);
+  --color-cyan: var(--cyan);
+  --color-lime: var(--lime);
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  --font-*: initial;
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-sans: var(--font-body);
+  --font-mono: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, monospace;
+
+  /* Radii: squared-off feel. Only 4px and 8px exist. */
+  --radius-*: initial;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+
+  /* Type scale (rem @16px): display 96/80/64, h2 48, h3 32, body 16/18, eyebrow 12. */
+  --text-display-xl: 6rem;
+  --text-display-xl--line-height: 0.95;
+  --text-display-xl--letter-spacing: -0.03em;
+  --text-display-lg: 5rem;
+  --text-display-lg--line-height: 0.97;
+  --text-display-lg--letter-spacing: -0.03em;
+  --text-display: 4rem;
+  --text-display--line-height: 1;
+  --text-display--letter-spacing: -0.025em;
+  --text-h2: 3rem;
+  --text-h2--line-height: 1.05;
+  --text-h2--letter-spacing: -0.02em;
+  --text-h3: 2rem;
+  --text-h3--line-height: 1.15;
+  --text-h3--letter-spacing: -0.015em;
+  --text-body: 1rem;
+  --text-body--line-height: 1.6;
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.6;
+  --text-eyebrow: 0.75rem;
+  --text-eyebrow--line-height: 1;
+  --text-eyebrow--letter-spacing: 0.12em;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    background-color: var(--bg);
+    color: var(--text);
+    scroll-behavior: smooth;
+  }
+  body {
+    font-family: var(--font-body);
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  ::selection {
+    background: var(--green);
+    color: var(--bg);
+  }
+  /* Focus rings are mint everywhere, offset so they read on both dark and green surfaces. */
+  :focus-visible {
+    outline: 2px solid var(--mint);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ------------------------------------------------------------------
+   Utilities
+------------------------------------------------------------------- */
+
+/* Horizontal page gutter (20px on phones -> 72px at 1440, like the Framer's 70px). */
+@utility container-x {
+  padding-inline: clamp(1.25rem, 4.5vw, 4.5rem);
+}
+/* Max content width. */
+@utility container-max {
+  max-width: 90rem;
+  margin-inline: auto;
+}
+
+/* Thin technical grid behind a section, faded toward the edges.
+   Tune with --grid-cols (default 6) and --grid-row (default 10rem). */
+@utility grid-overlay {
+  position: relative;
+  isolation: isolate;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      linear-gradient(to right, var(--line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+    background-size: calc(100% / var(--grid-cols, 6)) var(--grid-row, 10rem);
+    background-position: 0 0;
+    mask-image: radial-gradient(120% 100% at 50% 40%, #000 35%, transparent 100%);
+  }
+}
+
+/* Fluid display size for hero headlines: ~44px on phones up to 96px at desktop. */
+@utility text-display-fluid {
+  font-size: clamp(2.75rem, 1.2rem + 6.4vw, 6rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+
+/* Huge ghosted background word used as texture (see Framer testimonial band). */
+@utility ghost-text {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(5rem, 20vw, 18rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.04);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Skip link: visually hidden until focused. */
+@utility skip-link {
+  position: absolute;
+  left: 1rem;
+  top: 0.5rem;
+  z-index: 100;
+  transform: translateY(-200%);
+  background: var(--green);
+  color: var(--bg);
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-weight: 500;
+  &:focus-visible {
+    transform: translateY(0);
+  }
 }
