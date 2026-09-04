@@ -1,0 +1,8 @@
+node_modules
+.next
+out
+pnpm-lock.yaml
+docs/screenshots
+reference
+public/placeholders
+src/components/brand/logo-paths.ts
