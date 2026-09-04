@@ -7,8 +7,8 @@ import { SplitButton } from "@/components/ui/SplitButton";
 
 /**
  * Home hero after the Framer composition: eyebrow, two-line staggered headline with
- * the second line green, small right-aligned blurb, wireframe globe as the hero
- * object, bottom radial glow, grid overlay and a "Scroll down" marker.
+ * the second line green, small right-aligned blurb beside the first line, wireframe
+ * globe as the hero object, bottom radial glow, grid overlay and a "Scroll down" marker.
  * Copy is placeholder; the design director rewrites it.
  */
 export function Hero() {
@@ -34,10 +34,10 @@ export function Hero() {
       <RevealGroup
         mode="mount"
         stagger={0.12}
-        className="relative container-max flex flex-1 flex-col container-x pt-10 pb-24 md:pt-14 lg:border-x lg:border-line"
+        className="relative container-max flex w-full flex-1 flex-col container-x pt-10 pb-28 md:pt-14 md:pb-36 lg:border-x lg:border-line"
       >
-        {/* globe: sits behind the headline like the template's ring */}
-        <Reveal className="pointer-events-none absolute top-[4%] left-1/2 z-0 w-[clamp(200px,34vw,470px)] -translate-x-[22%] md:top-[2%] md:-translate-x-[18%]">
+        {/* globe: behind the headline like the template's ring; top-right on phones */}
+        <Reveal className="pointer-events-none absolute top-14 right-[-14%] z-0 w-[15rem] md:top-0 md:right-auto md:left-1/2 md:w-[clamp(200px,32vw,440px)] md:-translate-x-[26%]">
           <Globe />
         </Reveal>
 
@@ -45,24 +45,24 @@ export function Hero() {
           <Eyebrow>Student org · Purdue University</Eyebrow>
         </Reveal>
 
+        {/* headline + side blurb share one box so the blurb aligns with line 1 */}
         <Reveal className="relative z-10 mt-[clamp(4rem,14vh,9rem)] md:mt-[clamp(5rem,18vh,11rem)]">
-          <Headline
-            as="h1"
-            id="hero-title"
-            size="display-fluid"
-            stagger
-            lines={["Building software for", "*nonprofits, at Purdue.*"]}
-            className="max-w-[16ch] md:max-w-none"
-          />
-        </Reveal>
-
-        {/* small right-aligned blurb (in the gap on desktop, in flow on mobile) */}
-        <Reveal className="relative z-10 mt-8 max-w-xs md:absolute md:top-[34%] md:right-[clamp(1.25rem,4.5vw,4.5rem)] md:mt-0 md:w-[17rem]">
-          <p className="text-sm font-medium text-green">{site.academicYear}</p>
-          <p className="mt-2 text-sm text-muted">
-            We create software for nonprofits around the globe. Open to all majors, all years, and
-            all levels of experience.
-          </p>
+          <div className="relative">
+            <Headline
+              as="h1"
+              id="hero-title"
+              size="display-fluid"
+              stagger
+              lines={["Building software for", "*nonprofits, at Purdue.*"]}
+              firstLineClassName="xl:max-w-[calc(100%-15rem)]"
+            />
+            <div className="mt-8 max-w-xs xl:absolute xl:top-0 xl:right-0 xl:mt-0 xl:w-[12.5rem]">
+              <p className="text-sm font-medium text-green">{site.academicYear}</p>
+              <p className="mt-2 text-sm text-muted">
+                We create software for nonprofits around the globe.
+              </p>
+            </div>
+          </div>
         </Reveal>
 
         <Reveal className="relative z-10 mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center md:mt-14">

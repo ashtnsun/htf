@@ -11,7 +11,9 @@ const args = Object.fromEntries(
   }),
 );
 const BASE = args.base ?? process.env.BASE_URL ?? "http://localhost:3000";
-const ROUTES = (args.routes ?? "/").split(",");
+const ROUTES = String(args.routes ?? "/")
+  .split(",")
+  .map((r) => (r === "home" ? "/" : r.startsWith("/") ? r : `/${r}`));
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"];
 
 const browser = await chromium.launch();
@@ -38,12 +40,12 @@ for (const [name, viewport] of [
   const context = await browser.newContext({ viewport, colorScheme: "dark" });
   const page = await context.newPage();
   for (const route of ROUTES) {
-    await page.goto(`${BASE}${route}`, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}${route}`, { waitUntil: "load" });
     await page.waitForTimeout(800);
     await scan(page, `${name} ${route}`);
   }
   if (viewport.width < 1024) {
-    await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/`, { waitUntil: "load" });
     await page.getByRole("button", { name: "Open menu" }).click();
     await page.waitForTimeout(700);
     await scan(page, `${name} / (drawer open)`);

@@ -10,10 +10,13 @@ type HeadlineProps = {
   size?: HeadlineSize;
   /**
    * Framer-style staggered layout: the first line sits left, the following lines
-   * right-align on md+ screens. Collapses to a normal left-aligned stack on phones.
+   * right-align on md+ screens with a little extra air between them. Collapses to a
+   * normal left-aligned stack on phones.
    */
   stagger?: boolean;
   align?: "left" | "center";
+  /** Extra classes for the first line only (e.g. to reserve room for a side blurb). */
+  firstLineClassName?: string;
   id?: string;
   className?: string;
 };
@@ -51,6 +54,7 @@ export function Headline({
   size = "h2",
   stagger = false,
   align = "left",
+  firstLineClassName,
   id,
   className,
 }: HeadlineProps) {
@@ -65,7 +69,15 @@ export function Headline({
       )}
     >
       {lines.map((line, i) => (
-        <span key={i} className={cn("block", stagger && i > 0 && "md:self-end md:text-right")}>
+        <span
+          key={i}
+          className={cn(
+            "block",
+            stagger && i === 0 && "md:self-start",
+            stagger && i > 0 && "md:mt-[0.22em] md:self-end md:text-right",
+            i === 0 && firstLineClassName,
+          )}
+        >
           {renderAccent(line)}
         </span>
       ))}

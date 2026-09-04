@@ -23,8 +23,11 @@ export function SiteHeader() {
         >
           <Logo height={20} title="" />
           <span className="sr-only">{site.name} home</span>
-          <span aria-hidden="true" className="hidden h-4 w-px bg-line-strong sm:block" />
-          <span className="hidden text-xs text-muted sm:block md:text-[0.8125rem]">
+          <span
+            aria-hidden="true"
+            className="hidden h-4 w-px bg-line-strong sm:block lg:hidden xl:block"
+          />
+          <span className="hidden text-xs text-muted sm:block md:text-[0.8125rem] lg:hidden xl:block">
             {site.tagline}
           </span>
         </Link>
