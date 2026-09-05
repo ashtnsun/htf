@@ -63,9 +63,11 @@ export function Section({
       {...aria}
     >
       {ghost ? (
-        <span aria-hidden="true" className={cn("ghost-text", ghostPos[ghostPosition])}>
-          {ghost}
-        </span>
+        <span
+          aria-hidden="true"
+          data-ghost={ghost}
+          className={cn("ghost-text", ghostPos[ghostPosition])}
+        />
       ) : null}
       {contain ? (
         <div

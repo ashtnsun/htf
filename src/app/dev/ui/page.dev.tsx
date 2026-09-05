@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
 import { Logo } from "@/components/brand/Logo";
 import { Globe } from "@/components/home/Globe";
+import { ProjectCard } from "@/components/projects/ProjectCard";
 import { Accordion } from "@/components/ui/Accordion";
 import { Card } from "@/components/ui/Card";
+import { DottedMap } from "@/components/ui/DottedMap";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Headline } from "@/components/ui/Headline";
 import { Media } from "@/components/ui/Media";
 import { Section } from "@/components/ui/Section";
 import { SplitButton } from "@/components/ui/SplitButton";
 import { StatTile } from "@/components/ui/StatTile";
+import { TestimonialCard } from "@/components/ui/TestimonialCard";
 
 export const metadata: Metadata = { title: "UI kit (dev)", robots: { index: false } };
 
@@ -226,6 +229,58 @@ export default function UiKitPage() {
           <Card padding="lg" interactive>
             <p className="text-body-lg">Interactive (hover)</p>
           </Card>
+        </div>
+      </Block>
+
+      <Block title="ProjectCard (default + featured)">
+        <div className="grid gap-6 md:grid-cols-2">
+          <ProjectCard
+            project={{
+              slug: "placeholder-project-1",
+              title: "Sample project title",
+              nonprofit: "Sample nonprofit",
+              year: "2025–26",
+              location: "Sample city, ST",
+              tags: ["web", "data"],
+              cover: "projects.placeholder-project-1.cover",
+            }}
+          />
+          <ProjectCard
+            size="featured"
+            project={{
+              slug: "placeholder-project-2",
+              title: "Featured card with the taller cover",
+              nonprofit: "Sample nonprofit",
+              year: "2025–26",
+              location: "Sample city, ST",
+              tags: ["mobile"],
+              cover: "projects.placeholder-project-2.cover",
+            }}
+          />
+        </div>
+      </Block>
+
+      <Block title="TestimonialCard">
+        <ul className="grid gap-4 md:grid-cols-2">
+          <TestimonialCard
+            testimonial={{
+              id: "sample",
+              quote:
+                "Sample quote text. Real quotes come from content/testimonials.ts once approved.",
+              name: "Sample name",
+              title: "Sample title, organization",
+              avatar: "avatar.placeholder",
+              kind: "nonprofit",
+              published: false,
+            }}
+          />
+        </ul>
+      </Block>
+
+      <Block title="DottedMap (CSS mask over public/maps/world-dots.svg)">
+        <div className="grid gap-8 sm:grid-cols-2">
+          <DottedMap />
+          <DottedMap tone="text" className="opacity-40" />
         </div>
       </Block>
 

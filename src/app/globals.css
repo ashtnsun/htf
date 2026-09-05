@@ -110,6 +110,10 @@
   p {
     text-wrap: pretty;
   }
+  /* In-page anchors (#roles, #faq …) land below the sticky header. */
+  [id] {
+    scroll-margin-top: calc(var(--header-h) + 1.5rem);
+  }
   ::selection {
     background: var(--green);
     color: var(--bg);
@@ -175,7 +179,9 @@
   letter-spacing: -0.03em;
 }
 
-/* Huge ghosted background word used as texture (see Framer testimonial band). */
+/* Huge ghosted background word used as texture (see Framer testimonial band).
+   The word comes from `data-ghost` and is painted by a pseudo-element: it is decoration,
+   not content, so it never reaches assistive tech or contrast checks. */
 @utility ghost-text {
   position: absolute;
   left: 50%;
@@ -189,6 +195,9 @@
   color: rgba(255, 255, 255, 0.04);
   pointer-events: none;
   user-select: none;
+  &::before {
+    content: attr(data-ghost);
+  }
 }
 
 /* Skip link: visually hidden until focused. */
