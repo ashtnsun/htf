@@ -1,5 +1,6 @@
-import { formatDeadline, getPrimaryCta, isInSeason, site } from "@content/site";
+import { getPrimaryCta, site } from "@content/site";
 import { Globe } from "@/components/home/Globe";
+import { SeasonNote } from "@/components/layout/SeasonNote";
 import { Reveal, RevealGroup } from "@/components/motion/Reveal";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Headline } from "@/components/ui/Headline";
@@ -13,8 +14,6 @@ import { SplitButton } from "@/components/ui/SplitButton";
  */
 export function Hero() {
   const cta = getPrimaryCta();
-  const deadline = formatDeadline();
-  const inSeason = isInSeason();
 
   return (
     <section
@@ -72,12 +71,7 @@ export function Hero() {
           <SplitButton href="/projects" variant="secondary" size="lg">
             See our projects
           </SplitButton>
-          {inSeason && deadline ? (
-            <p className="text-sm text-muted sm:ml-2">
-              {site.season.cycleName} applications close{" "}
-              <span className="text-text">{deadline}</span>
-            </p>
-          ) : null}
+          <SeasonNote className="sm:ml-2" />
         </Reveal>
       </RevealGroup>
 
