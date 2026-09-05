@@ -26,8 +26,8 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 ### Phase 1 — Launchable marketing core (Sessions 2–4)
 
-- [ ] Session 2: Home complete (featured cards final treatment, who-we-serve copy, stats + testimonials band with ghost text and dotted map, FAQ, contact CTA polish)
-- [ ] Session 2: Students page (roles rows with Apply buttons, recruitment timeline, how we work, what you'll get, student FAQ, CTA)
+- [x] Session 2: Home complete (featured cards final treatment, who-we-serve copy, stats + testimonials band with ghost text and dotted map, FAQ, contact CTA polish)
+- [x] Session 2: Students page (roles rows with Apply buttons, recruitment timeline, how we work, what you'll get, student FAQ, CTA)
 - [ ] Session 3: Projects index (year filter chips) + detail (MDX body via next-mdx-remote, gallery lightbox, live link, team grid, more-projects rail), 8 placeholder projects
 - [ ] Session 4: Contact form (Supabase or mailto v1), Privacy rewrite, 404 polish, SEO/OG image (PNG), deploy to the real domain
 
@@ -42,6 +42,119 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+
+## Session 2 — 2026-09-04
+
+**Built:** Home complete and the Students page, both in Phase 1 above. Four feature commits
+(`feat(content)`, `feat(ui)`, `feat(home)`, `feat(students)`) plus this log. Not pushed.
+
+**Verified:** `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm build` clean.
+Screenshots in `docs/screenshots/session-2/` (production build) and
+`docs/screenshots/session-2/dev-preview/` (dev server, shows the unpublished Impact band).
+`pnpm a11y --routes=/,/students`: 0 violations at 1440 and 390 and with the drawer open, on
+both the production build and the dev server.
+
+**Decisions made this session**
+
+1. Home is composed from section components in `src/components/home/` (`FeaturedProjects`,
+   `WhoWeServe`, `ImpactBand`) plus shared sections in `src/components/layout/` (`FaqSection`,
+   `ContactCta`, `SeasonNote`) that the Students page reuses. `ProjectCard` lives in
+   `src/components/projects/` so the Session 3 index can use it (`size="default"` is the 4:3
+   index card; `size="featured"` is the 4:5 home card).
+2. Stats and testimonials share one "Impact" band (the Framer testimonial band): ghost word
+   "Transforming Non-profits" at the top, dotted world map to the right of the headline, stat
+   tiles, testimonial cards. It renders when either list has items. Stat columns follow the
+   count (five tiles sit on one row instead of orphaning one).
+3. Unpublished stats and testimonials now behave like unpublished projects: hidden in
+   production, visible in `next dev` with a "Preview: unpublished content" badge, so the band
+   can be reviewed before Ashton confirms the numbers. Loaders take `IS_PRODUCTION` as the
+   default for `publishedOnly`.
+4. The dotted world map is generated once from Natural Earth 1:110m land polygons
+   (`scripts/gen-world-dots.mjs` → `public/maps/world-dots.svg`, 7.8 KB: ~9.9k dots encoded as
+   one path with a zero-length dash pattern and round caps). `DottedMap` applies it as a CSS
+   mask over a solid colour, so the dots take any token. Partner pins wait for the Phase 3
+   location data.
+5. Ghost words are painted by `::before { content: attr(data-ghost) }`. axe flagged the
+   4%-white text as a contrast failure on phone widths even with `aria-hidden`; as a
+   pseudo-element it is decoration and never reaches assistive tech.
+6. Featured cards follow the Framer treatment: cover fading into a caption with the nonprofit
+   label, a rule and the year, then a big title and the location/tags line; the right column
+   is offset by 6rem. Hover scales the cover, turns the title green and fills the arrow cell.
+7. FAQ items may carry `link: { label, href }`, rendered as a "read more" link under the
+   answer. Home now has six general questions that link into Students, Non-profits and
+   Projects; Students has five.
+8. Students copy blocks (team structure, how-we-work steps, perks) live in
+   `content/students.ts`, validated by `studentsPageSchema` through `getStudentsPage()`. Team
+   numbers come from PLAN §3 (1 lead + 5 developers + 1–2 designers; the optional second
+   designer seat is drawn dashed). The perk headings are the three lines from the exec-board
+   Instagram graphic ("Build real projects", "Join a driven team", "Grow your leadership
+   skills") plus "Learn by doing".
+9. Role rows: in season the button reads "Apply as {role}" and goes to `/apply`; out of
+   season it shows the site CTA (Contact Us). `open: false` on a role prints "Not recruiting
+   for this role this cycle" instead of a button.
+10. Recruitment timeline: an ISO `date` on a step drives the "Now" marker (latest step whose
+    date is today or earlier; earlier steps turn green). No dates are set yet, so nothing
+    highlights. The deadline note next to the heading reads from `content/site.ts`.
+11. The Students hero has an "On this page" nav (Roles · Timeline · How we work · What you'll
+    get · FAQ). Every element with an `id` gets `scroll-margin-top` so anchors land below the
+    sticky header.
+12. Who-we-serve copy is final but makes no cost claim for nonprofits; "free for nonprofit
+    partners" stays `[TODO: confirm]` in the FAQ until Ashton confirms it.
+
+**Improvements over the Framer template (as asked)**
+
+- Role rows carry responsibilities, time commitment and who the role is for, not just a
+  blurb; the buttons name the role; rows are an ordered list with a sticky section heading.
+- The template's Pricing block and three-step "Process" are gone; the recruitment timeline
+  and "How we work" replace them with HTF's actual year.
+- In-page navigation on the long Students page; 44px tap targets on nav links, FAQ links and
+  arrow cells; role Apply buttons right-align only from 640px up so they stay under the thumb.
+- Testimonials use `figure` / `blockquote` / `figcaption`; stats are a definition list; the
+  ghost words and dotted map are pure decoration with no contrast or screen-reader cost.
+- Card labels, years and locations use the muted token (≥ 6.9:1 on surface) and the whole
+  card is one link with a visible focus ring.
+
+**Known gaps**
+
+- The Impact band is hidden in production until stats and testimonials are published; review
+  it on the dev server or in `docs/screenshots/session-2/dev-preview/`.
+- Timeline steps have no dates, so the "Now" marker never shows; role time commitments,
+  descriptions and several FAQ answers still read `[TODO]`.
+- Every "Apply as {role}" button leads to the same external form until the portal ships.
+- Home renders the two featured placeholders only; Session 3 seeds eight projects.
+- The map is a texture only (no partner pins); the Framer's chrome ring and template photos
+  are not reproduced by design.
+
+**TODOs for Ashton (content and accounts)**
+
+- Everything from Session 1 still stands: `content/site.ts` links and deadline, hero and
+  page copy, roles, exec board, projects, stats (`published: true` when confirmed),
+  testimonials, recruitment dates, privacy text, logo SVGs, GitHub org repo, Vercel, DNS.
+- `content/students.ts`: confirm the how-we-work cadence, crits/workshops and handoff lines,
+  and the mentorship line in "Learn by doing".
+- `content/recruitment.ts`: dates for the six steps, plus ISO `date` fields so the timeline
+  highlights the current step.
+- `content/faq.ts`: whether there is a spring cycle, the nonprofit intake process, hours per
+  week, what happens after applying; confirm "free for nonprofit partners".
+- Who-we-serve nonprofit panel: add a cost/terms line once confirmed.
+- Decide whether the Impact band should mark partner locations (needs city/country per
+  project; planned with the Phase 3 globe).
+
+## Next session starts with
+
+**Session 3: Projects index + detail.** Read `docs/PLAN.md` §3 (`/projects`), this file, and
+`node_modules/next/dist/docs/` for MDX rendering in the App Router, run `pnpm dev`, then:
+
+1. Seed eight placeholder projects in `content/projects/` (the 2025–26 nonprofits, names and
+   locations as `[TODO]`), with covers in `content/media.ts`; mark four `featured`.
+2. `/projects`: intro, year filter chips (client leaf, `?year=` search param or local state),
+   grid of `ProjectCard` (`size="default"`), empty state. Remove the `StubSection`.
+3. `/projects/[slug]`: hero (nonprofit, title, summary, year/location/tags, live link
+   button), MDX body via `next-mdx-remote/rsc` with the site's typography, gallery with a
+   lightbox (client leaf, keyboard + focus trap like `NavDrawer`), team grid, "More projects"
+   rail, `generateMetadata`. Keep unpublished projects dev-only.
+4. Screenshots to `docs/screenshots/session-3/`, `pnpm a11y --routes=/projects,/projects/<slug>`,
+   update this file.
 
 ## Session 1 — 2026-09-04
 
@@ -91,11 +204,3 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - Stats: confirm and set `published: true` (`content/stats.ts`); testimonials when approved.
 - Recruitment timeline dates (`content/recruitment.ts`).
 - Privacy policy text; official logo SVGs; the GitHub org repo + Vercel project; domain/DNS.
-
-## Next session starts with
-
-**Session 2: complete Home + Students.** Read `docs/PLAN.md` §3 (Home, Students) and this file, run `pnpm dev`, open `/dev/ui` for the primitives, then:
-
-1. Home: featured project cards (final oversized treatment, real card hover), who-we-serve copy, testimonials band (ghost text + dotted world map background, cards from content), stats row, FAQ links, contact CTA copy. Wire everything to content files.
-2. Students: role rows (Framer pattern: "Role 1" label, icon, title, blurb, description, Apply/Learn split button), recruitment timeline from `content/recruitment.ts`, how we work (1 lead + 5 devs + 1–2 designers), what you'll get, student FAQ (`getFaq("students")`), CTA. Remove the `StubSection`.
-3. Screenshots to `docs/screenshots/session-2/`, `pnpm a11y --routes=/,/students`, update this file.
