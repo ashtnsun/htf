@@ -1,8 +1,16 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getPrimaryCta } from "@content/site";
+import { ContactCta } from "@/components/layout/ContactCta";
+import { FaqSection } from "@/components/layout/FaqSection";
 import { PageHero } from "@/components/layout/PageHero";
-import { StubSection } from "@/components/layout/StubSection";
+import { SeasonNote } from "@/components/layout/SeasonNote";
+import { HowWeWork } from "@/components/students/HowWeWork";
+import { Perks } from "@/components/students/Perks";
+import { RecruitmentTimeline } from "@/components/students/RecruitmentTimeline";
+import { RoleRows } from "@/components/students/RoleRows";
 import { SplitButton } from "@/components/ui/SplitButton";
+import { getFaq, getRecruitmentTimeline, getRoles, getStudentsPage } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Students",
@@ -10,8 +18,23 @@ export const metadata: Metadata = {
     "Join Hack the Future as a project lead, developer or designer. Open to all majors, all years, all experience levels.",
 };
 
+const SECTIONS = [
+  { href: "#roles", label: "Roles" },
+  { href: "#timeline", label: "Timeline" },
+  { href: "#how-we-work", label: "How we work" },
+  { href: "#what-you-get", label: "What you’ll get" },
+  { href: "#faq", label: "FAQ" },
+] as const;
+
+const linkClass = "text-text underline-offset-4 hover:underline";
+
 export default function StudentsPage() {
   const cta = getPrimaryCta();
+  const roles = getRoles();
+  const timeline = getRecruitmentTimeline();
+  const { teamStructure, howWeWork, perks } = getStudentsPage();
+  const faq = getFaq("students");
+
   return (
     <>
       <PageHero
@@ -19,20 +42,53 @@ export default function StudentsPage() {
         lines={["Join us to", "*make an impact.*"]}
         blurb="Open to all majors, all years, and all levels of experience. You can apply for more than one role."
       >
-        <SplitButton href={cta.href} size="lg">
-          {cta.label}
-        </SplitButton>
+        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+          <SplitButton href={cta.href} size="lg">
+            {cta.label}
+          </SplitButton>
+          <SeasonNote className="sm:ml-2" />
+        </div>
+        <nav aria-label="On this page" className="mt-8">
+          <ul className="flex flex-wrap gap-x-6 gap-y-1">
+            {SECTIONS.map((s) => (
+              <li key={s.href}>
+                <a
+                  href={s.href}
+                  className="inline-flex min-h-11 items-center text-sm text-muted underline-offset-4 transition-colors hover:text-text hover:underline"
+                >
+                  {s.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </PageHero>
-      <StubSection
-        phase="Session 2"
-        items={[
-          "Roles",
-          "Recruitment timeline",
-          "How we work",
-          "What you'll get",
-          "Student FAQ",
-          "CTA",
-        ]}
+
+      <RoleRows roles={roles} />
+      <RecruitmentTimeline steps={timeline} />
+      <HowWeWork seats={teamStructure} steps={howWeWork} />
+      <Perks perks={perks} />
+      <FaqSection
+        items={faq}
+        lines={["Before you", "*apply.*"]}
+        aside={
+          <p>
+            Something else?{" "}
+            <Link href="/contact" className={linkClass}>
+              Ask us
+            </Link>
+            , or read the{" "}
+            <Link href="/#faq" className={linkClass}>
+              general FAQ
+            </Link>
+            .
+          </p>
+        }
+      />
+      <ContactCta
+        eyebrow="Ready?"
+        lines={["Bring what you know.", "*Learn the rest.*"]}
+        copy="Open to all majors, all years, and all levels of experience. Not sure which role fits? Apply for more than one, or ask us first."
       />
     </>
   );
