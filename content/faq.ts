@@ -1,7 +1,12 @@
 import type { FaqItemInput } from "@/lib/content/schemas";
 
-/** FAQ entries. `audience` decides which page shows them. Answers marked TODO are placeholders. */
+/**
+ * FAQ entries. `audience` decides which page shows them: "home" is the short general list
+ * (with links into the deeper lists), "students" and "nonprofits" belong to those pages.
+ * Answers marked TODO are placeholders for the design director to confirm.
+ */
 export const faq: FaqItemInput[] = [
+  // ------------------------------------------------------------ home (general)
   {
     id: "what-is-htf",
     question: "What is Hack the Future?",
@@ -15,6 +20,23 @@ export const faq: FaqItemInput[] = [
     answer:
       "Anyone at Purdue. We are open to all majors, all years, and all levels of experience, and you can apply for more than one role.",
     audience: "home",
+    link: { label: "How to join", href: "/students" },
+  },
+  {
+    id: "which-roles",
+    question: "What roles can I apply for?",
+    answer:
+      "Project lead, developer, or designer. Every team pairs one project lead with five developers and one or two designers for the whole school year.",
+    audience: "home",
+    link: { label: "See the roles", href: "/students#roles" },
+  },
+  {
+    id: "when-to-apply",
+    question: "When can I apply?",
+    answer:
+      "We recruit at the start of the fall semester: callouts in the first weeks of classes, then applications with a deadline in September. [TODO: confirm whether there is a spring cycle.]",
+    audience: "home",
+    link: { label: "Recruitment timeline", href: "/students#timeline" },
   },
   {
     id: "how-do-nonprofits-apply",
@@ -22,7 +44,18 @@ export const faq: FaqItemInput[] = [
     answer:
       "[TODO: confirm process] Nonprofits apply through our intake form, we hold a scoping call, and matched projects run over the school year.",
     audience: "home",
+    link: { label: "For non-profits", href: "/nonprofits" },
   },
+  {
+    id: "where-are-partners",
+    question: "Where are your nonprofit partners?",
+    answer:
+      "Anywhere. Our partners have been based across the United States and abroad; the projects page lists who we have worked with.",
+    audience: "home",
+    link: { label: "See our projects", href: "/projects" },
+  },
+
+  // ------------------------------------------------------------ students
   {
     id: "students-experience",
     question: "Do I need prior experience?",
@@ -31,11 +64,36 @@ export const faq: FaqItemInput[] = [
     audience: "students",
   },
   {
+    id: "students-not-cs",
+    question: "Do I have to be a CS major?",
+    answer:
+      "No. We are open to all majors and all years. What matters is that you want to build something real for a nonprofit and can commit to a team for the school year.",
+    audience: "students",
+  },
+  {
     id: "students-multiple-roles",
     question: "Can I apply for more than one role?",
     answer: "Yes. You can apply for more than one role in a single application.",
     audience: "students",
+    link: { label: "Compare the roles", href: "#roles" },
   },
+  {
+    id: "students-time",
+    question: "How much time does it take?",
+    answer:
+      "[TODO: hours per week] Expect a steady weekly commitment for the whole school year rather than a hackathon weekend: team meetings, nonprofit check-ins, and your own build time.",
+    audience: "students",
+  },
+  {
+    id: "students-after-applying",
+    question: "What happens after I apply?",
+    answer:
+      "[TODO: confirm] We review applications after the deadline, invite applicants to interviews, and send decisions before project kickoff.",
+    audience: "students",
+    link: { label: "Recruitment timeline", href: "#timeline" },
+  },
+
+  // ------------------------------------------------------------ nonprofits
   {
     id: "nonprofits-cost",
     question: "What does it cost?",

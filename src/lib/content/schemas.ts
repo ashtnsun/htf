@@ -59,11 +59,18 @@ export const roleSchema = z.object({
 
 export const faqAudienceSchema = z.enum(["home", "students", "nonprofits"]);
 
+/** Optional "read more" link under an answer, e.g. to the deeper Students / Non-profits FAQ. */
+export const faqLinkSchema = z.object({
+  label: z.string().min(1),
+  href: z.string().min(1),
+});
+
 export const faqItemSchema = z.object({
   id: slugSchema,
   question: z.string().min(1),
   answer: z.string().min(1),
   audience: faqAudienceSchema,
+  link: faqLinkSchema.optional(),
 });
 
 export const testimonialSchema = z.object({
@@ -96,6 +103,42 @@ export const recruitmentStepSchema = z.object({
   description: z.string().min(1),
 });
 
+/** Icon names are resolved to lucide icons in the components, so content never imports React. */
+export const roleIconSchema = z.enum(["code", "design", "lead"]);
+
+/** One kind of seat on a project team ("5 developers"). */
+export const teamSeatSchema = z.object({
+  id: slugSchema,
+  label: z.string().min(1),
+  /** Number of seats drawn in the team diagram. */
+  count: z.number().int().min(1).max(12),
+  /** For a range ("1–2 designers"): seats above this number are drawn as optional. */
+  minCount: z.number().int().min(0).optional(),
+  /** Display override when the count is a range, e.g. "1–2". */
+  countLabel: z.string().min(1).optional(),
+  icon: roleIconSchema,
+});
+
+export const howWeWorkStepSchema = z.object({
+  id: slugSchema,
+  title: z.string().min(1),
+  description: z.string().min(1),
+});
+
+export const perkSchema = z.object({
+  id: slugSchema,
+  title: z.string().min(1),
+  description: z.string().min(1),
+  icon: z.enum(["projects", "skills", "community", "leadership"]),
+});
+
+/** Copy blocks for the Students page that are not roles, timeline or FAQ. */
+export const studentsPageSchema = z.object({
+  teamStructure: z.array(teamSeatSchema).min(1),
+  howWeWork: z.array(howWeWorkStepSchema).min(1),
+  perks: z.array(perkSchema).min(1),
+});
+
 export type ProjectFrontmatter = z.infer<typeof projectFrontmatterSchema>;
 export type TeamMember = z.infer<typeof teamMemberSchema>;
 export type ProjectTag = z.infer<typeof projectTagSchema>;
@@ -112,3 +155,9 @@ export type Stat = z.infer<typeof statSchema>;
 export type StatInput = z.input<typeof statSchema>;
 export type RecruitmentStep = z.infer<typeof recruitmentStepSchema>;
 export type RecruitmentStepInput = z.input<typeof recruitmentStepSchema>;
+export type RoleIcon = z.infer<typeof roleIconSchema>;
+export type TeamSeat = z.infer<typeof teamSeatSchema>;
+export type HowWeWorkStep = z.infer<typeof howWeWorkStepSchema>;
+export type Perk = z.infer<typeof perkSchema>;
+export type StudentsPage = z.infer<typeof studentsPageSchema>;
+export type StudentsPageInput = z.input<typeof studentsPageSchema>;

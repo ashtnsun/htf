@@ -9,6 +9,7 @@ import { isMediaKey, mediaSrc } from "@content/media";
 import { recruitmentTimeline as recruitmentData } from "@content/recruitment";
 import { roles as rolesData } from "@content/roles";
 import { stats as statsData } from "@content/stats";
+import { studentsPage as studentsData } from "@content/students";
 import { testimonials as testimonialsData } from "@content/testimonials";
 import {
   execMemberSchema,
@@ -17,6 +18,7 @@ import {
   recruitmentStepSchema,
   roleSchema,
   statSchema,
+  studentsPageSchema,
   testimonialSchema,
   type ExecMember,
   type FaqAudience,
@@ -25,6 +27,7 @@ import {
   type RecruitmentStep,
   type Role,
   type Stat,
+  type StudentsPage,
   type Testimonial,
 } from "./schemas";
 
@@ -35,6 +38,12 @@ import {
 
 const CONTENT_DIR = path.join(process.cwd(), "content");
 const PROJECTS_DIR = path.join(CONTENT_DIR, "projects");
+
+/**
+ * Unpublished projects, stats and testimonials are hidden in production builds but visible
+ * in `next dev`, so a section can be designed and reviewed before real content lands.
+ */
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
 class ContentError extends Error {
   constructor(file: string, detail: string) {
@@ -115,7 +124,7 @@ export function getAllProjects(): Project[] {
 /** Projects visible on the site. Unpublished ones show in development only. */
 export function getProjects(): Project[] {
   const all = getAllProjects();
-  return process.env.NODE_ENV === "production" ? all.filter((p) => p.published) : all;
+  return IS_PRODUCTION ? all.filter((p) => p.published) : all;
 }
 
 export function getFeaturedProjects(limit = 4): Project[] {
@@ -153,17 +162,30 @@ export function getFaq(audience?: FaqAudience): FaqItem[] {
   return audience ? items.filter((f) => f.audience === audience) : items;
 }
 
-export function getTestimonials({ publishedOnly = true } = {}): Testimonial[] {
+/** Published testimonials (plus unpublished ones in development, see IS_PRODUCTION). */
+export function getTestimonials({ publishedOnly = IS_PRODUCTION } = {}): Testimonial[] {
   const items = parseAll(testimonialSchema, testimonialsData, "content/testimonials.ts");
   assertUnique(items, (t) => t.id, "content/testimonials.ts");
   items.forEach((t) => assertMediaRef(t.avatar, "content/testimonials.ts"));
   return publishedOnly ? items.filter((t) => t.published) : items;
 }
 
-export function getStats({ publishedOnly = true } = {}): Stat[] {
+/** Published stats (plus unpublished ones in development, see IS_PRODUCTION). */
+export function getStats({ publishedOnly = IS_PRODUCTION } = {}): Stat[] {
   const items = parseAll(statSchema, statsData, "content/stats.ts");
   assertUnique(items, (s) => s.id, "content/stats.ts");
   return publishedOnly ? items.filter((s) => s.published) : items;
+}
+
+export function getStudentsPage(): StudentsPage {
+  const file = "content/students.ts";
+  const result = studentsPageSchema.safeParse(studentsData);
+  if (!result.success) throw new ContentError(file, z.prettifyError(result.error));
+  const page = result.data;
+  assertUnique(page.teamStructure, (s) => s.id, file);
+  assertUnique(page.howWeWork, (s) => s.id, file);
+  assertUnique(page.perks, (p) => p.id, file);
+  return page;
 }
 
 export function getRecruitmentTimeline(): RecruitmentStep[] {
@@ -183,6 +205,7 @@ export function validateAllContent(): { counts: Record<string, number> } {
       testimonials: getTestimonials({ publishedOnly: false }).length,
       stats: getStats({ publishedOnly: false }).length,
       recruitmentTimeline: getRecruitmentTimeline().length,
+      studentsPage: Object.values(getStudentsPage()).reduce((n, list) => n + list.length, 0),
     },
   };
 }
