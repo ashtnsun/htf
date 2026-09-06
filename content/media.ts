@@ -9,12 +9,19 @@ export const media = {
   // Brand / sharing
   "og.default": `${P}/og.svg`,
 
-  // Projects (key pattern: projects.<slug>.cover, gallery.<name>)
-  "projects.placeholder-project-1.cover": `${P}/cover-16x9.svg`,
-  "projects.placeholder-project-2.cover": `${P}/cover-4x5.svg`,
-  "projects.placeholder-project-3.cover": `${P}/cover-16x9.svg`,
-  "gallery.placeholder-1": `${P}/gallery-16x10.svg`,
-  "gallery.placeholder-2": `${P}/gallery-16x10.svg`,
+  // Projects (key pattern: projects.<slug>.cover, gallery.<name>).
+  // Four ornament variants so a grid of placeholders is not eight identical tiles.
+  "projects.placeholder-project-1.cover": `${P}/cover-globe.svg`,
+  "projects.placeholder-project-2.cover": `${P}/cover-checker.svg`,
+  "projects.placeholder-project-3.cover": `${P}/cover-zigzag.svg`,
+  "projects.placeholder-project-4.cover": `${P}/cover-brackets.svg`,
+  "projects.placeholder-project-5.cover": `${P}/cover-checker.svg`,
+  "projects.placeholder-project-6.cover": `${P}/cover-globe.svg`,
+  "projects.placeholder-project-7.cover": `${P}/cover-brackets.svg`,
+  "projects.placeholder-project-8.cover": `${P}/cover-zigzag.svg`,
+  "gallery.placeholder-1": `${P}/gallery-1.svg`,
+  "gallery.placeholder-2": `${P}/gallery-2.svg`,
+  "gallery.placeholder-3": `${P}/gallery-3.svg`,
 
   // People (key pattern: exec.<slug>)
   "exec.todo-president": `${P}/exec.svg`,

@@ -17,6 +17,21 @@ export const teamMemberSchema = z.object({
 
 export const projectTagSchema = z.enum(["web", "mobile", "data", "design", "automation"]);
 
+/**
+ * A gallery entry: a bare media ref, or an object with alt text and an optional caption.
+ * Bare refs are normalised to objects; the loader fills in a default alt.
+ */
+export const galleryItemSchema = z
+  .union([
+    mediaRefSchema,
+    z.object({
+      src: mediaRefSchema,
+      alt: z.string().min(1).optional(),
+      caption: z.string().min(1).optional(),
+    }),
+  ])
+  .transform((item) => (typeof item === "string" ? { src: item } : item));
+
 /** Frontmatter of content/projects/*.mdx */
 export const projectFrontmatterSchema = z.object({
   slug: slugSchema,
@@ -29,7 +44,10 @@ export const projectFrontmatterSchema = z.object({
   summary: z.string().min(10).max(240),
   cover: mediaRefSchema,
   liveUrl: z.url().optional(),
-  gallery: z.array(mediaRefSchema).default([]),
+  /** Screenshots for the detail page gallery (lightbox). */
+  gallery: z.array(galleryItemSchema).default([]),
+  /** Technologies used, shown as chips ("Built with"). */
+  stack: z.array(z.string().min(1)).default([]),
   team: z.array(teamMemberSchema).default([]),
   featured: z.boolean().default(false),
   /** Unpublished projects are hidden in production builds but visible in dev. */
@@ -140,6 +158,7 @@ export const studentsPageSchema = z.object({
 });
 
 export type ProjectFrontmatter = z.infer<typeof projectFrontmatterSchema>;
+export type GalleryItem = z.infer<typeof galleryItemSchema>;
 export type TeamMember = z.infer<typeof teamMemberSchema>;
 export type ProjectTag = z.infer<typeof projectTagSchema>;
 export type ExecMember = z.infer<typeof execMemberSchema>;

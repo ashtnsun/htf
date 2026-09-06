@@ -5,7 +5,7 @@ import matter from "gray-matter";
 import { z } from "zod";
 import { exec as execData } from "@content/exec";
 import { faq as faqData } from "@content/faq";
-import { isMediaKey, mediaSrc } from "@content/media";
+import { isMediaKey } from "@content/media";
 import { recruitmentTimeline as recruitmentData } from "@content/recruitment";
 import { roles as rolesData } from "@content/roles";
 import { stats as statsData } from "@content/stats";
@@ -81,11 +81,13 @@ function assertMediaRef(ref: string | undefined, file: string) {
 
 // ---------------------------------------------------------------- projects
 
-export type Project = ProjectFrontmatter & {
-  /** Raw MDX body (rendered on the detail page in a later session). */
+/** A gallery image with its alt text resolved (frontmatter may omit it). */
+export type ProjectImage = { src: string; alt: string; caption?: string };
+
+export type Project = Omit<ProjectFrontmatter, "gallery"> & {
+  /** MDX body without the frontmatter; rendered by <ProjectBody> on the detail page. */
   body: string;
-  coverSrc: string;
-  gallerySrcs: string[];
+  gallery: ProjectImage[];
 };
 
 let projectsCache: Project[] | null = null;
@@ -106,19 +108,31 @@ export function getAllProjects(): Project[] {
       throw new ContentError(rel, `slug "${fm.slug}" must match the file name`);
     }
     assertMediaRef(fm.cover, rel);
-    fm.gallery.forEach((g) => assertMediaRef(g, rel));
+    fm.gallery.forEach((g) => assertMediaRef(g.src, rel));
     fm.team.forEach((t) => assertMediaRef(t.avatar, rel));
     return {
       ...fm,
       body: content.trim(),
-      coverSrc: mediaSrc(fm.cover),
-      gallerySrcs: fm.gallery.map(mediaSrc),
+      gallery: fm.gallery.map((g, i) => ({
+        ...g,
+        alt: g.alt ?? `${fm.title}, screenshot ${i + 1} of ${fm.gallery.length}`,
+      })),
     } satisfies Project;
   });
   assertUnique(projects, (p) => p.slug, "content/projects");
   projects.sort((a, b) => b.year.localeCompare(a.year) || a.title.localeCompare(b.title));
   projectsCache = projects;
   return projects;
+}
+
+/** Other projects for the "More projects" rail: same cycle first, then the rest, newest first. */
+export function getRelatedProjects(slug: string, limit = 3): Project[] {
+  const current = getProject(slug);
+  const others = getProjects().filter((p) => p.slug !== slug);
+  if (!current) return others.slice(0, limit);
+  const sameYear = others.filter((p) => p.year === current.year);
+  const rest = others.filter((p) => p.year !== current.year);
+  return [...sameYear, ...rest].slice(0, limit);
 }
 
 /** Projects visible on the site. Unpublished ones show in development only. */

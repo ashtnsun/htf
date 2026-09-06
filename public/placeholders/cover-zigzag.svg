@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1200" viewBox="0 0 1600 1200" role="img" aria-label="Placeholder image: Project cover">
+  <defs>
+    <pattern id="p-project-cover-zigzag" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="r-project-cover-zigzag" cx="50%" cy="100%" r="80%">
+      <stop offset="0" stop-color="#00EB88" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#00EB88" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="g-project-cover-zigzag" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#141414"/>
+      <stop offset="1" stop-color="#0f0f0f"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="1598" height="1198" rx="8" fill="url(#g-project-cover-zigzag)" stroke="#00EB88" stroke-opacity="0.6" stroke-width="1.5"/>
+  <rect x="1" y="1" width="1598" height="1198" rx="8" fill="url(#p-project-cover-zigzag)"/>
+  <rect x="1" y="1" width="1598" height="1198" rx="8" fill="url(#r-project-cover-zigzag)"/>
+  <polyline points="0,888 100,983.9999999999999 200,888 300,983.9999999999999 400,888 500,983.9999999999999 600,888 700,983.9999999999999 800,888 900,983.9999999999999 1000,888 1100,983.9999999999999 1200,888 1300,983.9999999999999 1400,888 1500,983.9999999999999 1600,888" fill="none" stroke="#00EB88" stroke-opacity="0.35" stroke-width="1.5"/><text x="800" y="618.3333333333334" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="55" letter-spacing="0.12em" fill="#A3A3A3">PROJECT COVER</text>
+       <rect x="624" y="655" width="352" height="1" fill="#00EB88" fill-opacity="0.5"/>
+</svg>

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "pnpm validate:content && next build",
+    "build": "pnpm gen:placeholders && pnpm validate:content && next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
@@ -21,8 +21,10 @@
     "gray-matter": "^4.0.3",
     "lucide-react": "^1.41.0",
     "next": "16.3.4",
+    "next-mdx-remote": "^6.0.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "remark-gfm": "^4.0.1",
     "server-only": "^0.0.1",
     "tailwind-merge": "^3.6.0",
     "zod": "^4.5.4"
