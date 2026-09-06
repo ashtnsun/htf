@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Non-profits",
   description:
     "Partner with Hack the Future: a student team builds the software your nonprofit needs.",
+  alternates: { canonical: "/nonprofits" },
 };
 
 export default function NonprofitsPage() {

@@ -124,7 +124,6 @@ const files = [
   ["gallery-3.svg", { w: 1600, h: 1000, label: "Screenshot 3" }],
   ["avatar.svg", { w: 400, h: 400, label: "Avatar", cell: 32, round: true }],
   ["exec.svg", { w: 800, h: 1000, label: "Exec photo" }],
-  ["og.svg", { w: 1200, h: 630, label: "Hack the Future" }],
 ];
 
 // Remove outputs from earlier versions of this script so nothing stale is served.

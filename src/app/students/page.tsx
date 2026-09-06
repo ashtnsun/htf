@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   title: "Students",
   description:
     "Join Hack the Future as a project lead, developer or designer. Open to all majors, all years, all experience levels.",
+  alternates: { canonical: "/students" },
 };
 
 const SECTIONS = [
@@ -26,7 +27,8 @@ const SECTIONS = [
   { href: "#faq", label: "FAQ" },
 ] as const;
 
-const linkClass = "text-text underline-offset-4 hover:underline";
+const linkClass =
+  "text-text underline decoration-green/70 underline-offset-4 transition-colors hover:text-green";
 
 export default function StudentsPage() {
   const cta = getPrimaryCta();

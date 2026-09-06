@@ -6,9 +6,6 @@
 const P = "/placeholders";
 
 export const media = {
-  // Brand / sharing
-  "og.default": `${P}/og.svg`,
-
   // Projects (key pattern: projects.<slug>.cover, gallery.<name>).
   // Four ornament variants so a grid of placeholders is not eight identical tiles.
   "projects.placeholder-project-1.cover": `${P}/cover-globe.svg`,

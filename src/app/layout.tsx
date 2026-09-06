@@ -28,7 +28,6 @@ export const metadata: Metadata = {
     siteName: site.name,
     title: `${site.name} · ${site.tagline}`,
     description: site.description,
-    images: ["/placeholders/og.svg"],
   },
   twitter: { card: "summary_large_image" },
 };

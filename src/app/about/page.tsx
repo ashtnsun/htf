@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "About",
   description:
     "Who Hack the Future is: a Purdue student organization building software for nonprofits.",
+  alternates: { canonical: "/about" },
 };
 
 export default function AboutPage() {

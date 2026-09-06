@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { FeaturedProjects } from "@/components/home/FeaturedProjects";
 import { Hero } from "@/components/home/Hero";
@@ -7,7 +8,10 @@ import { ContactCta } from "@/components/layout/ContactCta";
 import { FaqSection } from "@/components/layout/FaqSection";
 import { getFaq, getFeaturedProjects, getStats, getTestimonials } from "@/lib/content";
 
-const linkClass = "text-text underline-offset-4 hover:underline";
+export const metadata: Metadata = { alternates: { canonical: "/" } };
+
+const linkClass =
+  "text-text underline decoration-green/70 underline-offset-4 transition-colors hover:text-green";
 
 /**
  * Home, in the Framer's order: hero → featured projects → who we serve → impact band

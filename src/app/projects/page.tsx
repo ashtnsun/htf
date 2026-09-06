@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   title: "Projects",
   description:
     "Software built by Hack the Future students for nonprofit partners, one team and one organization at a time.",
+  alternates: { canonical: "/projects" },
 };
 
 /**
