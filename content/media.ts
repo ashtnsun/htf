@@ -20,6 +20,10 @@ export const media = {
   "gallery.placeholder-2": `${P}/gallery-2.svg`,
   "gallery.placeholder-3": `${P}/gallery-3.svg`,
 
+  // Organization and awards (home page "What we do" photo, Impact awards carousel)
+  "org.group-photo": `${P}/org-photo.svg`,
+  "awards.student-life-2025": `${P}/award-photo.svg`,
+
   // People (key pattern: exec.<slug>)
   "exec.todo-president": `${P}/exec.svg`,
   "exec.ashton-sun": `${P}/exec.svg`,

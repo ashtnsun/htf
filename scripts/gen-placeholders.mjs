@@ -1,5 +1,6 @@
 // Generates branded placeholder images into public/placeholders/.
-// Dark surface, subtle grid, mint outline, and a small label so slots are obviously placeholders.
+// Dark surface, subtle grid, mint outline (square corners, like the site), and a small label
+// so slots are obviously placeholders.
 // Covers come in four variants with a brand ornament (globe, checkerboard, zigzag, brackets)
 // so a grid of placeholder cards has some rhythm before real photos land.
 // Run: pnpm gen:placeholders   (no dependencies)
@@ -81,7 +82,7 @@ function svg({ w, h, label, cell = 40, round = false, kind }) {
   const id = label.replace(/[^a-z0-9]/gi, "-").toLowerCase() + (kind ? `-${kind}` : "");
   const shape = round
     ? `<circle cx="${w / 2}" cy="${h / 2}" r="${w / 2 - 1.5}" fill="url(#g-${id})" stroke="${MINT}" stroke-opacity="0.6" stroke-width="1.5"/>`
-    : `<rect x="1" y="1" width="${w - 2}" height="${h - 2}" rx="8" fill="url(#g-${id})" stroke="${MINT}" stroke-opacity="0.6" stroke-width="1.5"/>`;
+    : `<rect x="1" y="1" width="${w - 2}" height="${h - 2}" fill="url(#g-${id})" stroke="${MINT}" stroke-opacity="0.6" stroke-width="1.5"/>`;
   const fontSize = Math.max(11, Math.round(Math.min(w, h) / 22));
   const mark = round
     ? ""
@@ -106,8 +107,8 @@ function svg({ w, h, label, cell = 40, round = false, kind }) {
     </linearGradient>
   </defs>
   ${shape}
-  <rect x="1" y="1" width="${w - 2}" height="${h - 2}" rx="8" fill="url(#p-${id})"${clip}/>
-  <rect x="1" y="1" width="${w - 2}" height="${h - 2}" rx="8" fill="url(#r-${id})"${clip}/>
+  <rect x="1" y="1" width="${w - 2}" height="${h - 2}" fill="url(#p-${id})"${clip}/>
+  <rect x="1" y="1" width="${w - 2}" height="${h - 2}" fill="url(#r-${id})"${clip}/>
   ${kind ? ornament(kind, w, h) : ""}${globe}${mark}
 </svg>
 `;
@@ -124,6 +125,9 @@ const files = [
   ["gallery-3.svg", { w: 1600, h: 1000, label: "Screenshot 3" }],
   ["avatar.svg", { w: 400, h: 400, label: "Avatar", cell: 32, round: true }],
   ["exec.svg", { w: 800, h: 1000, label: "Exec photo" }],
+  // Home "What we do" full-organization photo (21:9) and the Impact awards photo (3:2).
+  ["org-photo.svg", { w: 2400, h: 1030, label: "Organization photo", cell: 60 }],
+  ["award-photo.svg", { w: 1800, h: 1200, label: "Award photo", cell: 48 }],
 ];
 
 // Remove outputs from earlier versions of this script so nothing stale is served.

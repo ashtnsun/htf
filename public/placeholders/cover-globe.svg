@@ -12,9 +12,9 @@
       <stop offset="1" stop-color="#0f0f0f"/>
     </linearGradient>
   </defs>
-  <rect x="1" y="1" width="1598" height="1198" rx="8" fill="url(#g-project-cover-globe)" stroke="#00EB88" stroke-opacity="0.6" stroke-width="1.5"/>
-  <rect x="1" y="1" width="1598" height="1198" rx="8" fill="url(#p-project-cover-globe)"/>
-  <rect x="1" y="1" width="1598" height="1198" rx="8" fill="url(#r-project-cover-globe)"/>
+  <rect x="1" y="1" width="1598" height="1198" fill="url(#g-project-cover-globe)" stroke="#00EB88" stroke-opacity="0.6" stroke-width="1.5"/>
+  <rect x="1" y="1" width="1598" height="1198" fill="url(#p-project-cover-globe)"/>
+  <rect x="1" y="1" width="1598" height="1198" fill="url(#r-project-cover-globe)"/>
   <g fill="none" stroke="#00EB88" stroke-opacity="0.35" stroke-width="1.5">
         <circle cx="1152" cy="600" r="336.00000000000006"/>
         <ellipse cx="1152" cy="600" rx="151.20000000000002" ry="336.00000000000006"/>

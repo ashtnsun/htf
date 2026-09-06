@@ -12,9 +12,9 @@
       <stop offset="1" stop-color="#0f0f0f"/>
     </linearGradient>
   </defs>
-  <rect x="1" y="1" width="1598" height="998" rx="8" fill="url(#g-screenshot-2)" stroke="#00EB88" stroke-opacity="0.6" stroke-width="1.5"/>
-  <rect x="1" y="1" width="1598" height="998" rx="8" fill="url(#p-screenshot-2)"/>
-  <rect x="1" y="1" width="1598" height="998" rx="8" fill="url(#r-screenshot-2)"/>
+  <rect x="1" y="1" width="1598" height="998" fill="url(#g-screenshot-2)" stroke="#00EB88" stroke-opacity="0.6" stroke-width="1.5"/>
+  <rect x="1" y="1" width="1598" height="998" fill="url(#p-screenshot-2)"/>
+  <rect x="1" y="1" width="1598" height="998" fill="url(#r-screenshot-2)"/>
   <text x="800" y="515" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="45" letter-spacing="0.12em" fill="#A3A3A3">SCREENSHOT 2</text>
        <rect x="656" y="545" width="288" height="1" fill="#00EB88" fill-opacity="0.5"/>
 </svg>

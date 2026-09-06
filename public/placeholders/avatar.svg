@@ -13,7 +13,7 @@
     </linearGradient>
   </defs>
   <circle cx="200" cy="200" r="198.5" fill="url(#g-avatar)" stroke="#00EB88" stroke-opacity="0.6" stroke-width="1.5"/>
-  <rect x="1" y="1" width="398" height="398" rx="8" fill="url(#p-avatar)" clip-path="circle(198px at 200px 200px)"/>
-  <rect x="1" y="1" width="398" height="398" rx="8" fill="url(#r-avatar)" clip-path="circle(198px at 200px 200px)"/>
+  <rect x="1" y="1" width="398" height="398" fill="url(#p-avatar)" clip-path="circle(198px at 200px 200px)"/>
+  <rect x="1" y="1" width="398" height="398" fill="url(#r-avatar)" clip-path="circle(198px at 200px 200px)"/>
   <g fill="none" stroke="#00EB88" stroke-opacity="0.5" stroke-width="1"><circle cx="200" cy="200" r="112.00000000000001"/><ellipse cx="200" cy="200" rx="48" ry="112.00000000000001"/><ellipse cx="200" cy="200" rx="112.00000000000001" ry="40"/></g>
 </svg>

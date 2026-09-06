@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1200" viewBox="0 0 1800 1200" role="img" aria-label="Placeholder image: Award photo">
+  <defs>
+    <pattern id="p-award-photo" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M 48 0 L 0 0 0 48" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="r-award-photo" cx="50%" cy="100%" r="80%">
+      <stop offset="0" stop-color="#00EB88" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#00EB88" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="g-award-photo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#141414"/>
+      <stop offset="1" stop-color="#0f0f0f"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="1798" height="1198" fill="url(#g-award-photo)" stroke="#00EB88" stroke-opacity="0.6" stroke-width="1.5"/>
+  <rect x="1" y="1" width="1798" height="1198" fill="url(#p-award-photo)"/>
+  <rect x="1" y="1" width="1798" height="1198" fill="url(#r-award-photo)"/>
+  <text x="900" y="618.3333333333334" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="55" letter-spacing="0.12em" fill="#A3A3A3">AWARD PHOTO</text>
+       <rect x="724" y="655" width="352" height="1" fill="#00EB88" fill-opacity="0.5"/>
+</svg>

@@ -4,31 +4,40 @@ import path from "node:path";
 import matter from "gray-matter";
 import { z } from "zod";
 import { extractHeadings } from "@/lib/mdx";
+import { awards as awardsData } from "@content/awards";
 import { exec as execData } from "@content/exec";
 import { faq as faqData } from "@content/faq";
 import { isMediaKey } from "@content/media";
+import { process as processData } from "@content/process";
 import { recruitmentTimeline as recruitmentData } from "@content/recruitment";
+import { services as servicesData } from "@content/services";
 import { roles as rolesData } from "@content/roles";
 import { stats as statsData } from "@content/stats";
 import { studentsPage as studentsData } from "@content/students";
 import { testimonials as testimonialsData } from "@content/testimonials";
 import {
+  awardSchema,
   execMemberSchema,
   faqItemSchema,
   privacyFrontmatterSchema,
+  processStepSchema,
   projectFrontmatterSchema,
   recruitmentStepSchema,
   roleSchema,
+  serviceSchema,
   statSchema,
   studentsPageSchema,
   testimonialSchema,
+  type Award,
   type ExecMember,
   type FaqAudience,
   type FaqItem,
   type PrivacyFrontmatter,
+  type ProcessStep,
   type ProjectFrontmatter,
   type RecruitmentStep,
   type Role,
+  type Service,
   type Stat,
   type StudentsPage,
   type Testimonial,
@@ -218,6 +227,26 @@ export function getStats({ publishedOnly = IS_PRODUCTION } = {}): Stat[] {
   return publishedOnly ? items.filter((s) => s.published) : items;
 }
 
+export function getServices(): Service[] {
+  const items = parseAll(serviceSchema, servicesData, "content/services.ts");
+  assertUnique(items, (s) => s.id, "content/services.ts");
+  return items;
+}
+
+export function getProcess(): ProcessStep[] {
+  const items = parseAll(processStepSchema, processData, "content/process.ts");
+  assertUnique(items, (s) => s.id, "content/process.ts");
+  return items;
+}
+
+/** Published awards (plus unpublished ones in development, see IS_PRODUCTION). */
+export function getAwards({ publishedOnly = IS_PRODUCTION } = {}): Award[] {
+  const items = parseAll(awardSchema, awardsData, "content/awards.ts");
+  assertUnique(items, (a) => a.id, "content/awards.ts");
+  items.forEach((a) => a.photos.forEach((p) => assertMediaRef(p.src, "content/awards.ts")));
+  return publishedOnly ? items.filter((a) => a.published) : items;
+}
+
 export function getStudentsPage(): StudentsPage {
   const file = "content/students.ts";
   const result = studentsPageSchema.safeParse(studentsData);
@@ -245,6 +274,9 @@ export function validateAllContent(): { counts: Record<string, number> } {
       faq: getFaq().length,
       testimonials: getTestimonials({ publishedOnly: false }).length,
       stats: getStats({ publishedOnly: false }).length,
+      services: getServices().length,
+      process: getProcess().length,
+      awards: getAwards({ publishedOnly: false }).length,
       recruitmentTimeline: getRecruitmentTimeline().length,
       studentsPage: Object.values(getStudentsPage()).reduce((n, list) => n + list.length, 0),
       privacySections: extractHeadings(getPrivacyPolicy().body).length,

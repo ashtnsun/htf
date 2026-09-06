@@ -93,6 +93,8 @@ export const faqItemSchema = z.object({
 
 export const testimonialSchema = z.object({
   id: slugSchema,
+  /** Short green line above the quote, e.g. "Impressive showcase!". */
+  headline: z.string().min(1).optional(),
   quote: z.string().min(1),
   name: z.string().min(1),
   /** Role and organization, e.g. "Executive Director, Example Nonprofit". */
@@ -108,6 +110,42 @@ export const statSchema = z.object({
   value: z.string().min(1),
   label: z.string().min(1),
   /** Hidden until the number is confirmed. */
+  published: z.boolean().default(false),
+});
+
+/** "What we do" panel on the home page. Icon names resolve to lucide icons in the component. */
+export const serviceSchema = z.object({
+  id: slugSchema,
+  /** Supports the Headline accent syntax: *word* renders green. */
+  title: z.string().min(1),
+  description: z.string().min(1),
+  icon: z.enum(["heart-handshake", "layers", "rocket"]),
+});
+
+/** One step of the project process (home page scroll section). */
+export const processStepSchema = z.object({
+  id: slugSchema,
+  title: z.string().min(1),
+  description: z.string().min(1),
+  /** Wireframe illustration shown while the step is active. */
+  graphic: z.enum(["radar", "network", "terminal", "globe"]),
+});
+
+export const awardPhotoSchema = z.object({
+  src: mediaRefSchema,
+  alt: z.string().min(1),
+  caption: z.string().min(1).optional(),
+});
+
+/** An award or recognition, shown in the Impact section and later on /about. */
+export const awardSchema = z.object({
+  id: slugSchema,
+  issuer: z.string().min(1),
+  title: z.string().min(1),
+  /** Display date, e.g. "April 2025". */
+  date: z.string().min(1),
+  photos: z.array(awardPhotoSchema).default([]),
+  /** Hidden until confirmed. */
   published: z.boolean().default(false),
 });
 
@@ -184,6 +222,13 @@ export type Testimonial = z.infer<typeof testimonialSchema>;
 export type TestimonialInput = z.input<typeof testimonialSchema>;
 export type Stat = z.infer<typeof statSchema>;
 export type StatInput = z.input<typeof statSchema>;
+export type Service = z.infer<typeof serviceSchema>;
+export type ServiceInput = z.input<typeof serviceSchema>;
+export type ProcessStep = z.infer<typeof processStepSchema>;
+export type ProcessStepInput = z.input<typeof processStepSchema>;
+export type AwardPhoto = z.infer<typeof awardPhotoSchema>;
+export type Award = z.infer<typeof awardSchema>;
+export type AwardInput = z.input<typeof awardSchema>;
 export type RecruitmentStep = z.infer<typeof recruitmentStepSchema>;
 export type RecruitmentStepInput = z.input<typeof recruitmentStepSchema>;
 export type RoleIcon = z.infer<typeof roleIconSchema>;

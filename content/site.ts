@@ -24,7 +24,8 @@ export const site = {
   socials: {
     instagram: "https://www.instagram.com/hackthefuturepurdue/",
     instagramHandle: "@hackthefuturepurdue",
-    linkedin: "TODO: LinkedIn page URL",
+    // TODO(ashton): confirm; found by searching for the club's LinkedIn company page.
+    linkedin: "https://www.linkedin.com/company/hack-the-future-at-purdue",
     email: "TODO: club contact email",
   },
   season: {
