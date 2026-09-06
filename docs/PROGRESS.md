@@ -28,7 +28,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [x] Session 2: Home complete (featured cards final treatment, who-we-serve copy, stats + testimonials band with ghost text and dotted map, FAQ, contact CTA polish)
 - [x] Session 2: Students page (roles rows with Apply buttons, recruitment timeline, how we work, what you'll get, student FAQ, CTA)
-- [ ] Session 3: Projects index (year filter chips) + detail (MDX body via next-mdx-remote, gallery lightbox, live link, team grid, more-projects rail), 8 placeholder projects
+- [x] Session 3: Projects index (year filter chips) + detail (MDX body via next-mdx-remote, gallery lightbox, live link, team grid, more-projects rail), 8 placeholder projects
 - [ ] Session 4: Contact form (Supabase or mailto v1), Privacy rewrite, 404 polish, SEO/OG image (PNG), deploy to the real domain
 
 ### Phase 2 — Application portal (Sessions 5–8)
@@ -42,6 +42,121 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+
+## Session 3 — 2026-09-05
+
+**Built:** Projects index and detail pages (Phase 1, Session 3 above) with eight placeholder
+projects. Commits: `feat(content)`, `feat(projects)`, `fix(ui)`, `chore(scripts)` plus this
+log. Not pushed.
+
+**Verified:** `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm build` clean; all eight
+detail pages prerender through `generateStaticParams`. Screenshots in
+`docs/screenshots/session-3/` (production build; `*-dialog.png` is the open lightbox).
+`pnpm a11y --routes=/,/projects,/projects/placeholder-project-1 --dialog=Enlarge`: 0 violations
+at 1440 and 390, with the drawer open and with the lightbox open, on the production build and
+on the dev server.
+
+**Decisions made this session**
+
+1. MDX bodies render on the server with `next-mdx-remote/rsc` (+ `remark-gfm`) through
+   `<ProjectBody>`. Typography is the `rich-text` utility in `globals.css` (display-face
+   h2/h3, muted paragraphs, green square bullets, `01`-style numbered steps, green-rule
+   blockquote). h2/h3 get ids from `slugify()` in `src/lib/mdx.ts`; `extractHeadings()` reads
+   the same ids from the source for the "On this page" list. JS expressions in MDX stay
+   blocked (library default), so a stray `{…}` in copy is stripped, never executed.
+2. Year filter: `<ProjectsExplorer>` (client) reads `?year=` with `useSearchParams` and writes
+   it with `history.replaceState` (shareable URL, no navigation, no server round trip). The
+   page wraps it in `<Suspense>` with the unfiltered `<ProjectsExplorerView>` as the fallback,
+   so the static HTML lists every project and `/projects` stays prerendered. Chips are buttons
+   with `aria-pressed`, the count line is `aria-live`, an unknown `?year=` shows the empty
+   state with a reset chip, and cards fade/reflow with Framer Motion `layout` (off under
+   reduced motion).
+3. The gallery lightbox is a native modal `<dialog>` (`showModal()`): the browser traps focus,
+   closes on Escape, keeps the page inert and returns focus to the thumbnail. The component
+   adds arrow/Home/End keys, prev/next buttons (beside the image from `md`, in the footer row
+   on phones), a counter, the caption, body scroll lock, backdrop-click close and a fade-in
+   (`--animate-fade-in`, ~0 under reduced motion).
+4. Project schema: `gallery` entries are media keys or `{ src, alt, caption }` objects (bare
+   keys get "<title>, screenshot n of m" as alt); new optional `stack: string[]` renders the
+   "Built with" chips. `Project.gallery` is normalised in the loader; `coverSrc` /
+   `gallerySrcs` are gone because `<Media>` resolves keys itself.
+5. Detail page order: back link + hero (nonprofit eyebrow, title, summary, Year / Location /
+   Type facts, "Visit the live site" split button when `liveUrl` exists) → 16:9 cover →
+   write-up with a sticky aside (On this page, Built with, Partner; on phones the jump links
+   sit above the write-up) → Gallery → Team → More projects (same cycle first, via
+   `getRelatedProjects`) → the "Work with us" ContactCta with a "For non-profits" secondary
+   button. Metadata: "<project> · <nonprofit>", the summary, the cover as OG image.
+6. `Section` no longer clips overflow by default. An `overflow: hidden` ancestor becomes the
+   scroll container for `position: sticky` children, which pushed the detail aside (and the
+   Students roles heading) down by their `top` offset. Clipping is now opt-in (`clip`,
+   defaulting to true when `ghost` is set, which the Impact band needs for its ghost word and
+   map).
+7. `ProjectCard` takes `headingLevel` (h2 on the index, where the cards are the page's
+   sections; h3 under section headings elsewhere) and shows a "Draft" badge on unpublished
+   projects (dev only, production filters them). `toProjectCardData()` strips MDX bodies
+   before data reaches the client component. `TAG_LABEL` is exported for the detail facts.
+8. Placeholder covers come in four ornament variants (globe, checkerboard, zigzag, brackets)
+   drawn by `scripts/gen-placeholders.mjs` at 4:3, so a grid of placeholders has rhythm and
+   the featured 4:5 and hero 16:9 crops stay gentle; gallery frames are numbered. The SVGs are
+   tracked in git; `pnpm build` now runs `gen:placeholders` first so they never drift from the
+   script.
+9. New primitives: `Chip` / `ChipButton` (eyebrow-style label chips and 44px filter buttons),
+   `TeamGrid`, `Gallery`, `MoreProjects`; `PageHero` gained a `back` link. All are on `/dev/ui`.
+10. `pnpm a11y` and `pnpm screenshots` accept `--dialog=<button name>`: where such a button
+    exists it is clicked and the page is scanned / captured again with the dialog open.
+11. Placeholder facts: the eight 2025–26 projects are placed one per state/country from the
+    Instagram graphics (Indiana, Illinois, California, Pennsylvania, United Kingdom, India,
+    Ghana, Botswana) with `[TODO: city]`; the one-per-place split and the tags are assumptions
+    for Ashton to confirm. Four are `featured`, so Home now shows four cards.
+
+**Improvements over the Framer template (as asked)**
+
+- The template's detail page is a title and three paragraphs; ours adds a facts row, live
+  link, on-page navigation, tech stack, a keyboard-complete lightbox gallery, the team and
+  related projects.
+- The index has a real filter (shareable URL, live result count) instead of an unfiltered
+  stack; cards carry nonprofit, cycle, location and type, and are h2s in the page outline.
+- All controls are ≥ 44px, chips expose `aria-pressed`, the lightbox is a proper modal dialog
+  with focus restore and Escape, and images sit in fixed-ratio boxes so nothing jumps.
+
+**Known gaps**
+
+- No placeholder has a `liveUrl` or a LinkedIn URL, so the "Visit the live site" button and
+  the team LinkedIn links only show on `/dev/ui` until real data lands.
+- Gallery alt text defaults to "<title>, screenshot n of m"; real screenshots need real alt
+  text (and captions) in frontmatter.
+- The year filter has one cycle (2025–26) until other cycles are added; the empty state only
+  appears for an unknown `?year=`.
+- The OG image is still the SVG placeholder cover (Session 4 makes a PNG).
+- MDX syntax errors surface at `next build` (page render), not in `pnpm validate:content`.
+
+**TODOs for Ashton (content and accounts)**
+
+- Everything from Sessions 1–2 still stands.
+- `content/projects/*.mdx`: the eight 2025–26 nonprofits (title, nonprofit, city, tags,
+  summary, live URL, stack, team names + LinkedIn, write-up, screenshots with alt text).
+  Rename the files to real slugs; covers and screenshots go through `content/media.ts`.
+- Confirm the one-per-place assumption (4 U.S. states + 4 countries = 8 nonprofits) and
+  whether earlier cycles should be listed.
+- Projects index intro copy (`src/app/projects/page.tsx`).
+
+## Next session starts with
+
+**Session 4: Contact, Privacy, 404, SEO, deploy.** Read `docs/PLAN.md` §3 (`/contact`,
+`/privacy`) and §6 Phase 1, this file, and `node_modules/next/dist/docs/` for `opengraph-image`
+and server actions, run `pnpm dev`, then:
+
+1. `/contact`: short form (name, email, I am a student / nonprofit / other, message). v1 can
+   be a `mailto:` fallback until the Supabase project exists; if Supabase is set up, a server
+   action writing to `contact_messages` with Zod validation. Direct email + socials next to
+   it. Remove the `StubSection`.
+2. `/privacy`: rewrite per PLAN §3 (what the portal will collect, Supabase and Vercel as
+   processors) as draft copy marked `[TODO: legal review]`; keep the effective date in content.
+3. `not-found` polish; SEO pass: `opengraph-image` PNG via `next/og` with the wordmark,
+   per-page metadata check, sitemap/robots review.
+4. Deploy: GitHub org repo + Vercel project (Phase 0 leftover), then the domain.
+5. Screenshots to `docs/screenshots/session-4/`, `pnpm a11y --routes=/contact,/privacy`,
+   update this file.
 
 ## Session 2 — 2026-09-04
 
@@ -139,22 +254,6 @@ both the production build and the dev server.
 - Who-we-serve nonprofit panel: add a cost/terms line once confirmed.
 - Decide whether the Impact band should mark partner locations (needs city/country per
   project; planned with the Phase 3 globe).
-
-## Next session starts with
-
-**Session 3: Projects index + detail.** Read `docs/PLAN.md` §3 (`/projects`), this file, and
-`node_modules/next/dist/docs/` for MDX rendering in the App Router, run `pnpm dev`, then:
-
-1. Seed eight placeholder projects in `content/projects/` (the 2025–26 nonprofits, names and
-   locations as `[TODO]`), with covers in `content/media.ts`; mark four `featured`.
-2. `/projects`: intro, year filter chips (client leaf, `?year=` search param or local state),
-   grid of `ProjectCard` (`size="default"`), empty state. Remove the `StubSection`.
-3. `/projects/[slug]`: hero (nonprofit, title, summary, year/location/tags, live link
-   button), MDX body via `next-mdx-remote/rsc` with the site's typography, gallery with a
-   lightbox (client leaf, keyboard + focus trap like `NavDrawer`), team grid, "More projects"
-   rail, `generateMetadata`. Keep unpublished projects dev-only.
-4. Screenshots to `docs/screenshots/session-3/`, `pnpm a11y --routes=/projects,/projects/<slug>`,
-   update this file.
 
 ## Session 1 — 2026-09-04
 
