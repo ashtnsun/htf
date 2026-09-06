@@ -43,7 +43,7 @@ export function PageHero({
       ) : null}
       <RevealGroup
         mode="mount"
-        className="relative container-max container-x pt-14 pb-20 md:pt-20 md:pb-28 lg:border-x lg:border-line"
+        className="relative container-max container-x pt-14 pb-20 md:pt-20 md:pb-28 lg:frame-marks lg:mt-6 lg:border-x lg:border-line"
       >
         {back ? (
           <Reveal className="mb-6">

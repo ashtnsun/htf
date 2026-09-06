@@ -21,6 +21,7 @@ import { site } from "@content/site";
 import { InstagramIcon, LinkedinIcon } from "@/components/icons/Social";
 import { Logo } from "@/components/brand/Logo";
 import { Eyebrow } from "@/components/ui/Eyebrow";
+import { SplitButton } from "@/components/ui/SplitButton";
 import { cn, isTodo } from "@/lib/utils";
 
 const ICONS: Record<string, LucideIcon> = {
@@ -132,7 +133,7 @@ export function NavDrawer({ cta }: NavDrawerProps) {
         aria-controls="site-drawer"
         aria-label="Open menu"
         onClick={() => setOpen(true)}
-        className="flex w-14 items-center justify-center border-r border-line text-text transition-colors hover:bg-surface focus-visible:outline-offset-[-3px] lg:hidden"
+        className="flex w-14 items-center justify-center border-r border-line text-text transition-colors duration-200 hover:bg-surface-2 hover:text-green focus-visible:outline-offset-[-3px] lg:hidden"
       >
         <Menu className="size-5" aria-hidden="true" />
       </button>
@@ -165,7 +166,7 @@ export function NavDrawer({ cta }: NavDrawerProps) {
                     animate={{ x: 0 }}
                     exit={{ x: "-100%" }}
                     transition={transition}
-                    className="absolute inset-y-0 left-0 flex w-[min(100%,26rem)] flex-col border-r border-line bg-bg"
+                    className="absolute inset-y-0 left-0 flex w-[min(100%,26rem)] flex-col border-r border-line-strong glass [--glass-alpha:88%]"
                   >
                     <div className="flex h-(--header-h) shrink-0 items-stretch border-b border-line">
                       <button
@@ -197,8 +198,10 @@ export function NavDrawer({ cta }: NavDrawerProps) {
                                   onClick={close}
                                   aria-current={active ? "page" : undefined}
                                   className={cn(
-                                    "flex min-h-16 items-center gap-3 px-4 py-4 text-sm font-medium transition-colors focus-visible:outline-offset-[-3px]",
-                                    active ? "bg-surface text-green" : "text-text hover:bg-surface",
+                                    "hover-corners flex min-h-16 items-center gap-3 px-4 py-4 text-sm font-medium transition-colors duration-200 focus-visible:outline-offset-[-3px]",
+                                    active
+                                      ? "bg-surface-2 text-green"
+                                      : "text-text hover:bg-surface-2",
                                   )}
                                 >
                                   <Icon
@@ -213,19 +216,11 @@ export function NavDrawer({ cta }: NavDrawerProps) {
                         </ul>
                       </nav>
 
-                      <p className="mt-10 font-display text-h3 leading-tight font-medium text-text">
-                        Software for good,
-                        <br />
-                        <span className="text-green">built at Purdue.</span>
-                      </p>
-
-                      <Link
-                        href={cta.href}
-                        onClick={close}
-                        className="mt-6 inline-flex h-12 items-center rounded-sm bg-green px-6 text-sm font-medium text-bg"
-                      >
-                        {cta.label}
-                      </Link>
+                      <div className="mt-8">
+                        <SplitButton href={cta.href} onClick={close} size="lg">
+                          {cta.label}
+                        </SplitButton>
+                      </div>
                     </div>
 
                     <div className="shrink-0 border-t border-line px-5 py-6">
@@ -240,7 +235,7 @@ export function NavDrawer({ cta }: NavDrawerProps) {
                               target={href.startsWith("http") ? "_blank" : undefined}
                               rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
                               aria-label={label}
-                              className="flex size-11 items-center justify-center rounded-full border border-line-strong text-text transition-colors hover:border-mint hover:text-mint"
+                              className="flex size-11 items-center justify-center border border-line-strong text-text transition-colors duration-200 hover:border-green hover:text-green"
                             >
                               <Icon className="size-4.5" />
                             </a>

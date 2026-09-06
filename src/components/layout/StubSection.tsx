@@ -11,7 +11,7 @@ export function StubSection({ phase, items }: StubSectionProps) {
         {items.map((item) => (
           <li
             key={item}
-            className="rounded-md border border-dashed border-line-strong px-5 py-6 text-sm text-muted"
+            className="border border-dashed border-line-strong px-5 py-6 text-sm text-muted"
           >
             {item}
           </li>
