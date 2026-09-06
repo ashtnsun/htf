@@ -1,30 +1,40 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { FeaturedProjects } from "@/components/home/FeaturedProjects";
 import { Hero } from "@/components/home/Hero";
 import { ImpactBand } from "@/components/home/ImpactBand";
+import { Process } from "@/components/home/Process";
+import { WhatWeDo } from "@/components/home/WhatWeDo";
 import { WhoWeServe } from "@/components/home/WhoWeServe";
 import { ContactCta } from "@/components/layout/ContactCta";
 import { FaqSection } from "@/components/layout/FaqSection";
-import { getFaq, getFeaturedProjects, getStats, getTestimonials } from "@/lib/content";
+import {
+  getAwards,
+  getFaq,
+  getProcess,
+  getServices,
+  getStats,
+  getTestimonials,
+} from "@/lib/content";
 
 export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 const linkClass =
-  "text-text underline decoration-green/70 underline-offset-4 transition-colors hover:text-green";
+  "text-text underline decoration-green/70 underline-offset-4 transition-colors duration-200 hover:text-green";
 
 /**
- * Home, in the Framer's order: hero → featured projects → who we serve → impact band
- * (stats + testimonials, hidden until published) → FAQ → contact CTA. Every section reads
- * from content/ and content/site.ts; nothing here is hard-coded except section copy.
+ * Home (order from the 2026-09-06 audit): hero → what we do → how it works (scroll-driven
+ * process) → impact (stats, testimonials, awards; hidden until published) → who we serve →
+ * FAQ → contact CTA. Every section reads from content/ and content/site.ts; nothing here is
+ * hard-coded except section copy.
  */
 export default function HomePage() {
   return (
     <>
       <Hero />
-      <FeaturedProjects projects={getFeaturedProjects(4)} />
+      <WhatWeDo services={getServices()} />
+      <Process steps={getProcess()} />
+      <ImpactBand stats={getStats()} testimonials={getTestimonials()} awards={getAwards()} />
       <WhoWeServe />
-      <ImpactBand stats={getStats()} testimonials={getTestimonials()} />
       <FaqSection
         items={getFaq("home")}
         aside={

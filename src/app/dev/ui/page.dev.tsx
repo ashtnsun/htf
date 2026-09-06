@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Logo } from "@/components/brand/Logo";
+import { PixelDino } from "@/components/brand/PixelDino";
+import { ProcessGraphic } from "@/components/home/ProcessGraphic";
 import { Globe } from "@/components/home/Globe";
 import { Gallery } from "@/components/projects/Gallery";
 import { ProjectCard } from "@/components/projects/ProjectCard";
@@ -98,8 +100,8 @@ export default function UiKitPage() {
       <Block title="Colour tokens">
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-5">
           {TOKENS.map(([name, hex]) => (
-            <li key={name} className="rounded-md border border-line p-3">
-              <div className="h-12 rounded-sm border border-line" style={{ background: hex }} />
+            <li key={name} className="border border-line p-3">
+              <div className="h-12 border border-line" style={{ background: hex }} />
               <p className="mt-2 text-sm">{name}</p>
               <p className="text-xs text-muted">{hex}</p>
             </li>
@@ -128,7 +130,7 @@ export default function UiKitPage() {
                     {ratio.toFixed(2)} {ratio >= 4.5 ? "AA" : ratio >= 3 ? "AA large" : "fail"}
                   </td>
                   <td className="py-2">
-                    <span className="rounded-sm px-2 py-1" style={{ color: fg, background: bg }}>
+                    <span className="px-2 py-1" style={{ color: fg, background: bg }}>
                       Sample text
                     </span>
                   </td>
@@ -236,7 +238,7 @@ export default function UiKitPage() {
           grid
           ghost="Non-profits"
           padding="sm"
-          className="rounded-md border border-line"
+          className="border border-line"
           contain={false}
         >
           <div className="px-8 py-10">
@@ -253,7 +255,7 @@ export default function UiKitPage() {
         <div className="grid gap-6 sm:grid-cols-3">
           <Card>
             <p className="text-body-lg">Static card</p>
-            <p className="mt-2 text-sm text-muted">Surface, hairline border, 8px radius.</p>
+            <p className="mt-2 text-sm text-muted">Surface, hairline border, square corners.</p>
           </Card>
           <Card href="/projects" padding="none" className="group">
             <div className="relative aspect-video">
@@ -269,7 +271,37 @@ export default function UiKitPage() {
           </Card>
           <Card padding="lg" interactive>
             <p className="text-body-lg">Interactive (hover)</p>
+            <p className="mt-2 text-sm text-muted">
+              Corner brackets lock on, the border brightens, nothing moves.
+            </p>
           </Card>
+        </div>
+      </Block>
+
+      <Block title="Glass + hover-corners + frame-marks (the surface language)">
+        <div className="relative overflow-hidden border border-line p-8">
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-[radial-gradient(40%_60%_at_30%_50%,rgba(3,198,82,0.5),transparent)]"
+          />
+          <div className="relative grid gap-6 sm:grid-cols-3">
+            <div className="border border-line glass p-6">
+              <p className="text-body-lg">glass</p>
+              <p className="mt-2 text-sm text-muted">
+                Elevated surfaces: header, drawer, footer, tiles.
+              </p>
+            </div>
+            <a href="#" className="hover-corners block border border-line bg-surface p-6">
+              <p className="text-body-lg">hover-corners</p>
+              <p className="mt-2 text-sm text-muted">Hover or focus me.</p>
+            </a>
+            <div className="frame-marks border border-line p-6">
+              <p className="text-body-lg">frame-marks</p>
+              <p className="mt-2 text-sm text-muted">
+                Crosshairs at the corners of framed containers.
+              </p>
+            </div>
+          </div>
         </div>
       </Block>
 
@@ -301,17 +333,31 @@ export default function UiKitPage() {
         </div>
       </Block>
 
-      <Block title="TestimonialCard">
-        <ul className="grid gap-4 md:grid-cols-2">
+      <Block title="TestimonialCard (grid, and the two band widths)">
+        <ul className="flex flex-wrap items-stretch gap-4">
           <TestimonialCard
+            layout="band"
             testimonial={{
-              id: "sample",
+              id: "sample-wide",
+              headline: "Sample headline",
               quote:
-                "Sample quote text. Real quotes come from content/testimonials.ts once approved.",
+                "Sample quote text long enough to earn the wide card. Real quotes come from content/testimonials.ts once approved.",
               name: "Sample name",
               title: "Sample title, organization",
               avatar: "avatar.placeholder",
               kind: "nonprofit",
+              published: false,
+            }}
+          />
+          <TestimonialCard
+            layout="band"
+            testimonial={{
+              id: "sample-narrow",
+              quote: "A short quote gets the narrow card.",
+              name: "Sample name",
+              title: "Sample role, year",
+              avatar: "avatar.placeholder",
+              kind: "student",
               published: false,
             }}
           />
@@ -348,13 +394,31 @@ export default function UiKitPage() {
         />
       </Block>
 
-      <Block title="StatTile">
-        <dl className="grid gap-4 sm:grid-cols-4">
-          <StatTile value="500+" label="Nonprofit pool" />
-          <StatTile value="8" label="Nonprofits in 2025–26" />
-          <StatTile value="4" label="U.S. states" />
-          <StatTile value="4" label="Countries" />
+      <Block title="StatTile (numbers count up on first view; three per row on the home page)">
+        <dl className="grid gap-4 sm:grid-cols-3">
+          <StatTile value="500+" label="Nonprofit pool" index={0} />
+          <StatTile value="8" label="Nonprofits in 2025–26" index={1} />
+          <StatTile value="1,200" label="Grouped number" index={2} />
         </dl>
+      </Block>
+
+      <Block title="ProcessGraphic (wireframes for the four process steps)">
+        <div className="grid gap-4 sm:grid-cols-4">
+          {(["radar", "network", "terminal", "globe"] as const).map((graphic) => (
+            <ProcessGraphic
+              key={graphic}
+              graphic={graphic}
+              active
+              className="border border-line glass p-3"
+            />
+          ))}
+        </div>
+      </Block>
+
+      <Block title="PixelDino (footer; rises into view once, blinks every 6 s)">
+        <div className="max-w-[10rem]">
+          <PixelDino />
+        </div>
       </Block>
 
       <Block title="Chip + ChipButton (tags, stack, year filters)">
