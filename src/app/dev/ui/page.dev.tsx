@@ -9,12 +9,14 @@ import { Card } from "@/components/ui/Card";
 import { Chip, ChipButton } from "@/components/ui/Chip";
 import { DottedMap } from "@/components/ui/DottedMap";
 import { Eyebrow } from "@/components/ui/Eyebrow";
+import { ChoiceField, TextAreaField, TextField } from "@/components/ui/Field";
 import { Headline } from "@/components/ui/Headline";
 import { Media } from "@/components/ui/Media";
 import { Section } from "@/components/ui/Section";
 import { SplitButton } from "@/components/ui/SplitButton";
 import { StatTile } from "@/components/ui/StatTile";
 import { TestimonialCard } from "@/components/ui/TestimonialCard";
+import { AUDIENCES } from "@/lib/contact/schema";
 
 export const metadata: Metadata = { title: "UI kit (dev)", robots: { index: false } };
 
@@ -190,6 +192,42 @@ export default function UiKitPage() {
               Bar (header)
             </SplitButton>
           </div>
+          <SplitButton type="submit">Submit (button)</SplitButton>
+          <SplitButton type="button" pending>
+            Sending
+          </SplitButton>
+        </div>
+      </Block>
+
+      <Block title="Form fields (TextField, TextAreaField, ChoiceField; errors are cyan + icon)">
+        <div className="grid max-w-2xl gap-6">
+          <div className="grid gap-6 sm:grid-cols-2">
+            <TextField id="kit-name" name="name" label="Name" autoComplete="name" />
+            <TextField
+              id="kit-email"
+              name="email"
+              type="email"
+              label="Email"
+              hint="We reply here."
+              defaultValue="not-an-email"
+              error="Enter a valid email address so we can reply."
+            />
+          </div>
+          <ChoiceField
+            id="kit-audience"
+            name="audience"
+            legend="I am"
+            options={AUDIENCES}
+            defaultValue="student"
+          />
+          <TextAreaField
+            id="kit-message"
+            name="message"
+            label="Message"
+            required={false}
+            rows={3}
+            hint="Optional field: the label says so."
+          />
         </div>
       </Block>
 
