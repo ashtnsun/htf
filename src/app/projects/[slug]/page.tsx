@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { mediaSrc } from "@content/media";
 import { ContactCta } from "@/components/layout/ContactCta";
+import { OnThisPage } from "@/components/layout/OnThisPage";
 import { PageHero } from "@/components/layout/PageHero";
 import { Reveal } from "@/components/motion/Reveal";
 import { Gallery } from "@/components/projects/Gallery";
 import { MoreProjects } from "@/components/projects/MoreProjects";
-import { ProjectBody } from "@/components/projects/ProjectBody";
 import { TAG_LABEL, toProjectCardData } from "@/components/projects/ProjectCard";
 import { TeamGrid } from "@/components/projects/TeamGrid";
 import { Chip } from "@/components/ui/Chip";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Headline } from "@/components/ui/Headline";
 import { Media } from "@/components/ui/Media";
+import { MdxBody } from "@/components/ui/MdxBody";
 import { Section } from "@/components/ui/Section";
 import { SplitButton } from "@/components/ui/SplitButton";
 import { getProject, getProjects, getRelatedProjects } from "@/lib/content";
@@ -35,7 +35,8 @@ export async function generateMetadata({
   return {
     title,
     description: project.summary,
-    openGraph: { title, description: project.summary, images: [mediaSrc(project.cover)] },
+    alternates: { canonical: `/projects/${project.slug}` },
+    openGraph: { title, description: project.summary },
   };
 }
 
@@ -113,45 +114,13 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
 
       <Section aria-label="Project write-up">
         {/* Phones: jump links in a row above the write-up. lg+: the same list in the sticky aside. */}
-        {onThisPage.length > 1 ? (
-          <nav aria-label="On this page" className="mb-10 lg:hidden">
-            <p className={factLabel}>On this page</p>
-            <ul className="mt-2 flex flex-wrap gap-x-6 gap-y-1">
-              {onThisPage.map((item) => (
-                <li key={item.href}>
-                  <a
-                    href={item.href}
-                    className="inline-flex min-h-11 items-center text-sm text-muted underline-offset-4 transition-colors hover:text-text hover:underline"
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        ) : null}
+        <OnThisPage items={onThisPage} variant="row" className="mb-10" />
         <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-20">
           <article className="max-w-3xl">
-            <ProjectBody source={project.body} />
+            <MdxBody source={project.body} />
           </article>
           <aside className="space-y-10 lg:sticky lg:top-24 lg:self-start">
-            {onThisPage.length > 1 ? (
-              <nav aria-label="On this page" className="hidden lg:block">
-                <p className={factLabel}>On this page</p>
-                <ul className="mt-3 border-l border-line">
-                  {onThisPage.map((item) => (
-                    <li key={item.href}>
-                      <a
-                        href={item.href}
-                        className="-ml-px flex min-h-11 items-center border-l border-transparent pl-4 text-sm text-muted transition-colors hover:border-green hover:text-text"
-                      >
-                        {item.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
-            ) : null}
+            <OnThisPage items={onThisPage} variant="list" />
             {project.stack.length > 0 ? (
               <div>
                 <p className={factLabel}>Built with</p>

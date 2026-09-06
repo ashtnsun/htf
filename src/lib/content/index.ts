@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import { z } from "zod";
+import { extractHeadings } from "@/lib/mdx";
 import { exec as execData } from "@content/exec";
 import { faq as faqData } from "@content/faq";
 import { isMediaKey } from "@content/media";
@@ -14,6 +15,7 @@ import { testimonials as testimonialsData } from "@content/testimonials";
 import {
   execMemberSchema,
   faqItemSchema,
+  privacyFrontmatterSchema,
   projectFrontmatterSchema,
   recruitmentStepSchema,
   roleSchema,
@@ -23,6 +25,7 @@ import {
   type ExecMember,
   type FaqAudience,
   type FaqItem,
+  type PrivacyFrontmatter,
   type ProjectFrontmatter,
   type RecruitmentStep,
   type Role,
@@ -85,7 +88,7 @@ function assertMediaRef(ref: string | undefined, file: string) {
 export type ProjectImage = { src: string; alt: string; caption?: string };
 
 export type Project = Omit<ProjectFrontmatter, "gallery"> & {
-  /** MDX body without the frontmatter; rendered by <ProjectBody> on the detail page. */
+  /** MDX body without the frontmatter; rendered by <MdxBody> on the detail page. */
   body: string;
   gallery: ProjectImage[];
 };
@@ -155,6 +158,30 @@ export function getProjectYears(): string[] {
   return [...new Set(getProjects().map((p) => p.year))];
 }
 
+// ---------------------------------------------------------------- privacy policy
+
+export type PrivacyPolicy = PrivacyFrontmatter & {
+  /** MDX body without the frontmatter; rendered by <MdxBody> on /privacy. */
+  body: string;
+};
+
+let privacyCache: PrivacyPolicy | null = null;
+
+export function getPrivacyPolicy(): PrivacyPolicy {
+  if (privacyCache) return privacyCache;
+  const rel = "content/privacy.mdx";
+  const raw = fs.readFileSync(path.join(CONTENT_DIR, "privacy.mdx"), "utf8");
+  const { data, content } = matter(raw);
+  const parsed = privacyFrontmatterSchema.safeParse(data);
+  if (!parsed.success) throw new ContentError(rel, z.prettifyError(parsed.error));
+  const body = content.trim();
+  if (extractHeadings(body).length === 0) {
+    throw new ContentError(rel, "the policy needs at least one `##` section heading");
+  }
+  privacyCache = { ...parsed.data, body };
+  return privacyCache;
+}
+
 // ---------------------------------------------------------------- simple lists
 
 export function getExec(): ExecMember[] {
@@ -220,6 +247,7 @@ export function validateAllContent(): { counts: Record<string, number> } {
       stats: getStats({ publishedOnly: false }).length,
       recruitmentTimeline: getRecruitmentTimeline().length,
       studentsPage: Object.values(getStudentsPage()).reduce((n, list) => n + list.length, 0),
+      privacySections: extractHeadings(getPrivacyPolicy().body).length,
     },
   };
 }

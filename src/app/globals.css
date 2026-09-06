@@ -227,7 +227,7 @@
 
 /* Long-form typography for MDX bodies (project write-ups). Headings in the display face,
    paragraphs muted like the Framer body copy, green square bullets and numbered steps
-   like the role rows. Only used through <ProjectBody>. */
+   like the role rows. Only used through <MdxBody>. */
 @utility rich-text {
   color: var(--muted);
   font-size: 1.125rem;

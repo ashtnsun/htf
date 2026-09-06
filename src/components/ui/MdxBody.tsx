@@ -53,18 +53,19 @@ const components: Components = {
   a: MdxLink,
 };
 
-type ProjectBodyProps = {
-  /** MDX source without frontmatter (Project.body). */
+type MdxBodyProps = {
+  /** MDX source without frontmatter (Project.body, PrivacyPolicy.body). */
   source: string;
   className?: string;
 };
 
 /**
- * Renders a project's MDX write-up on the server with the site's long-form typography
- * (`rich-text` in globals.css). Headings get ids so the "On this page" list can link to them.
- * JS expressions are blocked (next-mdx-remote default), so content stays content.
+ * Renders an MDX body (project write-ups, the privacy policy) on the server with the site's
+ * long-form typography (`rich-text` in globals.css). Headings get ids so an "On this page"
+ * list can link to them. JS expressions are blocked (next-mdx-remote default), so content
+ * stays content.
  */
-export function ProjectBody({ source, className }: ProjectBodyProps) {
+export function MdxBody({ source, className }: MdxBodyProps) {
   return (
     <div className={cn("rich-text", className)}>
       <MDXRemote

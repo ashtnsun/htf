@@ -157,7 +157,19 @@ export const studentsPageSchema = z.object({
   perks: z.array(perkSchema).min(1),
 });
 
+/** Frontmatter of content/privacy.mdx. YAML turns an unquoted date into a Date; both work. */
+export const privacyFrontmatterSchema = z.object({
+  /** ISO date (YYYY-MM-DD) the current text took effect; shown on the page. */
+  effectiveDate: z.preprocess(
+    (value) => (value instanceof Date ? value.toISOString().slice(0, 10) : value),
+    z.iso.date(),
+  ),
+  /** True once someone with legal knowledge has reviewed the text (hides the draft badge). */
+  reviewed: z.boolean().default(false),
+});
+
 export type ProjectFrontmatter = z.infer<typeof projectFrontmatterSchema>;
+export type PrivacyFrontmatter = z.infer<typeof privacyFrontmatterSchema>;
 export type GalleryItem = z.infer<typeof galleryItemSchema>;
 export type TeamMember = z.infer<typeof teamMemberSchema>;
 export type ProjectTag = z.infer<typeof projectTagSchema>;
