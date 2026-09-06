@@ -1,5 +1,7 @@
 // Full-page screenshots of key routes at desktop and phone widths, plus the open mobile drawer.
-// Usage: pnpm screenshots [--base http://localhost:3000] [--out docs/screenshots/session-1] [--routes /,/projects]
+// Usage: pnpm screenshots [--base http://localhost:3000] [--out docs/screenshots/session-1] [--routes /,/projects] [--dialog "Enlarge"]
+// `--dialog` names a button (accessible-name substring); where it exists it is clicked and a
+// viewport shot of the open dialog is saved as <route>-<viewport>-dialog.png.
 import fs from "node:fs";
 import path from "node:path";
 import { chromium } from "playwright";
@@ -15,6 +17,7 @@ const OUT = args.out ?? "docs/screenshots/session-1";
 const ROUTES = String(args.routes ?? "/")
   .split(",")
   .map((r) => (r === "home" ? "/" : r.startsWith("/") ? r : `/${r}`));
+const DIALOG = typeof args.dialog === "string" ? args.dialog : null;
 const VIEWPORTS = [
   { name: "1440", width: 1440, height: 900 },
   { name: "390", width: 390, height: 844, mobile: true },
@@ -51,6 +54,18 @@ for (const vp of VIEWPORTS) {
     const file = path.join(OUT, `${slug}-${vp.name}.png`);
     await page.screenshot({ path: file, fullPage: true });
     console.log("saved", file);
+    if (DIALOG) {
+      const trigger = page.getByRole("button", { name: DIALOG }).first();
+      if ((await trigger.count()) > 0) {
+        await trigger.scrollIntoViewIfNeeded();
+        await trigger.click();
+        await page.waitForTimeout(700);
+        const dialogFile = path.join(OUT, `${slug}-${vp.name}-dialog.png`);
+        await page.screenshot({ path: dialogFile });
+        console.log("saved", dialogFile);
+        await page.keyboard.press("Escape");
+      }
+    }
   }
   if (vp.mobile) {
     await page.goto(`${BASE}/`, { waitUntil: "load" });

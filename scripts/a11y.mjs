@@ -1,5 +1,7 @@
 // axe-core accessibility scan of routes (desktop + phone, including the open drawer).
-// Usage: pnpm a11y [--base http://localhost:3000] [--routes /,/projects,/students]
+// Usage: pnpm a11y [--base http://localhost:3000] [--routes /,/projects,/students] [--dialog "Enlarge"]
+// `--dialog` names a button (accessible-name substring); on routes where it exists it is
+// clicked and the page is scanned again with that dialog open (e.g. the gallery lightbox).
 // Exits 1 when any violation is found so it can gate CI later.
 import { AxeBuilder } from "@axe-core/playwright";
 import { chromium } from "playwright";
@@ -14,6 +16,7 @@ const BASE = args.base ?? process.env.BASE_URL ?? "http://localhost:3000";
 const ROUTES = String(args.routes ?? "/")
   .split(",")
   .map((r) => (r === "home" ? "/" : r.startsWith("/") ? r : `/${r}`));
+const DIALOG = typeof args.dialog === "string" ? args.dialog : null;
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"];
 
 const browser = await chromium.launch();
@@ -43,6 +46,16 @@ for (const [name, viewport] of [
     await page.goto(`${BASE}${route}`, { waitUntil: "load" });
     await page.waitForTimeout(800);
     await scan(page, `${name} ${route}`);
+    if (DIALOG) {
+      const trigger = page.getByRole("button", { name: DIALOG }).first();
+      if ((await trigger.count()) > 0) {
+        await trigger.scrollIntoViewIfNeeded();
+        await trigger.click();
+        await page.waitForTimeout(600);
+        await scan(page, `${name} ${route} (dialog "${DIALOG}" open)`);
+        await page.keyboard.press("Escape");
+      }
+    }
   }
   if (viewport.width < 1024) {
     await page.goto(`${BASE}/`, { waitUntil: "load" });
