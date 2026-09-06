@@ -22,14 +22,15 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Home placeholder sections (featured, who we serve, stats*, testimonials*, FAQ, contact CTA) — \*hidden until content is `published`
 - [x] Route stubs with metadata: `/projects`, `/projects/[slug]`, `/about`, `/students`, `/nonprofits`, `/contact`, `/apply` (redirect), `/privacy`, `not-found`, `sitemap.ts`, `robots.ts`, `icon.svg`
 - [x] Verify: typecheck, lint, build clean; screenshots in `docs/screenshots/session-1/`; axe: 0 violations on all routes at 1440/390 and with the drawer open
-- [ ] Vercel preview deploy (needs the GitHub org repo + Vercel project; no env vars required)
+- [ ] Vercel preview deploy (needs the GitHub org repo + Vercel project; no env vars required; runbook in `docs/DEPLOY.md`)
 
 ### Phase 1 — Launchable marketing core (Sessions 2–4)
 
 - [x] Session 2: Home complete (featured cards final treatment, who-we-serve copy, stats + testimonials band with ghost text and dotted map, FAQ, contact CTA polish)
 - [x] Session 2: Students page (roles rows with Apply buttons, recruitment timeline, how we work, what you'll get, student FAQ, CTA)
 - [x] Session 3: Projects index (year filter chips) + detail (MDX body via next-mdx-remote, gallery lightbox, live link, team grid, more-projects rail), 8 placeholder projects
-- [ ] Session 4: Contact form (Supabase or mailto v1), Privacy rewrite, 404 polish, SEO/OG image (PNG), deploy to the real domain
+- [x] Session 4: Contact form (server action → Supabase / Resend, mailto fallback), Privacy rewrite (MDX), 404 polish, SEO pass (generated OG PNGs, apple icon, canonical URLs)
+- [ ] Session 4 leftover: deploy to the real domain (`docs/DEPLOY.md`: GitHub org transfer, Vercel project, DNS; needs Ashton's accounts)
 
 ### Phase 2 — Application portal (Sessions 5–8)
 
@@ -42,6 +43,142 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+
+## Session 4 — 2026-09-06
+
+**Built:** Contact page with a working form, the privacy policy as validated MDX, the 404
+page, an SEO pass with generated share images, and the deploy runbook (Phase 1, Session 4
+above; the deploy itself needs accounts only Ashton has). Commits: `feat(ui)`,
+`feat(contact)`, `feat(privacy)`, `feat(seo)`, `feat(404)`, `docs`. Not pushed.
+
+**Verified:** `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm build` clean (33
+prerendered pages, including the 12 image routes). Screenshots in
+`docs/screenshots/session-4/` (production build; the `contact-form-*.png` states come from
+the dev server with a mock Supabase endpoint, because production has no delivery configured
+yet). `pnpm a11y --routes=/,/contact,/privacy,/this-page-does-not-exist,/projects/placeholder-project-1`:
+0 violations at 1440 and 390 and with the drawer open, on the production build; `/contact`
+with the form rendered: 0 on the dev server. Form end to end (Playwright against an
+in-process mock of the Supabase REST endpoint): server-side validation with the browser's
+constraints stripped (inline errors, focus moves to the first invalid field, typed values
+kept), a valid submit reaches the mock with the service-role headers and the expected JSON,
+the honeypot returns the sent panel without a delivery call, "Send another message" clears
+the form, and with JavaScript disabled the form posts to the server action and the page
+re-renders with the sent panel; axe: 0 violations on the initial, error and sent states.
+Mailto mode (a temporary test address, no delivery variables): client-side Zod errors, the
+"Almost there" panel, no network request; `buildMailto` output checked (CRLF body, encoded
+subject). Without JavaScript every reveal wrapper now renders visible on the production
+build.
+
+**Decisions made this session**
+
+1. Contact delivery is chosen from environment variables (`src/lib/contact/deliver.ts`):
+   `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` insert into `public.contact_messages`
+   through the REST API with one `fetch` (no Supabase client dependency);
+   `RESEND_API_KEY` + `CONTACT_INBOX` send a plain-text email through Resend with
+   `reply_to` set to the sender. Both may be on; a message counts as delivered when at
+   least one sink succeeds; message contents are never logged. With neither, the page shows
+   a `mailto:` form when the club email is set and otherwise a visible TODO panel with an
+   Instagram button. The page is static, so the mode is fixed at build time: after adding
+   or changing these variables on Vercel, redeploy (noted in `docs/DEPLOY.md`).
+2. The server action `submitContactMessage` (`src/app/contact/actions.ts`) runs through
+   `useActionState`. Zod (`src/lib/contact/schema.ts`, shared with the client for the
+   mailto path and the native `minLength`/`maxLength` hints) is the boundary; errors return
+   the first message per field plus the typed values so the form keeps them (React resets
+   forms after an action); a hidden "fax" honeypot quietly returns the sent state.
+   Progressive enhancement: without JavaScript the form still posts to the action.
+3. Form primitives `TextField`, `TextAreaField` and `ChoiceField` (`src/components/ui/Field.tsx`):
+   visible labels, an "(optional)" marker instead of asterisks, hints and errors wired
+   through `aria-describedby`, `aria-invalid` on invalid controls. Errors are cyan with an
+   icon because the palette has no red. `ChoiceField` renders radios as 44px chips with the
+   inputs kept in the DOM (sr-only) so arrow keys and native `required` work.
+4. `SplitButton` without `href` renders a real `<button>` (`type`, `disabled`, `pending`
+   shows a spinner in the arrow cell and sets `aria-busy`); links accept `onClick` too.
+   `Reveal` wrappers carry `data-reveal` and the root layout adds a `<noscript>` style that
+   shows them, because the server-rendered initial state is opacity 0 and stayed invisible
+   when JavaScript never ran.
+5. The privacy policy lives in `content/privacy.mdx` (frontmatter `effectiveDate` and
+   `reviewed`, validated by `privacyFrontmatterSchema` through `getPrivacyPolicy()`, which
+   also requires at least one `##` section; `validate:content` counts the sections). It
+   renders through `MdxBody` (the former `ProjectBody`, moved to `ui/`) with the shared
+   `OnThisPage` nav (a row on phones, a list in the sticky aside), which the project detail
+   page now uses too. "Status: Draft" and a `[TODO: legal review]` badge show until
+   `reviewed: true`. The text is a plain-language draft: the site sets no cookies and runs
+   no analytics, Vercel keeps server logs, the contact form paths, the external application
+   form for this cycle, and what the portal will collect (sign-in metadata, answers, review
+   notes), with Vercel, Supabase and Resend as processors. Retention periods, the form
+   provider, the response window and the age threshold are `[TODO]`.
+6. 404: `PageHero` gained `ghost` (a pseudo-element ghost word, here "404"); the page lists
+   five popular pages as cards, shows the apply link with the deadline while applications
+   are open and a "tell us" mailto once the club email exists; `robots: noindex`.
+7. SEO: `opengraph-image.tsx` routes render PNGs at build time with `next/og` (Satori) from
+   one `OgCard` in `src/lib/og.tsx` (grid, glow, the wordmark as an SVG data URI, eyebrow,
+   split headline, footer line); the site, `/students`, `/projects` and every project (via
+   `generateStaticParams`) get their own. Poppins Latin subsets (about 15 KB each, OFL) sit
+   in `src/assets/fonts/poppins`. `apple-icon.tsx` is the 180px wordmark PNG. Every page
+   declares `alternates.canonical`; the SVG placeholder share image and its media key are
+   gone. `metadataBase` still comes from `site.url` (`NEXT_PUBLIC_SITE_URL`, else the
+   Vercel URL, else localhost), so local builds print localhost in canonical and share URLs.
+8. Inline text links share one style (green underline, text turns green on hover) on Home,
+   Students, Contact, Privacy and the 404.
+9. `supabase/migrations/20260906000000_contact_messages.sql` creates the table with length
+   checks, RLS enabled with no policies (service role only) and a `handled_at` column for
+   exec. `.env.example` documents every optional variable (all optional; `.gitignore` now
+   allows the example file).
+
+**Improvements over the Framer template (as asked)**
+
+- The template has no contact form, only a CTA. Ours is keyboard-complete with 44px chips,
+  inline errors, focus management, a honeypot and a no-JavaScript path.
+- The privacy page has an effective date, a status, on-page navigation and covers what the
+  site actually does instead of template boilerplate.
+- The 404 offers the main pages and the application link instead of a bare message.
+- Share previews are branded PNGs per page instead of one SVG placeholder.
+
+**Known gaps**
+
+- Production shows the "not connected" panel on `/contact` until the club email (mailto
+  mode) or the Supabase / Resend variables are set; the form itself only renders on the dev
+  server with those variables in `.env.local`.
+- Delivery was tested against a mock endpoint only; send one real message after deploy
+  (`docs/DEPLOY.md` §4).
+- No rate limiting beyond the honeypot; add one if spam shows up.
+- The privacy policy is a draft with TODOs and needs legal review.
+- Deploy (GitHub org, Vercel, domain) is documented but not done.
+
+**TODOs for Ashton (content and accounts)**
+
+- Everything from Sessions 1–3 still stands.
+- `content/site.ts`: the club email (turns the contact form on in mailto mode) and the
+  LinkedIn URL.
+- Decide on delivery: Supabase (create the project, apply the migration, set
+  `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`) and/or Resend (verify the domain, set
+  `RESEND_API_KEY`, `CONTACT_INBOX`, `CONTACT_FROM`); redeploy afterwards.
+- `content/privacy.mdx`: fill the TODOs, get it reviewed, set `reviewed: true` and update
+  `effectiveDate`.
+- Deploy: `docs/DEPLOY.md` steps 1–4 (GitHub org transfer, Vercel project, domain,
+  `NEXT_PUBLIC_SITE_URL`), then the post-deploy checks.
+- Push: Sessions 2–4 are committed locally only (`git push origin main`, or after the org
+  transfer).
+
+## Next session starts with
+
+**Session 5: application portal, part 1 (schema + auth).** Read `docs/PLAN.md` §5 and §9,
+this file, and `node_modules/next/dist/docs/` for `proxy.ts` and server actions, then:
+
+1. Supabase: the same project as the contact table. Migrations for `cycles`, `roles`,
+   `questions`, `applications`, `answers`, `reviews`, `admins` with RLS (applicants read and
+   write only their own draft while the cycle is open; admins read everything and write
+   reviews and status), plus the `contact_messages` migration already in
+   `supabase/migrations/`.
+2. Auth: email magic link (OTP) for any email, `profiles` row on first sign-in, admins by
+   email in `admins`, checked server-side. `/apply` becomes the season landing + sign-in;
+   keep the header CTA on the external form until the Phase 2 dry run passes.
+3. Custom SMTP through Resend for auth emails (the built-in sender is 2 per hour).
+4. If the Supabase project does not exist yet, write the migrations and the auth UI first
+   and test against a local `supabase start` (Docker), or stop at the schema and log it.
+5. Screenshots to `docs/screenshots/session-5/`, `pnpm a11y --routes=/apply`, update this
+   file. Needed from Ashton: Supabase and Resend accounts, the exec email list, this
+   cycle's roles and questions.
 
 ## Session 3 — 2026-09-05
 
@@ -139,24 +276,6 @@ on the dev server.
 - Confirm the one-per-place assumption (4 U.S. states + 4 countries = 8 nonprofits) and
   whether earlier cycles should be listed.
 - Projects index intro copy (`src/app/projects/page.tsx`).
-
-## Next session starts with
-
-**Session 4: Contact, Privacy, 404, SEO, deploy.** Read `docs/PLAN.md` §3 (`/contact`,
-`/privacy`) and §6 Phase 1, this file, and `node_modules/next/dist/docs/` for `opengraph-image`
-and server actions, run `pnpm dev`, then:
-
-1. `/contact`: short form (name, email, I am a student / nonprofit / other, message). v1 can
-   be a `mailto:` fallback until the Supabase project exists; if Supabase is set up, a server
-   action writing to `contact_messages` with Zod validation. Direct email + socials next to
-   it. Remove the `StubSection`.
-2. `/privacy`: rewrite per PLAN §3 (what the portal will collect, Supabase and Vercel as
-   processors) as draft copy marked `[TODO: legal review]`; keep the effective date in content.
-3. `not-found` polish; SEO pass: `opengraph-image` PNG via `next/og` with the wordmark,
-   per-page metadata check, sitemap/robots review.
-4. Deploy: GitHub org repo + Vercel project (Phase 0 leftover), then the domain.
-5. Screenshots to `docs/screenshots/session-4/`, `pnpm a11y --routes=/contact,/privacy`,
-   update this file.
 
 ## Session 2 — 2026-09-04
 

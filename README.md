@@ -36,6 +36,10 @@ pnpm a11y --routes=/projects/placeholder-project-1 --dialog=Enlarge
 
 ## Deploy
 
-Vercel, framework preset Next.js, build command `pnpm build`. No environment variables are
-required yet. Optional: `NEXT_PUBLIC_SITE_URL` to force the canonical origin used in
-metadata and the sitemap (otherwise the Vercel production URL is used).
+Vercel, framework preset Next.js, build command `pnpm build`, Node 22. No environment
+variables are required; the optional ones are listed in `.env.example` (canonical origin,
+contact form delivery through Supabase and/or Resend). The full runbook, including the GitHub
+org repo, the domain and the Supabase migration for the contact form, is `docs/DEPLOY.md`.
+
+Open Graph images are generated at build time by the `opengraph-image.tsx` routes (site,
+`/students`, `/projects` and every project) from the Poppins subset in `src/assets/fonts`.
