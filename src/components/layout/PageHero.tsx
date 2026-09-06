@@ -1,3 +1,5 @@
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { Reveal, RevealGroup } from "@/components/motion/Reveal";
 import { Eyebrow } from "@/components/ui/Eyebrow";
@@ -11,10 +13,12 @@ type PageHeroProps = {
   children?: ReactNode;
   /** Use the staggered left/right composition. */
   stagger?: boolean;
+  /** Small "back to the index" link above the eyebrow (detail pages). */
+  back?: { href: string; label: string };
 };
 
 /** Compact hero for inner pages: eyebrow, split headline, blurb, optional actions. */
-export function PageHero({ eyebrow, lines, blurb, children, stagger = true }: PageHeroProps) {
+export function PageHero({ eyebrow, lines, blurb, children, stagger = true, back }: PageHeroProps) {
   return (
     <section
       aria-labelledby="page-title"
@@ -28,6 +32,17 @@ export function PageHero({ eyebrow, lines, blurb, children, stagger = true }: Pa
         mode="mount"
         className="relative container-max container-x pt-14 pb-20 md:pt-20 md:pb-28 lg:border-x lg:border-line"
       >
+        {back ? (
+          <Reveal className="mb-6">
+            <Link
+              href={back.href}
+              className="inline-flex min-h-11 items-center gap-2 text-sm text-muted transition-colors hover:text-text"
+            >
+              <ArrowLeft className="size-4" aria-hidden="true" />
+              {back.label}
+            </Link>
+          </Reveal>
+        ) : null}
         <Reveal>
           <Eyebrow>{eyebrow}</Eyebrow>
         </Reveal>

@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { Logo } from "@/components/brand/Logo";
 import { Globe } from "@/components/home/Globe";
+import { Gallery } from "@/components/projects/Gallery";
 import { ProjectCard } from "@/components/projects/ProjectCard";
+import { TeamGrid } from "@/components/projects/TeamGrid";
 import { Accordion } from "@/components/ui/Accordion";
 import { Card } from "@/components/ui/Card";
+import { Chip, ChipButton } from "@/components/ui/Chip";
 import { DottedMap } from "@/components/ui/DottedMap";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Headline } from "@/components/ui/Headline";
@@ -314,6 +317,42 @@ export default function UiKitPage() {
           <StatTile value="4" label="U.S. states" />
           <StatTile value="4" label="Countries" />
         </dl>
+      </Block>
+
+      <Block title="Chip + ChipButton (tags, stack, year filters)">
+        <div className="flex flex-wrap items-center gap-2">
+          <Chip>Web</Chip>
+          <Chip>Mobile</Chip>
+          <Chip selected>Selected</Chip>
+          <ChipButton selected>All</ChipButton>
+          <ChipButton>2025–26</ChipButton>
+        </div>
+      </Block>
+
+      <Block title="Gallery (native dialog lightbox: Escape, arrows, focus restore)">
+        <Gallery
+          label="Sample project"
+          images={[
+            { src: "gallery.placeholder-1", alt: "Sample screenshot 1", caption: "With a caption" },
+            { src: "gallery.placeholder-2", alt: "Sample screenshot 2" },
+            { src: "gallery.placeholder-3", alt: "Sample screenshot 3" },
+          ]}
+        />
+      </Block>
+
+      <Block title="TeamGrid (LinkedIn link hidden when missing or TODO)">
+        <TeamGrid
+          members={[
+            {
+              name: "Sample lead",
+              role: "Project Lead",
+              linkedin: "https://www.linkedin.com/",
+              avatar: "avatar.placeholder",
+            },
+            { name: "Sample developer", role: "Developer" },
+            { name: "[TODO: name]", role: "Designer" },
+          ]}
+        />
       </Block>
 
       <Block title="Globe (SVG wireframe, spins unless reduced motion)">

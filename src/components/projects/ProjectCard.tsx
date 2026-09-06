@@ -7,24 +7,35 @@ import { cn } from "@/lib/utils";
 export type ProjectCardData = Pick<
   ProjectFrontmatter,
   "slug" | "title" | "nonprofit" | "year" | "location" | "tags" | "cover"
->;
+> & {
+  /** Unpublished projects only render in development; the card marks them as drafts. */
+  published?: boolean;
+};
 
 type ProjectCardProps = {
   project: ProjectCardData;
   /** "featured" uses the oversized 4:5 cover on md+ (home grid); "default" is the 4:3 index card. */
   size?: "featured" | "default";
+  /** Heading level of the title, so the card fits the page's outline (h2 on the index). */
+  headingLevel?: "h2" | "h3";
   /** next/image `sizes` hint for the cover. */
   sizes?: string;
   className?: string;
 };
 
-const TAG_LABEL: Record<ProjectTag, string> = {
+export const TAG_LABEL: Record<ProjectTag, string> = {
   web: "Web",
   mobile: "Mobile",
   data: "Data",
   design: "Design",
   automation: "Automation",
 };
+
+/** Serialisable subset of a project for cards (keeps MDX bodies out of client payloads). */
+export function toProjectCardData(project: ProjectCardData): ProjectCardData {
+  const { slug, title, nonprofit, year, location, tags, cover, published } = project;
+  return { slug, title, nonprofit, year, location, tags, cover, published };
+}
 
 /**
  * Portfolio card after the Framer treatment: full-bleed cover fading into a caption with the
@@ -34,6 +45,7 @@ const TAG_LABEL: Record<ProjectTag, string> = {
 export function ProjectCard({
   project,
   size = "default",
+  headingLevel: Heading = "h3",
   sizes = "(min-width: 768px) 50vw, 100vw",
   className,
 }: ProjectCardProps) {
@@ -60,6 +72,11 @@ export function ProjectCard({
           aria-hidden="true"
           className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-surface to-transparent"
         />
+        {project.published === false ? (
+          <span className="absolute top-3 left-3 rounded-sm border border-dashed border-line-strong bg-bg/80 px-2 py-1 text-eyebrow font-medium text-muted uppercase backdrop-blur-sm">
+            Draft
+          </span>
+        ) : null}
       </div>
       <div className="flex flex-1 flex-col p-6 md:p-7">
         <p className="flex items-center gap-4 text-eyebrow font-medium text-muted uppercase">
@@ -68,9 +85,9 @@ export function ProjectCard({
           <span className="shrink-0">{project.year}</span>
         </p>
         <div className="mt-4 flex items-end justify-between gap-6">
-          <h3 className="text-h3 font-medium text-text transition-colors duration-300 group-hover:text-green">
+          <Heading className="text-h3 font-medium text-text transition-colors duration-300 group-hover:text-green">
             {project.title}
-          </h3>
+          </Heading>
           <span
             aria-hidden="true"
             className="flex size-11 shrink-0 items-center justify-center rounded-sm border border-line-strong bg-surface-2 text-text transition-colors duration-300 group-hover:border-green group-hover:bg-green group-hover:text-bg"
