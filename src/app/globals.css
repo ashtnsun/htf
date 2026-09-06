@@ -54,10 +54,11 @@
   --font-sans: var(--font-body);
   --font-mono: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, monospace;
 
-  /* Radii: squared-off feel. Only 4px and 8px exist. */
+  /* Radii: none. Rigid lines everywhere; both tokens stay defined (at 0) so a future
+     softening is a two-line change. `rounded-full` is reserved for avatars. */
   --radius-*: initial;
-  --radius-sm: 4px;
-  --radius-md: 8px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
 
   /* Type scale (rem @16px): display 96/80/64, h2 48, h3 32, body 16/18, eyebrow 12. */
   --text-display-xl: 6rem;
@@ -95,6 +96,13 @@
   }
 }
 
+/* Registered so the viewfinder brackets can animate their size on hover (see hover-corners). */
+@property --corner-size {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0.625rem;
+}
+
 @layer base {
   html {
     background-color: var(--bg);
@@ -130,7 +138,6 @@
   :focus-visible {
     outline: 2px solid var(--mint);
     outline-offset: 3px;
-    border-radius: 2px;
   }
   @media (prefers-reduced-motion: reduce) {
     html {
@@ -218,10 +225,130 @@
   background: var(--green);
   color: var(--bg);
   padding: 0.5rem 0.75rem;
-  border-radius: 4px;
   font-weight: 500;
   &:focus-visible {
     transform: translateY(0);
+  }
+}
+
+/* Frosted glass for anything elevated (header, drawer, footer, floating tiles and cards).
+   Tune the opacity with [--glass-alpha:80%]. Note: backdrop-filter makes the element the
+   containing block for fixed descendants, so portal overlays out of it. */
+@utility glass {
+  background-color: color-mix(in srgb, var(--surface) var(--glass-alpha, 64%), transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  backdrop-filter: blur(20px) saturate(1.4);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+}
+
+/* The one hover language for interactive surfaces: green viewfinder brackets lock onto the
+   four corners on hover, keyboard focus, or focus inside. Nothing moves or scales, so the
+   hovered state stays consistent with the resting one. Sits inside the element's border. */
+@utility hover-corners {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0;
+    --corner-size: 0.625rem;
+    background-image:
+      linear-gradient(var(--green), var(--green)), linear-gradient(var(--green), var(--green)),
+      linear-gradient(var(--green), var(--green)), linear-gradient(var(--green), var(--green)),
+      linear-gradient(var(--green), var(--green)), linear-gradient(var(--green), var(--green)),
+      linear-gradient(var(--green), var(--green)), linear-gradient(var(--green), var(--green));
+    background-size:
+      var(--corner-size) 1px,
+      1px var(--corner-size),
+      var(--corner-size) 1px,
+      1px var(--corner-size),
+      var(--corner-size) 1px,
+      1px var(--corner-size),
+      var(--corner-size) 1px,
+      1px var(--corner-size);
+    background-position:
+      left top,
+      left top,
+      right top,
+      right top,
+      left bottom,
+      left bottom,
+      right bottom,
+      right bottom;
+    background-repeat: no-repeat;
+    transition:
+      opacity 200ms var(--ease-out-quart),
+      --corner-size 400ms var(--ease-out-expo);
+  }
+  &:hover::after,
+  &:focus-visible::after,
+  &:focus-within::after {
+    opacity: 1;
+    --corner-size: 1.25rem;
+  }
+}
+
+/* Blueprint crosshairs centred on the four corners of a framed container (hero, page heroes,
+   `Section frame`). Pure decoration in the hairline colour. */
+@utility frame-marks {
+  position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -0.5rem;
+    pointer-events: none;
+    background-image:
+      linear-gradient(var(--line-strong), var(--line-strong)),
+      linear-gradient(var(--line-strong), var(--line-strong)),
+      linear-gradient(var(--line-strong), var(--line-strong)),
+      linear-gradient(var(--line-strong), var(--line-strong)),
+      linear-gradient(var(--line-strong), var(--line-strong)),
+      linear-gradient(var(--line-strong), var(--line-strong)),
+      linear-gradient(var(--line-strong), var(--line-strong)),
+      linear-gradient(var(--line-strong), var(--line-strong));
+    background-size:
+      1rem 1px,
+      1px 1rem,
+      1rem 1px,
+      1px 1rem,
+      1rem 1px,
+      1px 1rem,
+      1rem 1px,
+      1px 1rem;
+    background-position:
+      left 0 top 0.5rem,
+      left 0.5rem top 0,
+      right 0 top 0.5rem,
+      right 0.5rem top 0,
+      left 0 bottom 0.5rem,
+      left 0.5rem bottom 0,
+      right 0 bottom 0.5rem,
+      right 0.5rem bottom 0;
+    background-repeat: no-repeat;
+  }
+}
+
+/* Testimonial band: the track holds two copies of the list and slides by one copy.
+   Pauses on hover, on focus inside, and when the pause button sets data-paused. */
+@utility marquee {
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+  &:hover .marquee-track,
+  &:focus-within .marquee-track,
+  &[data-paused="true"] .marquee-track {
+    animation-play-state: paused;
+  }
+}
+@utility marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee var(--marquee-duration, 60s) linear infinite;
+}
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
   }
 }
 
@@ -339,7 +466,6 @@
   }
   & code {
     padding: 0.1em 0.4em;
-    border-radius: 4px;
     background: var(--surface-2);
     font-family: var(--font-mono);
     font-size: 0.875em;
@@ -350,7 +476,6 @@
     padding: 1rem 1.25rem;
     overflow-x: auto;
     border: 1px solid var(--line);
-    border-radius: 8px;
     background: var(--surface);
     font-size: 0.875rem;
     line-height: 1.6;
@@ -362,7 +487,6 @@
   & img {
     margin-top: 1.5rem;
     border: 1px solid var(--line);
-    border-radius: 8px;
   }
   & table {
     margin-top: 1.5rem;
@@ -380,5 +504,86 @@
   & th {
     font-weight: 500;
     color: var(--text);
+  }
+}
+
+/* ------------------------------------------------------------------
+   Process step graphics (src/components/home/ProcessGraphic.tsx). One-shot animations
+   (draw, grow) restart each time a step becomes active; loops (sweep, ping, blink) pause
+   while the step is inactive. The global reduced-motion rule flattens all of them.
+------------------------------------------------------------------- */
+@layer components {
+  @keyframes sweep {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes ping {
+    0% {
+      transform: scale(0.4);
+      opacity: 0.9;
+    }
+    100% {
+      transform: scale(2.4);
+      opacity: 0;
+    }
+  }
+  @keyframes draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes grow-x {
+    from {
+      transform: scaleX(0);
+    }
+  }
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+  @keyframes eyelid {
+    0%,
+    92%,
+    100% {
+      opacity: 0;
+    }
+    94%,
+    98% {
+      opacity: 1;
+    }
+  }
+  .anim-sweep {
+    transform-origin: 200px 200px;
+    animation: sweep 6s linear infinite;
+  }
+  .anim-ping {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: ping 2.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+  .anim-draw {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: draw 1.4s var(--ease-out-quart) forwards;
+  }
+  .anim-grow {
+    transform-box: fill-box;
+    transform-origin: left center;
+    animation: grow-x 1.6s var(--ease-out-expo) both;
+  }
+  .anim-blink {
+    animation: blink 1s steps(1, end) infinite;
+  }
+  /* The footer dinosaur blinks about every six seconds. */
+  .anim-eyelid {
+    animation: eyelid 6s linear infinite;
+  }
+  [data-active="false"] :is(.anim-sweep, .anim-ping, .anim-blink) {
+    animation-play-state: paused;
+  }
+  [data-active="false"] :is(.anim-draw, .anim-grow) {
+    animation: none;
   }
 }
