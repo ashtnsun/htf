@@ -17,6 +17,12 @@ type SectionProps = {
   contain?: boolean;
   /** Draw thin vertical lines at the container edges (Framer hero frame). */
   frame?: boolean;
+  /**
+   * Clip overflow (needed for ghost words and other decoration that bleeds past the edges).
+   * Defaults to true only when `ghost` is set: an `overflow: hidden` ancestor turns into the
+   * scroll container for `position: sticky` children, which shifts them by their `top` offset.
+   */
+  clip?: boolean;
   className?: string;
   containerClassName?: string;
   "aria-labelledby"?: string;
@@ -47,6 +53,7 @@ export function Section({
   padding = "md",
   contain = true,
   frame = false,
+  clip = Boolean(ghost),
   className,
   containerClassName,
   ...aria
@@ -55,7 +62,8 @@ export function Section({
     <Tag
       id={id}
       className={cn(
-        "relative overflow-hidden",
+        "relative",
+        clip && "overflow-hidden",
         grid && "grid-overlay",
         paddingClass[padding],
         className,
