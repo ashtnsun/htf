@@ -31,18 +31,168 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 3: Projects index (year filter chips) + detail (MDX body via next-mdx-remote, gallery lightbox, live link, team grid, more-projects rail), 8 placeholder projects
 - [x] Session 4: Contact form (server action → Supabase / Resend, mailto fallback), Privacy rewrite (MDX), 404 polish, SEO pass (generated OG PNGs, apple icon, canonical URLs)
 - [ ] Session 4 leftover: deploy to the real domain (`docs/DEPLOY.md`: GitHub org transfer, Vercel project, DNS; needs Ashton's accounts)
+- [x] Session 5: home + global audit pass (square corners, glass surfaces, one hover language, nav/footer changes with the pixel dinosaur, statement hero, What we do, scroll-driven process, Impact with count-up tiles / testimonial marquee / awards, Who we serve before the FAQ)
 
-### Phase 2 — Application portal (Sessions 5–8)
+### Phase 2 — Application portal (Sessions 6–9)
 
 - [ ] Supabase project, schema + RLS migrations, Resend SMTP, magic link, multi-step form with autosave, admin dashboard, CSV export, keepalive cron, dry run, flip CTA
 
-### Phase 3 — Depth (Sessions 9–11)
+### Phase 3 — Depth (Sessions 10–12)
 
 - [ ] About (exec, awards, Instagram grid), Non-profits (process, FAQ, intake), R3F globe with partner pins (lazy, SVG fallback), real stats/testimonials, media handoff swap, analytics, Lighthouse pass
 
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+
+## Session 5 — 2026-09-06 (home + global audit pass)
+
+**Built:** Ashton's audit of the home page and the global elements (this session replaced the
+planned portal start; the portal moves to Session 6). Global: square corners everywhere,
+frosted glass for elevated surfaces, one hover language, crosshair frame marks. Nav: tagline
+out of the header, drawer headline removed, LinkedIn in the drawer and footer. Footer:
+frosted glass with the pixel dinosaur peeking out from behind it. Home: statement-only hero,
+"What we do" (services + organization photo + projects link) instead of the featured grid,
+the scroll-driven "From discovery to delivery" process, Impact with three count-up tiles, a
+full-width rotating testimonial band and an awards subsection, and "Who we serve" moved to
+just before the FAQ. `docs/PLAN.md` §10 records the amendments. Commits: `feat(tokens)`,
+`feat(content)`, `feat(ui)`, `feat(layout)`, `feat(home)`, `docs`. Not pushed.
+
+**Verified:** `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm build` clean.
+Screenshots in `docs/screenshots/session-5/` (production build; stats and testimonials are
+unpublished, so production shows only the awards block in Impact; the dev-server captures of
+the full band are in the session log below). `pnpm a11y` on the production build
+(`/`, `/projects`, `/students`, `/contact`, `/projects/placeholder-project-1` with the
+lightbox open, the 404) and on the dev server (`/` with the unpublished stats, marquee and
+pause button): 0 violations at 1440 and 390 and with the drawer open. `/dev/ui` reports the
+two intentional "fail" rows of the contrast table (dev only, by design). Checked by hand in
+Playwright: the process panel swaps graphics as the steps cross the middle of the viewport
+(`process-step2/3.png`), the numbers count up on first view, the marquee pauses on hover and
+through the button, the drawer, hover states on cards, buttons and nav links.
+
+**Decisions made this session**
+
+1. Radii are gone: `--radius-sm` and `--radius-md` are 0 in `globals.css` and every
+   `rounded-sm` / `rounded-md` class was stripped (`rounded-full` stays for avatars and the
+   focus ring lost its 2px radius). Placeholder SVGs lost their `rx` too.
+2. Three utilities carry the "technical and spatial" language: `glass` (a `color-mix` of the
+   surface with a 20px backdrop blur; `[--glass-alpha:80%]` tunes it) on the header, drawer,
+   footer, stat tiles, testimonial cards, badges and carousel buttons; `hover-corners`
+   (green viewfinder brackets drawn by one pseudo-element with eight gradient layers, the
+   corner length animating through a registered `@property`) on every interactive surface
+   (Card with `href`, project cards, drawer grid links, 404 cards, gallery thumbnails);
+   `frame-marks` (crosshairs centred on the corners of framed containers: hero, page heroes,
+   `Section frame`). Hover is now one rule set (CLAUDE.md → Component rules): text links go
+   green, surfaces get brackets + `border-line-strong` + `bg-surface-2`, arrow cells fill
+   green, nav links show the green underline, nothing translates or scales (the cover zoom on
+   project cards and gallery thumbnails is gone, as are the card lift and button lift). Mint is
+   the focus ring only; every `hover:*-mint` became green.
+3. `SplitButton` secondary now turns its border and arrow cell green on hover, matching the
+   project-card arrow. The drawer CTA is a `SplitButton` instead of a plain green link.
+4. Header: the tagline is no longer rendered (it stays in `site.ts` for metadata and the
+   footer). Drawer: the "Software for good, built at Purdue." block is gone, social buttons
+   are square 44px cells, the panel is glass. LinkedIn shows in both because
+   `site.socials.linkedin` is now the company page found by a web search
+   (`linkedin.com/company/hack-the-future-at-purdue`), flagged for confirmation.
+5. Footer (`SiteFooter` + `brand/PixelDino`): the panel is glass with a transparent strip
+   above it; the dinosaur is a 22×20 pixel map rendered as `<rect>`s with `crispEdges`, a
+   green drop shadow and a radial glow behind it, positioned so the head sits in the open and
+   the body blurs behind the glass. It rises into place once (`whileInView`) and blinks every
+   six seconds (`anim-eyelid`); both are off under reduced motion. Decoration only.
+6. Hero: eyebrow + "Building software / for nonprofits." (stagger, second line green) + the
+   globe floating behind the second line; the blurb, academic year, deadline note, both
+   buttons and the scroll marker were removed. `academicYear` and `SeasonNote` remain for the
+   other pages.
+7. "What we do" (`home/WhatWeDo`, `content/services.ts`, `serviceSchema`): three service
+   panels separated by hairlines with a lucide icon each (titles use the Headline accent
+   syntax), the full-organization photo placeholder (media key `org.group-photo`, 21:9 from
+   `sm`, caption `[TODO]`) and a secondary "See our projects" button. The copy is the club's
+   previous site copy from the audit screenshots ("Deliver FREE software", "at absolutely no
+   cost", …). `FeaturedProjects.tsx` was deleted; `featured` in project frontmatter and
+   `getFeaturedProjects()` still exist for a later use.
+8. Process (`home/Process` + `ProcessScroll` + `ProcessGraphic`, `content/process.ts`,
+   `processStepSchema`): on `lg+` a sticky glass panel on the left cross-fades between four
+   wireframe SVGs (radar sweep, team network with 1 filled lead / 5 developers / 2 dashed
+   designers, terminal with filling bars, the globe with a delivery pin) while the steps
+   scroll on the right; the active step is the one crossing the middle 16% of the viewport
+   (IntersectionObserver, no scroll listener). The panel readout shows `02 / 04`, the title
+   and a progress line. Below `lg` each step carries its own graphic inline. Animations are
+   CSS classes (`anim-sweep`, `anim-ping`, `anim-draw` with `pathLength="1"`, `anim-grow`,
+   `anim-blink`) that pause or reset through `[data-active="false"]`, so inactive graphics
+   cost nothing; the global reduced-motion rule flattens them. Without JavaScript every step
+   is readable and the panel shows step 1. Steps 3–4 are the previous site's copy (step 4's
+   last clause was completed from a cropped screenshot); steps 1–2 follow PLAN §3.
+9. Impact (`ImpactBand`): `content/stats.ts` was cut from five to three (the "U.S. states"
+   and "Student members" tiles are listed under TODOs). `StatTile` is glass and renders
+   `CountUp`: the server prints the final value, the client drives the visible copy through
+   the DOM from 0 with an ease-out over 1.5 s the first time the tile is half in view
+   (staggered 140 ms per tile), a visually hidden copy keeps the real value for assistive
+   tech, and reduced motion or a value without a number ("[TODO]") renders as-is.
+10. Testimonials are a full-width marquee (`home/TestimonialMarquee`, `marquee` /
+    `marquee-track` utilities): two copies of the list (the second `aria-hidden`), one CSS
+    animation sliding by 50%, edge fade by mask, pause on hover / focus inside and through a
+    44px glass pause button (`aria-pressed`), 12 s per card. Under reduced motion it is a
+    horizontally scrollable row instead. Cards are glass, square, sized by quote length (≥ 90
+    characters gets the 34rem card, shorter the 22rem one) and stretch to one height.
+    `testimonialSchema` gained an optional `headline` (the green line above the quote);
+    four placeholders of varying length seed the band in development.
+11. Awards (`home/Awards` + `AwardCarousel`, `content/awards.ts`, `awardSchema`): a
+    record table (issuer · award · date) from `sm` up, a stacked list on phones, then a 3:2
+    photo carousel with glass prev / next buttons and a polite counter (hidden with one
+    photo). The 2025 entry ("Purdue Student Life Honors", "2025 Innovative Program", April 2025) is transcribed from the audit screenshot and published; its photo is the
+    placeholder `awards.student-life-2025`. `getAwards()` follows the published / preview
+    rule of stats and testimonials, and `ImpactBand` renders whenever any of the three lists
+    has items (production currently shows only the awards).
+12. Home order: Hero → What we do → Process → Impact → Who we serve → FAQ → Contact CTA.
+13. `scripts/gen-placeholders.mjs` writes two new files (`org-photo.svg` 2400×1030,
+    `award-photo.svg` 1800×1200). `/dev/ui` shows the surface language, both testimonial
+    widths, the count-up tiles, the four process graphics and the dinosaur.
+
+**Known gaps**
+
+- The LinkedIn URL is from a search result, not confirmed by the club.
+- The award wording, the process copy and the "free / no cost" claims come from the previous
+  site; the FAQ's `[TODO: confirm]` on cost can be resolved once Ashton confirms them.
+- Hover brackets need a pointer; touch users see the focus ring and colour changes only.
+- The frame crosshairs sit on the viewport edge at exactly 1440px (the container is full
+  width there) and only show fully above that width or inside padded sections.
+- The organization and award photos are placeholders; the alt text needs writing with them.
+- `/dev/ui` intentionally shows two failing contrast samples, so `pnpm a11y --routes=/dev/ui`
+  reports them; production never includes that route.
+
+**TODOs for Ashton (content and accounts)**
+
+- Everything from Sessions 1–4 still stands.
+- `content/site.ts`: confirm the LinkedIn company URL.
+- `content/media.ts`: the full organization photo (`org.group-photo`) and the award photo
+  (`awards.student-life-2025`), plus captions and alt text in `WhatWeDo.tsx` /
+  `content/awards.ts`.
+- `content/awards.ts`: confirm issuer / award / date wording; add other awards.
+- `content/stats.ts`: confirm the three tiles (or swap the third for "U.S. states" or
+  "Student members") and set `published: true`.
+- `content/testimonials.ts`: real quotes with headlines, then `published: true`.
+- `content/services.ts`, `content/process.ts`: confirm the wording.
+- Footer: decide whether the tagline stays under the logo, and whether the dinosaur stays.
+
+## Next session starts with
+
+**Session 6: application portal, part 1 (schema + auth).** Read `docs/PLAN.md` §5 and §9,
+this file, and `node_modules/next/dist/docs/` for `proxy.ts` and server actions, then:
+
+1. Supabase: the same project as the contact table. Migrations for `cycles`, `roles`,
+   `questions`, `applications`, `answers`, `reviews`, `admins` with RLS (applicants read and
+   write only their own draft while the cycle is open; admins read everything and write
+   reviews and status), plus the `contact_messages` migration already in
+   `supabase/migrations/`.
+2. Auth: email magic link (OTP) for any email, `profiles` row on first sign-in, admins by
+   email in `admins`, checked server-side. `/apply` becomes the season landing + sign-in;
+   keep the header CTA on the external form until the Phase 2 dry run passes.
+3. Custom SMTP through Resend for auth emails (the built-in sender is 2 per hour).
+4. If the Supabase project does not exist yet, write the migrations and the auth UI first
+   and test against a local `supabase start` (Docker), or stop at the schema and log it.
+5. Screenshots to `docs/screenshots/session-5/`, `pnpm a11y --routes=/apply`, update this
+   file. Needed from Ashton: Supabase and Resend accounts, the exec email list, this
+   cycle's roles and questions.
 
 ## Session 4 — 2026-09-06
 
@@ -159,26 +309,6 @@ build.
   `NEXT_PUBLIC_SITE_URL`), then the post-deploy checks.
 - Push: Sessions 2–4 are committed locally only (`git push origin main`, or after the org
   transfer).
-
-## Next session starts with
-
-**Session 5: application portal, part 1 (schema + auth).** Read `docs/PLAN.md` §5 and §9,
-this file, and `node_modules/next/dist/docs/` for `proxy.ts` and server actions, then:
-
-1. Supabase: the same project as the contact table. Migrations for `cycles`, `roles`,
-   `questions`, `applications`, `answers`, `reviews`, `admins` with RLS (applicants read and
-   write only their own draft while the cycle is open; admins read everything and write
-   reviews and status), plus the `contact_messages` migration already in
-   `supabase/migrations/`.
-2. Auth: email magic link (OTP) for any email, `profiles` row on first sign-in, admins by
-   email in `admins`, checked server-side. `/apply` becomes the season landing + sign-in;
-   keep the header CTA on the external form until the Phase 2 dry run passes.
-3. Custom SMTP through Resend for auth emails (the built-in sender is 2 per hour).
-4. If the Supabase project does not exist yet, write the migrations and the auth UI first
-   and test against a local `supabase start` (Docker), or stop at the schema and log it.
-5. Screenshots to `docs/screenshots/session-5/`, `pnpm a11y --routes=/apply`, update this
-   file. Needed from Ashton: Supabase and Resend accounts, the exec email list, this
-   cycle's roles and questions.
 
 ## Session 3 — 2026-09-05
 

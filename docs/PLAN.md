@@ -147,3 +147,16 @@ Should applicants be restricted to one application per cycle even if applying to
 Session 1 (the kickoff prompt): Phase 0 in full plus the Home hero and nav to prove the visual language. Session 2: Home complete + Students. Session 3: Projects index/detail + content schemas + 8 placeholders. Session 4: Contact, Privacy, 404, SEO, deploy to domain. Sessions 5–8: Portal per §5 in the order schema → auth → form → admin → email → dry run. Sessions 9+: Phase 3.
 
 Each session should start with "read `docs/PLAN.md` and `CLAUDE.md`, check `docs/PROGRESS.md`, then continue from the next unchecked item," and end with Claude Code updating `PROGRESS.md`. That keeps context across sessions without you re-explaining.
+
+---
+
+## 10. Amendments — home and global audit (September 6, 2026)
+
+Ashton's audit of the built home page changed the following; PROGRESS.md (Session 5) has the details.
+
+**Global style.** Technical and spatial: rigid lines, no corner radius (both radius tokens are 0; avatars stay round), frosted glass for anything elevated (header, drawer, footer, floating tiles and cards), and one hover language for the whole site (green viewfinder brackets on interactive surfaces, green text links, green arrow cells; nothing moves on hover). Crosshair marks sit at the corners of framed containers.
+
+**Navigation.** The tagline is gone from the header and the drawer no longer carries the "Software for good" headline. LinkedIn joins Instagram in the drawer and the footer. The footer is a glass panel with the pixel dinosaur peeking out from behind it.
+
+**Home, new order.** Hero (statement only: eyebrow, "Building software / for nonprofits.", globe, glow; no blurb, deadline, buttons or scroll marker) → What we do (three service panels from the club's previous site, the full-organization photo placeholder, a link to `/projects`) → How it works (scroll-driven process: sticky wireframe graphic on the left changes as the four steps scroll past on the right; `content/process.ts`) → Impact (three glass stat tiles that count up on first view, a full-width rotating testimonial band over the dotted map, and an awards subsection with a photo carousel; `content/awards.ts`) → Who we serve → FAQ → Contact CTA. The featured-projects grid moved off the home page; `/projects` is the portfolio.
+

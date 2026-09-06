@@ -31,15 +31,18 @@ Claude Code. Dark theme only.
 
 ```
 content/            typed content: site.ts (config + season CTA), media.ts (image map),
-                    exec.ts, roles.ts, faq.ts, testimonials.ts, stats.ts, recruitment.ts,
-                    projects/*.mdx (frontmatter validated by Zod)
+                    exec.ts, roles.ts, faq.ts, testimonials.ts, stats.ts, services.ts,
+                    process.ts, awards.ts, recruitment.ts, projects/*.mdx (Zod frontmatter)
 src/app/            routes. page.dev.tsx files exist only in `next dev` (see next.config.ts)
 src/components/
-  brand/            Logo (inline SVG wordmark; logo-paths.ts is generated, do not hand-edit)
+  brand/            Logo (inline SVG wordmark; logo-paths.ts is generated, do not hand-edit),
+                    PixelDino (footer)
   ui/               primitives: Eyebrow, Headline, SplitButton, Section, Card, Accordion,
-                    StatTile, Media
-  layout/           SiteHeader, NavDrawer, NavLinks, SiteFooter, PageHero, StubSection
-  home/             Hero, Globe
+                    StatTile (+ CountUp), TestimonialCard, Chip, Field, Media, DottedMap
+  layout/           SiteHeader, NavDrawer, NavLinks, SiteFooter, PageHero, FaqSection,
+                    ContactCta, SeasonNote, OnThisPage, StubSection
+  home/             Hero, Globe, WhatWeDo, Process (+ ProcessScroll, ProcessGraphic),
+                    ImpactBand (+ TestimonialMarquee, Awards, AwardCarousel), WhoWeServe
   motion/           Reveal / RevealGroup (fade-and-rise, reduced-motion aware)
   icons/            Instagram / LinkedIn (lucide 1.x has no brand icons)
 src/lib/content/    schemas.ts (Zod) + index.ts (loaders; throw on invalid content)
@@ -76,8 +79,13 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   `text-body` / `text-body-lg` (16/18), `text-eyebrow` (12, uppercase, tracked),
   `text-display-fluid` for heroes. Families: `font-display`, `font-body` (both Poppins now;
   swap to Cunia + Josefin Sans by changing `--font-display` / `--font-body` in globals.css).
-- Radii: `rounded-sm` (4px), `rounded-md` (8px) only. Utilities: `container-x`,
-  `container-max`, `grid-overlay`, `ghost-text`, `skip-link`.
+- Radii: none. Both radius tokens are 0 (do not write `rounded-sm`/`rounded-md`);
+  `rounded-full` is for avatars only. The look is rigid lines and hairline dividers.
+- Surface language: `glass` (frosted: header, drawer, footer, floating tiles and cards;
+  `[--glass-alpha:80%]` tunes opacity), `hover-corners` (green viewfinder brackets on
+  hover / focus, the one hover treatment for interactive surfaces), `frame-marks`
+  (crosshairs at the corners of framed containers). Other utilities: `container-x`,
+  `container-max`, `grid-overlay`, `ghost-text`, `skip-link`, `marquee` / `marquee-track`.
 - Contrast (checked, WCAG AA): text/muted/green/mint/cyan on bg, surface and surface-2 all
   pass; dark text on green (8.6:1) and on lime (16.6:1) pass; white on green FAILS (never);
   green-deep on bg is 3.8:1 → large text or decoration only. `/dev/ui` shows the table.
@@ -88,8 +96,14 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   and leaf-level (Accordion, NavDrawer, NavLinks, Globe, Reveal).
 - Every CTA is a `SplitButton`; every section label is an `Eyebrow`; every heading with a
   green accent is a `Headline` (`*word*` marks the accent).
+- Hover states are one language everywhere: text links turn green; interactive surfaces get
+  `hover-corners` + `border-line-strong` + `bg-surface-2`; arrow cells fill green; nav links
+  show the green underline. Nothing translates, lifts or scales on hover (only the arrow glyph
+  slides). Mint is the focus ring only, never a hover colour. Transitions: 200ms colours.
 - Motion: Framer Motion via `Reveal`/`RevealGroup`; check `useReducedMotion` in any client
-  animation and render the final state when it is set. CSS transitions for hover.
+  animation and render the final state when it is set. CSS transitions for hover. Scroll-driven
+  and looping effects (count-up, process graphics, testimonial marquee, dinosaur) must have a
+  static or paused fallback under reduced motion and, for the marquee, a pause control.
 - Images: `<Media>` (next/image) with `sizes`; SVG placeholders render unoptimized.
 
 ## Accessibility rules

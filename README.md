@@ -25,6 +25,10 @@ year, location, tags, summary, cover, optional `liveUrl`, `gallery`, `stack`, `t
 `featured`, `published`) and a Markdown/MDX body rendered on `/projects/<slug>`. Gallery
 entries are media keys, or `{ src, alt, caption }` objects when a screenshot needs alt text.
 
+The home page reads `content/services.ts` (what we do), `content/process.ts` (the four
+process steps), `content/stats.ts`, `content/testimonials.ts` and `content/awards.ts`;
+stats, testimonials and awards stay hidden in production until marked `published: true`.
+
 Visual + accessibility checks (need `pnpm dev` running in another terminal):
 
 ```bash
