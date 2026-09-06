@@ -40,6 +40,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${poppins.variable} h-full`}>
       <body className="flex min-h-full flex-col bg-bg font-body text-text">
+        {/* Without JavaScript the reveal wrappers keep their hidden initial state; show them. */}
+        <noscript>
+          <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>
+        </noscript>
         <a href="#main" className="skip-link">
           Skip to content
         </a>

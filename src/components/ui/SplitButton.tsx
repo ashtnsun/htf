@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight, LoaderCircle } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 type SplitButtonProps = {
-  href: string;
+  /** Destination. Omit it to render a real <button> (form submit, client actions). */
+  href?: string;
   children: ReactNode;
   /** primary = green label + lime arrow cell. secondary = outlined. */
   variant?: "primary" | "secondary";
@@ -12,6 +13,12 @@ type SplitButtonProps = {
   size?: "md" | "lg" | "bar";
   /** Opens in a new tab and shows a diagonal arrow. Inferred for http(s) hrefs. */
   external?: boolean;
+  /** <button> only. */
+  type?: "submit" | "button";
+  disabled?: boolean;
+  /** <button> only: shows a spinner in the arrow cell and announces the busy state. */
+  pending?: boolean;
+  onClick?: () => void;
   className?: string;
   ariaLabel?: string;
 };
@@ -27,21 +34,26 @@ export function SplitButton({
   variant = "primary",
   size = "md",
   external,
+  type = "button",
+  disabled = false,
+  pending = false,
+  onClick,
   className,
   ariaLabel,
 }: SplitButtonProps) {
-  const isExternal = external ?? /^https?:\/\//.test(href);
-  const Icon = isExternal ? ArrowUpRight : ArrowRight;
+  const isExternal = href ? (external ?? /^https?:\/\//.test(href)) : false;
+  const Icon = pending ? LoaderCircle : isExternal ? ArrowUpRight : ArrowRight;
 
   const base = cn(
     "group inline-flex items-stretch overflow-hidden font-medium whitespace-nowrap",
-    "transition-[transform,box-shadow] duration-300 ease-out-quart",
+    "transition-[transform,box-shadow,opacity] duration-300 ease-out-quart",
     "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-mint",
     size === "md" && "rounded-sm text-sm",
     size === "lg" && "rounded-sm text-base",
     size === "bar" && "h-full rounded-none text-base",
     variant === "primary" && "hover:-translate-y-px",
     variant === "secondary" && "rounded-sm border border-line-strong hover:border-mint/60",
+    (disabled || pending) && "pointer-events-none opacity-60",
   );
 
   const label = cn(
@@ -64,9 +76,11 @@ export function SplitButton({
 
   const icon = cn(
     "size-[1.1em] transition-transform duration-300 ease-out-expo",
-    isExternal
-      ? "group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-      : "group-hover:translate-x-1",
+    pending
+      ? "animate-spin"
+      : isExternal
+        ? "group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+        : "group-hover:translate-x-1",
   );
 
   const content = (
@@ -78,6 +92,20 @@ export function SplitButton({
     </>
   );
 
+  if (!href) {
+    return (
+      <button
+        type={type}
+        disabled={disabled || pending}
+        aria-busy={pending || undefined}
+        onClick={onClick}
+        className={cn(base, className)}
+        aria-label={ariaLabel}
+      >
+        {content}
+      </button>
+    );
+  }
   if (isExternal) {
     return (
       <a
@@ -92,7 +120,7 @@ export function SplitButton({
     );
   }
   return (
-    <Link href={href} className={cn(base, className)} aria-label={ariaLabel}>
+    <Link href={href} className={cn(base, className)} aria-label={ariaLabel} onClick={onClick}>
       {content}
     </Link>
   );

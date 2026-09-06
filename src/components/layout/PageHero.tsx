@@ -15,10 +15,20 @@ type PageHeroProps = {
   stagger?: boolean;
   /** Small "back to the index" link above the eyebrow (detail pages). */
   back?: { href: string; label: string };
+  /** Huge ghosted word behind the hero (e.g. "404"). Decoration only. */
+  ghost?: string;
 };
 
 /** Compact hero for inner pages: eyebrow, split headline, blurb, optional actions. */
-export function PageHero({ eyebrow, lines, blurb, children, stagger = true, back }: PageHeroProps) {
+export function PageHero({
+  eyebrow,
+  lines,
+  blurb,
+  children,
+  stagger = true,
+  back,
+  ghost,
+}: PageHeroProps) {
   return (
     <section
       aria-labelledby="page-title"
@@ -28,6 +38,9 @@ export function PageHero({ eyebrow, lines, blurb, children, stagger = true, back
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 bottom-0 h-[60%] bg-[radial-gradient(60%_100%_at_50%_100%,rgba(3,198,82,0.35)_0%,rgba(3,198,82,0.08)_45%,transparent_75%)]"
       />
+      {ghost ? (
+        <span aria-hidden="true" data-ghost={ghost} className="ghost-text top-0 -translate-y-1/4" />
+      ) : null}
       <RevealGroup
         mode="mount"
         className="relative container-max container-x pt-14 pb-20 md:pt-20 md:pb-28 lg:border-x lg:border-line"

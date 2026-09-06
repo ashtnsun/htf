@@ -39,6 +39,7 @@ export function RevealGroup({
       : { animate: "show" };
   return (
     <motion.div
+      data-reveal=""
       className={className}
       initial="hidden"
       {...viewProps}
@@ -57,13 +58,18 @@ type RevealProps = {
   delay?: number;
 };
 
-/** Fade-and-rise reveal. Inside a RevealGroup it follows the group's stagger. */
+/**
+ * Fade-and-rise reveal. Inside a RevealGroup it follows the group's stagger. `data-reveal`
+ * marks every animated wrapper so the root layout's <noscript> style can show it when
+ * JavaScript never runs (the server-rendered initial state is invisible).
+ */
 export function Reveal({ children, className, standalone = false, delay = 0 }: RevealProps) {
   const reduce = useReducedMotion();
   if (reduce) return <div className={className}>{children}</div>;
   if (standalone) {
     return (
       <motion.div
+        data-reveal=""
         className={className}
         initial="hidden"
         whileInView="show"
@@ -78,7 +84,7 @@ export function Reveal({ children, className, standalone = false, delay = 0 }: R
     );
   }
   return (
-    <motion.div className={className} variants={revealVariants}>
+    <motion.div data-reveal="" className={className} variants={revealVariants}>
       {children}
     </motion.div>
   );
