@@ -9,7 +9,7 @@ type SplitButtonProps = {
   children: ReactNode;
   /** primary = green label + lime arrow cell. secondary = outlined. */
   variant?: "primary" | "secondary";
-  /** md = normal button. lg = hero. bar = fills the header bar (no radius). */
+  /** md = normal button. lg = hero. bar = fills the header bar. */
   size?: "md" | "lg" | "bar";
   /** Opens in a new tab and shows a diagonal arrow. Inferred for http(s) hrefs. */
   external?: boolean;
@@ -24,9 +24,10 @@ type SplitButtonProps = {
 };
 
 /**
- * The Framer-style split CTA: a label cell and a separate arrow cell. On hover the
- * arrow slides right. Text on green/lime is always the dark background colour
- * (white on green fails WCAG AA; dark on green passes at 8.6:1).
+ * The split CTA: a label cell and a separate arrow cell, square-cornered. Hover follows the
+ * site-wide language: the button stays put, the arrow slides, and on the secondary variant
+ * the border and arrow cell turn green (the same fill the project-card arrows use).
+ * Text on green/lime is always the dark background colour (white on green fails WCAG AA).
  */
 export function SplitButton({
   href,
@@ -46,13 +47,12 @@ export function SplitButton({
 
   const base = cn(
     "group inline-flex items-stretch overflow-hidden font-medium whitespace-nowrap",
-    "transition-[transform,box-shadow,opacity] duration-300 ease-out-quart",
+    "transition-[border-color,opacity] duration-200",
     "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-mint",
-    size === "md" && "rounded-sm text-sm",
-    size === "lg" && "rounded-sm text-base",
-    size === "bar" && "h-full rounded-none text-base",
-    variant === "primary" && "hover:-translate-y-px",
-    variant === "secondary" && "rounded-sm border border-line-strong hover:border-mint/60",
+    size === "md" && "text-sm",
+    size === "lg" && "text-base",
+    size === "bar" && "h-full text-base",
+    variant === "secondary" && "border border-line-strong hover:border-green",
     (disabled || pending) && "pointer-events-none opacity-60",
   );
 
@@ -66,12 +66,13 @@ export function SplitButton({
   );
 
   const arrow = cn(
-    "flex items-center justify-center",
+    "flex items-center justify-center transition-colors duration-200",
     size === "md" && "w-11",
     size === "lg" && "w-14",
     size === "bar" && "w-14 lg:w-16",
     variant === "primary" && "bg-lime text-bg",
-    variant === "secondary" && "border-l border-line-strong bg-surface-2 text-mint",
+    variant === "secondary" &&
+      "border-l border-line-strong bg-surface-2 text-green group-hover:border-green group-hover:bg-green group-hover:text-bg",
   );
 
   const icon = cn(

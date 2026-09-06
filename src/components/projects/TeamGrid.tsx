@@ -19,7 +19,7 @@ export function TeamGrid({ members, className }: TeamGridProps) {
         return (
           <li
             key={`${member.name}-${i}`}
-            className="flex items-center gap-4 rounded-md border border-line bg-surface p-4"
+            className="flex items-center gap-4 border border-line bg-surface p-4"
           >
             {member.avatar ? (
               <Media
@@ -47,7 +47,7 @@ export function TeamGrid({ members, className }: TeamGridProps) {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`${member.name} on LinkedIn`}
-                className="flex size-11 shrink-0 items-center justify-center rounded-sm border border-line-strong text-muted transition-colors hover:border-mint hover:text-mint"
+                className="flex size-11 shrink-0 items-center justify-center border border-line-strong text-muted transition-colors duration-200 hover:border-green hover:text-green"
               >
                 <LinkedinIcon className="size-4" />
               </a>

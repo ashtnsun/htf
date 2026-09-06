@@ -15,7 +15,7 @@ type GalleryProps = {
 };
 
 const iconButton =
-  "flex size-11 items-center justify-center rounded-sm border border-line-strong bg-surface text-text transition-colors hover:border-mint hover:text-mint disabled:opacity-40";
+  "glass flex size-11 items-center justify-center border border-line-strong text-text transition-colors duration-200 hover:border-green hover:text-green disabled:opacity-40 [--glass-alpha:70%]";
 
 /**
  * Screenshot grid with a lightbox. The lightbox is a native modal <dialog>: the browser
@@ -85,18 +85,18 @@ export function Gallery({ images, label, className }: GalleryProps) {
               onClick={() => setIndex(i)}
               aria-haspopup="dialog"
               aria-label={`Enlarge: ${image.alt}`}
-              className="group relative block aspect-[16/10] w-full overflow-hidden rounded-md border border-line bg-surface transition-colors hover:border-line-strong focus-visible:outline-offset-2"
+              className="group hover-corners relative block aspect-[16/10] w-full overflow-hidden border border-line bg-surface transition-colors duration-200 hover:border-line-strong focus-visible:outline-offset-2"
             >
               <Media
                 src={image.src}
                 alt=""
                 fill
                 sizes="(min-width: 1024px) 40vw, (min-width: 640px) 50vw, 100vw"
-                className="object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.03]"
+                className="object-cover"
               />
               <span
                 aria-hidden="true"
-                className="absolute right-3 bottom-3 flex size-9 items-center justify-center rounded-sm border border-line-strong bg-bg/70 text-text opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100"
+                className="absolute right-3 bottom-3 flex size-9 items-center justify-center border border-line-strong glass text-text opacity-0 transition-opacity duration-300 [--glass-alpha:70%] group-hover:opacity-100 group-focus-visible:opacity-100"
               >
                 <Maximize2 className="size-4" />
               </span>

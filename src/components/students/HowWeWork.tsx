@@ -69,7 +69,7 @@ function TeamDiagram({ seats }: { seats: TeamSeat[] }) {
                 <span
                   key={i}
                   className={cn(
-                    "flex size-11 items-center justify-center rounded-sm border",
+                    "flex size-11 items-center justify-center border",
                     seat.icon === "lead" && "border-green bg-green text-bg",
                     seat.icon === "code" && "border-line-strong bg-surface-2 text-text",
                     seat.icon === "design" && "border-mint/70 text-mint",

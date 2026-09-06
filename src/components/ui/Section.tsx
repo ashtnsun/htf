@@ -15,7 +15,7 @@ type SectionProps = {
   padding?: "none" | "sm" | "md" | "lg";
   /** Wrap children in the page container (gutter + max width). Off for custom layouts. */
   contain?: boolean;
-  /** Draw thin vertical lines at the container edges (Framer hero frame). */
+  /** Draw thin vertical lines at the container edges with crosshair marks at the corners. */
   frame?: boolean;
   /**
    * Clip overflow (needed for ghost words and other decoration that bleeds past the edges).
@@ -81,7 +81,7 @@ export function Section({
         <div
           className={cn(
             "relative container-max container-x",
-            frame && "lg:border-x lg:border-line",
+            frame && "frame-marks lg:border-x lg:border-line",
             containerClassName,
           )}
         >

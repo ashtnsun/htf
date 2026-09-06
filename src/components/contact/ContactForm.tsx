@@ -132,10 +132,7 @@ function ContactFormInner({ mode, email, onReset }: ContactFormProps & { onReset
   return (
     <form ref={formRef} {...formProps} className="space-y-6">
       {summary ? (
-        <p
-          role="alert"
-          className="rounded-sm border border-cyan/50 bg-surface px-4 py-3 text-sm text-text"
-        >
+        <p role="alert" className="border border-cyan/50 bg-surface px-4 py-3 text-sm text-text">
           {summary}
         </p>
       ) : null}
@@ -234,7 +231,7 @@ function SentPanel({ title, children, onReset, eyebrow = "Message sent" }: SentP
       ref={ref}
       tabIndex={-1}
       role="status"
-      className="rounded-md border border-line bg-surface p-6 outline-none sm:p-8"
+      className="border border-line bg-surface p-6 outline-none sm:p-8"
     >
       <Eyebrow tone="green">{eyebrow}</Eyebrow>
       <p className="mt-4 font-display text-h3 font-medium text-text">{title}</p>

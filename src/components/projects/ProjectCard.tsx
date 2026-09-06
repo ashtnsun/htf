@@ -38,9 +38,9 @@ export function toProjectCardData(project: ProjectCardData): ProjectCardData {
 }
 
 /**
- * Portfolio card after the Framer treatment: full-bleed cover fading into a caption with the
- * nonprofit label, a rule, the year, then a big title. Hover scales the cover, turns the title
- * green and fills the arrow cell. The whole card is one link.
+ * Portfolio card: full-bleed cover fading into a caption with the nonprofit label, a rule,
+ * the year, then a big title. Hover follows the shared language (corner brackets, title turns
+ * green, the arrow cell fills green); nothing moves. The whole card is one link.
  */
 export function ProjectCard({
   project,
@@ -61,19 +61,13 @@ export function ProjectCard({
           size === "featured" ? "aspect-[4/3] md:aspect-[4/5]" : "aspect-[4/3]",
         )}
       >
-        <Media
-          src={project.cover}
-          alt=""
-          fill
-          sizes={sizes}
-          className="object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.03]"
-        />
+        <Media src={project.cover} alt="" fill sizes={sizes} className="object-cover" />
         <div
           aria-hidden="true"
           className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-surface to-transparent"
         />
         {project.published === false ? (
-          <span className="absolute top-3 left-3 rounded-sm border border-dashed border-line-strong bg-bg/80 px-2 py-1 text-eyebrow font-medium text-muted uppercase backdrop-blur-sm">
+          <span className="absolute top-3 left-3 border border-dashed border-line-strong glass px-2 py-1 text-eyebrow font-medium text-muted uppercase [--glass-alpha:80%]">
             Draft
           </span>
         ) : null}
@@ -90,7 +84,7 @@ export function ProjectCard({
           </Heading>
           <span
             aria-hidden="true"
-            className="flex size-11 shrink-0 items-center justify-center rounded-sm border border-line-strong bg-surface-2 text-text transition-colors duration-300 group-hover:border-green group-hover:bg-green group-hover:text-bg"
+            className="flex size-11 shrink-0 items-center justify-center border border-line-strong bg-surface-2 text-green transition-colors duration-200 group-hover:border-green group-hover:bg-green group-hover:text-bg"
           >
             <ArrowUpRight className="size-5" />
           </span>

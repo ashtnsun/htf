@@ -57,7 +57,7 @@ export default function PrivacyPage() {
           </div>
         </dl>
         {!policy.reviewed ? (
-          <p className="mt-8 inline-block rounded-sm border border-dashed border-line-strong px-3 py-2 text-xs text-muted">
+          <p className="mt-8 inline-block border border-dashed border-line-strong px-3 py-2 text-xs text-muted">
             [TODO: legal review] This draft was written by the site team, not a lawyer.
           </p>
         ) : null}

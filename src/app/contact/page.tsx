@@ -76,7 +76,7 @@ export default function ContactPage() {
               {mode ? (
                 <ContactForm mode={mode} email={email} />
               ) : (
-                <div className="rounded-md border border-dashed border-line-strong p-6">
+                <div className="border border-dashed border-line-strong p-6">
                   <p className="text-text">The contact form is not connected yet.</p>
                   <p className="mt-2 text-sm text-muted">
                     [TODO: set the club email in content/site.ts for the mailto fallback, or add the

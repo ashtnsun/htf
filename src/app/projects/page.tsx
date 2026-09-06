@@ -35,7 +35,7 @@ export default function ProjectsPage() {
 
       <Section id="all-projects" aria-label="All projects" className="border-t border-line">
         {hasDrafts ? (
-          <p className="mb-8 inline-block rounded-sm border border-dashed border-line-strong px-3 py-2 text-xs text-muted">
+          <p className="mb-8 inline-block border border-dashed border-line-strong px-3 py-2 text-xs text-muted">
             Preview: draft projects are shown in development only
           </p>
         ) : null}

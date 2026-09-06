@@ -91,7 +91,7 @@ export function ProjectsExplorerView({ projects, years, year, onSelect }: Explor
           </AnimatePresence>
         </ul>
       ) : (
-        <div className="mt-10 rounded-md border border-dashed border-line-strong px-6 py-14 text-center">
+        <div className="mt-10 border border-dashed border-line-strong px-6 py-14 text-center">
           <p className="text-body-lg text-text">No projects from {year} yet.</p>
           <p className="mt-2 text-sm text-muted">
             Try another cycle, or browse everything we have built.

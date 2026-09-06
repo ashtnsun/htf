@@ -7,15 +7,46 @@ import { cn } from "@/lib/utils";
 type TestimonialCardProps = {
   testimonial: Testimonial;
   as?: "li" | "div";
+  /**
+   * "band" cards sit in the marquee and take a fixed width from the quote length
+   * (long quotes get the wide card); "grid" cards fill their grid cell.
+   */
+  layout?: "band" | "grid";
   className?: string;
 };
 
-/** Quote card for the testimonial band: quote mark, quote, then avatar + name (green) + role. */
-export function TestimonialCard({ testimonial: t, as = "li", className }: TestimonialCardProps) {
+/** Long quotes get the wide card in the band, short ones the narrow card. */
+const WIDE_QUOTE = 90;
+
+/**
+ * Quote card: green headline, the quote, then avatar + name (green) + role. Frosted glass so
+ * the dotted map behind the band shows through.
+ */
+export function TestimonialCard({
+  testimonial: t,
+  as = "li",
+  layout = "grid",
+  className,
+}: TestimonialCardProps) {
+  const wide = t.quote.length >= WIDE_QUOTE;
   return (
-    <Card as={as} padding="lg" className={cn("h-full bg-surface/90 backdrop-blur-sm", className)}>
+    <Card
+      as={as}
+      padding="lg"
+      glass
+      className={cn(
+        "h-full",
+        layout === "band" && "shrink-0",
+        layout === "band" && (wide ? "w-[min(34rem,84vw)]" : "w-[min(22rem,80vw)]"),
+        className,
+      )}
+    >
       <figure className="flex h-full flex-col">
-        <Quote aria-hidden="true" className="size-5 text-green" strokeWidth={1.75} />
+        {t.headline ? (
+          <p className="text-sm font-medium text-green">{t.headline}</p>
+        ) : (
+          <Quote aria-hidden="true" className="size-5 text-green" strokeWidth={1.75} />
+        )}
         <blockquote className="mt-4 flex-1 text-body-lg text-text">
           <p>“{t.quote}”</p>
         </blockquote>

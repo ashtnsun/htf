@@ -66,9 +66,7 @@ export function RecruitmentTimeline({ steps }: { steps: RecruitmentStep[] }) {
                       {step.when}
                     </span>
                     {state === "current" ? (
-                      <span className="rounded-sm bg-green px-1.5 py-0.5 text-[0.625rem] text-bg">
-                        Now
-                      </span>
+                      <span className="bg-green px-1.5 py-0.5 text-[0.625rem] text-bg">Now</span>
                     ) : null}
                   </p>
                   <h3 className="mt-4 text-h3">{step.title}</h3>

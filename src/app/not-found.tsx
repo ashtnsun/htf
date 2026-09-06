@@ -49,7 +49,7 @@ export default function NotFound() {
             <li key={page.href}>
               <Link
                 href={page.href}
-                className="group flex h-full min-h-20 items-center justify-between gap-4 rounded-md border border-line bg-surface/60 px-5 py-4 transition-colors duration-300 hover:border-line-strong hover:bg-surface-2"
+                className="group hover-corners flex h-full min-h-20 items-center justify-between gap-4 border border-line bg-surface/60 px-5 py-4 transition-colors duration-200 hover:border-line-strong hover:bg-surface-2"
               >
                 <span>
                   <span className="block text-text">{page.label}</span>

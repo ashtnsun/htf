@@ -70,7 +70,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
         stagger={false}
       >
         {!project.published ? (
-          <p className="mb-8 inline-block rounded-sm border border-dashed border-line-strong px-3 py-2 text-xs text-muted">
+          <p className="mb-8 inline-block border border-dashed border-line-strong px-3 py-2 text-xs text-muted">
             Preview: draft project, shown in development only
           </p>
         ) : null}
@@ -100,7 +100,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
       </PageHero>
 
       <Section aria-label="Project cover" padding="none">
-        <div className="relative aspect-[16/9] overflow-hidden rounded-md border border-line bg-surface">
+        <div className="relative aspect-[16/9] overflow-hidden border border-line bg-surface">
           <Media
             src={project.cover}
             alt=""
