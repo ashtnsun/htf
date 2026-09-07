@@ -13,6 +13,8 @@ type AccountPanelProps = {
   email: string;
   cycle: Cycle | null;
   application: ApplicationSummary | null;
+  /** Names of the roles applied for, in role order. */
+  roleNames?: string[];
   admin: boolean;
 };
 
@@ -69,7 +71,13 @@ function describe(cycle: Cycle | null, application: ApplicationSummary | null): 
 }
 
 /** Signed-in view of the /apply landing: who you are, where your application stands. */
-export function AccountPanel({ email, cycle, application, admin }: AccountPanelProps) {
+export function AccountPanel({
+  email,
+  cycle,
+  application,
+  roleNames = [],
+  admin,
+}: AccountPanelProps) {
   const status = describe(cycle, application);
   return (
     <div className="space-y-6">
@@ -77,6 +85,11 @@ export function AccountPanel({ email, cycle, application, admin }: AccountPanelP
         <Eyebrow>{cycle ? `Your application · ${cycle.name}` : "Your application"}</Eyebrow>
         <p className="mt-4 font-display text-h3 font-medium text-text">{status.title}</p>
         <p className="mt-3 max-w-prose text-muted">{status.body}</p>
+        {application && roleNames.length > 0 ? (
+          <p className="mt-3 text-sm text-muted">
+            Roles: <span className="text-text">{roleNames.join(", ")}</span>
+          </p>
+        ) : null}
         {status.cta ? (
           <SplitButton href={status.cta.href} variant={status.cta.variant} className="mt-8">
             {status.cta.label}

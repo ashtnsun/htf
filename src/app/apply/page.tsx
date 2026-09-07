@@ -108,6 +108,9 @@ export default async function ApplyPage({ searchParams }: PageProps<"/apply">) {
                   email={user.email}
                   cycle={cycle}
                   application={application}
+                  roleNames={roles
+                    .filter((role) => application?.roles_applied.includes(role.id))
+                    .map((role) => role.name)}
                   admin={admin}
                 />
               ) : (

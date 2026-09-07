@@ -18,6 +18,9 @@ type SplitButtonProps = {
   external?: boolean;
   /** <button> only. */
   type?: "submit" | "button";
+  /** <button> only: submitted with the form (e.g. which step to go to next). */
+  name?: string;
+  value?: string;
   disabled?: boolean;
   /** <button> only: shows a spinner in the arrow cell and announces the busy state. */
   pending?: boolean;
@@ -39,6 +42,8 @@ export function SplitButton({
   size = "md",
   external,
   type = "button",
+  name,
+  value,
   disabled = false,
   pending = false,
   onClick,
@@ -101,6 +106,8 @@ export function SplitButton({
     return (
       <button
         type={type}
+        name={name}
+        value={value}
         disabled={disabled || pending}
         aria-busy={pending || undefined}
         onClick={onClick}

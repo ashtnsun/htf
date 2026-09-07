@@ -39,6 +39,41 @@ export function isFormDeliveryConfigured(): boolean {
   return getFormDeliveries().length > 0;
 }
 
+/** True when the site can send email at all (RESEND_API_KEY set). */
+export function isEmailConfigured(): boolean {
+  return Boolean(env("RESEND_API_KEY"));
+}
+
+export type OutgoingEmail = { to: string; subject: string; text: string; replyTo?: string };
+
+/**
+ * One plain-text email through Resend, from CONTACT_FROM (a verified sender). Used by the
+ * form notifications and by the application portal's confirmation email. RESEND_API_URL
+ * overrides the endpoint for local testing against a fake server; never set it in production.
+ */
+export async function sendEmail({ to, subject, text, replyTo }: OutgoingEmail): Promise<void> {
+  const apiKey = env("RESEND_API_KEY");
+  if (!apiKey) throw new Error("RESEND_API_KEY is not set");
+  const from = env("CONTACT_FROM") ?? "Hack the Future website <onboarding@resend.dev>";
+  const base = (env("RESEND_API_URL") ?? "https://api.resend.com").replace(/\/+$/, "");
+  const res = await fetch(`${base}/emails`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from,
+      to: [to],
+      ...(replyTo ? { reply_to: replyTo } : {}),
+      subject,
+      // Plain text only: nothing from a form or an application is ever interpreted as HTML.
+      text,
+    }),
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    throw new Error(`Resend request failed with HTTP ${res.status}`);
+  }
+}
+
 async function storeInSupabase({ table, record }: Submission): Promise<void> {
   const url = env("SUPABASE_URL")!.replace(/\/+$/, "");
   const key = env("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -59,25 +94,8 @@ async function storeInSupabase({ table, record }: Submission): Promise<void> {
 }
 
 async function emailViaResend({ email }: Submission): Promise<void> {
-  const apiKey = env("RESEND_API_KEY")!;
   const inbox = env("CONTACT_INBOX")!;
-  const from = env("CONTACT_FROM") ?? "Hack the Future website <onboarding@resend.dev>";
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      from,
-      to: [inbox],
-      reply_to: email.replyTo,
-      subject: email.subject,
-      // Plain text only: nothing from a form is ever interpreted as HTML.
-      text: email.text,
-    }),
-    cache: "no-store",
-  });
-  if (!res.ok) {
-    throw new Error(`Resend request failed with HTTP ${res.status}`);
-  }
+  await sendEmail({ to: inbox, replyTo: email.replyTo, subject: email.subject, text: email.text });
 }
 
 /**

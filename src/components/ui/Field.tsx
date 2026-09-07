@@ -1,5 +1,5 @@
-import { CircleAlert } from "lucide-react";
-import type { InputHTMLAttributes, TextareaHTMLAttributes } from "react";
+import { Check, CircleAlert } from "lucide-react";
+import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -125,6 +125,17 @@ export function TextAreaField({
 
 type ChoiceOption = { value: string; label: string };
 
+/** 44px chip drawn next to an sr-only radio or checkbox (the year-filter look). */
+function chipClass(error: string | undefined) {
+  return cn(
+    "inline-flex min-h-11 cursor-pointer items-center border px-4 text-sm font-medium transition-colors duration-200",
+    "border-line-strong text-muted hover:border-green hover:text-text",
+    "peer-checked:border-green peer-checked:bg-green peer-checked:text-bg",
+    "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-mint",
+    error && "border-cyan",
+  );
+}
+
 type ChoiceFieldProps = {
   id: string;
   name: string;
@@ -174,21 +185,115 @@ export function ChoiceField({
               required={required}
               className="peer sr-only"
             />
-            <span
-              className={cn(
-                "inline-flex min-h-11 cursor-pointer items-center border px-4 text-sm font-medium transition-colors duration-200",
-                "border-line-strong text-muted hover:border-green hover:text-text",
-                "peer-checked:border-green peer-checked:bg-green peer-checked:text-bg",
-                "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-mint",
-                error && "border-cyan",
-              )}
-            >
-              {option.label}
-            </span>
+            <span className={chipClass(error)}>{option.label}</span>
           </label>
         ))}
       </div>
       <FieldError id={id} error={error} />
     </fieldset>
+  );
+}
+
+type CheckboxGroupFieldProps = Omit<ChoiceFieldProps, "defaultValue"> & {
+  defaultValue?: readonly string[];
+};
+
+/** Checkbox group rendered as chips: pick any number (multiselect questions). */
+export function CheckboxGroupField({
+  id,
+  name,
+  legend,
+  options,
+  defaultValue = [],
+  hint,
+  error,
+  required = true,
+  className,
+}: CheckboxGroupFieldProps) {
+  return (
+    <fieldset
+      className={className}
+      aria-invalid={error ? true : undefined}
+      aria-describedby={describedBy({ id, hint, error })}
+    >
+      <legend className="block text-sm font-medium text-text">
+        {legend}
+        {required ? null : <span className="font-normal text-muted"> (optional)</span>}
+      </legend>
+      <FieldHint id={id} hint={hint} />
+      <div className="mt-2 flex flex-wrap gap-2">
+        {options.map((option) => (
+          <label key={option.value} className="relative">
+            <input
+              type="checkbox"
+              name={name}
+              value={option.value}
+              defaultChecked={defaultValue.includes(option.value)}
+              className="peer sr-only"
+            />
+            <span className={chipClass(error)}>{option.label}</span>
+          </label>
+        ))}
+      </div>
+      <FieldError id={id} error={error} />
+    </fieldset>
+  );
+}
+
+type CheckboxFieldProps = {
+  id: string;
+  name: string;
+  value?: string;
+  children: ReactNode;
+  defaultChecked?: boolean;
+  required?: boolean;
+  error?: string;
+  className?: string;
+};
+
+/**
+ * One checkbox with its label (consent, confirmation). The native input stays in the DOM
+ * (sr-only) and a square box next to the text shows the state; the whole row is the target.
+ */
+export function CheckboxField({
+  id,
+  name,
+  value = "1",
+  children,
+  defaultChecked,
+  required = true,
+  error,
+  className,
+}: CheckboxFieldProps) {
+  return (
+    <div className={className}>
+      <label htmlFor={id} className="group flex min-h-11 cursor-pointer items-start gap-3">
+        <input
+          id={id}
+          name={name}
+          value={value}
+          type="checkbox"
+          defaultChecked={defaultChecked}
+          required={required}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${id}-error` : undefined}
+          className="peer sr-only"
+        />
+        <span
+          aria-hidden="true"
+          className={cn(
+            "mt-0.5 flex size-5 shrink-0 items-center justify-center border transition-colors duration-200",
+            "border-line-strong bg-surface text-transparent group-hover:border-green",
+            "peer-checked:border-green peer-checked:bg-green peer-checked:text-bg",
+            "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-mint",
+            error && "border-cyan",
+          )}
+        >
+          <Check className="size-3.5" strokeWidth={3} />
+        </span>
+        <span className="text-sm text-text">{children}</span>
+      </label>
+      <FieldError id={id} error={error} />
+    </div>
   );
 }

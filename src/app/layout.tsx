@@ -38,7 +38,9 @@ export const revalidate = 3600;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${poppins.variable} h-full`}>
+    // data-scroll-behavior lets Next suspend the CSS smooth scrolling while it scrolls a route
+    // transition (e.g. to #application-form after a form step), so the jump is instant.
+    <html lang="en" className={`${poppins.variable} h-full`} data-scroll-behavior="smooth">
       <body className="flex min-h-full flex-col bg-bg font-body text-text">
         {/* Without JavaScript the reveal wrappers keep their hidden initial state; show them. */}
         <noscript>

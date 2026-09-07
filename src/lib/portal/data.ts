@@ -1,8 +1,10 @@
 import "server-only";
 import { cache } from "react";
-import { site } from "@content/site";
+import { normaliseAnswer, type AnswerValue } from "@/lib/apply/schema";
 import type { Database } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
+
+export { formatCycleDeadline, formatPortalDate } from "./format";
 
 /**
  * Reads for the application portal. Every query runs as the current request's user through
@@ -15,10 +17,16 @@ export type Cycle = Tables["cycles"]["Row"];
 export type Role = Tables["roles"]["Row"];
 export type Question = Tables["questions"]["Row"];
 export type ApplicationStatus = Database["public"]["Enums"]["application_status"];
+export type Application = Tables["applications"]["Row"];
 export type ApplicationSummary = Pick<
-  Tables["applications"]["Row"],
+  Application,
   "id" | "status" | "roles_applied" | "submitted_at" | "updated_at" | "created_at"
 >;
+export type ApplicationDetail = {
+  application: Application;
+  /** Answers by question id, as stored (string, or list for multiselect). */
+  answers: Record<string, AnswerValue>;
+};
 
 export const APPLICATION_STATUSES: readonly ApplicationStatus[] = [
   "draft",
@@ -53,24 +61,6 @@ export function isCycleOpen(cycle: Cycle, now: Date = new Date()): boolean {
     t >= new Date(cycle.opens_at).getTime() &&
     t < new Date(cycle.closes_at).getTime()
   );
-}
-
-const deadlineFormat = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
-  timeZone: site.season.timeZone,
-});
-
-/** "Sep 12, 11:59 PM" in the club's time zone. */
-export function formatCycleDeadline(cycle: Cycle): string {
-  return deadlineFormat.format(new Date(cycle.closes_at));
-}
-
-/** "Sep 6, 3:14 PM" for saved / submitted timestamps. */
-export function formatPortalDate(iso: string): string {
-  return deadlineFormat.format(new Date(iso));
 }
 
 export const getOpenRoles = cache(async (cycleId: string): Promise<Role[]> => {
@@ -108,6 +98,29 @@ export const getMyApplication = cache(
       .maybeSingle();
     if (error) fail("application query", error.message);
     return data;
+  },
+);
+
+/** The signed-in user's application with its answers (the form and the read-only view). */
+export const getMyApplicationDetail = cache(
+  async (cycleId: string, userId: string): Promise<ApplicationDetail | null> => {
+    const supabase = await createClient();
+    const { data: application, error } = await supabase
+      .from("applications")
+      .select("*")
+      .eq("cycle_id", cycleId)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (error) fail("application query", error.message);
+    if (!application) return null;
+    const { data: rows, error: answersError } = await supabase
+      .from("answers")
+      .select("question_id, value")
+      .eq("application_id", application.id);
+    if (answersError) fail("answers query", answersError.message);
+    const answers: Record<string, AnswerValue> = {};
+    for (const row of rows) answers[row.question_id] = normaliseAnswer(row.value);
+    return { application, answers };
   },
 );
 
