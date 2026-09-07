@@ -26,6 +26,11 @@ type SplitButtonProps = {
   pending?: boolean;
   /** <a> only: downloads the href instead of navigating (route handlers such as the CSV). */
   download?: boolean;
+  /**
+   * Renders a <span> that only looks like the button, for cards that are links themselves
+   * (Who we serve). It follows the hover of the enclosing `group`.
+   */
+  presentational?: boolean;
   onClick?: () => void;
   className?: string;
   ariaLabel?: string;
@@ -49,6 +54,7 @@ export function SplitButton({
   disabled = false,
   pending = false,
   download = false,
+  presentational = false,
   onClick,
   className,
   ariaLabel,
@@ -112,6 +118,13 @@ export function SplitButton({
     </>
   );
 
+  if (presentational) {
+    return (
+      <span className={cn(base, variant === "secondary" && "group-hover:border-green", className)}>
+        {content}
+      </span>
+    );
+  }
   if (!href) {
     return (
       <button

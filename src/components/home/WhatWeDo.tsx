@@ -15,9 +15,9 @@ const ICONS: Record<Service["icon"], LucideIcon> = {
 
 /**
  * "What we do": the full-organization photo (no caption), then three service panels
- * (content/services.ts) in a full-bleed hairline row (`bleed-row-3`: the lines run edge to
- * edge, the columns stay on the page container's columns), then the link to the projects
- * page, centred. The panels share their row tracks (subgrid), so the icons, titles and
+ * (content/services.ts) in a full-bleed hairline row (`bleed-row-3`: the horizontal lines
+ * run edge to edge, the columns stay on the page container's columns and are framed by
+ * vertical rails on both sides), then the link to the projects page, centred. The panels share their row tracks (subgrid), so the icons, titles and
  * descriptions line up across the three columns whatever the line counts.
  */
 export function WhatWeDo({ services }: { services: Service[] }) {
@@ -62,7 +62,7 @@ export function WhatWeDo({ services }: { services: Service[] }) {
               return (
                 <li
                   key={service.id}
-                  className="border-b border-line px-(--gutter) py-6 last:border-b-0 md:row-span-4 md:grid md:grid-rows-subgrid md:border-r md:border-b-0 md:p-8 md:first:col-start-2 md:last:border-r-0"
+                  className="border-b border-line px-(--gutter) py-6 last:border-b-0 md:row-span-4 md:grid md:grid-rows-subgrid md:border-r md:border-b-0 md:p-8 md:first:col-start-2 md:first:border-l"
                 >
                   <Icon
                     aria-hidden="true"

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Logo } from "@/components/brand/Logo";
 import { PixelDino } from "@/components/brand/PixelDino";
 import { ProcessScene } from "@/components/home/ProcessScene";
-import { ConnectGraphic } from "@/components/layout/ConnectGraphic";
+import { PaperPlaneGraphic } from "@/components/layout/PaperPlaneGraphic";
 import { Globe } from "@/components/home/Globe";
 import { JumpLinks } from "@/components/layout/JumpLinks";
 import { Gallery } from "@/components/projects/Gallery";
@@ -404,12 +404,12 @@ export default function UiKitPage() {
         </dl>
       </Block>
 
-      <Block title="ProcessScene (one isometric scene building through the four steps; stills at 0, 0.5, 1, 2, 3)">
+      <Block title="ProcessScene (form, team, laptop, rocket cross-fading with progress; stills at 0, 0.5, 1, 2, 3)">
         <div className="grid gap-4 sm:grid-cols-5">
           {[0, 0.5, 1, 2, 3].map((progress) => (
             <ProcessScene
               key={progress}
-              stages={["scan", "team", "stack", "ship"]}
+              stages={["form", "team", "laptop", "rocket"]}
               progress={progress}
               animate={Number.isInteger(progress)}
             />
@@ -417,9 +417,9 @@ export default function UiKitPage() {
         </div>
       </Block>
 
-      <Block title="ConnectGraphic (Get involved: the two modules dock on view, pointer tilt)">
+      <Block title="PaperPlaneGraphic (Get involved: the plane flies its path on view, pointer tilt)">
         <div className="max-w-sm">
-          <ConnectGraphic />
+          <PaperPlaneGraphic />
         </div>
       </Block>
 
