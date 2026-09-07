@@ -48,13 +48,14 @@ src/components/
   ui/               primitives: Eyebrow, Headline, SplitButton, Section, Card, Accordion,
                     StatTile (+ CountUp), TestimonialCard, Chip, Field, Media, DottedMap
   layout/           SiteHeader, NavDrawer, NavLinks, SiteFooter, PageHero, JumpLinks,
-                    FaqSection, ContactCta (+ ConnectGraphic: two modules docking on view),
-                    SeasonNote, OnThisPage
+                    FaqSection, ContactCta (+ PaperPlaneGraphic: a paper plane flying its
+                    dotted path on view), SeasonNote, OnThisPage
   home/             Hero, Globe (SVG, takes pins), WhatWeDo, Process (+ ProcessScroll,
-                    ProcessScene: one isometric scene that builds through the steps on
-                    scroll; also the stills on /nonprofits), ImpactBand (+ TestimonialMarquee,
-                    Awards, AwardCarousel), WhoWeServe (two panels in a full-bleed row; also
-                    the hand-off on /about)
+                    ProcessScene: one stage whose recognizable pictures (form, team, laptop,
+                    rocket) cross-fade with scroll; also the stills on /nonprofits),
+                    ImpactBand (+ TestimonialMarquee, Awards, AwardCarousel), WhoWeServe (two
+                    linked panels with a presentational "Learn more" button in a full-bleed
+                    row; also the hand-off on /about)
   about/            Mission, Story, ExecGrid, InstagramGrid
   nonprofits/       HowItWorks, Scope, Partners (+ PartnersMap), NonprofitTestimonials,
                     IntakeForm
@@ -137,7 +138,8 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   (crosshairs at the corners of framed containers). Other utilities: `container-x` (reads
   `--gutter`), `container-max`, `bleed-row-2` / `bleed-row-3` (a full-bleed hairline row
   whose columns stay on the container's columns: `grid md:bleed-row-3`, first item
-  `md:first:col-start-2`, items padded `px-(--gutter)`), `grid-overlay`, `ghost-text`,
+  `md:first:col-start-2 md:first:border-l`, every item `md:border-r`, items padded
+  `px-(--gutter)`), `grid-overlay`, `ghost-text`,
   `skip-link`, `marquee` / `marquee-track`.
 - Contrast (checked, WCAG AA): text/muted/green/mint/cyan on bg, surface and surface-2 all
   pass; dark text on green (8.6:1) and on lime (16.6:1) pass; white on green FAILS (never);
@@ -156,7 +158,8 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   native hints) and the server action; `useFormSubmission` handles both modes;
   delivery goes through `src/lib/forms/deliver.ts`. Every list renders `li` as the direct
   child of `ul`/`ol` (put `Reveal` inside the `li`).
-- Every CTA is a `SplitButton` (primary: green label, green arrow cell, 2px black divider);
+- Every CTA is a `SplitButton` (primary: green label, green arrow cell, 2px black divider;
+  `presentational` renders a span for a button inside a card that is itself the link);
   every section label is an `Eyebrow`; every heading with a green accent is a `Headline`
   (`*word*` marks the accent).
 - Portal: every page and server action under `/apply` and `/admin` goes through

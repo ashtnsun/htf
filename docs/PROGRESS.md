@@ -34,6 +34,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 5: home + global audit pass (square corners, glass surfaces, one hover language, nav/footer changes with the pixel dinosaur, statement hero, What we do, scroll-driven process, Impact with count-up tiles / testimonial marquee / awards, Who we serve before the FAQ)
 - [x] Session 8b: home + global audit 2 (Home tab and centred nav, green bar CTA, `nonprofits` spelling, What we do reflow, one scroll-morphing process scene, Impact map backdrop, awards and caption cleanup, Who we serve cards, beacon graphic, footer, green inline links)
 - [x] Session 10: home audit 3 (full-bleed hairline rows, centred projects button, the isometric process scene with no counter under it, Impact map lower, 2px divider and green arrow cell on every primary button, plain Who we serve panels, the docking graphic in Get involved)
+- [x] Session 10, audit 4: framed rows, recognizable process pictures (form, team, laptop, rocket), wider marquee fade, "Learn more" buttons and the project-card hover on Who we serve, the paper plane in Get involved
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -70,6 +71,15 @@ beacon, and every primary button is now the bar's green-on-green treatment, so l
 Commits: `feat(home): audit pass 3 …` and `docs: session 10 …`. Not pushed. A second Claude
 session (`htf-64`) reworked the project cards in the same working tree at the same time; each
 session committed only its own files.
+
+**Audit 4, later the same session** (PLAN.md §17), five items: vertical rails on the outer
+edges of the full-bleed rows (What we do and Who we serve); the process scene redone once
+more as recognizable pictures, the intake form under a magnifying glass, the team, a laptop
+with code typing itself in, a rocket, cross-fading with scroll; a wider fade at both ends of
+the testimonial marquee; Who we serve panels with a "Learn more" split button and the project
+cards' hover (green title, the button in its hover state); and a paper plane on a dotted
+flight path in Get involved in place of the docking modules. Commits: `feat(home): audit pass
+4 …` and `docs: session 10, audit 4 …`.
 
 **Verified:** `pnpm typecheck`, `pnpm lint`, Prettier on the changed files, `pnpm build`.
 `pnpm a11y` on the dev server (`/`, `/nonprofits`, `/about` at 1440 and 390, plus the
@@ -124,6 +134,31 @@ transparent 100%)`, so the top edge is fully faded and the whole map sits lower.
    `scan` is new; `ping`, `draw`, `float`, `eyelid` stay.
 9. Project cards (the other session, per Ashton): they no longer use `hover-corners`; their
    hover is a green border and rule, the cover brightening, a green title and the arrow fill.
+10. Audit 4, rows: `md:first:border-l` joins `md:border-r` on every row item, so the outer
+    columns are framed by rails; phones keep the stacked full-width hairlines only.
+11. Audit 4, process scene: each step is a picture component on the same 400 viewBox stage
+    (`FormPicture`, `TeamPicture`, `LaptopPicture`, `RocketPicture`), placed by `sceneAt`:
+    opacity full within ±0.2 of the step and gone at ±0.7, the outgoing picture rising 36px
+    and scaling to 0.92 while the next comes up from below. Per-picture animations run only
+    while a picture is active (`data-active`): the magnifier glides (`magnify`), the check
+    draws, avatars pop in (`pop`), code rows type in (`type`) with a blinking cursor, the
+    flame flickers (`flame`) and the trail streams (`trail`). The animation classes are only
+    applied on the live scene, so the stills show everything complete. Stage names in
+    `content/process.ts`: `form`, `team`, `laptop`, `rocket`. The `scan` keyframes are gone.
+12. Audit 4, marquee: `--marquee-fade: clamp(4rem, 12vw, 14rem)` on `.marquee` and the mask
+    reads it on both sides (the old 6% was 86px at 1440 and read as a hard cut).
+13. Audit 4, Who we serve: `SplitButton` gained `presentational` (a span with the button's
+    classes, `group-hover:border-green` on the secondary variant) for a button inside a card
+    that is itself the link; the panel link is a `group`, its title `group-hover:text-green`,
+    and `hover-corners` / the surface change are gone from these panels.
+14. Audit 4, Get involved: `PaperPlaneGraphic` (client). The plane's nose is at its local
+    origin so `offset-path` (the flight curve, duplicated in globals.css) with `offset-rotate:
+auto` makes it ride and turn with the path; `.anim-fly` rests at `offset-distance: 100%`
+    and the `fly` keyframes run once when `data-active` flips on view. `[data-active=false]`
+    parks it at 0% so the flight starts from where it sits. Browsers without motion paths get
+    a static transform to the end of the path. The dotted path's dashes drift (`dots`), wind
+    strokes fade in after the flight, the float and the pointer tilt stay. Reduced motion:
+    resting at the end, no flight.
 
 **Known gaps**
 
@@ -136,9 +171,8 @@ transparent 100%)`, so the top edge is fully faded and the whole map sits lower.
 
 **TODOs for Ashton**
 
-- Scroll the home page in a real browser: the scene's timing constants are the `seg(...)`
-  windows in `sceneAt` (`ProcessScene.tsx`); the docking timing is the `t(...)` calls in
-  `ConnectGraphic.tsx`.
+- Scroll the home page in a real browser: the cross-fade window is the `0.2 / 0.5` pair in
+  `sceneAt` (`ProcessScene.tsx`); the flight takes 2.6s (`.anim-fly` in globals.css).
 - Everything from earlier sessions still stands (stats, testimonials, photos, LinkedIn URL,
   wording confirmations).
 

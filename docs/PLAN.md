@@ -238,3 +238,19 @@ Ashton's third audit of the built home page; PROGRESS.md (Session 10) has the de
 **Who we serve** is two plain panels: eyebrow, title, one sentence, a label and the arrow cell. The index numerals, icon boxes, spec rows, glow and hover grid are gone.
 
 **Get involved** has a new graphic in place of the beacon: two modules, one per audience, that dock into one unit when the section scrolls into view (`ConnectGraphic`), with the seam lighting up and the HTF mark pinging above it.
+
+---
+
+## 17. Amendments — home audit 4 (September 7, 2026)
+
+Ashton's fourth audit of the built home page, the same day as §16; PROGRESS.md (Session 10, audit 4) has the details.
+
+**Rows are framed.** The full-bleed rows of §16 gain vertical rails on their outer edges, so the three service panels and the two audience panels each sit in a framed cell while the horizontal lines still run edge to edge.
+
+**How it works shows recognizable pictures.** The isometric build of §16 is gone. `ProcessScene` now draws one picture per step in the site's wireframe style: the intake form under a magnifying glass (discover), the team of avatars with the lead in front (match), a laptop with code typing itself in (build) and a rocket (deliver). Scroll progress cross-fades them, the outgoing picture rising as the next comes up, so the scene is still one continuous object; the Nonprofits page still shows the four stills. `content/process.ts` names the pictures (`form`, `team`, `laptop`, `rocket`).
+
+**Testimonials fade at both ends.** The marquee's mask fades the cards out over `clamp(4rem, 12vw, 14rem)` on each side instead of a 6% sliver.
+
+**Who we serve.** Each panel is still one link, but the label-and-arrow footer is a normal "Learn more" split button (a presentational span inside the link), and the hover is the project cards' language: the title turns green and the button takes its hover state. No corner brackets, no surface change.
+
+**Get involved** has a paper plane in place of the docking modules: a dotted flight path with drifting dots, and the plane flies it once (CSS motion path) when the section scrolls into view, then rests at the end with a few wind strokes behind it.
