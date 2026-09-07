@@ -32,6 +32,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 4: Contact form (server action → Supabase / Resend, mailto fallback), Privacy rewrite (MDX), 404 polish, SEO pass (generated OG PNGs, apple icon, canonical URLs)
 - [ ] Session 4 leftover: deploy to the real domain (`docs/DEPLOY.md`: GitHub org transfer, Vercel project, DNS; needs Ashton's accounts)
 - [x] Session 5: home + global audit pass (square corners, glass surfaces, one hover language, nav/footer changes with the pixel dinosaur, statement hero, What we do, scroll-driven process, Impact with count-up tiles / testimonial marquee / awards, Who we serve before the FAQ)
+- [x] Session 8b: home + global audit 2 (Home tab and centred nav, green bar CTA, `nonprofits` spelling, What we do reflow, one scroll-morphing process scene, Impact map backdrop, awards and caption cleanup, Who we serve cards, beacon graphic, footer, green inline links)
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -52,6 +53,105 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+
+## Session 8b — 2026-09-07 (home and global audit 2; ran alongside the Session 8 form work)
+
+**Built:** Ashton's second audit of the home page, fourteen numbered changes, each applied to
+every page that reuses the element. Nav: Home tab first, links centred in the bar, no hover
+underline, lighter glass, the bar CTA green on green with a black divider. Copy: "nonprofits"
+as one word everywhere, "Student Org @ Purdue University", the footer's first column reduced to
+the logo. What we do: photo first and without a caption, icons without boxes, panels aligned
+with subgrid, the projects button on the right. How it works: one floating scene
+(`home/ProcessScene`) that morphs through the four steps with scroll, replacing the four
+graphics in a card. Impact: the dotted map as the backdrop instead of the ghost headline, no
+"Small teams, global reach", no preview note, the marquee no longer pauses on hover. Awards:
+eyebrow-only heading, plain table text, no photo captions anywhere. Who we serve: linked
+spec-sheet cards. FAQ aside links green without underline (every inline link follows). Get
+involved: the `layout/SignalGraphic` beacon instead of the static globe. Commit:
+`feat(home): audit pass 2 …`. Not pushed. A second Claude session built the Session 8 form in
+the same working tree at the same time; each session committed only its own files.
+
+**Verified:** `pnpm typecheck`, `pnpm lint`, Prettier on the changed files, `pnpm build`
+(before the last two cosmetic fixes; typecheck and lint re-run after them). `pnpm a11y` on
+the production build (`/`, `/nonprofits`, `/about`, `/students`, `/contact`, `/projects` at
+1440 and 390, plus the drawer): 0 violations; the dev-server home with the unpublished band: 0. Screenshots in `docs/screenshots/session-8b/` come from the dev server, so the Impact band
+shows the unpublished stats and testimonials; `process-1440-*.png` and `process-390-*.png` are
+viewport captures of the scene at progress 0.5 … 3, taken by scrolling in Playwright (no
+console errors).
+
+**Decisions made this session**
+
+1. Nav: `site.nav` now includes Home (the drawer no longer prepends it). The header is a
+   three-column grid on `lg` (logo · links · CTA) so the links sit at the true centre. Glass
+   alpha 82% → 50%. Hovering a link only brightens it; `aria-current` keeps the underline.
+2. Header CTA: `SplitButton size="bar"` primary renders its arrow cell `bg-green` with
+   `border-l border-black`. The other primary buttons keep the lime arrow, because Ashton asked
+   for the nav bar; flipping the rest is one line in `SplitButton.tsx`.
+3. Spelling: `nonprofits` in code, content and CLAUDE.md (new content rule). PLAN §3 and §10
+   keep their historical wording.
+4. Inline text links (the FAQ asides and every other `linkClass`, forms included): `font-medium
+text-green transition-colors hover:text-text`, no underline. The weight keeps them distinct
+   from the surrounding text for axe's `link-in-text-block` rule (green on muted is 1.1:1, so
+   colour alone would fail). The portal form pages belong to the other session and still use
+   the underlined class.
+5. What we do: the panel list is a grid with rows `auto / 1fr / auto / auto` and
+   `md:min-h-[22rem]`; each `li` is a subgrid spanning the four rows, so titles and
+   descriptions start on the same line across the three columns whatever their line counts.
+   Icons are bare `size-7` lucide glyphs.
+6. Process: `ProcessGraphic` is deleted. `ProcessScene` draws twelve squares with a formation
+   per stage (radar blips → the team ring → terminal rows, window dots and cursor → pins on the
+   globe), interpolates positions with smoothstep plus a per-particle stagger and a small lift,
+   and cross-fades each stage's decoration with a tent function (full within ±0.15 of a stage,
+   gone at ±0.6). A subtle 3D tilt follows progress and a CSS float keeps it "floating"; there
+   is no card. `ProcessScroll` maps the reading line (50% of the viewport on `lg`, 64% on
+   phones) piecewise-linearly between the step centres, eases it per frame (14%) and writes a
+   `ProgressStore`; the scene subscribes and patches SVG attributes directly, so React never
+   re-renders per frame. Reduced motion snaps to whole stages. On phones the scene sticks under
+   the header beside the counter. `/nonprofits` and `/dev/ui` show stills (`progress={i}`,
+   `animate={false}`). The schema's `graphic` field is now the stage order.
+7. Impact: `Eyebrow` gained an `id` prop and is the section heading (`as="h2"`); the dotted
+   map is the section backdrop (`w-[min(140%,120rem)]`, radial mask, 20% opacity, clipped by
+   the section); `marquee` pauses through the button and focus-within only.
+8. Awards: eyebrow heading (also on /about), `text-sm` cells, the carousel counter is a glass
+   badge over the photo and `AwardPhotoSlide` lost `caption`. The organization photo on home
+   and on About is a plain `div` (no `figcaption`). The project gallery on `/projects/[slug]`
+   keeps its optional MDX captions: they are content, not placeholders.
+9. Who we serve: each panel is one `Link` with the hover language (corner brackets, title and
+   index turn green, the arrow cell fills green, a faint grid fades in), an outlined index
+   numeral, the audience icon in a box, eyebrow, title, copy, a three-cell spec row (facts
+   taken from the existing copy) and a label + arrow footer. The two panels are subgrid rows,
+   so every line sits at the same height in both; one `Reveal` wraps the grid because subgrid
+   needs the direct parent chain.
+10. Get involved: `SignalGraphic` (client) is a ticked dial turning slowly, a dashed orbit
+    with the two audiences (labels counter-rotated to stay upright), links that draw in on view
+    (`useInView`), slow ping rings from the HTF mark, a glow, the float, and a ±5° pointer tilt
+    written straight to the element's style; static under reduced motion. New CSS in
+    `globals.css`: `orbit` and `float` keyframes, `.anim-orbit`, `.anim-orbit-back`,
+    `.anim-dial`, `.anim-ping-slow`, `.anim-float`, all paused by `[data-active="false"]`.
+11. Footer: only the logo in the first column; `site.tagline` still feeds the metadata.
+12. The other session's `pnpm format` reformatted a few of these files while they were being
+    edited (whitespace only); its dev-server restart on port 3000 did not affect the captures.
+
+**Known gaps**
+
+- Stats and testimonials are still `published: false`, so production shows the Impact band as
+  the eyebrow plus the awards block.
+- The three U.S. pins on the deliver stage overlap (Indiana, Illinois and Pennsylvania are
+  close on a 149px globe).
+- Subgrid needs Chrome 117 / Safari 16 / Firefox 71; older browsers get unaligned rows and
+  nothing else breaks.
+- `pnpm build` ran before the final two cosmetic fixes (links stop at the squares, the sticky
+  block's background on phones); typecheck and lint were re-run after them.
+
+**TODOs for Ashton**
+
+- Scroll the home page and hover the beacon in a real browser; the morph speed, the tent width
+  and the tilt are the constants at the top of `ProcessScene.tsx` (`STAGGER`, the `0.15 / 0.45`
+  tent, `tilt`).
+- Decide whether the lime arrow should go on the other primary buttons too (hero-less pages,
+  Get involved, the drawer CTA).
+- Everything from earlier sessions still stands (stats, testimonials, photos, LinkedIn URL,
+  wording confirmations).
 
 ## Session 7 — 2026-09-07 (Phase 2, part 1: portal schema and sign-in)
 

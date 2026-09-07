@@ -46,10 +46,12 @@ src/components/
   ui/               primitives: Eyebrow, Headline, SplitButton, Section, Card, Accordion,
                     StatTile (+ CountUp), TestimonialCard, Chip, Field, Media, DottedMap
   layout/           SiteHeader, NavDrawer, NavLinks, SiteFooter, PageHero, JumpLinks,
-                    FaqSection, ContactCta, SeasonNote, OnThisPage
+                    FaqSection, ContactCta (+ SignalGraphic, the floating beacon), SeasonNote,
+                    OnThisPage
   home/             Hero, Globe (SVG, takes pins), WhatWeDo, Process (+ ProcessScroll,
-                    ProcessGraphic), ImpactBand (+ TestimonialMarquee, Awards,
-                    AwardCarousel), WhoWeServe
+                    ProcessScene: one scene of particles morphing through the steps on
+                    scroll; also the stills on /nonprofits), ImpactBand (+ TestimonialMarquee,
+                    Awards, AwardCarousel), WhoWeServe
   about/            Mission, Story, ExecGrid, InstagramGrid
   nonprofits/       HowItWorks, Scope, Partners (+ PartnersMap), NonprofitTestimonials,
                     IntakeForm
@@ -93,6 +95,7 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
 - Never invent facts about HTF (names, numbers, awards, quotes). Unknown content is written
   as visible `[TODO: …]` text and listed in PROGRESS.md. The UI hides links whose value
   starts with `TODO`.
+- Spelling: `nonprofits`, one word, everywhere (page title "Nonprofits"); never "non-profits".
 - Season logic lives only in `content/site.ts` (`getPrimaryCta`, `isInSeason`,
   `formatDeadline`, `isPortalMode`). Every CTA reads from it. `season.applyMode` is
   `external` (default: `/apply` redirects to `season.applyUrl`) or `portal`
@@ -106,7 +109,8 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   `--text #F5F5F5` (`text-text`), `--muted #A3A3A3`, `--green #03C652`, `--green-deep
 #277D4A`, `--mint #00EB88`, `--cyan #00E0FF`, `--lime #C8FF3D`. The default Tailwind
   palette is disabled; only these (plus white/black) exist.
-- Lime is only the arrow cell of `SplitButton`. Never a text or brand colour.
+- Lime is only the arrow cell of `SplitButton` (except the header bar CTA, whose arrow cell is
+  green with a black divider). Never a text or brand colour.
 - Type: `text-display-xl/lg` (96/80), `text-display` (64), `text-h2` (48), `text-h3` (32),
   `text-body` / `text-body-lg` (16/18), `text-eyebrow` (12, uppercase, tracked),
   `text-display-fluid` for heroes. Families: `font-display`, `font-body` (both Poppins now;
@@ -144,9 +148,10 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   optimistic redirect. Schema changes are new files in `supabase/migrations/` followed by
   `supabase db reset` and `pnpm supabase:types`. A `<button>` with a function `formAction`
   cannot carry `name`/`value` (React overrides them): use a hidden input instead.
-- Hover states are one language everywhere: text links turn green; interactive surfaces get
+- Hover states are one language everywhere: text links turn green (inline links in body copy
+  are already green, medium weight, no underline, and turn white); interactive surfaces get
   `hover-corners` + `border-line-strong` + `bg-surface-2`; arrow cells fill green; nav links
-  show the green underline. Nothing translates, lifts or scales on hover (only the arrow glyph
+  brighten (the green underline marks the current page only). Nothing translates, lifts or scales on hover (only the arrow glyph
   slides). Mint is the focus ring only, never a hover colour. Transitions: 200ms colours.
 - Motion: Framer Motion via `Reveal`/`RevealGroup`; check `useReducedMotion` in any client
   animation and render the final state when it is set. CSS transitions for hover. Scroll-driven

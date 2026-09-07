@@ -178,3 +178,15 @@ Ashton asked for the About and Non-profits pages before the portal, so Session 6
 ## 12. Amendments — portal sign-in and configuration (September 7, 2026)
 
 Session 7 built the portal's foundation (§5) with two refinements. **Sign-in** uses Supabase Auth email OTP in both forms at once: the email carries a six-digit code (typed on the page that asked for it, so the flow works when mail is read on a phone) and a link to `/auth/confirm` that verifies the token hash server-side (so it works in any browser, unlike a PKCE code exchange). New addresses get an account on first sign-in. **Switching** from the external form to the portal is one setting, `season.applyMode` in `content/site.ts`, driven by `NEXT_PUBLIC_APPLY_MODE`, so the dry run happens on a Vercel preview with the production site untouched. The cycle, roles and questions are rows in Supabase (`supabase/seed.sql`), because Row Level Security needs the deadline in the database to lock drafts; `content/site.ts` keeps the marketing deadline and the two must be kept in step by hand until an admin screen edits both. PROGRESS.md (Session 7) has the schema, the policies and the local development setup.
+
+---
+
+## 14. Amendments — home and global audit 2 (September 7, 2026)
+
+Ashton's second audit of the built home page; PROGRESS.md (Session 8b) has the details. (§13 belongs to the Session 8 form work, written in parallel.)
+
+**Navigation.** Home is a tab and comes first; the links sit in the centre of the bar; hovering a link brightens it without an underline (the underline marks the current page); the bar is lighter glass; the bar CTA is green on green with a black divider between the label and the arrow (lime stays on the other split buttons for now).
+
+**Copy.** "nonprofits" is one word everywhere and the page is "Nonprofits"; the hero eyebrow reads "Student Org @ Purdue University"; the footer keeps only the logo in its first column; no photo on the site has a visible caption (the project gallery's MDX captions are content and stay).
+
+**Home.** What we do shows the photo (no caption) before the three panels, whose icons stand bare and whose titles and descriptions line up across the columns, with the projects link on the right. How it works is one floating scene of particles that morphs through the four steps with scroll (`ProcessScene`), no card and no graphic switching; the Nonprofits page shows the same scene as four stills. Impact drops the ghosted headline and "Small teams, global reach", puts the dotted world map behind the whole band, and the marquee pauses only through its button. Awards has no title line and plain table text. Who we serve is two linked spec-sheet cards with aligned rows. The FAQ aside links are green without underline, and every inline text link follows. Get involved has the beacon graphic (dial, orbiting audiences, pings, pointer tilt) in place of the static globe.
