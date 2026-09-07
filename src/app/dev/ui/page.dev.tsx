@@ -3,6 +3,7 @@ import { Logo } from "@/components/brand/Logo";
 import { PixelDino } from "@/components/brand/PixelDino";
 import { ProcessGraphic } from "@/components/home/ProcessGraphic";
 import { Globe } from "@/components/home/Globe";
+import { JumpLinks } from "@/components/layout/JumpLinks";
 import { Gallery } from "@/components/projects/Gallery";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { TeamGrid } from "@/components/projects/TeamGrid";
@@ -457,15 +458,43 @@ export default function UiKitPage() {
         />
       </Block>
 
-      <Block title="Globe (SVG wireframe, spins unless reduced motion)">
-        <div className="grid gap-8 sm:grid-cols-2">
+      <Block title="Globe (SVG wireframe, spins unless reduced motion; pins = the partner globe's fallback)">
+        <div className="grid gap-8 sm:grid-cols-3">
           <div className="max-w-xs">
             <Globe />
           </div>
           <div className="max-w-xs">
             <Globe tone="muted" animate={false} />
           </div>
+          <div className="max-w-xs">
+            <Globe
+              spin={45}
+              activePinId="gh"
+              pins={[
+                { id: "in", lat: 39.9, lng: -86.3 },
+                { id: "uk", lat: 54, lng: -2.5 },
+                { id: "gh", lat: 7.9, lng: -1 },
+                { id: "bw", lat: -22.3, lng: 24.7 },
+                { id: "india", lat: 22, lng: 79 },
+              ]}
+            />
+          </div>
         </div>
+        <p className="mt-4 text-sm text-muted">
+          The three.js version (land dots, drag, pin focus) lives on /nonprofits#partners and loads
+          on demand.
+        </p>
+      </Block>
+
+      <Block title="JumpLinks (the “On this page” row under page heroes)">
+        <JumpLinks
+          className="mt-0"
+          items={[
+            { href: "#a", label: "Mission" },
+            { href: "#b", label: "Who we are" },
+            { href: "#c", label: "Exec board" },
+          ]}
+        />
       </Block>
     </div>
   );
