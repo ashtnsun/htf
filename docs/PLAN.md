@@ -160,3 +160,15 @@ Ashton's audit of the built home page changed the following; PROGRESS.md (Sessio
 
 **Home, new order.** Hero (statement only: eyebrow, "Building software / for nonprofits.", globe, glow; no blurb, deadline, buttons or scroll marker) → What we do (three service panels from the club's previous site, the full-organization photo placeholder, a link to `/projects`) → How it works (scroll-driven process: sticky wireframe graphic on the left changes as the four steps scroll past on the right; `content/process.ts`) → Impact (three glass stat tiles that count up on first view, a full-width rotating testimonial band over the dotted map, and an awards subsection with a photo carousel; `content/awards.ts`) → Who we serve → FAQ → Contact CTA. The featured-projects grid moved off the home page; `/projects` is the portfolio.
 
+---
+
+## 11. Amendments — Phase 3 before Phase 2 (September 6, 2026)
+
+Ashton asked for the About and Non-profits pages before the portal, so Session 6 delivered Phase 3 minus the two items that need content only he can supply (real stats and testimonials, the media handoff). The portal (Phase 2, §5) moves to Sessions 7–10 and its plan is unchanged. PROGRESS.md (Session 6) has the details.
+
+**About.** Mission (the tagline as the headline, beside the organization photo), Who we are (history paragraphs and a facts list), Exec board grid, Awards (the home component), a curated Instagram grid typed into `content/instagram.ts` (no Meta app, no embed script; Phase 4 may swap in the API), the student / nonprofit hand-off panels, and the contact CTA.
+
+**Non-profits.** How it works from the nonprofit's side (the four process steps with a "Your part" line each), What we build and what we don't (`content/nonprofits.ts`), Where our partners are (the three.js globe with a pin per project location from `geo` in the project frontmatter, loaded on demand with the SVG globe as fallback; a location list beside it is the accessible version), nonprofit testimonials, the nonprofit FAQ, and a "Start a project" intake form that stores to the Supabase table `nonprofit_inquiries` and/or emails through Resend, with the same mailto fallback as the contact form.
+
+**Analytics and performance.** Vercel Web Analytics (cookieless) is wired but renders only on Vercel builds; enable it in the project. Lighthouse on the production build: desktop 88–99 performance and 100 accessibility, mobile 61–91. The open finding is design-level: the hero's mount reveal delays the largest contentful paint on slow mobile connections (§4 motion); keep it or render the hero text visible on first paint.
+

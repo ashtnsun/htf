@@ -33,17 +33,204 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [ ] Session 4 leftover: deploy to the real domain (`docs/DEPLOY.md`: GitHub org transfer, Vercel project, DNS; needs Ashton's accounts)
 - [x] Session 5: home + global audit pass (square corners, glass surfaces, one hover language, nav/footer changes with the pixel dinosaur, statement hero, What we do, scroll-driven process, Impact with count-up tiles / testimonial marquee / awards, Who we serve before the FAQ)
 
-### Phase 2 — Application portal (Sessions 6–9)
+### Phase 3 — Depth (Session 6, pulled ahead of the portal)
+
+- [x] Session 6: About (mission, who we are + facts, exec grid, awards, curated Instagram grid, get-involved panels, CTA, share image)
+- [x] Session 6: Non-profits (how it works with "your part", scope guardrails, partner globe, nonprofit testimonials, FAQ, intake form → `nonprofit_inquiries` / Resend / mailto, share image)
+- [x] Session 6: three.js partner globe with pins (lazy, on demand near the viewport; SVG globe with pins as fallback and first paint)
+- [x] Session 6: analytics (Vercel Web Analytics, Vercel builds only; privacy text) and the Lighthouse pass (numbers and open findings in the Session 6 log)
+- [ ] Real stats and testimonials: the sections read published items already; needs Ashton's numbers and quotes (`published: true`)
+- [ ] Media handoff swap: needs the photos (`content/media.ts` keys)
+
+### Phase 2 — Application portal (Sessions 7–10)
 
 - [ ] Supabase project, schema + RLS migrations, Resend SMTP, magic link, multi-step form with autosave, admin dashboard, CSV export, keepalive cron, dry run, flip CTA
-
-### Phase 3 — Depth (Sessions 10–12)
-
-- [ ] About (exec, awards, Instagram grid), Non-profits (process, FAQ, intake), R3F globe with partner pins (lazy, SVG fallback), real stats/testimonials, media handoff swap, analytics, Lighthouse pass
 
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+
+## Session 6 — 2026-09-06 (Phase 3: About, Non-profits, partner globe, analytics, Lighthouse)
+
+**Built:** Phase 3 pulled ahead of the portal at Ashton's request ("lets do phase 3 now").
+The About page, the Non-profits page with a working intake form, the three.js partner globe
+(lazy, SVG fallback), Vercel Web Analytics, and a Lighthouse pass. The two Phase 3 items
+that need content only Ashton has (real stats and testimonials, the media handoff) stay open;
+the sections already read published items. Commits: `feat(content)`, `feat(forms)`,
+`feat(globe)`, `feat(about)`, `feat(nonprofits)`, `feat(analytics)`, `docs`. Not pushed.
+
+**Verified:** `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm build` clean (35
+prerendered pages including the two new share images). Screenshots in
+`docs/screenshots/session-6/` (production build: `/`, `/about`, `/nonprofits`, `/students`,
+`/contact`, the drawer) and `docs/screenshots/session-6/dev-preview/` (dev server: the
+unpublished nonprofit testimonials; `globe-*.png` are section captures of the three.js
+globe at 1440 and 390 with Ghana active, plus the SVG fallback; the full-page captures show
+the canvas blank because Playwright's beyond-viewport capture clears the WebGL buffer).
+`pnpm a11y` on the production build for `/`, `/about`, `/nonprofits`, `/students`,
+`/contact`, `/projects`, a project detail, `/privacy` and the 404: 0 violations at 1440 and
+390 and with the drawer open. Forms, end to end against an in-process mock of the Supabase
+REST endpoint (dev server, `.env.local` pointing at it): intake server-side validation with
+the browser constraints stripped (five fields flagged, focus on the first invalid one, typed
+values kept, axe 0), a valid submit reaches `POST /rest/v1/nonprofit_inquiries` with the
+service-role headers and a normalised record (`website` prefixed with `https://`), the sent
+panel takes focus (axe 0), the honeypot returns the sent panel without a delivery call, the
+contact form still posts to `contact_messages` after the refactor, and with JavaScript off
+the intake form posts to the server action and re-renders with the sent panel. Mailto mode
+(temporary test address in `site.ts`, no delivery variables): the form action is the
+`mailto:`, client-side Zod errors and focus, the "Almost there" panel, no network request;
+`buildInquiryMailto` output checked (CRLF body, encoded subject). Globe: the scene mounts and
+the SVG fades at 1440 and 390 with and without reduced motion; focusing a location sets
+`aria-pressed` and lists its project link; dragging raises no errors; with WebGL blocked the
+SVG fallback with eight pins stays. Lighthouse 12 (Chrome headless, local production
+server): desktop About 99 / 100 / 96 / 100, Home 99 / 100 / 96 / 100, Non-profits 88 / 100
+/ 96 / 100 (performance / accessibility / best practices / SEO); mobile About 91, Non-profits 61. The best-practices deduction on every page was the analytics script 404 off Vercel (now
+gated). The Non-profits desktop run's 254 ms blocking time is the shared hydration cost, not
+the globe: my own 4x-CPU long-task measurement puts `/nonprofits` at 334 ms against
+`/students` 318 ms and `/` 285 ms, and the three.js chunk is confirmed not to load before
+the globe scrolls near the viewport.
+
+**Decisions made this session**
+
+1. Phase order: Phase 3 ran as Session 6, before Phase 2; the portal is now Sessions 7–10.
+   `docs/PLAN.md` §11 records it.
+2. Content: `content/about.ts` (`aboutPageSchema`: mission headline lines and body, story
+   paragraphs, facts with optional links), `content/nonprofits.ts` (`nonprofitsPageSchema`:
+   `scope.build` / `scope.avoid`, `nextSteps`), `content/instagram.ts`
+   (`instagramPostSchema`: post URL, media key, alt, caption; a TODO URL renders an unlinked
+   tile), `processStepSchema.partner` (the nonprofit's part at each step, shown on
+   `/nonprofits` as "Your part"), `projectFrontmatterSchema.geo` (`[lat, lng]`; the eight
+   placeholders carry state / country centroids), six nonprofit FAQ entries (cost, timeline,
+   who, time, ownership, when) with `[TODO: confirm]` markers. Loaders: `getAboutPage`,
+   `getNonprofitsPage`, `getInstagramPosts`, `getPartnerLocations` (visible projects grouped
+   by their `location` string; the first `geo` in a group places the pin).
+3. About order: hero with the "On this page" row → Mission (the tagline as the headline
+   beside the organization photo at 4:3) → Who we are (paragraphs beside a facts list:
+   founded, based at, open to, team size, Instagram) → Exec board (4:5 photo, name, role,
+   LinkedIn button when the URL is not TODO) → Awards (the home component with
+   `headingLevel="h2"`) → the curated Instagram grid (six square tiles, follow button, no
+   embed script) → `WhoWeServe` as the "Get involved" hand-off → `ContactCta`. Own OG image.
+4. Non-profits order: hero ("Start a project" → `#start`, "On this page" row) → How it works
+   (the four process steps with their wireframes static and a "Your part" block each) →
+   Scope (We build / We don't, two bordered lists) → Partners (globe + location list) →
+   Partners say (nonprofit testimonials over the dotted map, dev preview until published) →
+   FAQ → Start a project (intake form beside "What happens next"). No `ContactCta`: the
+   intake section closes the page and the season CTA is for students. Own OG image.
+5. Forms share one layer. `src/lib/forms/fields.ts`: `FormState<Field>`, `readValues`,
+   `emptyValues`, `firstFieldErrors` (first Zod issue per top-level path), the honeypot
+   helpers. `src/lib/forms/deliver.ts`: `deliverSubmission({ table, record, email })` to the
+   Supabase REST API and/or Resend from the same environment variables as before.
+   `src/components/forms/`: `useFormSubmission` (`useActionState` in server mode, client-side
+   Zod plus `mailto:` in mailto mode, focus on the first invalid control), `SentPanel`,
+   `Honeypot`. The contact form was moved onto it (its schema now exports `CONTACT_FIELDS`
+   and `contactMessageText`; the contact-only helpers are gone) and re-tested. Intake:
+   `src/lib/inquiries/schema.ts` (organization, name, email, optional website normalised to
+   `https://`, optional location, message 20–3000 characters), `deliver.ts` (table
+   `nonprofit_inquiries`, subject "Project inquiry from <organization>"),
+   `src/app/nonprofits/actions.ts`, migration
+   `supabase/migrations/20260907000000_nonprofit_inquiries.sql` (length checks, RLS on with
+   no policies, `handled_at`). `docs/DEPLOY.md` §5 and `.env.example` cover both forms.
+6. Globe. `src/lib/geo.ts` (`sphericalToVector`, `projectOrthographic`, `shortestAngle`,
+   `GLOBE_TILT` 32°) is shared by the SVG `Globe` (new `pins`, `activePinId` and `spin`
+   props; back-facing pins hidden; pins move with the spin) and `src/components/globe/`.
+   `PartnerGlobe` (client) renders the SVG globe with pins first, checks WebGL and the
+   data-saver flag once (`useSyncExternalStore`), mounts `PartnerGlobeScene` through
+   `next/dynamic` (`ssr: false`) when the globe is within 240 px of the viewport, fades the
+   SVG out on the scene's first render, and turns horizontal pointer drags into rotation
+   (`touch-action: pan-y`, so vertical swipes still scroll). The scene: an occluding sphere
+   in the page background so only the front hemisphere shows, the wireframe (parallels every
+   15°, meridians every 12°, the SVG globe's spacing), land dots parsed at runtime from
+   `public/maps/world-dots.svg` (`landDots.ts`; its constants must match
+   `scripts/gen-world-dots.mjs`), one square pin per location (mint with a pulsing outline
+   when active), camera at z 3.8 with a 32° field of view, device pixel ratio capped at 2, a
+   low-power context. Rotation state is a `SpinController` class: slow spin (3°/s), ease to
+   the chosen pin's longitude the shortest way round, hold six seconds, drag. The frame loop
+   runs while the globe is in view and the tab visible, on demand otherwise and under
+   reduced motion (which snaps instead of easing). `PartnersMap`: hovering, focusing or
+   tapping a location sets `aria-pressed`, lists its projects (`aria-live="polite"`) and
+   turns the globe to it; the initial spin puts the Atlantic in front. The canvas root is
+   `aria-hidden`; the list is the accessible content.
+7. Type and lint fallout from three.js: R3F v9 augments React's JSX namespace, which turned
+   `ElementType`-typed `as` props into never-props, so `Eyebrow.as` is a literal tag union.
+   The React Compiler lint rules rejected mutating ref objects received through props, hence
+   the controller class with methods. Both are now in CLAUDE.md → Component rules.
+8. Analytics: `@vercel/analytics` (`<Analytics />` in the root layout) renders only when
+   `process.env.VERCEL` is set, because the script 404s anywhere else and failed
+   Lighthouse's console audit locally. Enable Web Analytics in the Vercel project
+   (`docs/DEPLOY.md` §2 step 5). The privacy policy's "when you visit" section now
+   describes it (cookieless page views, referrer, coarse device and country, a daily hash)
+   with a `[TODO: confirm]` for once it is switched on, and lists Vercel as the processor.
+9. Lighthouse findings left as they are (all pre-existing patterns, logged for a decision):
+   the hero's mount reveal keeps the LCP element at opacity 0 until hydration, which under
+   simulated slow 4G is 3–4 s (mobile LCP 3.4 s on About, 4.7 s on Non-profits; desktop
+   0.9–1.1 s); the shared vendor chunk (Framer Motion + React) is the ~300 ms hydration task
+   on every page; 13 KiB of legacy polyfills and render-blocking CSS from Next. Options for
+   the first: render the hero text visible on first paint and animate only the decoration,
+   or keep the fade and accept the mobile score.
+10. Removed `StubSection` (both stubs are pages now). `JumpLinks` replaces the inline "On
+    this page" markup (Students uses it too). `WhoWeServe` takes `id` / `eyebrow` / `lines`;
+    `Awards` takes `headingLevel` / `id`. The Partners section clips overflow: the globe's
+    glow (`inset-[-10%]`) pushed phones 15 px wide.
+11. `NonprofitTestimonials` first rendered `ul > Reveal > li`, which axe flagged (`list`);
+    `li` is the direct child again and the rule is written down in CLAUDE.md.
+12. Testing notes: a `[role="alert"]` wait must target the field error id, because an
+    unrelated alert appears before the action returns; with JavaScript off, Playwright's
+    `click()` never settles, so dispatch the click; Lighthouse ran with
+    `pnpm dlx lighthouse@12` and `CHROME_PATH` at the installed Chrome (the JSON reports
+    were not committed).
+
+**Known gaps**
+
+- The Instagram grid is six placeholder tiles with TODO URLs (unlinked) until Ashton adds
+  post links and images; an official embed needs a Meta app (Phase 4).
+- Partner pins sit at state / country centroids and the location labels read
+  "[TODO: city], …"; a city in each project's `location` and a precise `geo` fix both.
+- The intake form shows the "not connected" panel in production until the club email
+  (mailto mode) or the delivery variables exist, and the `nonprofit_inquiries` migration is
+  not applied anywhere yet.
+- The "what we don't build" list, the next-steps copy, the exec-board blurb, the "Your part"
+  lines and several nonprofit FAQ answers are defaults marked `[TODO: confirm]`.
+- Nonprofit testimonials and the stats are still unpublished (dev preview only).
+- Mobile Lighthouse LCP (decision 9). The three.js chunk (about 600 KB before compression)
+  is the largest asset on the site; it loads only when the globe is near the viewport and
+  never on other pages.
+- The analytics component is inert until the Vercel project exists and Web Analytics is on.
+
+**TODOs for Ashton (content and accounts)**
+
+- Everything from Sessions 1–5 still stands.
+- `content/about.ts`: the mission statement, the founding story, the founded year.
+  `content/exec.ts` + `content/media.ts`: the exec board with photos and LinkedIn URLs; the
+  exec-board blurb in `ExecGrid.tsx`.
+- `content/instagram.ts`: six post URLs, images (media keys `instagram.post-N`), alt text.
+- `content/nonprofits.ts` and the `partner` lines in `content/process.ts`: confirm the scope
+  guardrails, the next steps, the check-in cadence and what the handoff includes.
+  `content/faq.ts`: the nonprofit answers (cost and third-party costs, timeline,
+  eligibility, time, ownership, when intake closes).
+- `content/projects/*.mdx`: cities and precise `geo` per nonprofit.
+- `content/testimonials.ts`: nonprofit quotes (`kind: "nonprofit"`), then `published: true`.
+- Supabase: apply `supabase/migrations/20260907000000_nonprofit_inquiries.sql` with the
+  contact one. Vercel: enable Web Analytics once the project exists, then confirm the
+  privacy paragraph.
+- Decide on the hero reveal versus mobile LCP (decision 9).
+
+## Next session starts with
+
+**Session 7: application portal, part 1 (schema + auth).** Read `docs/PLAN.md` §5 and §9,
+this file, and `node_modules/next/dist/docs/` for `proxy.ts` and server actions, then:
+
+1. Supabase: the same project as the contact and intake tables. Migrations for `cycles`,
+   `roles`, `questions`, `applications`, `answers`, `reviews`, `admins` with RLS (applicants
+   read and write only their own draft while the cycle is open; admins read everything and
+   write reviews and status), plus the two migrations already in `supabase/migrations/`.
+2. Auth: email magic link (OTP) for any email, `profiles` row on first sign-in, admins by
+   email in `admins`, checked server-side. `/apply` becomes the season landing + sign-in;
+   keep the header CTA on the external form until the Phase 2 dry run passes.
+3. Custom SMTP through Resend for auth emails (the built-in sender is 2 per hour).
+4. If the Supabase project does not exist yet, write the migrations and the auth UI first
+   and test against a local `supabase start` (Docker), or stop at the schema and log it.
+5. Screenshots to `docs/screenshots/session-7/`, `pnpm a11y --routes=/apply`, update this
+   file. Needed from Ashton: Supabase and Resend accounts, the exec email list, this
+   cycle's roles and questions.
 
 ## Session 5 — 2026-09-06 (home + global audit pass)
 
@@ -173,26 +360,6 @@ through the button, the drawer, hover states on cards, buttons and nav links.
 - `content/testimonials.ts`: real quotes with headlines, then `published: true`.
 - `content/services.ts`, `content/process.ts`: confirm the wording.
 - Footer: decide whether the tagline stays under the logo, and whether the dinosaur stays.
-
-## Next session starts with
-
-**Session 6: application portal, part 1 (schema + auth).** Read `docs/PLAN.md` §5 and §9,
-this file, and `node_modules/next/dist/docs/` for `proxy.ts` and server actions, then:
-
-1. Supabase: the same project as the contact table. Migrations for `cycles`, `roles`,
-   `questions`, `applications`, `answers`, `reviews`, `admins` with RLS (applicants read and
-   write only their own draft while the cycle is open; admins read everything and write
-   reviews and status), plus the `contact_messages` migration already in
-   `supabase/migrations/`.
-2. Auth: email magic link (OTP) for any email, `profiles` row on first sign-in, admins by
-   email in `admins`, checked server-side. `/apply` becomes the season landing + sign-in;
-   keep the header CTA on the external form until the Phase 2 dry run passes.
-3. Custom SMTP through Resend for auth emails (the built-in sender is 2 per hour).
-4. If the Supabase project does not exist yet, write the migrations and the auth UI first
-   and test against a local `supabase start` (Docker), or stop at the schema and log it.
-5. Screenshots to `docs/screenshots/session-5/`, `pnpm a11y --routes=/apply`, update this
-   file. Needed from Ashton: Supabase and Resend accounts, the exec email list, this
-   cycle's roles and questions.
 
 ## Session 4 — 2026-09-06
 

@@ -32,22 +32,37 @@ Claude Code. Dark theme only.
 ```
 content/            typed content: site.ts (config + season CTA), media.ts (image map),
                     exec.ts, roles.ts, faq.ts, testimonials.ts, stats.ts, services.ts,
-                    process.ts, awards.ts, recruitment.ts, projects/*.mdx (Zod frontmatter)
-src/app/            routes. page.dev.tsx files exist only in `next dev` (see next.config.ts)
+                    process.ts, awards.ts, recruitment.ts, students.ts, about.ts,
+                    nonprofits.ts, instagram.ts, privacy.mdx, projects/*.mdx (Zod frontmatter)
+src/app/            routes. page.dev.tsx files exist only in `next dev` (see next.config.ts);
+                    contact/actions.ts and nonprofits/actions.ts are the form server actions
 src/components/
   brand/            Logo (inline SVG wordmark; logo-paths.ts is generated, do not hand-edit),
                     PixelDino (footer)
   ui/               primitives: Eyebrow, Headline, SplitButton, Section, Card, Accordion,
                     StatTile (+ CountUp), TestimonialCard, Chip, Field, Media, DottedMap
-  layout/           SiteHeader, NavDrawer, NavLinks, SiteFooter, PageHero, FaqSection,
-                    ContactCta, SeasonNote, OnThisPage, StubSection
-  home/             Hero, Globe, WhatWeDo, Process (+ ProcessScroll, ProcessGraphic),
-                    ImpactBand (+ TestimonialMarquee, Awards, AwardCarousel), WhoWeServe
+  layout/           SiteHeader, NavDrawer, NavLinks, SiteFooter, PageHero, JumpLinks,
+                    FaqSection, ContactCta, SeasonNote, OnThisPage
+  home/             Hero, Globe (SVG, takes pins), WhatWeDo, Process (+ ProcessScroll,
+                    ProcessGraphic), ImpactBand (+ TestimonialMarquee, Awards,
+                    AwardCarousel), WhoWeServe
+  about/            Mission, Story, ExecGrid, InstagramGrid
+  nonprofits/       HowItWorks, Scope, Partners (+ PartnersMap), NonprofitTestimonials,
+                    IntakeForm
+  globe/            PartnerGlobe (lazy wrapper, drag, SVG fallback), PartnerGlobeScene
+                    (three.js / R3F, loaded on demand), SpinController, landDots
+  forms/            useFormSubmission (server / mailto modes), SentPanel, Honeypot
+  contact/          ContactForm
   motion/           Reveal / RevealGroup (fade-and-rise, reduced-motion aware)
   icons/            Instagram / LinkedIn (lucide 1.x has no brand icons)
 src/lib/content/    schemas.ts (Zod) + index.ts (loaders; throw on invalid content)
-scripts/            validate-content, gen-placeholders, gen-logo-paths.py, screenshots, a11y
-docs/               PLAN.md, PROGRESS.md, prompts/, screenshots/session-N/
+src/lib/forms/      fields.ts (FormState, readValues, honeypot), deliver.ts (Supabase / Resend)
+src/lib/contact/, src/lib/inquiries/   per-form Zod schema + delivery wrapper
+src/lib/geo.ts      sphere maths shared by both globes
+scripts/            validate-content, gen-placeholders, gen-logo-paths.py, gen-world-dots,
+                    screenshots, a11y
+docs/               PLAN.md, PROGRESS.md, DEPLOY.md, prompts/, screenshots/session-N/
+supabase/migrations contact_messages, nonprofit_inquiries (RLS on, service role only)
 reference/          brand guide, fonts, Instagram graphics, Framer captures (never shipped)
 public/placeholders generated SVG placeholders (pnpm gen:placeholders)
 ```
@@ -93,7 +108,16 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
 ## Component rules
 
 - Server components by default. `"use client"` only for motion and interaction, kept small
-  and leaf-level (Accordion, NavDrawer, NavLinks, Globe, Reveal).
+  and leaf-level (Accordion, NavDrawer, NavLinks, Globe, Reveal, PartnersMap).
+- three.js only inside `src/components/globe/`, loaded with `next/dynamic` (`ssr: false`)
+  once the globe is near the viewport; the SVG `Globe` with pins is the fallback and the
+  first paint. R3F's JSX types widen React's `ElementType`, so polymorphic `as` props take a
+  literal tag union, never `ElementType`. Mutable per-frame state lives in a class with
+  methods (`SpinController`), not in ref objects passed as props (React Compiler lint).
+- Forms: a Zod schema in `src/lib/<form>/schema.ts` shared by the client (mailto path,
+  native hints) and the server action; `useFormSubmission` handles both modes;
+  delivery goes through `src/lib/forms/deliver.ts`. Every list renders `li` as the direct
+  child of `ul`/`ol` (put `Reveal` inside the `li`).
 - Every CTA is a `SplitButton`; every section label is an `Eyebrow`; every heading with a
   green accent is a `Headline` (`*word*` marks the accent).
 - Hover states are one language everywhere: text links turn green; interactive surfaces get
