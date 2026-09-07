@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, LoaderCircle } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Download, LoaderCircle } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +24,8 @@ type SplitButtonProps = {
   disabled?: boolean;
   /** <button> only: shows a spinner in the arrow cell and announces the busy state. */
   pending?: boolean;
+  /** <a> only: downloads the href instead of navigating (route handlers such as the CSV). */
+  download?: boolean;
   onClick?: () => void;
   className?: string;
   ariaLabel?: string;
@@ -46,12 +48,19 @@ export function SplitButton({
   value,
   disabled = false,
   pending = false,
+  download = false,
   onClick,
   className,
   ariaLabel,
 }: SplitButtonProps) {
   const isExternal = href ? (external ?? /^https?:\/\//.test(href)) : false;
-  const Icon = pending ? LoaderCircle : isExternal ? ArrowUpRight : ArrowRight;
+  const Icon = pending
+    ? LoaderCircle
+    : download
+      ? Download
+      : isExternal
+        ? ArrowUpRight
+        : ArrowRight;
 
   const base = cn(
     "group inline-flex items-stretch overflow-hidden font-medium whitespace-nowrap",
@@ -88,9 +97,11 @@ export function SplitButton({
     "size-[1.1em] transition-transform duration-300 ease-out-expo",
     pending
       ? "animate-spin"
-      : isExternal
-        ? "group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-        : "group-hover:translate-x-1",
+      : download
+        ? "group-hover:translate-y-0.5"
+        : isExternal
+          ? "group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+          : "group-hover:translate-x-1",
   );
 
   const content = (
@@ -116,6 +127,13 @@ export function SplitButton({
       >
         {content}
       </button>
+    );
+  }
+  if (download) {
+    return (
+      <a href={href} download className={cn(base, className)} aria-label={ariaLabel}>
+        {content}
+      </a>
     );
   }
   if (isExternal) {

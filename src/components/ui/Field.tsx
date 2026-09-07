@@ -1,5 +1,10 @@
-import { Check, CircleAlert } from "lucide-react";
-import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
+import { Check, ChevronDown, CircleAlert } from "lucide-react";
+import type {
+  InputHTMLAttributes,
+  ReactNode,
+  SelectHTMLAttributes,
+  TextareaHTMLAttributes,
+} from "react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -22,6 +27,8 @@ type FieldChromeProps = {
   hint?: string;
   error?: string;
   required?: boolean;
+  /** Show "(optional)" after the label of a non-required field. Off for filter controls. */
+  optionalNote?: boolean;
 };
 
 function describedBy({ id, hint, error }: Pick<FieldChromeProps, "id" | "hint" | "error">) {
@@ -29,11 +36,18 @@ function describedBy({ id, hint, error }: Pick<FieldChromeProps, "id" | "hint" |
   return ids.length > 0 ? ids.join(" ") : undefined;
 }
 
-function FieldLabel({ id, label, required }: Pick<FieldChromeProps, "id" | "label" | "required">) {
+function FieldLabel({
+  id,
+  label,
+  required,
+  optionalNote = true,
+}: Pick<FieldChromeProps, "id" | "label" | "required" | "optionalNote">) {
   return (
     <label htmlFor={id} className="block text-sm font-medium text-text">
       {label}
-      {required ? null : <span className="font-normal text-muted"> (optional)</span>}
+      {required || !optionalNote ? null : (
+        <span className="font-normal text-muted"> (optional)</span>
+      )}
     </label>
   );
 }
@@ -69,12 +83,13 @@ export function TextField({
   hint,
   error,
   required = true,
+  optionalNote,
   className,
   ...props
 }: TextFieldProps) {
   return (
     <div className={className}>
-      <FieldLabel id={id} label={label} required={required} />
+      <FieldLabel id={id} label={label} required={required} optionalNote={optionalNote} />
       <FieldHint id={id} hint={hint} />
       <input
         id={id}
@@ -101,13 +116,14 @@ export function TextAreaField({
   hint,
   error,
   required = true,
+  optionalNote,
   className,
   rows = 6,
   ...props
 }: TextAreaFieldProps) {
   return (
     <div className={className}>
-      <FieldLabel id={id} label={label} required={required} />
+      <FieldLabel id={id} label={label} required={required} optionalNote={optionalNote} />
       <FieldHint id={id} hint={hint} />
       <textarea
         id={id}
@@ -118,6 +134,57 @@ export function TextAreaField({
         className={cn(controlClass, "mt-2 min-h-32 resize-y py-3 leading-relaxed")}
         {...props}
       />
+      <FieldError id={id} error={error} />
+    </div>
+  );
+}
+
+type SelectFieldProps = FieldChromeProps &
+  Omit<SelectHTMLAttributes<HTMLSelectElement>, "id" | "className" | "required"> & {
+    options: readonly ChoiceOption[];
+    /** Text of a first, empty option ("All statuses"); leaving it selected submits "". */
+    placeholder?: string;
+    className?: string;
+  };
+
+/** Native select with the field chrome and a chevron. Options stay native for keyboards. */
+export function SelectField({
+  id,
+  label,
+  hint,
+  error,
+  required = true,
+  optionalNote,
+  options,
+  placeholder,
+  className,
+  ...props
+}: SelectFieldProps) {
+  return (
+    <div className={className}>
+      <FieldLabel id={id} label={label} required={required} optionalNote={optionalNote} />
+      <FieldHint id={id} hint={hint} />
+      <div className="relative mt-2">
+        <select
+          id={id}
+          required={required}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy({ id, hint, error })}
+          className={cn(controlClass, "h-12 appearance-none pr-10")}
+          {...props}
+        >
+          {placeholder !== undefined ? <option value="">{placeholder}</option> : null}
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <ChevronDown
+          aria-hidden="true"
+          className="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 text-muted"
+        />
+      </div>
       <FieldError id={id} error={error} />
     </div>
   );
@@ -145,6 +212,7 @@ type ChoiceFieldProps = {
   hint?: string;
   error?: string;
   required?: boolean;
+  optionalNote?: boolean;
   className?: string;
 };
 
@@ -161,6 +229,7 @@ export function ChoiceField({
   hint,
   error,
   required = true,
+  optionalNote = true,
   className,
 }: ChoiceFieldProps) {
   return (
@@ -171,7 +240,9 @@ export function ChoiceField({
     >
       <legend className="block text-sm font-medium text-text">
         {legend}
-        {required ? null : <span className="font-normal text-muted"> (optional)</span>}
+        {required || !optionalNote ? null : (
+          <span className="font-normal text-muted"> (optional)</span>
+        )}
       </legend>
       <FieldHint id={id} hint={hint} />
       <div className="mt-2 flex flex-wrap gap-2">
@@ -208,6 +279,7 @@ export function CheckboxGroupField({
   hint,
   error,
   required = true,
+  optionalNote = true,
   className,
 }: CheckboxGroupFieldProps) {
   return (
@@ -218,7 +290,9 @@ export function CheckboxGroupField({
     >
       <legend className="block text-sm font-medium text-text">
         {legend}
-        {required ? null : <span className="font-normal text-muted"> (optional)</span>}
+        {required || !optionalNote ? null : (
+          <span className="font-normal text-muted"> (optional)</span>
+        )}
       </legend>
       <FieldHint id={id} hint={hint} />
       <div className="mt-2 flex flex-wrap gap-2">
