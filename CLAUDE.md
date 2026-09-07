@@ -48,12 +48,13 @@ src/components/
   ui/               primitives: Eyebrow, Headline, SplitButton, Section, Card, Accordion,
                     StatTile (+ CountUp), TestimonialCard, Chip, Field, Media, DottedMap
   layout/           SiteHeader, NavDrawer, NavLinks, SiteFooter, PageHero, JumpLinks,
-                    FaqSection, ContactCta (+ SignalGraphic, the floating beacon), SeasonNote,
-                    OnThisPage
+                    FaqSection, ContactCta (+ ConnectGraphic: two modules docking on view),
+                    SeasonNote, OnThisPage
   home/             Hero, Globe (SVG, takes pins), WhatWeDo, Process (+ ProcessScroll,
-                    ProcessScene: one scene of particles morphing through the steps on
+                    ProcessScene: one isometric scene that builds through the steps on
                     scroll; also the stills on /nonprofits), ImpactBand (+ TestimonialMarquee,
-                    Awards, AwardCarousel), WhoWeServe
+                    Awards, AwardCarousel), WhoWeServe (two panels in a full-bleed row; also
+                    the hand-off on /about)
   about/            Mission, Story, ExecGrid, InstagramGrid
   nonprofits/       HowItWorks, Scope, Partners (+ PartnersMap), NonprofitTestimonials,
                     IntakeForm
@@ -122,8 +123,8 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   `--text #F5F5F5` (`text-text`), `--muted #A3A3A3`, `--green #03C652`, `--green-deep
 #277D4A`, `--mint #00EB88`, `--cyan #00E0FF`, `--lime #C8FF3D`. The default Tailwind
   palette is disabled; only these (plus white/black) exist.
-- Lime is only the arrow cell of `SplitButton` (except the header bar CTA, whose arrow cell is
-  green with a black divider). Never a text or brand colour.
+- Lime is defined but unused since audit 3 (2026-09-07): every primary `SplitButton` arrow
+  cell is green with a 2px black divider, like the header bar CTA. Never a text or brand colour.
 - Type: `text-display-xl/lg` (96/80), `text-display` (64), `text-h2` (48), `text-h3` (32),
   `text-body` / `text-body-lg` (16/18), `text-eyebrow` (12, uppercase, tracked),
   `text-display-fluid` for heroes. Families: `font-display`, `font-body` (both Poppins now;
@@ -133,8 +134,11 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
 - Surface language: `glass` (frosted: header, drawer, footer, floating tiles and cards;
   `[--glass-alpha:80%]` tunes opacity), `hover-corners` (green viewfinder brackets on
   hover / focus, the one hover treatment for interactive surfaces), `frame-marks`
-  (crosshairs at the corners of framed containers). Other utilities: `container-x`,
-  `container-max`, `grid-overlay`, `ghost-text`, `skip-link`, `marquee` / `marquee-track`.
+  (crosshairs at the corners of framed containers). Other utilities: `container-x` (reads
+  `--gutter`), `container-max`, `bleed-row-2` / `bleed-row-3` (a full-bleed hairline row
+  whose columns stay on the container's columns: `grid md:bleed-row-3`, first item
+  `md:first:col-start-2`, items padded `px-(--gutter)`), `grid-overlay`, `ghost-text`,
+  `skip-link`, `marquee` / `marquee-track`.
 - Contrast (checked, WCAG AA): text/muted/green/mint/cyan on bg, surface and surface-2 all
   pass; dark text on green (8.6:1) and on lime (16.6:1) pass; white on green FAILS (never);
   green-deep on bg is 3.8:1 → large text or decoration only. `/dev/ui` shows the table.
@@ -152,8 +156,9 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   native hints) and the server action; `useFormSubmission` handles both modes;
   delivery goes through `src/lib/forms/deliver.ts`. Every list renders `li` as the direct
   child of `ul`/`ol` (put `Reveal` inside the `li`).
-- Every CTA is a `SplitButton`; every section label is an `Eyebrow`; every heading with a
-  green accent is a `Headline` (`*word*` marks the accent).
+- Every CTA is a `SplitButton` (primary: green label, green arrow cell, 2px black divider);
+  every section label is an `Eyebrow`; every heading with a green accent is a `Headline`
+  (`*word*` marks the accent).
 - Portal: every page and server action under `/apply` and `/admin` goes through
   `src/lib/auth/session.ts` (`requireUser`, `isAdminUser`) and queries Supabase as the
   signed-in user (`createClient` in `src/lib/supabase/server.ts`), so Row Level Security is

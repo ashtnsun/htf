@@ -220,3 +220,21 @@ Ashton's second audit of the built home page; PROGRESS.md (Session 8b) has the d
 ## 15. Amendments — the exec dashboard (September 7, 2026)
 
 Session 9 built the exec side of the portal (§5) as planned, with these details. **Filters are URLs:** status, role, year, "reviews" (by me, not by me yet, by nobody) and the search box are query parameters read by a server component, so any view can be bookmarked or sent to another exec member and nothing needs JavaScript; the Applicant, Submitted and Score headers sort by changing the same URL, and drafts always sort last. **One review row per member** (`reviews`, upsert on application and reviewer) with a 1–5 score, a yes / maybe / no decision and notes; the table shows the average and the count, the review page shows everyone's notes. **Status is the only thing an exec member changes** on an application (submitted, reviewing, accepted, rejected, waitlisted; the guard trigger refuses drafts), and applicants never see it. **The CSV** carries the same rows as the filtered table plus every answer and every reviewer's notes, for the club's spreadsheet habits (no bulk email in v1, as §5 says). Everything runs through Row Level Security as the signed-in member; the service role is still unused. PROGRESS.md (Session 9) has the details.
+
+---
+
+## 16. Amendments — home audit 3 (September 7, 2026)
+
+Ashton's third audit of the built home page; PROGRESS.md (Session 10) has the details. Each change applies to every page that reuses the element.
+
+**Rows run edge to edge.** The "What we do" services and the "Who we serve" panels sit in full-bleed hairline rows whose columns stay on the page container's columns (`bleed-row-2` / `bleed-row-3` in globals.css, built on a `--gutter` token that `container-x` also reads). The projects button under the services is centred.
+
+**How it works has a new scene.** The particle morph is gone. `ProcessScene` is now an isometric build: a scan sweeps a floating plane and locks onto a cell (discover), the team's boxes gather around it (match), the product rises on it layer by layer against a gauge (build), and the finished stack lifts off inside viewfinder brackets with a status check (deliver). It still evolves continuously with scroll, still renders as four stills on `/nonprofits`, and the counter and progress bar under it are gone. The `graphic` field of `content/process.ts` names the stages (`scan`, `team`, `stack`, `ship`).
+
+**Impact.** The dotted map starts below the band's top edge and fades out before its own edges, so it never looks cut off.
+
+**Buttons.** Every primary `SplitButton` is the header bar's treatment: green label, green arrow cell, a 2px black divider (it was 1px). Lime is no longer used anywhere.
+
+**Who we serve** is two plain panels: eyebrow, title, one sentence, a label and the arrow cell. The index numerals, icon boxes, spec rows, glow and hover grid are gone.
+
+**Get involved** has a new graphic in place of the beacon: two modules, one per audience, that dock into one unit when the section scrolls into view (`ConnectGraphic`), with the seam lighting up and the HTF mark pinging above it.

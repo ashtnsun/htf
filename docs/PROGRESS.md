@@ -33,6 +33,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [ ] Session 4 leftover: deploy to the real domain (`docs/DEPLOY.md`: GitHub org transfer, Vercel project, DNS; needs Ashton's accounts)
 - [x] Session 5: home + global audit pass (square corners, glass surfaces, one hover language, nav/footer changes with the pixel dinosaur, statement hero, What we do, scroll-driven process, Impact with count-up tiles / testimonial marquee / awards, Who we serve before the FAQ)
 - [x] Session 8b: home + global audit 2 (Home tab and centred nav, green bar CTA, `nonprofits` spelling, What we do reflow, one scroll-morphing process scene, Impact map backdrop, awards and caption cleanup, Who we serve cards, beacon graphic, footer, green inline links)
+- [x] Session 10: home audit 3 (full-bleed hairline rows, centred projects button, the isometric process scene with no counter under it, Impact map lower, 2px divider and green arrow cell on every primary button, plain Who we serve panels, the docking graphic in Get involved)
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -48,11 +49,98 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 7: schema + sign-in. Migration `20260908000000_application_portal.sql` (profiles, admins, cycles, roles, questions, applications, answers, reviews; RLS, guard trigger, explicit grants), seeds, local Supabase stack, email code + magic-link sign-in (`@supabase/ssr`), `/apply` season landing with account panel, `/auth/confirm`, `src/proxy.ts`, `/apply/form` and `/admin` gates, `NEXT_PUBLIC_APPLY_MODE` switch, `docs/DEPLOY.md` §6
 - [x] Session 8: multi-step application form with autosave (profile → roles → questions → review, one step per URL, works without JavaScript), submit with the confirmation email (Resend), `/apply/submitted`, read-only after submit / deadline
 - [x] Session 9: exec dashboard (`/admin` counts, filters and search in the URL, sortable table, CSV export; `/admin/applications/[id]` with the read-only summary, the review panel, the status control and the other reviews)
-- [ ] Session 10: Resend SMTP and rate limits on the hosted project, keepalive cron, dry run with five exec members, `NEXT_PUBLIC_APPLY_MODE=portal` on production
+- [ ] Session 11: Resend SMTP and rate limits on the hosted project, keepalive cron, dry run with five exec members, `NEXT_PUBLIC_APPLY_MODE=portal` on production
 
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+
+## Session 10 — 2026-09-07 (home audit 3)
+
+**Built:** Ashton's third audit of the home page, eight numbered changes, each applied to
+every page that reuses the element (PLAN.md §16). What we do: the three service panels sit in
+a full-bleed hairline row (the lines run edge to edge, the columns stay on the container's
+columns) and the projects button is centred. How it works: a completely new scene
+(`home/ProcessScene`), an isometric build instead of the particle morph, and no counter or
+progress bar under it. Impact: the dotted map starts below the band's top edge and fades out
+before its own edges. Header CTA: a 2px divider between the label and the arrow cell. Who we
+serve: two plain panels (eyebrow, title, one sentence, label and arrow) in the same full-bleed
+row, also on /about. Get involved: `layout/ConnectGraphic` (two modules docking) replaces the
+beacon, and every primary button is now the bar's green-on-green treatment, so lime is unused.
+Commits: `feat(home): audit pass 3 …` and `docs: session 10 …`. Not pushed. A second Claude
+session (`htf-64`) reworked the project cards in the same working tree at the same time; each
+session committed only its own files.
+
+**Verified:** `pnpm typecheck`, `pnpm lint`, Prettier on the changed files, `pnpm build`.
+`pnpm a11y` on the dev server (`/`, `/nonprofits`, `/about` at 1440 and 390, plus the
+drawer): 0 violations; on the production build (`/`, `/nonprofits`, `/about`, `/students`,
+`/contact`, `/projects` at 1440 and 390, plus the drawer): 0 violations. A Playwright check
+at 1920, 1440, 1024 and 768 confirmed the bleed rows' columns land exactly on the photo's
+edges and the page never scrolls horizontally. Screenshots in `docs/screenshots/session-10/`
+(dev server, so the Impact band shows the unpublished stats and testimonials);
+`process-1440-*.png` and `process-390-*.png` are viewport captures of the scene at progress
+0 … 3, `get-involved-*.png` the docked graphic, `nonprofits-1440-stills.png` the four stills
+from the production build.
+
+**Decisions made this session**
+
+1. Full-bleed rows: `--gutter` is a root token (`container-x` reads it) and `bleed-row-2` /
+   `bleed-row-3` are grid templates with a `minmax(var(--gutter), 1fr)` track on each side
+   and N columns capped at a third (or half) of `90rem − 2 × gutter`, so at every width the
+   columns match `container-max container-x` exactly. The rows are `ul`s with `border-y`
+   outside the container; the first `li` starts at column 2; on phones the panels stack with
+   full-width hairlines and `px-(--gutter)`. Tailwind only generates classes it finds
+   literally in the source, which is why these live in `@utility` rather than a built string.
+2. Process scene: a 5 × 5 isometric plane (30px units in the 400 viewBox) with a target cell
+   in the middle. Scan: a gradient band sweeps the plane (CSS `scan` keyframes, clipped to the
+   plane) and the cell pings. Team: seven boxes travel in from outside the plane to a ring
+   around the cell, each linked to it (draw-in lines). Build: four slabs extrude on the cell
+   in order against a gauge whose ticks light per layer. Deliver: the stack lifts 0.8 units
+   with a shadow, the team recedes to the rim at 30%, brackets and a status check appear.
+   Everything is a function of the continuous progress (`sceneAt`), patched straight onto the
+   SVG from the `ProgressStore` as before; boxes are painted back to front around the stack.
+   No 3D tilt any more, only the float. `content/process.ts` names the stages `scan`, `team`,
+   `stack`, `ship`; the stills on `/nonprofits` and `/dev/ui` show draw-in strokes complete
+   (the `anim-draw` class is only applied when animating).
+3. The counter, active title and progress bar under the scene are gone; on phones the scene
+   is centred in the sticky strip (`w-[min(48vw,13rem)]`). The step list keeps its highlight.
+4. Impact map: `top-24 md:top-32`, mask `radial-gradient(60% 58% at 50% 55%, #000 20%,
+transparent 100%)`, so the top edge is fully faded and the whole map sits lower.
+5. `SplitButton` primary: `border-l-2 border-black bg-green text-bg` on every size (the bar
+   was `border-l` 1px, the others lime). Lime stays defined in globals.css but nothing uses it;
+   `/dev/ui` still lists its contrast row.
+6. Who we serve: eyebrow, `text-h3` title, one sentence, then a `label + arrow cell` line over
+   a hairline, bottom-anchored through subgrid rows `auto auto 1fr auto`. Hover: corner
+   brackets, `bg-surface-2`, the arrow cell fills green. The copy dropped the spec-row facts
+   and now reads as one sentence per audience.
+7. Get involved: `ConnectGraphic` shows two 128px modules on a ticked rail, a dashed link
+   between them, plugs on the students module; on view (`useInView`, once) they slide
+   together (900ms), the seam lights up with a blurred glow, the module outlines and status
+   squares turn green, a line draws from the HTF mark down to the seam and slow ping rings
+   start. The pointer tilt from the beacon stays. The server renders the open state; without
+   JavaScript that is what shows. Reduced motion: docked, no transitions.
+8. CSS cleanup: `sweep`, `grow-x`, `blink` and `orbit` keyframes and `.anim-sweep`,
+   `.anim-grow`, `.anim-blink`, `.anim-orbit`, `.anim-orbit-back`, `.anim-dial` are gone;
+   `scan` is new; `ping`, `draw`, `float`, `eyelid` stay.
+9. Project cards (the other session, per Ashton): they no longer use `hover-corners`; their
+   hover is a green border and rule, the cover brightening, a green title and the arrow fill.
+
+**Known gaps**
+
+- Stats and testimonials are still `published: false`, so production shows the Impact band as
+  the eyebrow plus the awards block.
+- Subgrid (Who we serve, What we do) needs Chrome 117 / Safari 16 / Firefox 71; older
+  browsers get unaligned rows and nothing else breaks.
+- The build ran with the portal `.env.local` in place (the other session may need it), so the
+  local production build has `/apply` in portal mode; the committed default is unchanged.
+
+**TODOs for Ashton**
+
+- Scroll the home page in a real browser: the scene's timing constants are the `seg(...)`
+  windows in `sceneAt` (`ProcessScene.tsx`); the docking timing is the `t(...)` calls in
+  `ConnectGraphic.tsx`.
+- Everything from earlier sessions still stands (stats, testimonials, photos, LinkedIn URL,
+  wording confirmations).
 
 ## Session 9 — 2026-09-07 (Phase 2, part 3: the exec dashboard)
 
@@ -520,8 +608,8 @@ unchanged.
 
 ## Next session starts with
 
-**Session 10: application portal, part 4 (go live).** Read `docs/PLAN.md` §5, §6 and
-§12–§15, this file and `docs/DEPLOY.md`, then, in this order:
+**Session 11: application portal, part 4 (go live).** Read `docs/PLAN.md` §5, §6 and
+§12–§16, this file and `docs/DEPLOY.md`, then, in this order:
 
 1. Keepalive: an `/api/keepalive` route handler that reads one row through the anon key and a
    `vercel.json` cron that hits it daily, so the free Supabase project never pauses (PLAN.md
