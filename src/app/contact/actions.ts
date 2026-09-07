@@ -1,27 +1,10 @@
 "use server";
 
 import { deliverContactMessage, isContactFormConfigured } from "@/lib/contact/deliver";
-import {
-  contactMessageSchema,
-  firstFieldErrors,
-  readContactValues,
-  type ContactField,
-  type ContactValues,
-} from "@/lib/contact/schema";
+import { CONTACT_FIELDS, contactMessageSchema, type ContactField } from "@/lib/contact/schema";
+import { firstFieldErrors, isHoneypotFilled, readValues, type FormState } from "@/lib/forms/fields";
 
-export type ContactFormState =
-  | { status: "idle" }
-  | { status: "sent"; name: string }
-  | {
-      status: "error";
-      message: string;
-      fieldErrors?: Partial<Record<ContactField, string>>;
-      /** Echoed back so the form keeps what was typed (React resets forms after an action). */
-      values?: ContactValues;
-    };
-
-/** Bots that fill every input also fill this hidden one; humans never see it. */
-const HONEYPOT_FIELD = "fax";
+export type ContactFormState = FormState<ContactField>;
 
 /**
  * Server action behind <ContactForm>. Validates with Zod (the browser's `required` and
@@ -32,9 +15,9 @@ export async function submitContactMessage(
   _previous: ContactFormState,
   formData: FormData,
 ): Promise<ContactFormState> {
-  const values = readContactValues(formData);
+  const values = readValues(formData, CONTACT_FIELDS);
 
-  if (String(formData.get(HONEYPOT_FIELD) ?? "") !== "") {
+  if (isHoneypotFilled(formData)) {
     // Quietly accept so the bot learns nothing.
     return { status: "sent", name: values.name || "there" };
   }
@@ -44,7 +27,7 @@ export async function submitContactMessage(
     return {
       status: "error",
       message: "Please check the highlighted fields.",
-      fieldErrors: firstFieldErrors(parsed.error),
+      fieldErrors: firstFieldErrors<ContactField>(parsed.error),
       values,
     };
   }

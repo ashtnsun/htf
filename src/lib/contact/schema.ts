@@ -41,37 +41,28 @@ export const contactMessageSchema = z.object({
 
 export type ContactMessage = z.infer<typeof contactMessageSchema>;
 export type ContactField = keyof ContactMessage;
-export type ContactValues = Record<ContactField, string>;
 
-/** Raw strings from a submitted form, in schema order. Missing fields become "". */
-export function readContactValues(formData: FormData): ContactValues {
-  const read = (key: string) => {
-    const value = formData.get(key);
-    return typeof value === "string" ? value : "";
-  };
-  return {
-    name: read("name"),
-    email: read("email"),
-    audience: read("audience"),
-    message: read("message"),
-  };
-}
-
-/** First Zod message per field, for inline errors (server action and mailto fallback). */
-export function firstFieldErrors(
-  error: z.ZodError<ContactMessage>,
-): Partial<Record<ContactField, string>> {
-  const { fieldErrors } = z.flattenError(error);
-  const first: Partial<Record<ContactField, string>> = {};
-  for (const field of Object.keys(fieldErrors) as ContactField[]) {
-    const message = fieldErrors[field]?.[0];
-    if (message) first[field] = message;
-  }
-  return first;
-}
+/** Field order of the form; also the keys read out of FormData. */
+export const CONTACT_FIELDS = [
+  "name",
+  "email",
+  "audience",
+  "message",
+] as const satisfies ContactField[];
 
 export function audienceLabel(value: Audience): string {
   return AUDIENCES.find((a) => a.value === value)?.label ?? value;
+}
+
+/** Plain-text body shared by the notification email and the mailto fallback. */
+export function contactMessageText(message: ContactMessage): string[] {
+  return [
+    `Name: ${message.name}`,
+    `Email: ${message.email}`,
+    `I am: ${audienceLabel(message.audience)}`,
+    "",
+    message.message,
+  ];
 }
 
 /**
@@ -80,12 +71,6 @@ export function audienceLabel(value: Audience): string {
  */
 export function buildMailto(to: string, message: ContactMessage): string {
   const subject = `Message from the HTF website (${audienceLabel(message.audience).toLowerCase()})`;
-  const body = [
-    `Name: ${message.name}`,
-    `Email: ${message.email}`,
-    `I am: ${audienceLabel(message.audience)}`,
-    "",
-    message.message,
-  ].join("\r\n");
+  const body = contactMessageText(message).join("\r\n");
   return `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
