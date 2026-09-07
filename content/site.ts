@@ -30,6 +30,15 @@ export const site = {
   },
   season: {
     isApplicationSeason: true,
+    /**
+     * Where "Apply" leads while applications are open (PLAN.md section 5, "Google Form
+     * fallback"). "external": /apply redirects to applyUrl, the form used this cycle.
+     * "portal": /apply is the in-house application portal (sign in, form, status). The
+     * default stays "external" until the Phase 2 dry run passes; a Vercel preview can flip
+     * it with NEXT_PUBLIC_APPLY_MODE=portal (docs/DEPLOY.md section 6).
+     */
+    applyMode: (process.env.NEXT_PUBLIC_APPLY_MODE === "portal" ? "portal" : "external") as
+      "external" | "portal",
     // TODO(ashton): replace with the Fall 2026 application form URL. Until then the CTA
     // sends people to the Instagram profile, where the form link lives in the bio.
     applyUrl: "https://www.instagram.com/hackthefuturepurdue/",
@@ -74,6 +83,11 @@ export function getPrimaryCta(now: Date = new Date()): { label: string; href: st
 /** Where /apply sends people while the external form is in use. */
 export function getApplyDestination(): string {
   return site.season.applyUrl;
+}
+
+/** True when /apply is the in-house portal rather than a redirect to the external form. */
+export function isPortalMode(): boolean {
+  return site.season.applyMode === "portal";
 }
 
 /** "Sep 12, 11:59 PM" in the club's time zone, for deadline notices. Null when out of season. */
