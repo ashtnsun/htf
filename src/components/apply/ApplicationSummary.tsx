@@ -92,7 +92,7 @@ function Value({ item }: { item: SummaryItem }) {
         href={value}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex max-w-full items-center gap-1 text-text underline decoration-green/70 underline-offset-4 transition-colors hover:text-green"
+        className="inline-flex max-w-full items-center gap-1 font-medium text-green transition-colors duration-200 hover:text-text"
       >
         <span className="break-all">{value}</span>
         <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />

@@ -111,7 +111,7 @@ export default async function SubmittedPage({ searchParams }: PageProps<"/apply/
                 href={site.socials.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-text underline decoration-green/70 underline-offset-4 transition-colors hover:text-green"
+                className="font-medium text-green transition-colors duration-200 hover:text-text"
               >
                 {site.socials.instagramHandle}
               </a>{" "}
