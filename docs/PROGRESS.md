@@ -47,12 +47,100 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [x] Session 7: schema + sign-in. Migration `20260908000000_application_portal.sql` (profiles, admins, cycles, roles, questions, applications, answers, reviews; RLS, guard trigger, explicit grants), seeds, local Supabase stack, email code + magic-link sign-in (`@supabase/ssr`), `/apply` season landing with account panel, `/auth/confirm`, `src/proxy.ts`, `/apply/form` and `/admin` gates, `NEXT_PUBLIC_APPLY_MODE` switch, `docs/DEPLOY.md` §6
 - [x] Session 8: multi-step application form with autosave (profile → roles → questions → review, one step per URL, works without JavaScript), submit with the confirmation email (Resend), `/apply/submitted`, read-only after submit / deadline
-- [ ] Session 9: exec dashboard (`/admin` table with filters and search, per-application view with answers and the review panel, counts per role, CSV export)
+- [x] Session 9: exec dashboard (`/admin` counts, filters and search in the URL, sortable table, CSV export; `/admin/applications/[id]` with the read-only summary, the review panel, the status control and the other reviews)
 - [ ] Session 10: Resend SMTP and rate limits on the hosted project, keepalive cron, dry run with five exec members, `NEXT_PUBLIC_APPLY_MODE=portal` on production
 
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+
+## Session 9 — 2026-09-07 (Phase 2, part 3: the exec dashboard)
+
+**Built:** the exec side of the portal (PLAN.md §5). `/admin` is the dashboard: counts by
+status and by role (submitted applications only), a filter bar (search across name, sign-in
+email, Purdue email, major, year and role names; status; role; year; reviews = by me / not by
+me yet / by nobody) as a plain GET form, so every combination is a URL that can be shared;
+the applications table (applicant with email, roles, year, a status chip, the submitted time
+or the draft's last save, the average score with the review count, a check when the
+signed-in member has reviewed) with Applicant / Submitted / Score headers that sort while
+keeping the filters, drafts always last; and "Export CSV" (`/admin/export.csv`, same filters
+and order: one row per application with the profile columns, roles, status, times, review
+count, average, yes / maybe / no counts, every reviewer's notes and one column per question
+of the cycle; UTF-8 with BOM, CRLF, safe against spreadsheet formulas).
+`/admin/applications/[id]` shows the application read-only (the review step's
+`ApplicationSummary` under an "Application" heading), the signed-in member's review (score
+1–5 and decision yes / maybe / no as chips, notes; one `reviews` row per member, saved by
+upsert, removable), the status control (submitted / reviewing / accepted / rejected /
+waitlisted) and the other members' reviews. The forms post to server actions and come back
+with a flash in the query string (`?review=saved`, `?status=refused`), so the pages work
+without JavaScript. New: `src/lib/portal/admin.ts` (reads, filters, sorting, counts, CSV),
+`src/components/admin/` (`ExecOnly`, `AdminFilters`, `ApplicationsTable` + `StatusChip`,
+`ReviewPanel`), `src/app/admin/applications/[id]/{page,actions}.ts(x)`,
+`src/app/admin/export.csv/route.ts`; `SelectField` and an `optionalNote` switch in
+`Field.tsx`; `download` on `SplitButton`. Commits: `feat(portal)`, `docs`. Not pushed.
+
+**Verified:** `pnpm typecheck`, `pnpm lint`, Prettier, `pnpm build`. Playwright against the
+dev server and the local stack (`.tmp-admin.mjs`, deleted before the commit), signed in as
+`admin@example.com` through the email code read from Mailpit: 12 rows with the submitted ones
+first; the overview headline; the status filter through the form gives 4 rows and a Clear
+link; `?status=submitted&reviewed=none&q=ada` gives Ada only; the empty state; the Score
+header keeps `status=submitted` and sets `aria-sort`; the CSV answers 200 as `text/csv`, an
+attachment named after the cycle and the day, BOM + header, 4 data lines, question columns
+with the role prefix; the application page names the applicant; saving a review keeps the
+score, decision and notes, reads "Review saved." and "Average 4.0 from 1 review."; the status
+form moves it to Reviewing with "Status updated.", after which the table shows the average,
+the check and the new status; `reviewed=me` gives 1 row and `reviewed=not-me&status=submitted`
+3; a draft shows "Drafts cannot be reviewed" and no form; removing the review clears the
+average; an unknown or malformed id is a 404; on the phone neither page overflows. A fresh
+non-admin account sees "Exec only" on `/admin` and on an application and gets 403 from the
+CSV; signed out, the CSV and both pages bounce to `/apply?next=…` (the proxy). axe: 0
+violations on `/admin` at 1440 and 390, on the application page before and after a review at
+1440 and 390, and on the Exec-only page. Screenshots in `docs/screenshots/session-9/`.
+
+**Decisions made this session**
+
+1. Everything reads through Row Level Security as the signed-in member: the pages gate with
+   `requireUser` + `isAdminUser`, and the CSV route answers 401 / 403 / 404 instead of
+   redirecting (the proxy still bounces signed-out visitors before it runs). No service role.
+2. Filters live in the URL (`status`, `role`, `year`, `reviewed`, `q`, `sort`), validated by
+   `parseFilters`; anything unknown means "all". Filtering, search and sorting happen in
+   memory after one read per table (applications of the cycle, profiles in chunks of 150 ids,
+   reviews and answers through an inner join on the cycle), which is fine for a club's few
+   hundred applications; pagination can come later.
+3. Profiles are fetched separately because `applications.user_id` references `auth.users`,
+   not `profiles`, so PostgREST cannot embed them.
+4. A review is upserted on `(application_id, reviewer_id)`; an empty score, decision or
+   notes stores as null; the policies refuse reviews of drafts and the panel shows text
+   instead of the form for them. Status changes go through the guard trigger (status only,
+   never back to draft); zero rows updated reads as "refused".
+5. The CSV quotes every cell, prefixes cells that start with `=`, `+`, `-` or `@` with an
+   apostrophe (spreadsheet formula injection), joins lists with `; ` and keeps each
+   reviewer's notes on their own line inside one cell.
+6. The table wrapper is `relative overflow-x-auto`: the sr-only spans inside the table are
+   absolutely positioned, and without the `relative` they escaped the scroll container and
+   widened the phone page to 916px.
+7. `SelectField` is a native select (keyboard and phone pickers for free) with a chevron
+   drawn over it; `optionalNote={false}` hides "(optional)" on filter controls and on the
+   review fields. The dashboard's date formatting reuses `formatPortalDate`.
+8. The dev server on port 3000 crashed its worker mid-test ("Jest worker encountered 2 child
+   process exceptions, exceeding retry limit", every page a 500) after the two sessions'
+   heavy use; a restart fixed it. When a page 500s with that message, restart `next dev`.
+
+**Known gaps**
+
+- No pagination and no bulk actions; the CSV is the way to work on many applications at once.
+- Reviewer names come from `profiles.full_name`, which applicants fill in through the form
+  and exec members usually will not, so the panel and the CSV fall back to the email.
+- The status vocabulary is the Session 7 enum; decisions still go out by email by hand.
+- The local database keeps this run's test applications, one review and one Reviewing
+  status.
+
+**TODOs for Ashton (content and accounts)**
+
+- Everything from Sessions 1–8b still stands.
+- Add the exec board to `public.admins` on the hosted project (docs/DEPLOY.md §6) and try
+  the dashboard on a preview deployment.
+- Decide what the 1–5 score means (a rubric line for the hint) and whether "maybe" stays.
 
 ## Session 8 — 2026-09-07 (Phase 2, part 2: the application form)
 
@@ -432,26 +520,22 @@ unchanged.
 
 ## Next session starts with
 
-**Session 9: application portal, part 3 (the exec dashboard).** Read `docs/PLAN.md` §5 and
-§13, this file, `src/lib/portal/data.ts`, `src/lib/apply/schema.ts` (`buildSummary`) and the
-migration's `reviews` table and policies; start the local stack (`supabase start`,
-`supabase db reset`, `.env.local` per `docs/DEPLOY.md` §6, `pnpm dev`), sign in as
-`admin@example.com` and submit a couple of test applications, then:
+**Session 10: application portal, part 4 (go live).** Read `docs/PLAN.md` §5, §6 and
+§12–§15, this file and `docs/DEPLOY.md`, then, in this order:
 
-1. `/admin`: the applications table (name, email, roles, year, status, submitted at, average
-   score, reviewer count) with filters (role, status, year, reviewed by me / not yet) and a
-   search box, all as URL search params so the page stays a server component; counts per role
-   and status above it; CSV export as a route handler (`/admin/export.csv`) that streams the
-   same rows plus answers through RLS.
-2. `/admin/applications/[id]`: the application read-only (`ApplicationSummary`), the review
-   panel (score 1–5, notes, decision yes / maybe / no) as a server action on the `reviews`
-   table (one row per reviewer, upsert), the other reviewers' notes, and a status control for
-   `reviewing` / `accepted` / `rejected` / `waitlisted` (admins may only change `status`).
-3. Keep decisions invisible to applicants (`AccountPanel`), add `/admin` links to the exec
-   box on `/apply`, and gate everything with `requireUser` + `isAdminUser`.
-4. Test as admin and as a non-admin against the local stack (RLS: a non-admin cannot read
-   another application or write a review); screenshots to `docs/screenshots/session-9/`,
-   `pnpm a11y --routes=/apply`, update this file.
+1. Keepalive: an `/api/keepalive` route handler that reads one row through the anon key and a
+   `vercel.json` cron that hits it daily, so the free Supabase project never pauses (PLAN.md
+   §5); a dry-run checklist in `docs/DEPLOY.md` for the five exec testers.
+2. With Ashton: deploy the site (`docs/DEPLOY.md` §1–§5: GitHub org transfer, Vercel project,
+   env vars, DNS); the marketing site ships with `/apply` redirecting to the external form.
+3. Hosted Supabase (`docs/DEPLOY.md` §6): apply the migrations, run `seed.sql` once Ashton
+   confirms the dates, roles and questions, add the exec board to `public.admins`, set the
+   auth URLs and the email templates, configure Resend SMTP and raise the email rate limit.
+4. Dry run on a Vercel preview with `NEXT_PUBLIC_APPLY_MODE=portal`: five exec members apply
+   and review end to end (sign-in email through Resend, the form, the confirmation email, the
+   dashboard, the CSV). Fix what they find.
+5. Flip `NEXT_PUBLIC_APPLY_MODE=portal` on production, redeploy, check every Apply CTA lands
+   on the portal, then update this file and PLAN.md §6.
 
 ## Session 6 — 2026-09-06 (Phase 3: About, Non-profits, partner globe, analytics, Lighthouse)
 

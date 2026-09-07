@@ -37,8 +37,9 @@ content/            typed content: site.ts (config + season CTA), media.ts (imag
 src/app/            routes. page.dev.tsx files exist only in `next dev` (see next.config.ts);
                     contact/actions.ts and nonprofits/actions.ts are the form server actions;
                     apply/ (portal landing + sign-in actions, form/ = the multi-step form and
-                    its actions, submitted/), admin/, auth/confirm (magic-link target) are the
-                    application portal (Phase 2)
+                    its actions, submitted/), admin/ (dashboard, applications/[id] review page
+                    + actions, export.csv route handler), auth/confirm (magic-link target) are
+                    the application portal (Phase 2)
 src/proxy.ts        portal only (/apply, /admin): refreshes the Supabase session cookie and
                     bounces signed-out visitors off protected pages
 src/components/
@@ -65,6 +66,8 @@ src/components/
                     ApplicationForm (client shell: stepper, autosave, aside, review),
                     ApplicationSteps (profile / roles / questions fields), ApplicationSummary
                     (review step and the read-only view)
+  admin/            ExecOnly, AdminFilters (GET form), ApplicationsTable (+ StatusChip),
+                    ReviewPanel (review, status and other reviews; forms post to actions)
   motion/           Reveal / RevealGroup (fade-and-rise, reduced-motion aware)
   icons/            Instagram / LinkedIn (lucide 1.x has no brand icons)
 src/lib/content/    schemas.ts (Zod) + index.ts (loaders; throw on invalid content)
@@ -79,7 +82,8 @@ src/lib/supabase/   env.ts (SUPABASE_URL + SUPABASE_ANON_KEY), server.ts (cookie
 src/lib/auth/       schema.ts (sign-in Zod + safeNextPath), state.ts, session.ts (getSessionUser,
                     isAdminUser, requireUser: the data-access gate every portal page uses)
 src/lib/portal/     data.ts (cycle, roles, questions, my application + answers, admin counts; all
-                    through RLS), format.ts (dates in the club's zone, safe on the client)
+                    through RLS), admin.ts (dashboard reads, URL filters, sorting, counts, CSV),
+                    format.ts (dates in the club's zone, safe on the client)
 src/lib/geo.ts      sphere maths shared by both globes
 scripts/            validate-content, gen-placeholders, gen-logo-paths.py, gen-world-dots,
                     screenshots, a11y
