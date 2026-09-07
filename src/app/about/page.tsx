@@ -1,32 +1,68 @@
 import type { Metadata } from "next";
+import { ExecGrid } from "@/components/about/ExecGrid";
+import { InstagramGrid } from "@/components/about/InstagramGrid";
+import { Mission } from "@/components/about/Mission";
+import { Story } from "@/components/about/Story";
+import { Awards } from "@/components/home/Awards";
+import { WhoWeServe } from "@/components/home/WhoWeServe";
+import { ContactCta } from "@/components/layout/ContactCta";
+import { JumpLinks } from "@/components/layout/JumpLinks";
 import { PageHero } from "@/components/layout/PageHero";
-import { StubSection } from "@/components/layout/StubSection";
+import { Reveal } from "@/components/motion/Reveal";
+import { Section } from "@/components/ui/Section";
+import { getAboutPage, getAwards, getExec, getInstagramPosts } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Who Hack the Future is: a Purdue student organization building software for nonprofits.",
+    "Who Hack the Future is: a Purdue student organization building software for nonprofits, its mission, exec board and recognition.",
   alternates: { canonical: "/about" },
 };
 
+const SECTIONS = [
+  { href: "#mission", label: "Mission" },
+  { href: "#who-we-are", label: "Who we are" },
+  { href: "#exec", label: "Exec board" },
+  { href: "#awards", label: "Awards" },
+  { href: "#instagram", label: "Instagram" },
+] as const;
+
 export default function AboutPage() {
+  const about = getAboutPage();
+  const exec = getExec();
+  const awards = getAwards();
+  const posts = getInstagramPosts();
+
   return (
     <>
       <PageHero
         eyebrow="About"
         lines={["Students building", "*for good.*"]}
-        blurb="[TODO: mission statement] A student org at Purdue building software for nonprofits."
+        blurb="A student organization at Purdue University that builds software for nonprofits around the world, one team and one partner at a time."
+      >
+        <JumpLinks items={SECTIONS} className="mt-0" />
+      </PageHero>
+
+      <Mission mission={about.mission} />
+      <Story paragraphs={about.story} facts={about.facts} />
+      <ExecGrid members={exec} />
+      {awards.length > 0 ? (
+        <Section id="awards" aria-labelledby="awards-title" className="border-t border-line">
+          <Reveal standalone>
+            <Awards awards={awards} headingLevel="h2" id="awards-title" />
+          </Reveal>
+        </Section>
+      ) : null}
+      <InstagramGrid posts={posts} />
+      <WhoWeServe
+        id="get-involved-panels"
+        eyebrow="Get involved"
+        lines={["Two ways", "*to join in.*"]}
       />
-      <StubSection
-        phase="Phase 3"
-        items={[
-          "Mission",
-          "Who we are",
-          "Awards and recognition",
-          "Exec board grid",
-          "Student / nonprofit CTA panels",
-          "Instagram grid",
-        ]}
+      <ContactCta
+        eyebrow="Questions?"
+        lines={["Talk to", "*the team.*"]}
+        copy="Whether you are thinking about applying or have a project in mind, a short message is enough to start."
       />
     </>
   );

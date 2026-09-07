@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getPrimaryCta } from "@content/site";
 import { ContactCta } from "@/components/layout/ContactCta";
 import { FaqSection } from "@/components/layout/FaqSection";
+import { JumpLinks } from "@/components/layout/JumpLinks";
 import { PageHero } from "@/components/layout/PageHero";
 import { SeasonNote } from "@/components/layout/SeasonNote";
 import { HowWeWork } from "@/components/students/HowWeWork";
@@ -50,20 +51,7 @@ export default function StudentsPage() {
           </SplitButton>
           <SeasonNote className="sm:ml-2" />
         </div>
-        <nav aria-label="On this page" className="mt-8">
-          <ul className="flex flex-wrap gap-x-6 gap-y-1">
-            {SECTIONS.map((s) => (
-              <li key={s.href}>
-                <a
-                  href={s.href}
-                  className="inline-flex min-h-11 items-center text-sm text-muted underline-offset-4 transition-colors hover:text-text hover:underline"
-                >
-                  {s.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <JumpLinks items={SECTIONS} />
       </PageHero>
 
       <RoleRows roles={roles} />

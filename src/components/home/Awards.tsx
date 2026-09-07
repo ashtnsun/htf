@@ -4,11 +4,20 @@ import { Reveal } from "@/components/motion/Reveal";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 
 /**
- * Awards subsection of the Impact band: a three-column record (issuer · award · date) per
- * award, stacked on phones, then the photo carousel. Reads content/awards.ts.
+ * Awards: a three-column record (issuer · award · date) per award, stacked on phones, then
+ * the photo carousel. A subsection of the Impact band on the home page and a section of
+ * its own on /about. Reads content/awards.ts.
  */
-export function Awards({ awards }: { awards: Award[] }) {
+type AwardsProps = {
+  awards: Award[];
+  /** h3 inside the Impact band on the home page; h2 as its own section on /about. */
+  headingLevel?: "h2" | "h3";
+  id?: string;
+};
+
+export function Awards({ awards, headingLevel = "h3", id }: AwardsProps) {
   if (awards.length === 0) return null;
+  const Heading = headingLevel;
   const photos = awards.flatMap((award) =>
     award.photos.map((photo) => ({
       src: photo.src,
@@ -21,7 +30,9 @@ export function Awards({ awards }: { awards: Award[] }) {
   return (
     <Reveal standalone>
       <Eyebrow>Awards</Eyebrow>
-      <h3 className="mt-5 text-h3">Recognition for the program</h3>
+      <Heading id={id} className={headingLevel === "h2" ? "mt-5 text-h2" : "mt-5 text-h3"}>
+        Recognition for the program
+      </Heading>
 
       {/* Record table from sm up; a stacked list on phones (the hidden one is display:none). */}
       <table className="mt-8 hidden w-full border-b border-line sm:table">

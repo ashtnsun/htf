@@ -22,20 +22,29 @@ const PANELS = [
   },
 ] as const;
 
-/** Two panels, one per audience, so a first-time visitor finds their page in one click. */
-export function WhoWeServe() {
+type WhoWeServeProps = {
+  id?: string;
+  eyebrow?: string;
+  /** Headline lines; *asterisks* mark the green words. */
+  lines?: string[];
+};
+
+/**
+ * Two panels, one per audience, so a first-time visitor finds their page in one click.
+ * Also the "I'm a student / I'm a nonprofit" hand-off at the end of /about.
+ */
+export function WhoWeServe({
+  id = "who-we-serve",
+  eyebrow = "Who we serve",
+  lines = ["Two audiences, *one mission*."],
+}: WhoWeServeProps) {
+  const titleId = `${id}-title`;
   return (
-    <Section id="who-we-serve" aria-labelledby="serve-title" className="border-t border-line">
+    <Section id={id} aria-labelledby={titleId} className="border-t border-line">
       <RevealGroup>
         <Reveal>
-          <Eyebrow>Who we serve</Eyebrow>
-          <Headline
-            as="h2"
-            id="serve-title"
-            size="h2"
-            lines={["Two audiences, *one mission*."]}
-            className="mt-5"
-          />
+          <Eyebrow>{eyebrow}</Eyebrow>
+          <Headline as="h2" id={titleId} size="h2" lines={lines} className="mt-5" />
         </Reveal>
         <div className="mt-12 grid gap-6 md:grid-cols-2">
           {PANELS.map((panel) => (
