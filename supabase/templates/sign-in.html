@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <body
+    style="
+      margin: 0;
+      padding: 32px 16px;
+      background: #0b0b0b;
+      color: #f5f5f5;
+      font-family: Poppins, Helvetica, Arial, sans-serif;
+    "
+  >
+    <table
+      role="presentation"
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      style="max-width: 520px; margin: 0 auto"
+    >
+      <tr>
+        <td
+          style="
+            padding: 0 0 24px 0;
+            font-size: 12px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #a3a3a3;
+          "
+        >
+          <span
+            style="
+              display: inline-block;
+              width: 6px;
+              height: 6px;
+              background: #03c652;
+              margin-right: 10px;
+            "
+          ></span
+          >Hack the Future &middot; Sign in
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 0 0 16px 0; font-size: 24px; font-weight: 600; line-height: 1.3">
+          Your sign-in code
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 0 0 24px 0; font-size: 16px; line-height: 1.6; color: #a3a3a3">
+          Enter this code on the page where you asked to sign in:
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 0 0 28px 0">
+          <span
+            style="
+              display: inline-block;
+              padding: 14px 22px;
+              border: 1px solid rgba(255, 255, 255, 0.16);
+              background: #141414;
+              font-size: 32px;
+              font-weight: 600;
+              letter-spacing: 0.3em;
+              color: #f5f5f5;
+            "
+            >{{ .Token }}</span
+          >
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 0 0 28px 0; font-size: 16px; line-height: 1.6; color: #a3a3a3">
+          Or, if you are reading this on the same device, open the link instead:
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 0 0 32px 0">
+          <a
+            href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&amp;type=email"
+            style="
+              display: inline-block;
+              padding: 14px 24px;
+              background: #03c652;
+              color: #0b0b0b;
+              font-size: 16px;
+              font-weight: 600;
+              text-decoration: none;
+            "
+            >Sign in to Hack the Future</a
+          >
+        </td>
+      </tr>
+      <tr>
+        <td
+          style="
+            padding: 24px 0 0 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 13px;
+            line-height: 1.6;
+            color: #a3a3a3;
+          "
+        >
+          The code and link expire in one hour and work once. If you did not ask to sign in, you can
+          ignore this email; nothing happens without the code.
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

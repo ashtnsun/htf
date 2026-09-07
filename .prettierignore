@@ -8,3 +8,7 @@ public/placeholders
 src/components/brand/logo-paths.ts
 docs/PLAN.md
 docs/prompts
+
+# Supabase CLI scratch files
+supabase/.temp/
+supabase/.branches/

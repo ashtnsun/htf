@@ -13,10 +13,13 @@
     "validate:content": "tsx --conditions=react-server scripts/validate-content.ts",
     "gen:placeholders": "node scripts/gen-placeholders.mjs",
     "screenshots": "node scripts/screenshots.mjs",
-    "a11y": "node scripts/a11y.mjs"
+    "a11y": "node scripts/a11y.mjs",
+    "supabase:types": "supabase gen types typescript --local > src/lib/supabase/database.types.ts && prettier --write src/lib/supabase/database.types.ts"
   },
   "dependencies": {
     "@react-three/fiber": "9.7.0",
+    "@supabase/ssr": "0.12.6",
+    "@supabase/supabase-js": "2.115.0",
     "@vercel/analytics": "2.0.1",
     "clsx": "^2.1.1",
     "framer-motion": "^13.2.0",
