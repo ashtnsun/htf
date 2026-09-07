@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" role="img" aria-label="Placeholder image: Instagram post">
+  <defs>
+    <pattern id="p-instagram-post-checker" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="r-instagram-post-checker" cx="50%" cy="100%" r="80%">
+      <stop offset="0" stop-color="#00EB88" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#00EB88" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="g-instagram-post-checker" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#141414"/>
+      <stop offset="1" stop-color="#0f0f0f"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="1078" height="1078" fill="url(#g-instagram-post-checker)" stroke="#00EB88" stroke-opacity="0.6" stroke-width="1.5"/>
+  <rect x="1" y="1" width="1078" height="1078" fill="url(#p-instagram-post-checker)"/>
+  <rect x="1" y="1" width="1078" height="1078" fill="url(#r-instagram-post-checker)"/>
+  <rect x="86.4" y="777.6" width="45" height="45" fill="#00EB88" fill-opacity="0.28"/><rect x="176.4" y="777.6" width="45" height="45" fill="#00EB88" fill-opacity="0.28"/><rect x="266.4" y="777.6" width="45" height="45" fill="#00EB88" fill-opacity="0.28"/><rect x="356.4" y="777.6" width="45" height="45" fill="#00EB88" fill-opacity="0.28"/><rect x="446.4" y="777.6" width="45" height="45" fill="#00EB88" fill-opacity="0.28"/><rect x="131.4" y="822.6" width="45" height="45" fill="#00EB88" fill-opacity="0.28"/><rect x="221.4" y="822.6" width="45" height="45" fill="#00EB88" fill-opacity="0.28"/><rect x="311.4" y="822.6" width="45" height="45" fill="#00EB88" fill-opacity="0.28"/><rect x="401.4" y="822.6" width="45" height="45" fill="#00EB88" fill-opacity="0.28"/><text x="540" y="556.3333333333334" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="49" letter-spacing="0.12em" fill="#A3A3A3">INSTAGRAM POST</text>
+       <rect x="383.2" y="589" width="313.6" height="1" fill="#00EB88" fill-opacity="0.5"/>
+</svg>

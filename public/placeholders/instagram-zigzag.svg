@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" role="img" aria-label="Placeholder image: Instagram post">
+  <defs>
+    <pattern id="p-instagram-post-zigzag" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="r-instagram-post-zigzag" cx="50%" cy="100%" r="80%">
+      <stop offset="0" stop-color="#00EB88" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#00EB88" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="g-instagram-post-zigzag" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#141414"/>
+      <stop offset="1" stop-color="#0f0f0f"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="1078" height="1078" fill="url(#g-instagram-post-zigzag)" stroke="#00EB88" stroke-opacity="0.6" stroke-width="1.5"/>
+  <rect x="1" y="1" width="1078" height="1078" fill="url(#p-instagram-post-zigzag)"/>
+  <rect x="1" y="1" width="1078" height="1078" fill="url(#r-instagram-post-zigzag)"/>
+  <polyline points="0,799.2 67.5,885.5999999999999 135,799.2 202.5,885.5999999999999 270,799.2 337.5,885.5999999999999 405,799.2 472.5,885.5999999999999 540,799.2 607.5,885.5999999999999 675,799.2 742.5,885.5999999999999 810,799.2 877.5,885.5999999999999 945,799.2 1012.5,885.5999999999999 1080,799.2" fill="none" stroke="#00EB88" stroke-opacity="0.35" stroke-width="1.5"/><text x="540" y="556.3333333333334" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="49" letter-spacing="0.12em" fill="#A3A3A3">INSTAGRAM POST</text>
+       <rect x="383.2" y="589" width="313.6" height="1" fill="#00EB88" fill-opacity="0.5"/>
+</svg>

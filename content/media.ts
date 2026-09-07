@@ -24,6 +24,14 @@ export const media = {
   "org.group-photo": `${P}/org-photo.svg`,
   "awards.student-life-2025": `${P}/award-photo.svg`,
 
+  // Instagram grid on /about (key pattern: instagram.<post id>); four ornament variants.
+  "instagram.post-1": `${P}/instagram-globe.svg`,
+  "instagram.post-2": `${P}/instagram-checker.svg`,
+  "instagram.post-3": `${P}/instagram-zigzag.svg`,
+  "instagram.post-4": `${P}/instagram-brackets.svg`,
+  "instagram.post-5": `${P}/instagram-checker.svg`,
+  "instagram.post-6": `${P}/instagram-globe.svg`,
+
   // People (key pattern: exec.<slug>)
   "exec.todo-president": `${P}/exec.svg`,
   "exec.ashton-sun": `${P}/exec.svg`,

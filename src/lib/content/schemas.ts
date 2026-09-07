@@ -50,6 +50,11 @@ export const projectFrontmatterSchema = z.object({
   stack: z.array(z.string().min(1)).default([]),
   team: z.array(teamMemberSchema).default([]),
   featured: z.boolean().default(false),
+  /**
+   * Where the nonprofit is, as [latitude, longitude] in decimal degrees, for the partner
+   * globe on /nonprofits. A state or country centroid is fine until the city is known.
+   */
+  geo: z.tuple([z.number().min(-90).max(90), z.number().min(-180).max(180)]).optional(),
   /** Unpublished projects are hidden in production builds but visible in dev. */
   published: z.boolean().default(true),
 });
@@ -129,6 +134,8 @@ export const processStepSchema = z.object({
   description: z.string().min(1),
   /** Wireframe illustration shown while the step is active. */
   graphic: z.enum(["radar", "network", "terminal", "globe"]),
+  /** What the nonprofit does at this step ("Your part" on /nonprofits). */
+  partner: z.string().min(1).optional(),
 });
 
 export const awardPhotoSchema = z.object({
@@ -195,6 +202,53 @@ export const studentsPageSchema = z.object({
   perks: z.array(perkSchema).min(1),
 });
 
+/** A curated Instagram post for the grid on /about (no API: the link and image are typed in). */
+export const instagramPostSchema = z.object({
+  id: slugSchema,
+  /** Post URL. Values starting with "TODO" render the tile without a link. */
+  href: z.string().min(1),
+  image: mediaRefSchema,
+  alt: z.string().min(1),
+  caption: z.string().min(1).optional(),
+});
+
+/** A short label/value pair ("Founded", "2023"). */
+export const factSchema = z.object({
+  id: slugSchema,
+  label: z.string().min(1),
+  value: z.string().min(1),
+  href: z.string().min(1).optional(),
+});
+
+/** Copy blocks for the About page (exec, awards and the Instagram grid have their own files). */
+export const aboutPageSchema = z.object({
+  mission: z.object({
+    /** Headline lines; *asterisks* mark the green words. */
+    lines: z.array(z.string().min(1)).min(1),
+    body: z.string().min(1),
+  }),
+  /** "Who we are": one string per paragraph. */
+  story: z.array(z.string().min(1)).min(1),
+  facts: z.array(factSchema).min(1),
+});
+
+/** One item of the scope lists on /nonprofits ("What we build" / "What we don't"). */
+export const scopeItemSchema = z.object({
+  id: slugSchema,
+  title: z.string().min(1),
+  description: z.string().min(1),
+});
+
+/** Copy blocks for the Non-profits page (process steps, FAQ and testimonials have their own files). */
+export const nonprofitsPageSchema = z.object({
+  scope: z.object({
+    build: z.array(scopeItemSchema).min(1),
+    avoid: z.array(scopeItemSchema).min(1),
+  }),
+  /** Shown beside the intake form: what happens after a nonprofit writes in. */
+  nextSteps: z.array(z.string().min(1)).min(1),
+});
+
 /** Frontmatter of content/privacy.mdx. YAML turns an unquoted date into a Date; both work. */
 export const privacyFrontmatterSchema = z.object({
   /** ISO date (YYYY-MM-DD) the current text took effect; shown on the page. */
@@ -237,3 +291,11 @@ export type HowWeWorkStep = z.infer<typeof howWeWorkStepSchema>;
 export type Perk = z.infer<typeof perkSchema>;
 export type StudentsPage = z.infer<typeof studentsPageSchema>;
 export type StudentsPageInput = z.input<typeof studentsPageSchema>;
+export type InstagramPost = z.infer<typeof instagramPostSchema>;
+export type InstagramPostInput = z.input<typeof instagramPostSchema>;
+export type Fact = z.infer<typeof factSchema>;
+export type AboutPage = z.infer<typeof aboutPageSchema>;
+export type AboutPageInput = z.input<typeof aboutPageSchema>;
+export type ScopeItem = z.infer<typeof scopeItemSchema>;
+export type NonprofitsPage = z.infer<typeof nonprofitsPageSchema>;
+export type NonprofitsPageInput = z.input<typeof nonprofitsPageSchema>;

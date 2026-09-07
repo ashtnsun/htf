@@ -128,6 +128,11 @@ const files = [
   // Home "What we do" full-organization photo (21:9) and the Impact awards photo (3:2).
   ["org-photo.svg", { w: 2400, h: 1030, label: "Organization photo", cell: 60 }],
   ["award-photo.svg", { w: 1800, h: 1200, label: "Award photo", cell: 48 }],
+  // Instagram grid on /about (square posts), four ornament variants like the covers.
+  ["instagram-globe.svg", { w: 1080, h: 1080, label: "Instagram post", kind: "globe" }],
+  ["instagram-checker.svg", { w: 1080, h: 1080, label: "Instagram post", kind: "checker" }],
+  ["instagram-zigzag.svg", { w: 1080, h: 1080, label: "Instagram post", kind: "zigzag" }],
+  ["instagram-brackets.svg", { w: 1080, h: 1080, label: "Instagram post", kind: "brackets" }],
 ];
 
 // Remove outputs from earlier versions of this script so nothing stale is served.

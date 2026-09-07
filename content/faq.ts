@@ -97,7 +97,8 @@ export const faq: FaqItemInput[] = [
   {
     id: "nonprofits-cost",
     question: "What does it cost?",
-    answer: "[TODO: confirm] Our work is free for nonprofit partners.",
+    answer:
+      "Nothing. We build and deliver the product free of charge. [TODO: confirm, and say whether the nonprofit covers third-party costs such as hosting or domain names.]",
     audience: "nonprofits",
   },
   {
@@ -106,5 +107,36 @@ export const faq: FaqItemInput[] = [
     answer:
       "[TODO: confirm] Projects run over the academic year, from a fall kickoff to a spring handoff.",
     audience: "nonprofits",
+    link: { label: "How it works", href: "#how-it-works" },
+  },
+  {
+    id: "nonprofits-who",
+    question: "Which organizations do you work with?",
+    answer:
+      "Nonprofits of any size, anywhere. Our partners have been based across the United States and abroad. What matters is a real problem that software can solve and a person on your side who can work with the team. [TODO: confirm any eligibility rules, e.g. registered nonprofit status.]",
+    audience: "nonprofits",
+    link: { label: "Where our partners are", href: "#partners" },
+  },
+  {
+    id: "nonprofits-time",
+    question: "How much of our time does it take?",
+    answer:
+      "A scoping call at the start, a point of contact for the year, and regular check-ins where you try the work in progress and give feedback. [TODO: confirm the check-in cadence and the hours per month.]",
+    audience: "nonprofits",
+  },
+  {
+    id: "nonprofits-ownership",
+    question: "Who owns what you build?",
+    answer:
+      "[TODO: confirm] You do. At handoff you receive the product, the source code and the documentation, and your team is free to keep building on it.",
+    audience: "nonprofits",
+  },
+  {
+    id: "nonprofits-when",
+    question: "When should we get in touch?",
+    answer:
+      "Any time. We match projects to teams before the fall kickoff, so inquiries that arrive over the summer are the easiest to place. [TODO: confirm when intake closes for the coming cycle.]",
+    audience: "nonprofits",
+    link: { label: "Start a project", href: "#start" },
   },
 ];

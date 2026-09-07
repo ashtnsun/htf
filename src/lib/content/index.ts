@@ -4,10 +4,13 @@ import path from "node:path";
 import matter from "gray-matter";
 import { z } from "zod";
 import { extractHeadings } from "@/lib/mdx";
+import { aboutPage as aboutData } from "@content/about";
 import { awards as awardsData } from "@content/awards";
 import { exec as execData } from "@content/exec";
 import { faq as faqData } from "@content/faq";
+import { instagramPosts as instagramData } from "@content/instagram";
 import { isMediaKey } from "@content/media";
+import { nonprofitsPage as nonprofitsData } from "@content/nonprofits";
 import { process as processData } from "@content/process";
 import { recruitmentTimeline as recruitmentData } from "@content/recruitment";
 import { services as servicesData } from "@content/services";
@@ -16,9 +19,12 @@ import { stats as statsData } from "@content/stats";
 import { studentsPage as studentsData } from "@content/students";
 import { testimonials as testimonialsData } from "@content/testimonials";
 import {
+  aboutPageSchema,
   awardSchema,
   execMemberSchema,
   faqItemSchema,
+  instagramPostSchema,
+  nonprofitsPageSchema,
   privacyFrontmatterSchema,
   processStepSchema,
   projectFrontmatterSchema,
@@ -28,10 +34,13 @@ import {
   statSchema,
   studentsPageSchema,
   testimonialSchema,
+  type AboutPage,
   type Award,
   type ExecMember,
   type FaqAudience,
   type FaqItem,
+  type InstagramPost,
+  type NonprofitsPage,
   type PrivacyFrontmatter,
   type ProcessStep,
   type ProjectFrontmatter,
@@ -167,6 +176,30 @@ export function getProjectYears(): string[] {
   return [...new Set(getProjects().map((p) => p.year))];
 }
 
+/** A place on the partner globe: every visible project that shares a `location` string. */
+export type PartnerLocation = {
+  id: string;
+  location: string;
+  /** [latitude, longitude]; missing when no project at this location has `geo` yet. */
+  geo?: [number, number];
+  projects: Pick<Project, "slug" | "title" | "nonprofit" | "year">[];
+};
+
+/** Visible projects grouped by location, in first-appearance order (newest cycle first). */
+export function getPartnerLocations(): PartnerLocation[] {
+  const byLocation = new Map<string, PartnerLocation>();
+  getProjects().forEach((p, i) => {
+    let entry = byLocation.get(p.location);
+    if (!entry) {
+      entry = { id: `loc-${i}`, location: p.location, projects: [] };
+      byLocation.set(p.location, entry);
+    }
+    if (!entry.geo && p.geo) entry.geo = p.geo;
+    entry.projects.push({ slug: p.slug, title: p.title, nonprofit: p.nonprofit, year: p.year });
+  });
+  return [...byLocation.values()];
+}
+
 // ---------------------------------------------------------------- privacy policy
 
 export type PrivacyPolicy = PrivacyFrontmatter & {
@@ -258,6 +291,29 @@ export function getStudentsPage(): StudentsPage {
   return page;
 }
 
+export function getAboutPage(): AboutPage {
+  const file = "content/about.ts";
+  const result = aboutPageSchema.safeParse(aboutData);
+  if (!result.success) throw new ContentError(file, z.prettifyError(result.error));
+  assertUnique(result.data.facts, (f) => f.id, file);
+  return result.data;
+}
+
+export function getNonprofitsPage(): NonprofitsPage {
+  const file = "content/nonprofits.ts";
+  const result = nonprofitsPageSchema.safeParse(nonprofitsData);
+  if (!result.success) throw new ContentError(file, z.prettifyError(result.error));
+  assertUnique([...result.data.scope.build, ...result.data.scope.avoid], (i) => i.id, file);
+  return result.data;
+}
+
+export function getInstagramPosts(): InstagramPost[] {
+  const items = parseAll(instagramPostSchema, instagramData, "content/instagram.ts");
+  assertUnique(items, (p) => p.id, "content/instagram.ts");
+  items.forEach((p) => assertMediaRef(p.image, "content/instagram.ts"));
+  return items;
+}
+
 export function getRecruitmentTimeline(): RecruitmentStep[] {
   const items = parseAll(recruitmentStepSchema, recruitmentData, "content/recruitment.ts");
   assertUnique(items, (s) => s.id, "content/recruitment.ts");
@@ -279,6 +335,12 @@ export function validateAllContent(): { counts: Record<string, number> } {
       awards: getAwards({ publishedOnly: false }).length,
       recruitmentTimeline: getRecruitmentTimeline().length,
       studentsPage: Object.values(getStudentsPage()).reduce((n, list) => n + list.length, 0),
+      aboutFacts: getAboutPage().facts.length,
+      nonprofitsScope: (({ scope }) => scope.build.length + scope.avoid.length)(
+        getNonprofitsPage(),
+      ),
+      instagramPosts: getInstagramPosts().length,
+      partnerLocations: getPartnerLocations().length,
       privacySections: extractHeadings(getPrivacyPolicy().body).length,
     },
   };
