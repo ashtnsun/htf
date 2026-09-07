@@ -44,11 +44,186 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 ### Phase 2 — Application portal (Sessions 7–10)
 
-- [ ] Supabase project, schema + RLS migrations, Resend SMTP, magic link, multi-step form with autosave, admin dashboard, CSV export, keepalive cron, dry run, flip CTA
+- [x] Session 7: schema + sign-in. Migration `20260908000000_application_portal.sql` (profiles, admins, cycles, roles, questions, applications, answers, reviews; RLS, guard trigger, explicit grants), seeds, local Supabase stack, email code + magic-link sign-in (`@supabase/ssr`), `/apply` season landing with account panel, `/auth/confirm`, `src/proxy.ts`, `/apply/form` and `/admin` gates, `NEXT_PUBLIC_APPLY_MODE` switch, `docs/DEPLOY.md` §6
+- [ ] Session 8: multi-step application form with autosave (profile → roles → questions → review), submit + confirmation email (Resend), `/apply/submitted`, read-only after submit / deadline
+- [ ] Session 9: exec dashboard (`/admin` table with filters and search, per-application view with answers and the review panel, counts per role, CSV export)
+- [ ] Session 10: Resend SMTP and rate limits on the hosted project, keepalive cron, dry run with five exec members, `NEXT_PUBLIC_APPLY_MODE=portal` on production
 
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+
+## Session 7 — 2026-09-07 (Phase 2, part 1: portal schema and sign-in)
+
+**Built:** the application portal's foundation (PLAN.md §5, §12). Database: migration
+`supabase/migrations/20260908000000_application_portal.sql` with `profiles` (trigger on
+`auth.users`), `admins` (by email), `cycles`, `roles`, `questions`, `applications`, `answers`,
+`reviews`, three enums, `is_admin()` / `cycle_is_open()`, a guard trigger on `applications`,
+Row Level Security on every table and explicit grants; `supabase/seed.sql` (Fall 2026 cycle,
+the three roles, seven placeholder questions) and `supabase/seed.local.sql` (a local admin).
+Local stack: `supabase/config.toml` (ports 54331+, redirect URLs, one email template for both
+the sign-up and magic-link mails, `supabase/templates/sign-in.html`). Auth: `@supabase/ssr` +
+`@supabase/supabase-js`; `src/lib/supabase/` (env, per-request server client, proxy helper,
+generated types), `src/lib/auth/` (Zod sign-in schema and `safeNextPath`, action state,
+`getSessionUser` / `isAdminUser` / `requireUser`), `src/lib/portal/data.ts` (cycle, roles,
+questions, my application, admin counts). Routes: `/apply` is the season landing in portal mode
+(sign in with an emailed six-digit code or the link; signed in, an account panel with the
+application status), `/auth/confirm` verifies the link, `src/proxy.ts` refreshes the session and
+guards `/apply/form` and `/admin`, `/apply/form` (placeholder listing roles and questions,
+Session 8 builds the form) and `/admin` (exec gate with counts by status, Session 9 builds the
+dashboard). `content/site.ts` gained `season.applyMode` (`NEXT_PUBLIC_APPLY_MODE`), default
+`external`, so production is unchanged. `docs/DEPLOY.md` §6 is the hosted runbook. Commits:
+`feat(portal)` ×2, `docs`. Not pushed.
+
+**Verified:** `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm build` clean (38 pages;
+`/apply`, `/apply/form`, `/admin`, `/auth/confirm` render on demand, the proxy is registered,
+every marketing page stays static with the hourly revalidate). Database, against the local
+stack after `supabase db reset`, impersonating roles in psql: anon reads cycles / roles /
+questions and nothing else; an applicant sees only their own profile and application, may edit
+`full_name` but not `email`, can start one draft per cycle (a second is a unique violation, a
+draft for another account fails the policy, a repeated role fails the trigger), answers only
+questions of the cycle while the draft is open, cannot set `accepted`, move the application or
+add a review, must pick a role to submit, and after submitting cannot change the application or
+the answers; a second applicant sees nothing of the first; an admin sees every application,
+profile, answer and the admin list, may change the status but not an applicant field or reopen
+a draft, may add and edit their own review but not one for someone else, cannot edit answers
+or add admins through the API, and may apply themselves. Playwright against the dev server and
+then the production build (`docs/screenshots/session-7/`, portal mode with the local Supabase,
+`example.com` accounts): landing with the deadline and roles read from the database; `next`
+sanitising (external URL falls back to `/apply`); server-side email validation with the browser
+constraints stripped, focus on the field; honeypot returns the code step with no email sent;
+signed-out `/admin` and `/apply/form` redirect to `/apply?next=…`; the sign-in email arrives
+with a code and a link to this origin; a wrong code shows the message and keeps focus; resend
+either sends a new code or reports the one-per-minute limit and stays on the code step; the
+right code lands on `/apply` with "Not started", the email and no exec box; `/apply/form` lists
+the shared questions; `/admin` shows the exec-only page to an applicant; sign out clears the
+cookie; the local admin signing in from `/apply?next=/admin` lands on `/admin` with the counts;
+the magic link signs in a browser with no cookies and a reused link shows the expired-link
+notice; without JavaScript the code step renders, a wrong code re-renders with the message and
+the right code redirects signed in; no console errors. axe: 0 violations on every one of those
+states at 1440 and 390; `pnpm a11y` on the production build for `/apply` and `/` (drawer open): 0. A second production build without `.env.local` (the committed default): `/apply` 307 to the
+external form, `/admin` and `/apply/form` 307 to `/apply?next=…`, `/auth/confirm` 307 to
+`/apply?error=link`, `robots.txt` disallows `/apply`, `/admin`, `/auth`, the contact page is
+unchanged.
+
+**Decisions made this session**
+
+1. Cycle, roles and questions are database rows (PLAN.md §5), not `content/` files: the RLS
+   policies need `closes_at` in the database to lock drafts at the deadline, and exec can
+   edit questions in the SQL editor between deploys. `supabase/seed.sql` seeds them (upserts by
+   slug, re-runnable); the role slugs match `content/roles.ts`. `content/site.ts` keeps the
+   marketing deadline and must agree by hand (`closesAt` = `cycles.closes_at`) until an admin
+   screen edits both. PLAN.md §12 records it.
+2. Sign-in is Supabase email OTP with both forms in one email: a six-digit code typed on the
+   page that asked (works when mail is read on a phone) and a link to `/auth/confirm` carrying
+   `token_hash` (verified server-side with `verifyOtp`, so it works in any browser; the SSR
+   client's `pkce_`-prefixed hashes verify fine). `signInWithOtp` creates the account on first
+   use, so new addresses receive the "confirmation" template and known ones "magic_link"; both
+   point at `supabase/templates/sign-in.html`, whose link is
+   `{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email` with `emailRedirectTo` =
+   `<request origin>/auth/confirm` (previews link to themselves; Supabase ignores origins not
+   on the allow list). The `next` path survives the code path (hidden input); the link always
+   lands on `/apply`, which shows admins a dashboard link.
+3. Launch switch: `season.applyMode` in `content/site.ts`, `external` unless
+   `NEXT_PUBLIC_APPLY_MODE=portal` (inlined at build). External keeps today's redirect;
+   portal renders the landing. Every Apply CTA already points at `/apply`, so nothing else
+   changes at launch; the dry run runs on a Vercel preview with the variable set there only.
+   Portal mode without `SUPABASE_URL` + `SUPABASE_ANON_KEY` shows a "not connected" hero with
+   a visible TODO, like the contact form.
+4. Data access: the portal talks to Supabase as the signed-in user (anon key + session cookie,
+   `createClient()` per request in `src/lib/supabase/server.ts`), never with the service role,
+   so RLS is the boundary; `getClaims()` verifies the JWT. `requireUser` / `isAdminUser`
+   (React `cache`) gate every page; `src/proxy.ts` matches only `/apply/:path*` and
+   `/admin/:path*`, refreshes the cookie and redirects signed-out visitors (optimistic). The
+   anon key stays server-side (`SUPABASE_ANON_KEY`, no `NEXT_PUBLIC_`) because no browser
+   client exists.
+5. Schema details. `applications` carries the profile step as columns (`full_name`,
+   `purdue_email`, `year`, `major`, `linkedin_url`, `portfolio_url`) so the admin table can
+   filter on them; `roles_applied uuid[]` per the plan, validated by the trigger (distinct,
+   open, same cycle); `answers.value jsonb` (string or string array); `reviews` unique per
+   reviewer and application with `score` 1–5, `notes`, `decision` yes / maybe / no; one active
+   cycle enforced by a partial unique index; `questions.role_id` null = shared, with a
+   composite foreign key to keep it in the same cycle. Applicants: insert a draft only while
+   the cycle is open, update only their own open draft, move it only to `submitted` (the
+   trigger stamps `submitted_at` and requires a role); admins: `status` only, never back to
+   draft. Decisions are not surfaced to applicants (the account panel reads every post-submit
+   status as "Submitted"); the dashboard decides how decisions go out.
+6. Privileges are granted explicitly per table and role. The Supabase Postgres image's default
+   privileges give `anon`, `authenticated` and `service_role` no DML on new public tables, so
+   RLS alone left the landing with "permission denied for table cycles". The same finding
+   means the Phase 1 and 3 form tables had no service-role grant either; this migration adds
+   `grant all … to service_role` for `contact_messages` and `nonprofit_inquiries`.
+7. Local development runs a real Supabase stack in Docker (`supabase start` with the heavy
+   services excluded, ports shifted by ten because another local project already uses the
+   defaults), emails in Mailpit, `admin@example.com` seeded as a local admin, types generated
+   with `pnpm supabase:types`. `supabase/.temp` is Prettier-ignored.
+8. Sign-in UI: `SignInForm` runs two `useActionState` hooks (request, verify) and shows
+   whichever state is newer (`at` stamp), so a resend after a wrong code updates the message;
+   the resend flag is a hidden input because React drops `name`/`value` on a button with a
+   function `formAction`; "Use a different email" is a real link to `/apply` that remounts with
+   JavaScript. Messages: a mistyped and an expired code share Supabase's `otp_expired`, so one
+   message covers both; the one-email-per-minute limit gets "give it a minute"; the honeypot
+   pretends to send. The email input's hint says decisions go to that address.
+9. Landing composition: `PageHero` (cycle name eyebrow, "Apply to / Hack the Future.", blurb,
+   deadline from `cycles`) → sign-in or account panel beside "How applying works" (three
+   numbered steps) and "Roles this cycle" from `roles` with links to the Students page and
+   contact. Closed cycle: "Applications are closed for now." with sign-in kept for viewing a
+   submitted application. `/admin` for a non-admin is an explicit "Exec only." page with sign
+   out rather than a redirect. The email template is a table layout in the site's dark palette
+   with the code large and the link as a green button.
+10. `robots.txt` also disallows `/admin` and `/auth`. `docs/DEPLOY.md` §2 lists the two new
+    variables; §6 is the portal runbook (migrations, seed, admins, auth URLs, templates, Resend
+    SMTP and the 2-per-hour built-in limit, preview-first launch, local setup, checks,
+    free-tier pause).
+
+**Known gaps**
+
+- `/apply/form` and `/admin` are gates with placeholders: the form (Session 8) and the review
+  dashboard (Session 9) are not built. `profiles.full_name` is unused until then.
+- Every question in `supabase/seed.sql` is a `[TODO: confirm]` placeholder; `opens_at` is a
+  guess (2026-08-24) and `closes_at` mirrors the placeholder deadline in `content/site.ts`.
+  The local cycle closes on 2026-09-12: after that date local testing needs the seed dates
+  moved.
+- The hosted Supabase project does not exist, so nothing is applied anywhere but locally, and
+  the built-in mailer's 2 emails per hour stands until Resend SMTP is configured (§6).
+- The sign-in email has not been checked in real mail clients (dark table layout).
+- `cycles.closes_at` and `site.season.closesAt` are two copies of the deadline.
+- Local: Docker Desktop must be running for `supabase start`; the stack keeps running after
+  the session (`supabase stop` to free it).
+
+**TODOs for Ashton (content and accounts)**
+
+- Everything from Sessions 1–6 still stands.
+- Create the Supabase project, then follow `docs/DEPLOY.md` §6: migrations, `seed.sql` after
+  fixing the dates and questions, exec emails into `admins`, Site URL and redirect URLs, both
+  email templates, Resend SMTP and the rate limit, `SUPABASE_ANON_KEY` and
+  `NEXT_PUBLIC_APPLY_MODE=portal` on a Vercel preview.
+- Confirm the cycle dates, the roles for the portal (same list as `content/roles.ts`) and the
+  real questions per role, including character limits and which are required.
+- Decide whether applicants should see a decision status in the portal or only by email.
+
+## Next session starts with
+
+**Session 8: application portal, part 2 (the form).** Read `docs/PLAN.md` §5 and §12, this
+file, `src/lib/portal/data.ts` and the migration, start the local stack (`supabase start`,
+`supabase db reset`, `.env.local` per `docs/DEPLOY.md` §6, `pnpm dev`), then:
+
+1. `/apply/form`: the multi-step form with autosave. Step 1 profile (`applications` columns:
+   name, Purdue email if different, year, major, LinkedIn, portfolio), step 2 roles
+   (`roles_applied`, per-role questions appear), step 3 questions (`answers`, one row per
+   question, respecting `kind`, `options`, `max_chars`, `required`), step 4 review + submit.
+   Server actions in `src/app/apply/form/actions.ts` (create the draft on first save, save a
+   step, submit) validated with Zod built from the `questions` rows; every write runs as the
+   user so RLS enforces the draft / open-cycle rules; drafts save on blur or step change and
+   show "Saved" state. Reuse `Field` primitives and `useFormSubmission` patterns.
+2. Submit: lock the record (status `submitted`), send the confirmation email through Resend
+   (`src/lib/forms/deliver.ts` has the API call; needs `RESEND_API_KEY` + `CONTACT_FROM`; log
+   and continue when unset), redirect to `/apply/submitted`. After the deadline or after
+   submitting the form renders read-only.
+3. Update `AccountPanel` statuses if the form changes them; keep decisions hidden.
+4. Test against the local stack: autosave, per-role questions, validation messages, submit,
+   read-only view, RLS errors surfaced as friendly messages, no-JS path; Mailpit for the
+   confirmation email. Screenshots to `docs/screenshots/session-8/`, `pnpm a11y --routes=/apply,/apply/form`, update this file.
 
 ## Session 6 — 2026-09-06 (Phase 3: About, Non-profits, partner globe, analytics, Lighthouse)
 
@@ -212,25 +387,6 @@ the globe scrolls near the viewport.
   contact one. Vercel: enable Web Analytics once the project exists, then confirm the
   privacy paragraph.
 - Decide on the hero reveal versus mobile LCP (decision 9).
-
-## Next session starts with
-
-**Session 7: application portal, part 1 (schema + auth).** Read `docs/PLAN.md` §5 and §9,
-this file, and `node_modules/next/dist/docs/` for `proxy.ts` and server actions, then:
-
-1. Supabase: the same project as the contact and intake tables. Migrations for `cycles`,
-   `roles`, `questions`, `applications`, `answers`, `reviews`, `admins` with RLS (applicants
-   read and write only their own draft while the cycle is open; admins read everything and
-   write reviews and status), plus the two migrations already in `supabase/migrations/`.
-2. Auth: email magic link (OTP) for any email, `profiles` row on first sign-in, admins by
-   email in `admins`, checked server-side. `/apply` becomes the season landing + sign-in;
-   keep the header CTA on the external form until the Phase 2 dry run passes.
-3. Custom SMTP through Resend for auth emails (the built-in sender is 2 per hour).
-4. If the Supabase project does not exist yet, write the migrations and the auth UI first
-   and test against a local `supabase start` (Docker), or stop at the schema and log it.
-5. Screenshots to `docs/screenshots/session-7/`, `pnpm a11y --routes=/apply`, update this
-   file. Needed from Ashton: Supabase and Resend accounts, the exec email list, this
-   cycle's roles and questions.
 
 ## Session 5 — 2026-09-06 (home + global audit pass)
 

@@ -35,7 +35,11 @@ content/            typed content: site.ts (config + season CTA), media.ts (imag
                     process.ts, awards.ts, recruitment.ts, students.ts, about.ts,
                     nonprofits.ts, instagram.ts, privacy.mdx, projects/*.mdx (Zod frontmatter)
 src/app/            routes. page.dev.tsx files exist only in `next dev` (see next.config.ts);
-                    contact/actions.ts and nonprofits/actions.ts are the form server actions
+                    contact/actions.ts and nonprofits/actions.ts are the form server actions;
+                    apply/ (portal landing + sign-in actions, form/), admin/, auth/confirm
+                    (magic-link target) are the application portal (Phase 2)
+src/proxy.ts        portal only (/apply, /admin): refreshes the Supabase session cookie and
+                    bounces signed-out visitors off protected pages
 src/components/
   brand/            Logo (inline SVG wordmark; logo-paths.ts is generated, do not hand-edit),
                     PixelDino (footer)
@@ -53,16 +57,27 @@ src/components/
                     (three.js / R3F, loaded on demand), SpinController, landDots
   forms/            useFormSubmission (server / mailto modes), SentPanel, Honeypot
   contact/          ContactForm
+  apply/            SignInForm (email → six-digit code, resend, restart), AccountPanel
   motion/           Reveal / RevealGroup (fade-and-rise, reduced-motion aware)
   icons/            Instagram / LinkedIn (lucide 1.x has no brand icons)
 src/lib/content/    schemas.ts (Zod) + index.ts (loaders; throw on invalid content)
 src/lib/forms/      fields.ts (FormState, readValues, honeypot), deliver.ts (Supabase / Resend)
 src/lib/contact/, src/lib/inquiries/   per-form Zod schema + delivery wrapper
+src/lib/supabase/   env.ts (SUPABASE_URL + SUPABASE_ANON_KEY), server.ts (cookie-bound client,
+                    one per request), proxy.ts (session refresh), database.types.ts (generated:
+                    `supabase gen types typescript --local`, do not hand-edit)
+src/lib/auth/       schema.ts (sign-in Zod + safeNextPath), state.ts, session.ts (getSessionUser,
+                    isAdminUser, requireUser: the data-access gate every portal page uses)
+src/lib/portal/     data.ts (cycle, roles, questions, my application, admin counts; all through RLS)
 src/lib/geo.ts      sphere maths shared by both globes
 scripts/            validate-content, gen-placeholders, gen-logo-paths.py, gen-world-dots,
                     screenshots, a11y
 docs/               PLAN.md, PROGRESS.md, DEPLOY.md, prompts/, screenshots/session-N/
-supabase/migrations contact_messages, nonprofit_inquiries (RLS on, service role only)
+supabase/           config.toml (local stack on ports 54331+, email templates, redirect URLs),
+                    migrations/ (contact_messages, nonprofit_inquiries: service role only;
+                    application_portal: profiles, admins, cycles, roles, questions, applications,
+                    answers, reviews with RLS + guard trigger), seed.sql (cycle, roles,
+                    questions), seed.local.sql (local admin), templates/sign-in.html
 reference/          brand guide, fonts, Instagram graphics, Framer captures (never shipped)
 public/placeholders generated SVG placeholders (pnpm gen:placeholders)
 ```
@@ -79,8 +94,10 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   as visible `[TODO: …]` text and listed in PROGRESS.md. The UI hides links whose value
   starts with `TODO`.
 - Season logic lives only in `content/site.ts` (`getPrimaryCta`, `isInSeason`,
-  `formatDeadline`). Every CTA reads from it. `/apply` redirects to `season.applyUrl` until
-  the portal ships.
+  `formatDeadline`, `isPortalMode`). Every CTA reads from it. `season.applyMode` is
+  `external` (default: `/apply` redirects to `season.applyUrl`) or `portal`
+  (`NEXT_PUBLIC_APPLY_MODE=portal`: `/apply` is the in-house portal). The portal's cycle,
+  roles and questions live in the database (`supabase/seed.sql`), not in `content/`.
 
 ## Design tokens (globals.css)
 
@@ -120,6 +137,13 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   child of `ul`/`ol` (put `Reveal` inside the `li`).
 - Every CTA is a `SplitButton`; every section label is an `Eyebrow`; every heading with a
   green accent is a `Headline` (`*word*` marks the accent).
+- Portal: every page and server action under `/apply` and `/admin` goes through
+  `src/lib/auth/session.ts` (`requireUser`, `isAdminUser`) and queries Supabase as the
+  signed-in user (`createClient` in `src/lib/supabase/server.ts`), so Row Level Security is
+  the boundary; never use the service role for portal data. `src/proxy.ts` is only the
+  optimistic redirect. Schema changes are new files in `supabase/migrations/` followed by
+  `supabase db reset` and `pnpm supabase:types`. A `<button>` with a function `formAction`
+  cannot carry `name`/`value` (React overrides them): use a hidden input instead.
 - Hover states are one language everywhere: text links turn green; interactive surfaces get
   `hover-corners` + `border-line-strong` + `bg-surface-2`; arrow cells fill green; nav links
   show the green underline. Nothing translates, lifts or scales on hover (only the arrow glyph
@@ -145,6 +169,9 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
 `pnpm dev` · `pnpm build` (validates content first) · `pnpm typecheck` · `pnpm lint` ·
 `pnpm format` · `pnpm validate:content` · `pnpm gen:placeholders` · `pnpm screenshots` ·
 `pnpm a11y` (both need `pnpm dev` running; pass `--base` to point elsewhere).
+Portal: `supabase start` (Docker; ports 54331+) · `supabase db reset` (migrations + seeds) ·
+`pnpm supabase:types` (regenerates `database.types.ts`) · emails at http://localhost:54334 ·
+`.env.local` per `docs/DEPLOY.md` §6 (`NEXT_PUBLIC_APPLY_MODE=portal` to see the portal).
 
 ## Commit style
 

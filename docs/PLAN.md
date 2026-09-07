@@ -172,3 +172,9 @@ Ashton asked for the About and Non-profits pages before the portal, so Session 6
 
 **Analytics and performance.** Vercel Web Analytics (cookieless) is wired but renders only on Vercel builds; enable it in the project. Lighthouse on the production build: desktop 88–99 performance and 100 accessibility, mobile 61–91. The open finding is design-level: the hero's mount reveal delays the largest contentful paint on slow mobile connections (§4 motion); keep it or render the hero text visible on first paint.
 
+
+---
+
+## 12. Amendments — portal sign-in and configuration (September 7, 2026)
+
+Session 7 built the portal's foundation (§5) with two refinements. **Sign-in** uses Supabase Auth email OTP in both forms at once: the email carries a six-digit code (typed on the page that asked for it, so the flow works when mail is read on a phone) and a link to `/auth/confirm` that verifies the token hash server-side (so it works in any browser, unlike a PKCE code exchange). New addresses get an account on first sign-in. **Switching** from the external form to the portal is one setting, `season.applyMode` in `content/site.ts`, driven by `NEXT_PUBLIC_APPLY_MODE`, so the dry run happens on a Vercel preview with the production site untouched. The cycle, roles and questions are rows in Supabase (`supabase/seed.sql`), because Row Level Security needs the deadline in the database to lock drafts; `content/site.ts` keeps the marketing deadline and the two must be kept in step by hand until an admin screen edits both. PROGRESS.md (Session 7) has the schema, the policies and the local development setup.
