@@ -79,7 +79,7 @@ export default function PrivacyPage() {
                     Email{" "}
                     <a
                       href={`mailto:${email}`}
-                      className="text-text underline decoration-green/70 underline-offset-4 transition-colors hover:text-green"
+                      className="font-medium text-green transition-colors duration-200 hover:text-text"
                     >
                       {email}
                     </a>{" "}
@@ -90,7 +90,7 @@ export default function PrivacyPage() {
                 )}
                 <Link
                   href="/contact"
-                  className="text-text underline decoration-green/70 underline-offset-4 transition-colors hover:text-green"
+                  className="font-medium text-green transition-colors duration-200 hover:text-text"
                 >
                   contact form
                 </Link>

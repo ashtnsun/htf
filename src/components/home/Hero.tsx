@@ -35,7 +35,7 @@ export function Hero() {
         </Reveal>
 
         <Reveal className="relative z-10">
-          <Eyebrow>Student org · Purdue University</Eyebrow>
+          <Eyebrow>Student Org @ Purdue University</Eyebrow>
         </Reveal>
 
         <Reveal className="relative z-10 my-auto py-16 md:py-20">

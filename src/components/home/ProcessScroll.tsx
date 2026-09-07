@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "framer-motion";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ProcessStep } from "@/lib/content/schemas";
-import { ProcessGraphic } from "@/components/home/ProcessGraphic";
+import { ProcessScene, ProgressStore } from "@/components/home/ProcessScene";
 import { cn } from "@/lib/utils";
 
 type ProcessScrollProps = { steps: ProcessStep[] };
@@ -10,68 +11,120 @@ type ProcessScrollProps = { steps: ProcessStep[] };
 const pad = (n: number) => String(n).padStart(2, "0");
 
 /**
- * Scroll-driven process: on large screens the graphic panel on the left is sticky and
- * cross-fades between the four wireframes while the steps scroll past on the right; the
- * step crossing the middle of the viewport is the active one (IntersectionObserver with a
- * narrow band, so no scroll listener). On phones each step shows its own graphic inline.
- * Without JavaScript every step is readable and the panel shows the first graphic.
+ * Scroll-driven process. One floating scene (ProcessScene) evolves continuously as the steps
+ * scroll past: the reading line (the middle of the viewport on desktop, a little lower on
+ * phones, where the scene sticks to the top) is mapped to a progress value between the step
+ * centres, eased frame by frame, and the scene, the counter and the step highlight follow
+ * it. Under prefers-reduced-motion the scene snaps between stages. Without JavaScript every
+ * step is readable and the scene shows the first stage.
  */
 export function ProcessScroll({ steps }: ProcessScrollProps) {
+  const reduce = useReducedMotion();
+  const [store] = useState(() => new ProgressStore());
   const [active, setActive] = useState(0);
   const itemsRef = useRef<(HTMLLIElement | null)[]>([]);
+  const stages = useMemo(() => steps.map((step) => step.graphic), [steps]);
 
   useEffect(() => {
     const items = itemsRef.current.filter((el): el is HTMLLIElement => el !== null);
-    if (items.length === 0) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          const index = Number((entry.target as HTMLElement).dataset.index);
-          if (Number.isFinite(index)) setActive(index);
+    const n = items.length;
+    if (n === 0) return;
+    let target = 0;
+    let current = store.get();
+    let frame = 0;
+    let shown = -1;
+
+    const show = (p: number) => {
+      const step = Math.round(p);
+      if (step !== shown) {
+        shown = step;
+        setActive(step);
+      }
+    };
+    const tick = () => {
+      current += (target - current) * 0.14;
+      if (Math.abs(target - current) < 0.002) {
+        current = target;
+        frame = 0;
+      } else {
+        frame = requestAnimationFrame(tick);
+      }
+      store.set(current);
+      show(current);
+    };
+    const measure = () => {
+      const large = window.matchMedia("(min-width: 64rem)").matches;
+      const line = window.innerHeight * (large ? 0.5 : 0.64);
+      const centers = items.map((el) => {
+        const r = el.getBoundingClientRect();
+        return r.top + r.height / 2 - line;
+      });
+      let p = n - 1;
+      if (centers[0]! >= 0) {
+        p = 0;
+      } else {
+        for (let i = 0; i < n - 1; i += 1) {
+          const a = centers[i]!;
+          const b = centers[i + 1]!;
+          if (a <= 0 && b > 0) {
+            p = i - a / (b - a);
+            break;
+          }
         }
-      },
-      { rootMargin: "-42% 0px -42% 0px", threshold: 0 },
-    );
-    items.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, [steps.length]);
+      }
+      target = p;
+      if (reduce) {
+        current = Math.round(p);
+        store.set(current);
+        show(current);
+      } else if (!frame) {
+        frame = requestAnimationFrame(tick);
+      }
+    };
+
+    measure();
+    window.addEventListener("scroll", measure, { passive: true });
+    window.addEventListener("resize", measure);
+    return () => {
+      window.removeEventListener("scroll", measure);
+      window.removeEventListener("resize", measure);
+      cancelAnimationFrame(frame);
+    };
+  }, [steps.length, reduce, store]);
 
   const count = steps.length;
-  const current = steps[active] ?? steps[0];
+  const title = steps[active]?.title ?? steps[0]?.title;
 
   return (
-    <div className="mt-12 grid gap-10 lg:mt-16 lg:grid-cols-2 lg:gap-16">
-      {/* sticky panel (lg+) */}
-      <div className="hidden lg:block">
-        <div className="sticky top-[calc(var(--header-h)+2rem)]">
-          <div className="border border-line glass">
-            <div className="grid-overlay relative aspect-square [--grid-cols:8] [--grid-row:12.5%]">
-              {steps.map((step, i) => (
-                <div
-                  key={step.id}
-                  className={cn(
-                    "absolute inset-0 p-6 transition-opacity duration-500 ease-out-quart",
-                    i === active ? "opacity-100" : "opacity-0",
-                  )}
-                >
-                  <ProcessGraphic graphic={step.graphic} active={i === active} />
-                </div>
-              ))}
-            </div>
-            <div className="flex items-center gap-5 border-t border-line px-6 py-4 text-sm">
-              <span className="text-eyebrow font-medium text-green tabular-nums">
-                {pad(active + 1)} / {pad(count)}
-              </span>
-              <span className="font-medium text-text">{current?.title}</span>
-              <span aria-hidden="true" className="ml-auto block h-px w-32 bg-line">
-                <span
-                  className="block h-full bg-green transition-[width] duration-500 ease-out-quart"
-                  style={{ width: `${((active + 1) / count) * 100}%` }}
-                />
-              </span>
-            </div>
+    <div className="mt-10 grid gap-8 lg:mt-16 lg:grid-cols-2 lg:gap-16">
+      {/* The scene: stuck above the steps on phones, beside them from lg. */}
+      <div className="sticky top-(--header-h) z-10 lg:top-[calc(var(--header-h)+1.5rem)] lg:self-start">
+        <div className="relative -mx-[clamp(1.25rem,4.5vw,4.5rem)] flex items-center gap-6 bg-bg px-[clamp(1.25rem,4.5vw,4.5rem)] py-3 lg:mx-0 lg:block lg:bg-transparent lg:p-0">
+          <ProcessScene
+            stages={stages}
+            progress={0}
+            store={store}
+            className="w-[min(40vw,10rem)] shrink-0 lg:w-full"
+          />
+          <div className="min-w-0 flex-1 lg:mt-4 lg:flex lg:items-center lg:gap-5">
+            <p className="text-eyebrow font-medium text-green tabular-nums">
+              {pad(active + 1)} / {pad(count)}
+            </p>
+            <p className="mt-2 truncate text-sm font-medium text-text lg:mt-0">{title}</p>
+            <span
+              aria-hidden="true"
+              className="mt-4 block h-px w-full max-w-40 bg-line lg:mt-0 lg:ml-auto lg:w-32"
+            >
+              <span
+                className="block h-full bg-green transition-[width] duration-500 ease-out-quart"
+                style={{ width: `${((active + 1) / count) * 100}%` }}
+              />
+            </span>
           </div>
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 top-full h-8 bg-linear-to-b from-bg to-transparent lg:hidden"
+          />
         </div>
       </div>
 
@@ -95,11 +148,6 @@ export function ProcessScroll({ steps }: ProcessScrollProps) {
                     "absolute top-0.5 -left-[calc(2rem+5px)] size-2.5 border transition-colors duration-300 lg:-left-[calc(3rem+5px)]",
                     isActive ? "border-green bg-green" : "border-line-strong bg-bg",
                   )}
-                />
-                <ProcessGraphic
-                  graphic={step.graphic}
-                  active={isActive}
-                  className="mb-6 max-w-xs border border-line glass p-4 lg:hidden"
                 />
                 <p
                   className={cn(

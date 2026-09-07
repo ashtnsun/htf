@@ -4,15 +4,14 @@ import { useReducedMotion } from "framer-motion";
 import { Pause, Play } from "lucide-react";
 import { useState, type CSSProperties } from "react";
 import type { Testimonial } from "@/lib/content/schemas";
-import { DottedMap } from "@/components/ui/DottedMap";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { TestimonialCard } from "@/components/ui/TestimonialCard";
 
 /**
- * Full-width testimonial band: glass cards drift left over the dotted world map in a
- * seamless loop (two copies of the list, the second hidden from assistive tech). It pauses on
- * hover, on focus inside, and through the pause button (WCAG 2.2.2). Under
- * prefers-reduced-motion it is a plain horizontally scrollable row instead.
+ * Full-width testimonial band: glass cards drift left in a seamless loop (two copies of the
+ * list, the second hidden from assistive tech) over the Impact band's dotted map. It pauses
+ * through the pause button (WCAG 2.2.2) and on focus inside, not on hover (2026-09-07 audit).
+ * Under prefers-reduced-motion it is a plain horizontally scrollable row instead.
  */
 export function TestimonialMarquee({ testimonials }: { testimonials: Testimonial[] }) {
   const reduce = useReducedMotion();
@@ -29,10 +28,6 @@ export function TestimonialMarquee({ testimonials }: { testimonials: Testimonial
 
   return (
     <div className="relative mt-16 md:mt-24">
-      <DottedMap
-        tone="text"
-        className="absolute inset-x-0 top-1/2 mx-auto w-[min(100%,80rem)] -translate-y-1/2 [mask-image:radial-gradient(60%_80%_at_50%_50%,#000_30%,transparent_100%)] opacity-25"
-      />
       <div className="relative container-max flex items-center justify-between gap-6 container-x">
         <Eyebrow>Testimonials</Eyebrow>
         {!reduce ? (

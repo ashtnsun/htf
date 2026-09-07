@@ -21,8 +21,7 @@ export const metadata: Metadata = {
 };
 
 const factLabel = "text-eyebrow font-medium text-muted uppercase";
-const inlineLink =
-  "text-text underline decoration-green/70 underline-offset-4 transition-colors hover:text-green";
+const inlineLink = "font-medium text-green transition-colors duration-200 hover:text-text";
 
 type Channel = {
   label: string;

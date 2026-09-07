@@ -23,7 +23,7 @@ export function Mission({ mission }: { mission: AboutPage["mission"] }) {
             <p className="mt-8 max-w-xl text-body-lg text-muted">{mission.body}</p>
           </Reveal>
           <Reveal>
-            <figure className="border border-line bg-surface">
+            <div className="border border-line bg-surface">
               <div className="relative aspect-[4/3] overflow-hidden">
                 <Media
                   src="org.group-photo"
@@ -33,10 +33,7 @@ export function Mission({ mission }: { mission: AboutPage["mission"] }) {
                   className="object-cover"
                 />
               </div>
-              <figcaption className="border-t border-line px-5 py-3 text-xs text-muted">
-                [TODO: caption for the organization photo]
-              </figcaption>
-            </figure>
+            </div>
           </Reveal>
         </div>
       </RevealGroup>

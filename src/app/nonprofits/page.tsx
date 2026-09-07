@@ -25,7 +25,7 @@ import { isIntakeFormConfigured } from "@/lib/inquiries/deliver";
 import { isTodo } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Non-profits",
+  title: "Nonprofits",
   description:
     "Partner with Hack the Future: a team of Purdue students scopes the software your nonprofit needs, builds it over the school year and hands it off free of charge.",
   alternates: { canonical: "/nonprofits" },
@@ -39,8 +39,7 @@ const SECTIONS = [
   { href: "#start", label: "Start a project" },
 ] as const;
 
-const linkClass =
-  "text-text underline decoration-green/70 underline-offset-4 transition-colors hover:text-green";
+const linkClass = "font-medium text-green transition-colors duration-200 hover:text-text";
 
 export default function NonprofitsPage() {
   const steps = getProcess();
@@ -54,7 +53,7 @@ export default function NonprofitsPage() {
   return (
     <>
       <PageHero
-        eyebrow="For non-profits"
+        eyebrow="For nonprofits"
         lines={["Bring us a problem.", "*We build the tool.*"]}
         blurb="A team of Purdue students scopes the work with you, builds it over the school year, and hands off a finished product free of charge."
       >

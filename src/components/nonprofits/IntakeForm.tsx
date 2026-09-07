@@ -27,8 +27,7 @@ type IntakeFormProps = {
   email?: string | null;
 };
 
-const inlineLink =
-  "text-text underline decoration-green/70 underline-offset-4 transition-colors hover:text-green";
+const inlineLink = "font-medium text-green transition-colors duration-200 hover:text-text";
 
 /** Nonprofit intake ("Start a project"). "Send another" remounts the inner form to clear it. */
 export function IntakeForm(props: IntakeFormProps) {

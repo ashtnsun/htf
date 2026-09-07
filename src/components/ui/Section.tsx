@@ -7,7 +7,7 @@ type SectionProps = {
   as?: "section" | "div" | "header" | "footer";
   /** Draw the thin technical grid behind the section. */
   grid?: boolean;
-  /** Huge ghosted word rendered behind the content (e.g. "Non-profits"). */
+  /** Huge ghosted word rendered behind the content (e.g. "Nonprofits"). */
   ghost?: string;
   /** Where the ghost word sits vertically. */
   ghostPosition?: "top" | "center" | "bottom";

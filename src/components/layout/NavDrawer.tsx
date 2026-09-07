@@ -108,7 +108,7 @@ export function NavDrawer({ cta }: NavDrawerProps) {
     };
   }, [open, close]);
 
-  const links = [{ label: "Home", href: "/" }, ...site.nav, { label: "Contact", href: "/contact" }];
+  const links = [...site.nav, { label: "Contact", href: "/contact" }];
   const socials = [
     { label: "Instagram", href: site.socials.instagram, Icon: InstagramIcon },
     { label: "LinkedIn", href: site.socials.linkedin, Icon: LinkedinIcon },

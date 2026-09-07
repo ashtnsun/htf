@@ -48,10 +48,11 @@ export const site = {
     timeZone: "America/Indiana/Indianapolis",
   },
   nav: [
+    { label: "Home", href: "/" },
     { label: "Projects", href: "/projects" },
     { label: "About", href: "/about" },
     { label: "Students", href: "/students" },
-    { label: "Non-profits", href: "/nonprofits" },
+    { label: "Nonprofits", href: "/nonprofits" },
   ] satisfies NavLink[],
   footer: {
     explore: [

@@ -16,8 +16,7 @@ type SignInFormProps = {
   notice?: string | null;
 };
 
-const inlineLink =
-  "text-text underline decoration-green/70 underline-offset-4 transition-colors hover:text-green";
+const inlineLink = "font-medium text-green transition-colors duration-200 hover:text-text";
 const textButton =
   "min-h-11 text-sm text-muted underline decoration-green/70 underline-offset-4 transition-colors hover:text-green disabled:opacity-60";
 

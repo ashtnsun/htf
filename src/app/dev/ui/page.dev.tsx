@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Logo } from "@/components/brand/Logo";
 import { PixelDino } from "@/components/brand/PixelDino";
-import { ProcessGraphic } from "@/components/home/ProcessGraphic";
+import { ProcessScene } from "@/components/home/ProcessScene";
+import { SignalGraphic } from "@/components/layout/SignalGraphic";
 import { Globe } from "@/components/home/Globe";
 import { JumpLinks } from "@/components/layout/JumpLinks";
 import { Gallery } from "@/components/projects/Gallery";
@@ -237,7 +238,7 @@ export default function UiKitPage() {
       <Block title="Section (grid overlay + ghost word)">
         <Section
           grid
-          ghost="Non-profits"
+          ghost="Nonprofits"
           padding="sm"
           className="border border-line"
           contain={false}
@@ -403,16 +404,22 @@ export default function UiKitPage() {
         </dl>
       </Block>
 
-      <Block title="ProcessGraphic (wireframes for the four process steps)">
-        <div className="grid gap-4 sm:grid-cols-4">
-          {(["radar", "network", "terminal", "globe"] as const).map((graphic) => (
-            <ProcessGraphic
-              key={graphic}
-              graphic={graphic}
-              active
-              className="border border-line glass p-3"
+      <Block title="ProcessScene (one scene morphing through the four steps; stills at 0, 0.5, 1, 2, 3)">
+        <div className="grid gap-4 sm:grid-cols-5">
+          {[0, 0.5, 1, 2, 3].map((progress) => (
+            <ProcessScene
+              key={progress}
+              stages={["radar", "network", "terminal", "globe"]}
+              progress={progress}
+              animate={Number.isInteger(progress)}
             />
           ))}
+        </div>
+      </Block>
+
+      <Block title="SignalGraphic (Get involved beacon: orbit, pings, pointer tilt)">
+        <div className="max-w-sm">
+          <SignalGraphic />
         </div>
       </Block>
 

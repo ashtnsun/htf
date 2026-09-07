@@ -82,7 +82,7 @@ export const roleSchema = z.object({
 
 export const faqAudienceSchema = z.enum(["home", "students", "nonprofits"]);
 
-/** Optional "read more" link under an answer, e.g. to the deeper Students / Non-profits FAQ. */
+/** Optional "read more" link under an answer, e.g. to the deeper Students / Nonprofits FAQ. */
 export const faqLinkSchema = z.object({
   label: z.string().min(1),
   href: z.string().min(1),
@@ -239,7 +239,7 @@ export const scopeItemSchema = z.object({
   description: z.string().min(1),
 });
 
-/** Copy blocks for the Non-profits page (process steps, FAQ and testimonials have their own files). */
+/** Copy blocks for the Nonprofits page (process steps, FAQ and testimonials have their own files). */
 export const nonprofitsPageSchema = z.object({
   scope: z.object({
     build: z.array(scopeItemSchema).min(1),

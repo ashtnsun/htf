@@ -1,7 +1,7 @@
 import type { NonprofitsPageInput } from "@/lib/content/schemas";
 
 /**
- * Copy blocks for the Non-profits page. The four process steps (with the nonprofit's part at
+ * Copy blocks for the Nonprofits page. The four process steps (with the nonprofit's part at
  * each one) live in content/process.ts, the FAQ in content/faq.ts and quotes in
  * content/testimonials.ts. The "what we build" list follows the services on the club's
  * previous site (web, AI/ML and app platforms); the "what we don't" list and the next-steps

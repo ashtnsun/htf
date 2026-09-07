@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 export type JumpLink = { href: string; label: string };
 
-/** "On this page" row of anchor links under a page hero (Students, About, Non-profits). */
+/** "On this page" row of anchor links under a page hero (Students, About, Nonprofits). */
 export function JumpLinks({
   items,
   className,

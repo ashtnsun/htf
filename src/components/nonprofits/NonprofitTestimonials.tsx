@@ -8,11 +8,10 @@ import { TestimonialCard } from "@/components/ui/TestimonialCard";
 
 /**
  * Quotes from nonprofit partners as a card grid over the dotted map. Hidden until a quote is
- * published (the loader shows unpublished ones in development with a preview note).
+ * published (the loader still shows unpublished ones in development, without a note).
  */
 export function NonprofitTestimonials({ testimonials }: { testimonials: Testimonial[] }) {
   if (testimonials.length === 0) return null;
-  const preview = testimonials.some((t) => !t.published);
   return (
     <Section
       id="testimonials"
@@ -36,11 +35,6 @@ export function NonprofitTestimonials({ testimonials }: { testimonials: Testimon
               lines={["In their", "*own words.*"]}
               className="mt-5"
             />
-            {preview ? (
-              <p className="mt-6 inline-block border border-dashed border-line-strong px-3 py-2 text-xs text-muted">
-                Preview: unpublished content, shown in development only
-              </p>
-            ) : null}
           </Reveal>
           <ul className="mt-12 grid gap-4 md:grid-cols-2">
             {testimonials.map((t) => (

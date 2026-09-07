@@ -5,8 +5,9 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 
 /**
  * Awards: a three-column record (issuer · award · date) per award, stacked on phones, then
- * the photo carousel. A subsection of the Impact band on the home page and a section of
- * its own on /about. Reads content/awards.ts.
+ * the photo carousel. The eyebrow is the heading (no title line, 2026-09-07 audit). A
+ * subsection of the Impact band on the home page and a section of its own on /about.
+ * Reads content/awards.ts.
  */
 type AwardsProps = {
   awards: Award[];
@@ -17,22 +18,16 @@ type AwardsProps = {
 
 export function Awards({ awards, headingLevel = "h3", id }: AwardsProps) {
   if (awards.length === 0) return null;
-  const Heading = headingLevel;
   const photos = awards.flatMap((award) =>
-    award.photos.map((photo) => ({
-      src: photo.src,
-      alt: photo.alt,
-      caption: photo.caption ?? `${award.title}, ${award.issuer}`,
-    })),
+    award.photos.map((photo) => ({ src: photo.src, alt: photo.alt })),
   );
-  const cell = "py-5 align-top";
+  const cell = "py-5 align-top text-sm";
 
   return (
     <Reveal standalone>
-      <Eyebrow>Awards</Eyebrow>
-      <Heading id={id} className={headingLevel === "h2" ? "mt-5 text-h2" : "mt-5 text-h3"}>
-        Recognition for the program
-      </Heading>
+      <Eyebrow as={headingLevel} id={id}>
+        Awards
+      </Eyebrow>
 
       {/* Record table from sm up; a stacked list on phones (the hidden one is display:none). */}
       <table className="mt-8 hidden w-full border-b border-line sm:table">
@@ -53,11 +48,9 @@ export function Awards({ awards, headingLevel = "h3", id }: AwardsProps) {
         <tbody>
           {awards.map((award) => (
             <tr key={award.id} className="border-t border-line">
-              <td className={`${cell} text-sm text-muted`}>{award.issuer}</td>
-              <td className={`${cell} text-center font-display text-h3 font-medium text-text`}>
-                {award.title}
-              </td>
-              <td className={`${cell} text-right text-sm tracking-[0.08em] text-muted uppercase`}>
+              <td className={`${cell} text-muted`}>{award.issuer}</td>
+              <td className={`${cell} text-center text-text`}>{award.title}</td>
+              <td className={`${cell} text-right tracking-[0.08em] text-muted uppercase`}>
                 {award.date}
               </td>
             </tr>
@@ -66,9 +59,9 @@ export function Awards({ awards, headingLevel = "h3", id }: AwardsProps) {
       </table>
       <ul className="mt-8 divide-y divide-line border-y border-line sm:hidden">
         {awards.map((award) => (
-          <li key={award.id} className="py-5">
-            <p className="text-sm text-muted">{award.issuer}</p>
-            <p className="mt-1 font-display text-h3 font-medium text-text">{award.title}</p>
+          <li key={award.id} className="py-5 text-sm">
+            <p className="text-muted">{award.issuer}</p>
+            <p className="mt-1 text-text">{award.title}</p>
             <p className="mt-1 text-xs tracking-[0.08em] text-muted uppercase">{award.date}</p>
           </li>
         ))}

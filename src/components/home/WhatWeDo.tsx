@@ -14,9 +14,10 @@ const ICONS: Record<Service["icon"], LucideIcon> = {
 };
 
 /**
- * "What we do": three service panels separated by hairlines (content/services.ts), the
- * full-organization photo, and the link to the projects page. Replaces the featured-projects
- * grid on the home page (2026-09-06 audit).
+ * "What we do": the full-organization photo (no caption), then three service panels
+ * separated by hairlines (content/services.ts), then the link to the projects page on the
+ * right. The panels share their row tracks (subgrid), so the icons, titles and descriptions
+ * line up across the three columns whatever the line counts.
  */
 export function WhatWeDo({ services }: { services: Service[] }) {
   return (
@@ -38,47 +39,43 @@ export function WhatWeDo({ services }: { services: Service[] }) {
           />
         </Reveal>
 
-        <Reveal>
-          <ul className="mt-12 grid divide-y divide-line border-y border-line md:grid-cols-3 md:divide-x md:divide-y-0">
+        <Reveal className="mt-12">
+          <div className="relative aspect-[4/3] overflow-hidden border border-line bg-surface sm:aspect-[21/9]">
+            <Media
+              src="org.group-photo"
+              alt="Placeholder for the full organization photo"
+              fill
+              sizes="(min-width: 1440px) 1296px, 100vw"
+              className="object-cover"
+            />
+          </div>
+        </Reveal>
+
+        <Reveal className="mt-6">
+          <ul className="grid divide-y divide-line border-y border-line md:min-h-[22rem] md:grid-cols-3 md:grid-rows-[auto_minmax(0,1fr)_auto_auto] md:divide-x md:divide-y-0">
             {services.map((service) => {
               const Icon = ICONS[service.icon];
               return (
-                <li key={service.id} className="flex flex-col p-6 md:min-h-[24rem] md:p-8">
-                  <span
+                <li
+                  key={service.id}
+                  className="p-6 md:row-span-4 md:grid md:grid-rows-subgrid md:p-8"
+                >
+                  <Icon
                     aria-hidden="true"
-                    className="flex size-11 items-center justify-center border border-line-strong bg-surface-2 text-green"
-                  >
-                    <Icon className="size-5" strokeWidth={1.75} />
-                  </span>
-                  <h3 className="mt-10 text-h3 md:mt-auto md:pt-16">
+                    className="size-7 text-green md:row-start-1"
+                    strokeWidth={1.5}
+                  />
+                  <h3 className="mt-8 text-h3 md:row-start-3 md:mt-12">
                     {renderAccent(service.title)}
                   </h3>
-                  <p className="mt-3 text-muted">{service.description}</p>
+                  <p className="mt-3 text-muted md:row-start-4">{service.description}</p>
                 </li>
               );
             })}
           </ul>
         </Reveal>
 
-        <Reveal className="mt-6">
-          <figure className="border border-line bg-surface">
-            <div className="relative aspect-[4/3] overflow-hidden sm:aspect-[21/9]">
-              <Media
-                src="org.group-photo"
-                alt="Placeholder for the full organization photo"
-                fill
-                sizes="(min-width: 1440px) 1296px, 100vw"
-                className="object-cover"
-              />
-            </div>
-            <figcaption className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1 border-t border-line px-5 py-3 text-xs text-muted">
-              <span>[TODO: caption for the full organization photo]</span>
-              <span>Hack the Future at Purdue</span>
-            </figcaption>
-          </figure>
-        </Reveal>
-
-        <Reveal className="mt-10">
+        <Reveal className="mt-10 flex justify-end">
           <SplitButton href="/projects" variant="secondary" size="lg">
             See our projects
           </SplitButton>

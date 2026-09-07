@@ -44,7 +44,7 @@ export const faq: FaqItemInput[] = [
     answer:
       "[TODO: confirm process] Nonprofits apply through our intake form, we hold a scoping call, and matched projects run over the school year.",
     audience: "home",
-    link: { label: "For non-profits", href: "/nonprofits" },
+    link: { label: "For nonprofits", href: "/nonprofits" },
   },
   {
     id: "where-are-partners",

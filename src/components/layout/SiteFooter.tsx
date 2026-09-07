@@ -9,7 +9,8 @@ import { isTodo } from "@/lib/utils";
 type Column = { title: string; links: (NavLink & { Icon?: typeof Mail })[] };
 
 /**
- * Frosted-glass footer (Explore · Get involved · Connect · Legal, no newsletter) with the
+ * Frosted-glass footer (logo, Explore · Get involved · Connect · Legal; no tagline, no
+ * newsletter) with the
  * pixel dinosaur peeking out from behind the glass: its head sits in the open strip above
  * the panel, its body shows through the blur as a soft green shape.
  */
@@ -23,7 +24,7 @@ export function SiteFooter() {
       title: "Get involved",
       links: [
         { label: "Students", href: "/students" },
-        { label: "Non-profits", href: "/nonprofits" },
+        { label: "Nonprofits", href: "/nonprofits" },
         cta,
       ],
     },
@@ -52,10 +53,6 @@ export function SiteFooter() {
           <div className="grid gap-12 lg:grid-cols-[1.4fr_repeat(4,1fr)] lg:gap-8">
             <div className="max-w-xs">
               <Logo height={26} />
-              <p className="mt-4 text-sm text-muted">{site.tagline}</p>
-              <p className="mt-2 text-sm text-muted">
-                A student organization at Purdue University building software for nonprofits.
-              </p>
             </div>
 
             {columns.map((col) => (

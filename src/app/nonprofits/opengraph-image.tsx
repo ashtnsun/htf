@@ -6,7 +6,7 @@ export const contentType = OG_CONTENT_TYPE;
 
 export default function Image() {
   return ogImage({
-    eyebrow: "For non-profits",
+    eyebrow: "For nonprofits",
     lines: ["Bring us a problem.", "*We build the tool.*"],
     footer: "A student team scopes it with you, builds it over the school year, hands it off free.",
   });

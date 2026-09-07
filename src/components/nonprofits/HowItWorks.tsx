@@ -1,5 +1,5 @@
 import type { ProcessStep } from "@/lib/content/schemas";
-import { ProcessGraphic } from "@/components/home/ProcessGraphic";
+import { ProcessScene } from "@/components/home/ProcessScene";
 import { Reveal, RevealGroup } from "@/components/motion/Reveal";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Headline } from "@/components/ui/Headline";
@@ -9,10 +9,12 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
 /**
  * The four process steps from content/process.ts, told from the nonprofit's side: each step
- * carries its wireframe (static here; the home page animates them) and a "Your part" line.
+ * carries the process scene frozen at its stage (the home page morphs it on scroll) and a
+ * "Your part" line.
  */
 export function HowItWorks({ steps }: { steps: ProcessStep[] }) {
   if (steps.length === 0) return null;
+  const stages = steps.map((step) => step.graphic);
   return (
     <Section
       id="how-it-works"
@@ -39,10 +41,11 @@ export function HowItWorks({ steps }: { steps: ProcessStep[] }) {
           {steps.map((step, i) => (
             <li key={step.id} className="flex flex-col bg-bg">
               <Reveal className="flex h-full flex-col p-6 md:p-8">
-                <ProcessGraphic
-                  graphic={step.graphic}
-                  active={false}
-                  className="max-w-[14rem] border border-line glass p-3"
+                <ProcessScene
+                  stages={stages}
+                  progress={i}
+                  animate={false}
+                  className="max-w-[14rem]"
                 />
                 <p className="mt-8 text-eyebrow font-medium text-green uppercase">
                   Step {pad(i + 1)}

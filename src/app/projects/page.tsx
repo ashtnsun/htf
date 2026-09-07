@@ -48,7 +48,7 @@ export default function ProjectsPage() {
         eyebrow="Work with us"
         lines={["Have a problem", "*worth solving?*"]}
         copy="Nonprofits bring us real problems; student teams build the software over a school year. Both start here."
-        secondary={{ label: "For non-profits", href: "/nonprofits" }}
+        secondary={{ label: "For nonprofits", href: "/nonprofits" }}
       />
     </>
   );

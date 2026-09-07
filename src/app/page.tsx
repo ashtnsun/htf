@@ -18,8 +18,7 @@ import {
 
 export const metadata: Metadata = { alternates: { canonical: "/" } };
 
-const linkClass =
-  "text-text underline decoration-green/70 underline-offset-4 transition-colors duration-200 hover:text-green";
+const linkClass = "font-medium text-green transition-colors duration-200 hover:text-text";
 
 /**
  * Home (order from the 2026-09-06 audit): hero → what we do → how it works (scroll-driven
@@ -45,7 +44,7 @@ export default function HomePage() {
             </Link>{" "}
             and{" "}
             <Link href="/nonprofits" className={linkClass}>
-              Non-profits
+              Nonprofits
             </Link>{" "}
             pages.
           </p>

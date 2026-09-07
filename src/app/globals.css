@@ -331,11 +331,10 @@
 }
 
 /* Testimonial band: the track holds two copies of the list and slides by one copy.
-   Pauses on hover, on focus inside, and when the pause button sets data-paused. */
+   Pauses on focus inside and when the pause button sets data-paused (no hover pause). */
 @utility marquee {
   overflow: hidden;
   mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
-  &:hover .marquee-track,
   &:focus-within .marquee-track,
   &[data-paused="true"] .marquee-track {
     animation-play-state: paused;
@@ -508,7 +507,7 @@
 }
 
 /* ------------------------------------------------------------------
-   Process step graphics (src/components/home/ProcessGraphic.tsx). One-shot animations
+   Process scene graphics (src/components/home/ProcessScene.tsx). One-shot animations
    (draw, grow) restart each time a step becomes active; loops (sweep, ping, blink) pause
    while the step is inactive. The global reduced-motion rule flattens all of them.
 ------------------------------------------------------------------- */
@@ -541,6 +540,16 @@
   @keyframes blink {
     50% {
       opacity: 0;
+    }
+  }
+  @keyframes orbit {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes float {
+    50% {
+      transform: translateY(-2.5%);
     }
   }
   @keyframes eyelid {
@@ -576,11 +585,41 @@
   .anim-blink {
     animation: blink 1s steps(1, end) infinite;
   }
+  /* Beacon graphic (layout/SignalGraphic) and the process scene: slow orbit, counter-rotation
+     that keeps labels upright, a ticked dial, wide slow pings and a gentle floating bob. */
+  .anim-orbit {
+    transform-origin: 200px 200px;
+    animation: orbit 60s linear infinite;
+  }
+  .anim-orbit-back {
+    animation: orbit 60s linear infinite reverse;
+  }
+  .anim-dial {
+    transform-origin: 200px 200px;
+    animation: orbit 240s linear infinite reverse;
+  }
+  .anim-ping-slow {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: ping 3.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+  .anim-float {
+    animation: float 7s ease-in-out infinite;
+  }
   /* The footer dinosaur blinks about every six seconds. */
   .anim-eyelid {
     animation: eyelid 6s linear infinite;
   }
-  [data-active="false"] :is(.anim-sweep, .anim-ping, .anim-blink) {
+  [data-active="false"]
+    :is(
+      .anim-sweep,
+      .anim-ping,
+      .anim-ping-slow,
+      .anim-blink,
+      .anim-orbit,
+      .anim-orbit-back,
+      .anim-dial
+    ) {
     animation-play-state: paused;
   }
   [data-active="false"] :is(.anim-draw, .anim-grow) {

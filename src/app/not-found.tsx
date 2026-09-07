@@ -11,13 +11,12 @@ export const metadata: Metadata = { title: "Page not found", robots: { index: fa
 const PAGES = [
   { href: "/projects", label: "Projects", blurb: "Software we built for nonprofit partners." },
   { href: "/students", label: "Students", blurb: "Roles, the recruitment timeline and FAQ." },
-  { href: "/nonprofits", label: "Non-profits", blurb: "How a partnership works." },
+  { href: "/nonprofits", label: "Nonprofits", blurb: "How a partnership works." },
   { href: "/about", label: "About", blurb: "Who we are and who runs the club." },
   { href: "/contact", label: "Contact", blurb: "Send us a message." },
 ];
 
-const inlineLink =
-  "text-text underline decoration-green/70 underline-offset-4 transition-colors hover:text-green";
+const inlineLink = "font-medium text-green transition-colors duration-200 hover:text-text";
 
 /**
  * Global 404: hero with a ghosted "404", two CTAs, a grid of the main pages, the

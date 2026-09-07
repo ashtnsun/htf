@@ -7,7 +7,10 @@ type SplitButtonProps = {
   /** Destination. Omit it to render a real <button> (form submit, client actions). */
   href?: string;
   children: ReactNode;
-  /** primary = green label + lime arrow cell. secondary = outlined. */
+  /**
+   * primary = green label + lime arrow cell (in the header bar: green on green with a black
+   * divider, no lime). secondary = outlined.
+   */
   variant?: "primary" | "secondary";
   /** md = normal button. lg = hero. bar = fills the header bar. */
   size?: "md" | "lg" | "bar";
@@ -70,7 +73,8 @@ export function SplitButton({
     size === "md" && "w-11",
     size === "lg" && "w-14",
     size === "bar" && "w-14 lg:w-16",
-    variant === "primary" && "bg-lime text-bg",
+    variant === "primary" && size !== "bar" && "bg-lime text-bg",
+    variant === "primary" && size === "bar" && "border-l border-black bg-green text-bg",
     variant === "secondary" &&
       "border-l border-line-strong bg-surface-2 text-green group-hover:border-green group-hover:bg-green group-hover:text-bg",
   );

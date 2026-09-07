@@ -7,7 +7,7 @@ export const contentType = OG_CONTENT_TYPE;
 
 export default function Image() {
   return ogImage({
-    eyebrow: "Student org · Purdue",
+    eyebrow: "Student Org @ Purdue University",
     lines: ["Building software for", "*nonprofits, at Purdue.*"],
   });
 }

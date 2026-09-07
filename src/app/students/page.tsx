@@ -28,8 +28,7 @@ const SECTIONS = [
   { href: "#faq", label: "FAQ" },
 ] as const;
 
-const linkClass =
-  "text-text underline decoration-green/70 underline-offset-4 transition-colors hover:text-green";
+const linkClass = "font-medium text-green transition-colors duration-200 hover:text-text";
 
 export default function StudentsPage() {
   const cta = getPrimaryCta();
