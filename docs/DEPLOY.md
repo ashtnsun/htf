@@ -39,15 +39,18 @@ organization:
    | Variable                                    | Purpose                                                                                                                                       |
    | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
    | `NEXT_PUBLIC_SITE_URL`                      | Canonical origin for metadata, OG URLs and the sitemap. Set it to `https://<domain>` once the domain is live; otherwise Vercel's URL is used. |
-   | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | Contact form → `contact_messages` table (see §5). Server-only, never `NEXT_PUBLIC_`.                                                          |
-   | `RESEND_API_KEY`, `CONTACT_INBOX`           | Contact form → email notification. `CONTACT_FROM` must be a sender on a domain verified in Resend.                                            |
+   | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | Contact and intake forms → `contact_messages` / `nonprofit_inquiries` tables (see §5). Server-only, never `NEXT_PUBLIC_`.                     |
+   | `RESEND_API_KEY`, `CONTACT_INBOX`           | Contact and intake forms → email notification. `CONTACT_FROM` must be a sender on a domain verified in Resend.                                |
 
-   The contact page picks its mode (server delivery, mailto, or the Instagram fallback) when
-   the site is built, so after adding or changing these variables trigger a redeploy
+   The contact and intake pages pick their mode (server delivery, mailto, or the Instagram
+   fallback) when the site is built, so after adding or changing these variables trigger a redeploy
    (Deployments → Redeploy). Vercel only applies environment variable changes to new
    deployments; the hourly revalidation does not re-read them.
 
 4. Deploy. Every push to `main` becomes Production; every pull request gets a Preview URL.
+5. Analytics: Project → Analytics → Enable. The site already renders `<Analytics />` from
+   `@vercel/analytics` (root layout); page views start counting once the project has it
+   switched on. Nothing to configure in the code, and no cookies are set.
 
 ## 3. Domain
 
@@ -73,17 +76,19 @@ organization:
 - Run the accessibility scan against production:
   `pnpm a11y --base=https://<domain> --routes=/,/students,/projects,/contact,/privacy`.
 
-## 5. Contact form delivery (optional until Phase 2)
+## 5. Form delivery (contact + nonprofit intake; optional until Phase 2)
 
-Supabase (store messages):
+Supabase (store submissions):
 
 1. Create the Supabase project (the same one Phase 2 will use for the portal).
-2. Apply `supabase/migrations/20260906000000_contact_messages.sql`: paste it into the SQL
-   editor, or link the project and run `supabase db push`.
+2. Apply both migrations in `supabase/migrations/` (`contact_messages`,
+   `nonprofit_inquiries`): paste them into the SQL editor, or link the project and run
+   `supabase db push`.
 3. Copy Project Settings → API → Project URL and the **service role** key into Vercel as
    `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. The table has RLS enabled with no
    policies, so only the service role (server action) can read or write it.
-4. Read messages in Table Editor → `contact_messages`; set `handled_at` when answered.
+4. Read submissions in Table Editor → `contact_messages` and `nonprofit_inquiries`; set
+   `handled_at` when answered.
 
 Resend (email notifications):
 
@@ -91,4 +96,6 @@ Resend (email notifications):
 2. Set `RESEND_API_KEY`, `CONTACT_INBOX` (where messages go) and `CONTACT_FROM`
    (`Hack the Future website <noreply@<verified-domain>>`).
 
-Both can be on at once; a message counts as sent when at least one delivery succeeds.
+Both can be on at once; a submission counts as sent when at least one delivery succeeds.
+The code path is `src/lib/forms/deliver.ts` (shared), with the per-form wrappers in
+`src/lib/contact/deliver.ts` and `src/lib/inquiries/deliver.ts`.

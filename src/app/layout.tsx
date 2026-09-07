@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import { site } from "@content/site";
@@ -51,6 +52,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
         <SiteFooter />
+        {/* Vercel Web Analytics: cookieless page views. Rendered only on Vercel builds (the
+            script 404s elsewhere) and active once enabled on the Vercel project. */}
+        {process.env.VERCEL ? <Analytics /> : null}
       </body>
     </html>
   );
