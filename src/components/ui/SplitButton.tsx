@@ -8,8 +8,8 @@ type SplitButtonProps = {
   href?: string;
   children: ReactNode;
   /**
-   * primary = green label + lime arrow cell (in the header bar: green on green with a black
-   * divider, no lime). secondary = outlined.
+   * primary = green label + green arrow cell with a black divider (the header bar's
+   * treatment, on every primary button since the 2026-09-07 audit 3). secondary = outlined.
    */
   variant?: "primary" | "secondary";
   /** md = normal button. lg = hero. bar = fills the header bar. */
@@ -35,7 +35,7 @@ type SplitButtonProps = {
  * The split CTA: a label cell and a separate arrow cell, square-cornered. Hover follows the
  * site-wide language: the button stays put, the arrow slides, and on the secondary variant
  * the border and arrow cell turn green (the same fill the project-card arrows use).
- * Text on green/lime is always the dark background colour (white on green fails WCAG AA).
+ * Text on green is always the dark background colour (white on green fails WCAG AA).
  */
 export function SplitButton({
   href,
@@ -87,8 +87,7 @@ export function SplitButton({
     size === "md" && "w-11",
     size === "lg" && "w-14",
     size === "bar" && "w-14 lg:w-16",
-    variant === "primary" && size !== "bar" && "bg-lime text-bg",
-    variant === "primary" && size === "bar" && "border-l border-black bg-green text-bg",
+    variant === "primary" && "border-l-2 border-black bg-green text-bg",
     variant === "secondary" &&
       "border-l border-line-strong bg-surface-2 text-green group-hover:border-green group-hover:bg-green group-hover:text-bg",
   );

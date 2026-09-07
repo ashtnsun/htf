@@ -27,6 +27,9 @@
   --font-body: var(--font-brand);
 
   --header-h: 3.5rem;
+  /* Horizontal page gutter (20px on phones -> 72px at 1440, like the Framer's 70px). Read by
+     container-x and by full-bleed rows that keep their content on the container's columns. */
+  --gutter: clamp(1.25rem, 4.5vw, 4.5rem);
   color-scheme: dark;
 }
 
@@ -157,14 +160,29 @@
    Utilities
 ------------------------------------------------------------------- */
 
-/* Horizontal page gutter (20px on phones -> 72px at 1440, like the Framer's 70px). */
+/* Horizontal page gutter (see --gutter). */
 @utility container-x {
-  padding-inline: clamp(1.25rem, 4.5vw, 4.5rem);
+  padding-inline: var(--gutter);
 }
 /* Max content width. */
 @utility container-max {
   max-width: 90rem;
   margin-inline: auto;
+}
+
+/* Full-bleed hairline rows whose content columns sit on the page container's columns: a
+   gutter track on each side (it grows once the viewport passes 90rem), then N equal
+   columns. Pair with `grid` under the md: variant and start the first item at column 2
+   (What we do, Who we serve). */
+@utility bleed-row-2 {
+  grid-template-columns:
+    minmax(var(--gutter), 1fr) repeat(2, minmax(0, calc((90rem - 2 * var(--gutter)) / 2)))
+    minmax(var(--gutter), 1fr);
+}
+@utility bleed-row-3 {
+  grid-template-columns:
+    minmax(var(--gutter), 1fr) repeat(3, minmax(0, calc((90rem - 2 * var(--gutter)) / 3)))
+    minmax(var(--gutter), 1fr);
 }
 
 /* Thin technical grid behind a section, faded toward the edges.
@@ -507,14 +525,16 @@
 }
 
 /* ------------------------------------------------------------------
-   Process scene graphics (src/components/home/ProcessScene.tsx). One-shot animations
-   (draw, grow) restart each time a step becomes active; loops (sweep, ping, blink) pause
-   while the step is inactive. The global reduced-motion rule flattens all of them.
+   Scene graphics (home/ProcessScene, layout/ConnectGraphic, brand/PixelDino). One-shot
+   animations (draw) restart each time a stage becomes active; loops (scan, ping) pause
+   while it is inactive. The global reduced-motion rule flattens all of them.
 ------------------------------------------------------------------- */
 @layer components {
-  @keyframes sweep {
+  /* One pass of the scan across the process plane: 5 cells of 30px along the isometric
+     x axis (cos 30° and sin 30°). */
+  @keyframes scan {
     to {
-      transform: rotate(360deg);
+      transform: translate(129.9px, 75px);
     }
   }
   @keyframes ping {
@@ -530,21 +550,6 @@
   @keyframes draw {
     to {
       stroke-dashoffset: 0;
-    }
-  }
-  @keyframes grow-x {
-    from {
-      transform: scaleX(0);
-    }
-  }
-  @keyframes blink {
-    50% {
-      opacity: 0;
-    }
-  }
-  @keyframes orbit {
-    to {
-      transform: rotate(360deg);
     }
   }
   @keyframes float {
@@ -563,46 +568,26 @@
       opacity: 1;
     }
   }
-  .anim-sweep {
-    transform-origin: 200px 200px;
-    animation: sweep 6s linear infinite;
+  .anim-scan {
+    animation: scan 5s linear infinite;
+    animation-delay: -1.8s;
   }
   .anim-ping {
     transform-box: fill-box;
     transform-origin: center;
     animation: ping 2.6s cubic-bezier(0, 0, 0.2, 1) infinite;
   }
-  .anim-draw {
-    stroke-dasharray: 1;
-    stroke-dashoffset: 1;
-    animation: draw 1.4s var(--ease-out-quart) forwards;
-  }
-  .anim-grow {
-    transform-box: fill-box;
-    transform-origin: left center;
-    animation: grow-x 1.6s var(--ease-out-expo) both;
-  }
-  .anim-blink {
-    animation: blink 1s steps(1, end) infinite;
-  }
-  /* Beacon graphic (layout/SignalGraphic) and the process scene: slow orbit, counter-rotation
-     that keeps labels upright, a ticked dial, wide slow pings and a gentle floating bob. */
-  .anim-orbit {
-    transform-origin: 200px 200px;
-    animation: orbit 60s linear infinite;
-  }
-  .anim-orbit-back {
-    animation: orbit 60s linear infinite reverse;
-  }
-  .anim-dial {
-    transform-origin: 200px 200px;
-    animation: orbit 240s linear infinite reverse;
-  }
   .anim-ping-slow {
     transform-box: fill-box;
     transform-origin: center;
     animation: ping 3.6s cubic-bezier(0, 0, 0.2, 1) infinite;
   }
+  .anim-draw {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: draw 1.4s var(--ease-out-quart) forwards;
+  }
+  /* A gentle floating bob for the scenes (no card, nothing else moves). */
   .anim-float {
     animation: float 7s ease-in-out infinite;
   }
@@ -610,19 +595,10 @@
   .anim-eyelid {
     animation: eyelid 6s linear infinite;
   }
-  [data-active="false"]
-    :is(
-      .anim-sweep,
-      .anim-ping,
-      .anim-ping-slow,
-      .anim-blink,
-      .anim-orbit,
-      .anim-orbit-back,
-      .anim-dial
-    ) {
+  [data-active="false"] :is(.anim-scan, .anim-ping, .anim-ping-slow) {
     animation-play-state: paused;
   }
-  [data-active="false"] :is(.anim-draw, .anim-grow) {
+  [data-active="false"] .anim-draw {
     animation: none;
   }
 }

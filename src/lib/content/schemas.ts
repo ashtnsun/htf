@@ -132,8 +132,8 @@ export const processStepSchema = z.object({
   id: slugSchema,
   title: z.string().min(1),
   description: z.string().min(1),
-  /** Wireframe illustration shown while the step is active. */
-  graphic: z.enum(["radar", "network", "terminal", "globe"]),
+  /** The stage of the isometric process scene this step drives (home/ProcessScene). */
+  graphic: z.enum(["scan", "team", "stack", "ship"]),
   /** What the nonprofit does at this step ("Your part" on /nonprofits). */
   partner: z.string().min(1).optional(),
 });

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { getPrimaryCta } from "@content/site";
 import { SeasonNote } from "@/components/layout/SeasonNote";
-import { SignalGraphic } from "@/components/layout/SignalGraphic";
+import { ConnectGraphic } from "@/components/layout/ConnectGraphic";
 import { Reveal } from "@/components/motion/Reveal";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Headline } from "@/components/ui/Headline";
@@ -22,8 +22,8 @@ type ContactCtaProps = {
 
 /**
  * Closing call-to-action after the Framer contact block: eyebrow, display headline, copy,
- * the season CTA (Apply Now / Contact Us from content/site.ts) and the floating beacon
- * graphic (SignalGraphic; it replaced the static globe in the 2026-09-07 audit).
+ * the season CTA (Apply Now / Contact Us from content/site.ts) and the floating docking
+ * graphic (ConnectGraphic; it replaced the beacon in the 2026-09-07 audit 3).
  */
 export function ContactCta({
   id = "get-involved",
@@ -68,7 +68,7 @@ export function ContactCta({
           <SeasonNote className="mt-5" />
         </Reveal>
         <Reveal standalone delay={0.15} className="mx-auto w-[min(100%,28rem)]">
-          <SignalGraphic />
+          <ConnectGraphic />
         </Reveal>
       </div>
     </Section>
