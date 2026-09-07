@@ -36,8 +36,9 @@ content/            typed content: site.ts (config + season CTA), media.ts (imag
                     nonprofits.ts, instagram.ts, privacy.mdx, projects/*.mdx (Zod frontmatter)
 src/app/            routes. page.dev.tsx files exist only in `next dev` (see next.config.ts);
                     contact/actions.ts and nonprofits/actions.ts are the form server actions;
-                    apply/ (portal landing + sign-in actions, form/), admin/, auth/confirm
-                    (magic-link target) are the application portal (Phase 2)
+                    apply/ (portal landing + sign-in actions, form/ = the multi-step form and
+                    its actions, submitted/), admin/, auth/confirm (magic-link target) are the
+                    application portal (Phase 2)
 src/proxy.ts        portal only (/apply, /admin): refreshes the Supabase session cookie and
                     bounces signed-out visitors off protected pages
 src/components/
@@ -57,20 +58,28 @@ src/components/
                     IntakeForm
   globe/            PartnerGlobe (lazy wrapper, drag, SVG fallback), PartnerGlobeScene
                     (three.js / R3F, loaded on demand), SpinController, landDots
-  forms/            useFormSubmission (server / mailto modes), SentPanel, Honeypot
+  forms/            useFormSubmission (server / mailto modes), SentPanel, Honeypot,
+                    CountedTextArea (live character counter)
   contact/          ContactForm
-  apply/            SignInForm (email → six-digit code, resend, restart), AccountPanel
+  apply/            SignInForm (email → six-digit code, resend, restart), AccountPanel,
+                    ApplicationForm (client shell: stepper, autosave, aside, review),
+                    ApplicationSteps (profile / roles / questions fields), ApplicationSummary
+                    (review step and the read-only view)
   motion/           Reveal / RevealGroup (fade-and-rise, reduced-motion aware)
   icons/            Instagram / LinkedIn (lucide 1.x has no brand icons)
 src/lib/content/    schemas.ts (Zod) + index.ts (loaders; throw on invalid content)
-src/lib/forms/      fields.ts (FormState, readValues, honeypot), deliver.ts (Supabase / Resend)
+src/lib/forms/      fields.ts (FormState, readValues, honeypot), deliver.ts (Supabase / Resend,
+                    sendEmail)
+src/lib/apply/      schema.ts (steps, Zod for profile / roles / answers built from the questions
+                    rows, problems, summary data), state.ts, email.ts (confirmation via Resend)
 src/lib/contact/, src/lib/inquiries/   per-form Zod schema + delivery wrapper
 src/lib/supabase/   env.ts (SUPABASE_URL + SUPABASE_ANON_KEY), server.ts (cookie-bound client,
                     one per request), proxy.ts (session refresh), database.types.ts (generated:
                     `supabase gen types typescript --local`, do not hand-edit)
 src/lib/auth/       schema.ts (sign-in Zod + safeNextPath), state.ts, session.ts (getSessionUser,
                     isAdminUser, requireUser: the data-access gate every portal page uses)
-src/lib/portal/     data.ts (cycle, roles, questions, my application, admin counts; all through RLS)
+src/lib/portal/     data.ts (cycle, roles, questions, my application + answers, admin counts; all
+                    through RLS), format.ts (dates in the club's zone, safe on the client)
 src/lib/geo.ts      sphere maths shared by both globes
 scripts/            validate-content, gen-placeholders, gen-logo-paths.py, gen-world-dots,
                     screenshots, a11y
@@ -147,7 +156,10 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   the boundary; never use the service role for portal data. `src/proxy.ts` is only the
   optimistic redirect. Schema changes are new files in `supabase/migrations/` followed by
   `supabase db reset` and `pnpm supabase:types`. A `<button>` with a function `formAction`
-  cannot carry `name`/`value` (React overrides them): use a hidden input instead.
+  cannot carry `name`/`value` (React overrides them): use a hidden input instead. The
+  application form saves leniently (empty is fine, invalid is not) and validates strictly on
+  Continue and on submit; every one of its buttons posts a `nav` value to the one action in
+  `apply/form/actions.ts`, so each move saves first and the form works without JavaScript.
 - Hover states are one language everywhere: text links turn green (inline links in body copy
   are already green, medium weight, no underline, and turn white); interactive surfaces get
   `hover-corners` + `border-line-strong` + `bg-surface-2`; arrow cells fill green; nav links

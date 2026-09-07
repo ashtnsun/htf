@@ -46,13 +46,141 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ### Phase 2 — Application portal (Sessions 7–10)
 
 - [x] Session 7: schema + sign-in. Migration `20260908000000_application_portal.sql` (profiles, admins, cycles, roles, questions, applications, answers, reviews; RLS, guard trigger, explicit grants), seeds, local Supabase stack, email code + magic-link sign-in (`@supabase/ssr`), `/apply` season landing with account panel, `/auth/confirm`, `src/proxy.ts`, `/apply/form` and `/admin` gates, `NEXT_PUBLIC_APPLY_MODE` switch, `docs/DEPLOY.md` §6
-- [ ] Session 8: multi-step application form with autosave (profile → roles → questions → review), submit + confirmation email (Resend), `/apply/submitted`, read-only after submit / deadline
+- [x] Session 8: multi-step application form with autosave (profile → roles → questions → review, one step per URL, works without JavaScript), submit with the confirmation email (Resend), `/apply/submitted`, read-only after submit / deadline
 - [ ] Session 9: exec dashboard (`/admin` table with filters and search, per-application view with answers and the review panel, counts per role, CSV export)
 - [ ] Session 10: Resend SMTP and rate limits on the hosted project, keepalive cron, dry run with five exec members, `NEXT_PUBLIC_APPLY_MODE=portal` on production
 
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+
+## Session 8 — 2026-09-07 (Phase 2, part 2: the application form)
+
+**Built:** the applicant side of the portal (PLAN.md §5, §13). `/apply/form` is a four-step
+form, one step per URL (`?step=profile|roles|questions|review`): profile (the `applications`
+columns: name, year, major, Purdue email, LinkedIn, portfolio), roles (checkbox cards from the
+open `roles`, each saying how many questions it adds), questions (the shared questions, then a
+group per role applied for, rendered from the `questions` rows by kind: text, textarea with a
+live counter, chips for select, checkbox chips for multiselect, url), and review (every answer
+as definition lists with an Edit button per block, a "Before you can submit" list when
+something is missing, a confirmation checkbox and the submit button). A stepper across the top
+shows the current step and a check on complete ones; a glass aside carries the save status
+("Not saved yet" / "Saved 1:02 PM" / "Last saved …" / "Couldn't save. …"), the deadline and
+"Save and finish later". Drafts autosave when a field loses focus or a choice changes
+(`autosaveApplicationStep`, a direct call from the client), and every button saves through the
+one form action (`saveApplicationStep`, `nav` = continue / back / exit / submit / a step name)
+and redirects to `?step=…#application-form`, so the form works without JavaScript. Submit
+validates the stored draft, drops answers to questions of roles no longer applied for, flips
+the status (the guard trigger stamps `submitted_at`), emails a plain-text confirmation through
+Resend when configured and lands on `/apply/submitted` (what you sent, what happens next; the
+blurb only claims an email when one went out). After submission, or after the deadline,
+`/apply/form` shows the application read-only with a notice and contact links; the status page
+lists the roles applied for. New: `src/lib/apply/` (`schema.ts`: steps, Zod for the profile,
+roles and answers built from the question rows, problems, summary data; `state.ts`; `email.ts`),
+`src/lib/portal/format.ts` (dates in the club's zone, client-safe), `src/components/apply/`
+(`ApplicationForm`, `ApplicationSteps`, `ApplicationSummary`), `CountedTextArea`,
+`CheckboxGroupField` + `CheckboxField` in `Field.tsx`, `sendEmail` in `lib/forms/deliver.ts`,
+`name`/`value` on `SplitButton`, `getMyApplicationDetail` in `lib/portal/data.ts`,
+`data-scroll-behavior="smooth"` on `<html>` (Next 16's request, so route transitions jump
+instead of gliding). Docs: `docs/DEPLOY.md` §6, `.env.example`, CLAUDE.md folder map.
+Commits: `feat(portal)`, `docs`. Not pushed.
+
+**Verified:** `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm build` clean (39
+pages; `/apply/submitted` joins the on-demand routes). Playwright against the dev server and
+the production build (portal mode, local Supabase, `example.com` accounts; screenshots in
+`docs/screenshots/session-8/`): profile autosaves on blur and on a chip change and the aside
+reads "Saved …"; an invalid link is reported inline by the autosave and not stored, the other
+fields are; a reload prefills the draft and the aside reads "Last saved …"; Continue with an
+invalid link shows the summary alert, the inline message and focuses the field; a valid link
+without a scheme is stored as `https://…`; Continue lands on the next step scrolled to the form
+with the step heading focused and the stepper marking Profile complete; Continue on Roles
+without a role shows the message; picking roles autosaves; the questions step shows the shared
+group plus one group per role picked (the Project Lead question stays hidden); Continue with a
+required answer empty focuses it; the counter shows "67 / 1,500"; the review lists everything,
+Edit jumps to the step and the stepper back to Review; submitting without the checkbox shows
+the message; submitting lands on `/apply/submitted` without claiming an email when Resend is
+off; `/apply/form` is then read-only ("Received …") whatever `?step` says; the status page reads
+"Submitted" with "Roles: Developer, Designer"; the database holds `submitted`, `submitted_at`,
+two roles, six answers as JSON strings with paragraphs kept, and `profiles.full_name`. Phone
+(390): every step, no horizontal overflow, Enter in a field acts as Continue, "Save and finish
+later" returns to "Draft in progress". Without JavaScript: the draft prefills, an invalid link
+re-renders the page with the alert and the message keeping the values, Continue saves and
+moves on, the stepper jumps a step (saving the role picked), "Save and finish later" returns
+to the status page (the browser carries the `#application-form` fragment onto `/apply`, which
+is harmless). Cycle closed in the database mid-draft: the autosave line reads "Couldn't save.
+Applications closed …", Continue says the same, a reload shows the read-only "The deadline
+passed." view and the status page "Draft not submitted". Confirmation email against a fake
+Resend endpoint (`RESEND_API_URL`): one POST with the bearer key, `from` = `CONTACT_FROM`, `to`
+= the applicant, no `reply_to` while the club email is a TODO, plain text greeting by first
+name with the cycle, the roles and the time, and the redirect carries `?mail=sent`. axe: 0
+violations on every state above at 1440 and 390 (a `target-size` hit on the stepper appeared
+once when the sticky header covered it at the scan's scroll position; scans now start from the
+top). `pnpm a11y` on the production build for `/apply` and `/` (drawer open): 0. The
+committed default build (no `.env.local`) still redirects `/apply` to the external form and
+`/apply/form`, `/apply/submitted` and `/admin` to `/apply?next=…`.
+
+**Decisions made this session**
+
+1. Lenient saves, strict moves (PLAN.md §13): a blur or a choice change saves every valid
+   field of the step, empty included; Continue and Submit enforce required fields; an invalid
+   value is never stored and blocks moving on. Native `required` still runs on Continue and
+   Submit; the stepper, Back, Edit and "Save and finish later" buttons carry `formNoValidate`.
+2. One action for every button: each submit button posts a `nav` value (`continue`, `back`,
+   `exit`, `submit` or a step name) to `saveApplicationStep`, which saves the current step and
+   redirects. A hidden first submit button makes Enter behave like Continue. Progressive
+   enhancement comes for free; the JavaScript path only adds the autosave, the "Saved" line and
+   focus management. The autosave skips when focus moves to one of the form's own submit
+   buttons (that click saves anyway) and when nothing changed since the last save.
+3. Errors and echoes: a failed submit returns the raw values so the reset form keeps them
+   (React clears forms after an action); whichever of the step submit or the autosave ran last
+   wins for the inline errors, the alert and the review's problem list. A closed cycle or a
+   submitted application is detected as "0 rows updated" (RLS filters the row) and explained;
+   messages raised by the guard trigger are shown as written.
+4. Profile: years are `First year`, `Sophomore`, `Junior`, `Senior`, `Graduate student`,
+   `Other` (`YEARS` in `lib/apply/schema.ts`); the Purdue email is optional and must end in
+   `purdue.edu`; links are optional, get `https://` when the scheme is missing and must parse
+   as http(s) with a dotted host; the account's profile name is kept in step with the
+   application's name.
+5. Answers: one `answers` row per non-empty answer (cleared answers delete the row);
+   multiselect stores a string array; textarea limits count after normalising CRLF; a question
+   without `max_chars` is capped at 20,000. Answers to questions of roles no longer applied for
+   are kept while drafting (toggling a role back keeps the text) and dropped at submission.
+6. Submit validates the database copy of the draft (`applicationProblems`), never the form,
+   and requires the confirmation checkbox because the action is final. The confirmation
+   email is plain text through the Resend API (`sendEmail`, shared with the notification
+   emails); `RESEND_API_URL` exists only so a local fake server can receive it in tests.
+7. Read-only views reuse the review's `ApplicationSummary` without Edit buttons; corrections
+   go through the contact page. Decisions stay hidden from applicants.
+8. `data-scroll-behavior="smooth"` on `<html>` so the redirect to `#application-form` jumps
+   instead of gliding (the dev log asked for it).
+
+**Known gaps**
+
+- Session 9 builds the exec dashboard; `/admin` still shows counts only, so nothing reads
+  the submitted applications yet.
+- Every question is still a `[TODO: confirm]` placeholder and the `YEARS` list is a
+  reasonable default; both need Ashton's word.
+- The confirmation email has not been sent through real Resend or checked in a mail client;
+  `CONTACT_FROM` must be a verified sender before the dry run.
+- Two browser tabs editing the same step both save; the last blur wins.
+- Without JavaScript the `#application-form` fragment follows the "Save and finish later"
+  redirect onto `/apply` (browser behaviour for a 303 without a fragment).
+- Playwright quirks logged: labels of screen-reader-only inputs need a click on the label
+  (or `dispatchEvent` without JavaScript), and Next's route announcer also has
+  `role="alert"`.
+- A second Claude Code session (`htf-30`) was editing the home page, navigation and layout
+  components in the same working tree during this session; its files were left uncommitted
+  and untouched, and only the portal files listed above were committed (the shared
+  `SplitButton.tsx` was staged hunk by hunk).
+
+**TODOs for Ashton (content and accounts)**
+
+- Everything from Sessions 1–7 still stands.
+- Confirm the year list, the profile fields (is the Purdue email needed? is a LinkedIn
+  worth asking for?), the questions per role with limits and required flags, and the wording
+  of the confirmation email (`src/lib/apply/email.ts`).
+- Decide whether applicants may edit after submitting before the deadline (today: no).
+- Verify `CONTACT_FROM` in Resend so the confirmation can go out on the hosted project.
 
 ## Session 8b — 2026-09-07 (home and global audit 2; ran alongside the Session 8 form work)
 
@@ -304,26 +432,26 @@ unchanged.
 
 ## Next session starts with
 
-**Session 8: application portal, part 2 (the form).** Read `docs/PLAN.md` §5 and §12, this
-file, `src/lib/portal/data.ts` and the migration, start the local stack (`supabase start`,
-`supabase db reset`, `.env.local` per `docs/DEPLOY.md` §6, `pnpm dev`), then:
+**Session 9: application portal, part 3 (the exec dashboard).** Read `docs/PLAN.md` §5 and
+§13, this file, `src/lib/portal/data.ts`, `src/lib/apply/schema.ts` (`buildSummary`) and the
+migration's `reviews` table and policies; start the local stack (`supabase start`,
+`supabase db reset`, `.env.local` per `docs/DEPLOY.md` §6, `pnpm dev`), sign in as
+`admin@example.com` and submit a couple of test applications, then:
 
-1. `/apply/form`: the multi-step form with autosave. Step 1 profile (`applications` columns:
-   name, Purdue email if different, year, major, LinkedIn, portfolio), step 2 roles
-   (`roles_applied`, per-role questions appear), step 3 questions (`answers`, one row per
-   question, respecting `kind`, `options`, `max_chars`, `required`), step 4 review + submit.
-   Server actions in `src/app/apply/form/actions.ts` (create the draft on first save, save a
-   step, submit) validated with Zod built from the `questions` rows; every write runs as the
-   user so RLS enforces the draft / open-cycle rules; drafts save on blur or step change and
-   show "Saved" state. Reuse `Field` primitives and `useFormSubmission` patterns.
-2. Submit: lock the record (status `submitted`), send the confirmation email through Resend
-   (`src/lib/forms/deliver.ts` has the API call; needs `RESEND_API_KEY` + `CONTACT_FROM`; log
-   and continue when unset), redirect to `/apply/submitted`. After the deadline or after
-   submitting the form renders read-only.
-3. Update `AccountPanel` statuses if the form changes them; keep decisions hidden.
-4. Test against the local stack: autosave, per-role questions, validation messages, submit,
-   read-only view, RLS errors surfaced as friendly messages, no-JS path; Mailpit for the
-   confirmation email. Screenshots to `docs/screenshots/session-8/`, `pnpm a11y --routes=/apply,/apply/form`, update this file.
+1. `/admin`: the applications table (name, email, roles, year, status, submitted at, average
+   score, reviewer count) with filters (role, status, year, reviewed by me / not yet) and a
+   search box, all as URL search params so the page stays a server component; counts per role
+   and status above it; CSV export as a route handler (`/admin/export.csv`) that streams the
+   same rows plus answers through RLS.
+2. `/admin/applications/[id]`: the application read-only (`ApplicationSummary`), the review
+   panel (score 1–5, notes, decision yes / maybe / no) as a server action on the `reviews`
+   table (one row per reviewer, upsert), the other reviewers' notes, and a status control for
+   `reviewing` / `accepted` / `rejected` / `waitlisted` (admins may only change `status`).
+3. Keep decisions invisible to applicants (`AccountPanel`), add `/admin` links to the exec
+   box on `/apply`, and gate everything with `requireUser` + `isAdminUser`.
+4. Test as admin and as a non-admin against the local stack (RLS: a non-admin cannot read
+   another application or write a review); screenshots to `docs/screenshots/session-9/`,
+   `pnpm a11y --routes=/apply`, update this file.
 
 ## Session 6 — 2026-09-06 (Phase 3: About, Non-profits, partner globe, analytics, Lighthouse)
 

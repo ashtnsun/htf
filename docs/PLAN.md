@@ -179,6 +179,30 @@ Ashton asked for the About and Non-profits pages before the portal, so Session 6
 
 Session 7 built the portal's foundation (§5) with two refinements. **Sign-in** uses Supabase Auth email OTP in both forms at once: the email carries a six-digit code (typed on the page that asked for it, so the flow works when mail is read on a phone) and a link to `/auth/confirm` that verifies the token hash server-side (so it works in any browser, unlike a PKCE code exchange). New addresses get an account on first sign-in. **Switching** from the external form to the portal is one setting, `season.applyMode` in `content/site.ts`, driven by `NEXT_PUBLIC_APPLY_MODE`, so the dry run happens on a Vercel preview with the production site untouched. The cycle, roles and questions are rows in Supabase (`supabase/seed.sql`), because Row Level Security needs the deadline in the database to lock drafts; `content/site.ts` keeps the marketing deadline and the two must be kept in step by hand until an admin screen edits both. PROGRESS.md (Session 7) has the schema, the policies and the local development setup.
 
+
+---
+
+## 13. Amendments — the application form (September 7, 2026)
+
+Session 8 built the applicant side of the portal (§5) with these refinements. **Saving is
+lenient, moving on is strict.** Every field of a step is saved on blur (or on a change of a
+checkbox or chip) as long as it is valid; empty fields are fine at that point. "Continue" and
+the final submit enforce required fields, and any invalid value (a malformed link, an unknown
+option) is reported inline and never stored. **One action, one `nav` value.** Every button in
+the form (the stepper, Continue, Back, "Save and finish later", the review's Edit links and
+Submit) posts a `nav` value to the same server action, which saves the current step first and
+then redirects, so the form works without JavaScript and the URL carries the step
+(`/apply/form?step=roles`). **Submit checks the database, not the form:** the review step and
+the action both validate the stored draft against the strict schemas and list what is missing
+per step; answers to questions of roles no longer applied for are dropped at submission; the
+guard trigger stamps `submitted_at`. **Confirmation email** through the Resend API with the
+same `RESEND_API_KEY` and `CONTACT_FROM` as the notification emails, plain text, skipped with a
+log line when the key is missing; `/apply/submitted` only claims it was sent when it was.
+**Read-only after the fact:** once submitted, or once the cycle has closed, `/apply/form` shows
+what was saved and links to the contact page for corrections. Decisions stay hidden from
+applicants (the status page reads every post-submission status as "Submitted"). PROGRESS.md
+(Session 8) has the details.
+
 ---
 
 ## 14. Amendments — home and global audit 2 (September 7, 2026)

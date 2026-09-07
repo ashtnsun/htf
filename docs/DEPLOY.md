@@ -137,7 +137,10 @@ Security. It stays off in production (`/apply` keeps redirecting to the external
    tier: 100 per day, 3,000 per month; confirm against the applicant count or use a paid
    month).
 5. **Vercel.** Add `SUPABASE_ANON_KEY` (Project Settings → API → anon / publishable key) next
-   to `SUPABASE_URL`, and `NEXT_PUBLIC_APPLY_MODE=portal` on **Preview** only. Redeploy. The
+   to `SUPABASE_URL`, and `NEXT_PUBLIC_APPLY_MODE=portal` on **Preview** only. The
+   confirmation email after a submission uses `RESEND_API_KEY` and `CONTACT_FROM` from §2
+   (the Resend API, not SMTP; `CONTACT_INBOX` is not needed for it) and is skipped with a log
+   line when the key is missing. Redeploy. The
    dry run (PLAN.md §6, Phase 2 gate) happens on a preview URL: five exec members apply and
    review end to end. When it passes, set `NEXT_PUBLIC_APPLY_MODE=portal` on Production and
    redeploy; `/apply` becomes the portal and every Apply CTA already points there.
@@ -148,9 +151,11 @@ Security. It stays off in production (`/apply` keeps redirecting to the external
    `admin@example.com` is on the local admin list (`supabase/seed.local.sql`). Remove
    `.env.local` before a production build meant to mirror the live site.
 7. **Checks.** `/apply` shows the landing with the deadline from the `cycles` table; a code
-   arrives through Resend and both the code and the link sign in; `/admin` shows the exec-only
-   page to a non-admin and the counts to an admin; `robots.txt` disallows `/apply`, `/admin`
-   and `/auth`.
+   arrives through Resend and both the code and the link sign in; a test application walks
+   profile → roles → questions → review, autosaves ("Saved …" in the aside), submits, sends
+   the confirmation email and then shows read-only; `/admin` shows the exec-only page to a
+   non-admin and the counts to an admin; `robots.txt` disallows `/apply`, `/admin` and
+   `/auth`. Delete the test application afterwards in the SQL editor.
 8. **Free-tier pause.** Supabase pauses a free project after a week without activity. Session
    10 adds the keepalive cron; until then restore the project from the dashboard before the
    season starts.
