@@ -1,11 +1,12 @@
-import type { ElementType, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 type EyebrowProps = {
   children: ReactNode;
   /** Text colour. The square is always green. */
   tone?: "text" | "green" | "muted";
-  as?: ElementType;
+  /** HTML tag. Kept to a list on purpose: the three.js JSX types widen ElementType to never-props. */
+  as?: "p" | "span" | "div" | "h2" | "h3" | "dt";
   className?: string;
 };
 
