@@ -625,21 +625,20 @@
 
 /* ------------------------------------------------------------------
    The dino process scene (home/ProcessScene). Each step's motion runs only while the scene
-   reports that step in data-mode (the step nearest the scroll progress), so it starts as the
-   step arrives and stops as it leaves. Every keyframe moves by whole cells or flips a frame
+   reports that step in data-mode (the step the scroll has picked), so it starts as the step
+   arrives and stops as it leaves. Every keyframe moves by whole cells or flips a frame
    (steps timing) and ends on the resting frame, which is what the stills and the
-   reduced-motion rule show; the rule at the end also drops the delays.
+   reduced-motion rule show; the rule at the end also drops the delays. The dissolve between
+   steps is not CSS: the scene flips its cells from its own clock.
 ------------------------------------------------------------------- */
 @layer components {
+  /* The detective lifts the glass one row and lowers it again (the handle stays in the hand). */
   @keyframes dino-peer {
-    25% {
-      transform: translate(1px, 0);
-    }
     50% {
-      transform: translate(1px, 1px);
+      transform: translateY(-1px);
     }
-    75% {
-      transform: translate(0, 1px);
+    80% {
+      transform: none;
     }
   }
   @keyframes dino-appear {
@@ -671,27 +670,10 @@
       opacity: 1;
     }
   }
+  /* The teammates hop one cell, out of phase. */
   @keyframes dino-bob {
     50% {
       transform: translateY(-1px);
-    }
-  }
-  @keyframes dino-flap-up {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0;
-    }
-  }
-  @keyframes dino-flap-down {
-    0%,
-    100% {
-      opacity: 0;
-    }
-    50% {
-      opacity: 1;
     }
   }
   @keyframes dino-hammer-up {
@@ -722,9 +704,19 @@
       opacity: 1;
     }
   }
+  /* The gift is pushed one cell forward while the arm gains a cell, so it stays in the hand. */
   @keyframes dino-offer {
     50% {
       transform: translateX(1px);
+    }
+  }
+  @keyframes dino-reach {
+    0%,
+    100% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
     }
   }
   @keyframes dino-fall {
@@ -747,11 +739,8 @@
   [data-mode="team"] .anim-dino-bob {
     animation: dino-bob 1.2s steps(1, end) infinite;
   }
-  [data-mode="team"] .anim-dino-flap-up {
-    animation: dino-flap-up 0.7s steps(1, end) infinite;
-  }
-  [data-mode="team"] .anim-dino-flap-down {
-    animation: dino-flap-down 0.7s steps(1, end) infinite;
+  [data-mode="team"] .anim-dino-blink {
+    animation: eyelid 6s linear infinite;
   }
   [data-mode="builder"] .anim-dino-hammer-up {
     animation: dino-hammer-up 1s steps(1, end) infinite;
@@ -764,6 +753,9 @@
   }
   [data-mode="party"] .anim-dino-offer {
     animation: dino-offer 1.6s steps(1, end) infinite;
+  }
+  [data-mode="party"] .anim-dino-reach {
+    animation: dino-reach 1.6s steps(1, end) infinite;
   }
   [data-mode="party"] .anim-dino-fall {
     animation: dino-fall 3s steps(12, end) infinite;

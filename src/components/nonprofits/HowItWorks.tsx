@@ -41,12 +41,7 @@ export function HowItWorks({ steps }: { steps: ProcessStep[] }) {
           {steps.map((step, i) => (
             <li key={step.id} className="flex flex-col bg-bg">
               <Reveal className="flex h-full flex-col p-6 md:p-8">
-                <ProcessScene
-                  stages={stages}
-                  progress={i}
-                  animate={false}
-                  className="max-w-[18rem]"
-                />
+                <ProcessScene stages={stages} step={i} animate={false} className="max-w-[18rem]" />
                 <p className="mt-8 text-eyebrow font-medium text-green uppercase">
                   Step {pad(i + 1)}
                 </p>

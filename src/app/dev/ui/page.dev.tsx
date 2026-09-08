@@ -420,11 +420,11 @@ export default function UiKitPage() {
 
       <Block title="ProcessScene (the dino scenes: detective, team, builder, party; the home page dissolves between them cell by cell; stills at 0, 1, 2, 3)">
         <div className="grid gap-4 sm:grid-cols-4">
-          {[0, 1, 2, 3].map((progress) => (
+          {[0, 1, 2, 3].map((step) => (
             <ProcessScene
-              key={progress}
+              key={step}
               stages={["detective", "team", "builder", "party"]}
-              progress={progress}
+              step={step}
               animate={false}
             />
           ))}
