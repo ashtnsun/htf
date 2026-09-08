@@ -254,3 +254,7 @@ Ashton's fourth audit of the built home page, the same day as §16; PROGRESS.md 
 **Who we serve.** Each panel is still one link, but the label-and-arrow footer is a normal "Learn more" split button (a presentational span inside the link), and the hover is the project cards' language: the title turns green and the button takes its hover state. No corner brackets, no surface change.
 
 **Get involved** has a paper plane in place of the docking modules: a dotted flight path with drifting dots, and the plane flies it once (CSS motion path) when the section scrolls into view, then rests at the end with a few wind strokes behind it.
+
+## 18. Amendments — exec board by year (September 8, 2026)
+
+The About page's exec board follows the projects index: every member in `content/exec.ts` belongs to a school year, a chip per year switches boards (newest first and by default, the choice in `?board=` so a board can be linked to), and the cards cross-fade like the project grid. Every card carries a LinkedIn link, so `linkedin` is a required field: a URL, or a "TODO" note that renders a dashed placeholder cell until the real link lands. PROGRESS.md (Session 10b) has the details.

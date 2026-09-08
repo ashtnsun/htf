@@ -56,7 +56,8 @@ src/components/
                     ImpactBand (+ TestimonialMarquee, Awards, AwardCarousel), WhoWeServe (two
                     linked panels with a presentational "Learn more" button in a full-bleed
                     row; also the hand-off on /about)
-  about/            Mission, Story, ExecGrid, InstagramGrid
+  about/            Mission, Story, ExecGrid (+ ExecBoard: a chip per school year, `?board=` in
+                    the URL, LinkedIn cell on every card), InstagramGrid
   nonprofits/       HowItWorks, Scope, Partners (+ PartnersMap), NonprofitTestimonials,
                     IntakeForm
   globe/            PartnerGlobe (lazy wrapper, drag, SVG fallback), PartnerGlobeScene

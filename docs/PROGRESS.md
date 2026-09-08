@@ -42,6 +42,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 6: Non-profits (how it works with "your part", scope guardrails, partner globe, nonprofit testimonials, FAQ, intake form → `nonprofit_inquiries` / Resend / mailto, share image)
 - [x] Session 6: three.js partner globe with pins (lazy, on demand near the viewport; SVG globe with pins as fallback and first paint)
 - [x] Session 6: analytics (Vercel Web Analytics, Vercel builds only; privacy text) and the Lighthouse pass (numbers and open findings in the Session 6 log)
+- [x] Session 10b: exec board by year (chip per school year, `?board=` in the URL, LinkedIn cell on every card)
 - [ ] Real stats and testimonials: the sections read published items already; needs Ashton's numbers and quotes (`published: true`)
 - [ ] Media handoff swap: needs the photos (`content/media.ts` keys)
 
@@ -55,6 +56,34 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+
+## Session 10b — 2026-09-08 (exec board by year)
+
+**Built:** the About page's exec board works like the projects index (PLAN.md §18). Each
+member row in `content/exec.ts` now carries a `year` ("2026–27"); `getExecYears()` lists the
+boards newest first and `ExecGrid` renders a chip per year above the cards, the newest board
+by default. The switch is `about/ExecBoard` (client), the projects explorer's pattern: the
+chosen year lives in the URL (`?board=2025–26`, the newest year clears it, the `#exec` hash is
+kept) via `history.replaceState`, cards cross-fade with `AnimatePresence` (reduced motion
+skips the animation), a screen-reader-only live region announces the board, and the static
+HTML carries the newest board through the Suspense fallback. `linkedin` is required on every
+member (a URL or a "TODO" note; `cycleYearSchema` is shared with projects), so every card has
+the LinkedIn cell: a link when the URL is known, a dashed placeholder while it is a TODO.
+Verified with Playwright at 1440 and 390 (chips, URL, deep link, no console errors), axe 0
+violations on /about, typecheck / lint / build clean. Screenshots in
+`docs/screenshots/session-10b/`.
+
+**Decisions**
+
+- No "All" chip: a board belongs to one year, so the chips only switch boards, and a single
+  board hides the chip row.
+- A 2025–26 board of two TODO members exists so the switch is visible; replace or delete it.
+- Slugs carry the year (`ashton-sun-2026`) because one person can sit on several boards.
+
+**TODOs for Ashton**
+
+- `content/exec.ts`: the real boards per year (names, roles, LinkedIn URLs, photos via
+  `content/media.ts`); confirm 2026–27 is the current board and whether 2025–26 is wanted.
 
 ## Session 10 — 2026-09-07 (home audit 3)
 
