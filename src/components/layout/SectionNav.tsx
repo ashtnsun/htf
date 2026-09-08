@@ -8,19 +8,20 @@ export type SectionNavItem = { href: `#${string}`; label: string };
 type SectionNavProps = {
   /** The page's sections in document order; each `href` is the id of a section on the page. */
   items: readonly SectionNavItem[];
-  /** Short page name shown at the start of the bar ("About"). */
+  /** Short page name ("About"); names the landmark ("About sections"), it is not displayed. */
   label: string;
   className?: string;
 };
 
-/** Height of the bar; also published as `--subnav-h` so anchors land below it. */
-const BAR_HEIGHT = 48;
+/** Height of the bar (px, matches `h-14`); also published as `--subnav-h` so anchors land below it. */
+const BAR_HEIGHT = 56;
 
 /**
  * In-page navigation for the long inner pages (About, Students, Nonprofits): a hairline bar
  * that sits right under the hero and sticks beneath the site header while the page scrolls.
- * It lists the page's sections as anchor links, underlines the one on screen (the header's
- * current-page language) and scrolls the row so the current link stays visible on phones.
+ * It lists the page's sections as anchor links (nothing else: the page name is the
+ * landmark's label only), underlines the one on screen (the header's current-page language)
+ * and scrolls the row so the current link stays visible on phones.
  *
  * The bar sets `--subnav-h` on the root element while mounted; globals.css adds it to every
  * anchor's `scroll-margin-top`, so a jump lands below the bar rather than under it. Without
@@ -89,20 +90,16 @@ export function SectionNav({ items, label, className }: SectionNavProps) {
 
   return (
     <nav
-      aria-label="On this page"
+      aria-label={`${label} sections`}
       className={cn(
         "sticky top-(--header-h) z-40 border-y border-line glass [--glass-alpha:80%]",
         className,
       )}
     >
-      <div className="container-max flex h-12 items-center gap-6 container-x">
-        <p className="hidden shrink-0 text-eyebrow font-medium text-muted uppercase sm:block">
-          {label}
-        </p>
-        <span aria-hidden="true" className="hidden h-4 w-px shrink-0 bg-line-strong sm:block" />
+      <div className="container-max flex h-14 items-center container-x">
         <ul
           ref={listRef}
-          className="-mx-(--gutter) scrollbar-none flex h-full flex-1 items-stretch gap-1 overflow-x-auto px-(--gutter) sm:mx-0 sm:px-0"
+          className="-mx-(--gutter) scrollbar-none flex h-full flex-1 items-stretch gap-2 overflow-x-auto px-(--gutter)"
         >
           {items.map((item) => {
             const active = item.href.slice(1) === current;
@@ -112,8 +109,8 @@ export function SectionNav({ items, label, className }: SectionNavProps) {
                   href={item.href}
                   aria-current={active ? "location" : undefined}
                   className={cn(
-                    "relative inline-flex items-center px-3 text-sm font-medium whitespace-nowrap transition-colors duration-200 first:pl-0",
-                    "after:absolute after:inset-x-3 after:-bottom-px after:h-px after:bg-green after:opacity-0 after:transition-opacity after:duration-200 first:after:left-0",
+                    "relative inline-flex items-center px-4 text-sm font-medium whitespace-nowrap transition-colors duration-200 first:pl-0",
+                    "after:absolute after:inset-x-4 after:-bottom-px after:h-px after:bg-green after:opacity-0 after:transition-opacity after:duration-200 first:after:left-0",
                     active ? "text-text after:opacity-100" : "text-muted hover:text-text",
                   )}
                 >
