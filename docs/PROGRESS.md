@@ -59,6 +59,25 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
 
+## Session 11e — 2026-09-08 (the footer T-rex)
+
+Ashton's request: the footer dinosaur is the offline-page T-rex (the icon he attached), in HTF
+green, peeking out a good amount. It also answers the Session 5 question of whether the
+dinosaur stays: it stays.
+
+1. `brand/PixelDino`: the 22×20 map is replaced by a 20×22 map traced from the icon (a
+   majority vote of the dark pixels in each cell of its 19.5 px grid; the icon's diagonals are
+   not quite on the grid, so the back steps two cells once), still one `<rect>` per cell with
+   `crispEdges`. The eye is the empty cell at row 2, column 12 and still blinks through the
+   `anim-eyelid` rect. Same green (`text-green`), glow, rise-in and reduced-motion behaviour.
+2. `SiteFooter`: the footer sets `--dino-w: clamp(11rem, 16vw, 15rem)`; the dinosaur is that
+   wide (was `clamp(10rem, 16vw, 14rem)`) and the glass panel's top margin is
+   `calc(var(--dino-w) * 0.85)` (was 6rem / 7rem), so at every width the head, arm, tail and
+   body down to the belly sit in the open strip and only the legs are behind the glass (about
+   16 of the 22 rows show).
+3. Checks: typecheck, lint, build, `pnpm a11y` on `/` (0 violations), footer captures at 1440
+   and 390 in `docs/screenshots/session-11e/`.
+
 ## Session 11d — 2026-09-08 (seven review tweaks: cards, section bar, timeline, globe, partners, testimonials)
 
 Ran alongside Session 11b/11c (htf-30) on the same tree; file ownership settled by message.
