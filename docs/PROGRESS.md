@@ -38,6 +38,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 11: Shift + M site configuration panel (per browser, ships hidden) with ten home hero variants (Globe stays the default; Atlas, Typewriter, Ticker, Focus, Torch, Cells, Wordmark, Rows, Photo); Ashton picks the one that ships
 - [x] Session 11b: ten Get involved graphic variants as the menu's second setting (Plane stays the default; Door, Puzzle, Canvas, Chat, Badge, Calendar, Terminal, Keycap, Signpost), all recognizable objects without the corner brackets; Ashton picks the one that ships
 - [x] Session 11f: How it works drawn with the footer T-rex (detective, team, builder, party) dissolving cell by cell between the steps
+- [x] Session 11h: the scene after Ashton's review (hats worn on the head, the team as three T-rexes, the gift arm attached and no partner, the dissolve on its own clock)
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -59,6 +60,81 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+
+## Session 11h — 2026-09-08 (the dino process scene, Ashton's review)
+
+Ashton's review of Session 11f: the detective hat should fit on the head; the team should
+not be other species but three of the same dino as the normal one, told apart by colour or
+accessories; the builder should wear a construction hat on his head; the deliver scene
+should lose the dinosaur on the right and keep the arm connected while handing the gift; and
+the scroll transitions should be smoother: the transition was on screen more than the
+pictures, and you could only see a finished picture by stopping on a very small stretch of
+scroll.
+
+**Built** (PLAN.md §22):
+
+1. `home/ProcessSprites.ts`: hats are worn. Their brim now covers the head's top row (local
+   row 0) instead of hovering a row above it, and each is drawn the head's width. The
+   deerstalker keeps its two tied flaps and gains the two peaks that curve down past the
+   head; the hard hat is a round dome with a ridge and a visor over the face (it was a cone);
+   the party hat moved down one row. The team is the footer T-rex twice more (`mirrored()`
+   from the shared map), facing the first one, one in square glasses, one in a backwards
+   cap; the triceratops, stegosaurus and pterodactyl are gone. Deliver: the long-necked
+   partner is gone; the arm is held out to the side of the box (three cells, two rows) and
+   gains one cell as it pushes the box a cell forward, so it never detaches from the body or
+   the box; the box moved one cell right and its ribbon's horizontal band stops short of the
+   hand, so the arm no longer runs into the ribbon; the confetti spreads across the whole
+   stage. The magnifying glass now lifts one row and drops back instead of circling (the
+   circle pulled the handle out of the hand on two of its four frames), and the handle gained
+   the cell that joins it to the ring. Every layer can name an `eye`, so the teammates blink
+   too (only in their step).
+2. `home/ProcessScene`: the dissolve runs on the scene's own clock. The store carries the
+   step index (`StepStore`, was `ProgressStore` with a float); when it changes, the outgoing
+   cells flip off and the incoming cells flip on in twelve hashed buckets over 600 ms (the
+   incoming half a beat behind), from a `requestAnimationFrame` loop that stops when nothing
+   is pending. A new step mid-dissolve retargets the pending flips. Under
+   prefers-reduced-motion the flips are immediate. Layers present in every step are no longer
+   bucketed (203 live paths). The prop is `step` (was `progress`); the stills on /nonprofits
+   and /dev/ui pass the index.
+3. `home/ProcessScroll`: the scroll only picks the step. The reading line's position between
+   the step centres becomes the nearest step with a 6% hysteresis band around each midpoint,
+   so a stop right at a midpoint never flickers; the eased float progress and its rAF loop
+   are gone. The picture therefore holds for the whole stretch between midpoints and the
+   dissolve is the same half second whatever the scroll speed.
+4. `globals.css`: `dino-peer` is a one-row lift; `dino-reach` (the extra arm cell) runs in
+   step with `dino-offer`; `[data-mode="team"] .anim-dino-blink` reuses the footer's
+   `eyelid` keyframes for the teammates; the flap keyframes are gone.
+
+**Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm a11y` (0 violations), and
+two Playwright passes at 1440 and 390 (`.tmp-scene*.mjs`, deleted): `data-mode` follows the
+step and the loops run only in their step (2 / 7 / 4 / 6 animations, the teammates' blinks
+among the 7); a scroll stopped exactly at the midpoint between Match and Build leaves the
+scene fully resolved on Match (no mask both shown and hidden); an instant jump from Discover
+to Deliver resolves on Deliver within a second; the gift's translate and the reach cell's
+opacity change on the same frame; under reduced motion the switch is a cut with nothing
+mixed 60 ms later and no animation running; no console errors from the scene (the one error
+under reduced motion is the pre-existing CountUp hydration mismatch). Captures in
+`docs/screenshots/session-11h/`: `scene-<n>-<step>-<width>.png` for the four resting frames,
+`-b` the hammer struck / the confetti later, `-pushed` the gift pushed forward, `-lifted` the
+glass lifted, `scene-mid-0-1` a frame 180 ms into a dissolve, `-reduced` the reduced-motion
+still, `process-<width>.png` the section, `nonprofits-how-it-works-1440.png` the stills.
+
+**Decisions**
+
+1. "3 of the same dinos" is read as three T-rexes in total (the lead plus two teammates):
+   a fourth does not fit the 64-cell stage at the footer dino's size without overlapping.
+   The teammates stay green (the pixel rule: dinosaurs green, props white) and differ by
+   accessory rather than colour; square glasses and a backwards cap read at 5 px cells where a
+   ring, a diamond, a headset, a bow tie and a necktie (all rendered and compared) read as
+   eyes or blobs.
+2. The dissolve is time-based, not scroll-based, because a scroll-locked dissolve is a
+   transition the reader can stop inside; 600 ms in twelve buckets reads as one smooth
+   dissolve and finishes on its own.
+3. Nothing attached to the body is ever translated: the offer is an extra arm cell plus the
+   box moving, the peer is a vertical lift (the handle's first cell stays beside the hand).
+
+**TODO:** Ashton's second look at the scene (the team's accessories, the confetti-only right
+half of Deliver now that the partner is gone).
 
 ## Session 11g — 2026-09-08 (the hero and Get involved shortlists)
 
@@ -1146,9 +1222,7 @@ unchanged.
 
 ## Next session starts with
 
-**First, Ashton's review of the dino process scene** (Session 11f, `docs/screenshots/session-11f/`):
-the four scenes, the dissolve and the per-step motion; timings are the `[data-mode]` rules at
-the end of `globals.css`, the drawings are string maps in `home/ProcessSprites.ts`.
+**First, Ashton's second look at the dino process scene** (Session 11h, `docs/screenshots/session-11h/`): the hats worn on the head, the team as three T-rexes (square glasses, backwards cap), the gift held with the arm attached and no partner, and the dissolve on its own clock (600 ms in twelve buckets in `home/ProcessScene`; the hysteresis band in `home/ProcessScroll`). The drawings are string maps in `home/ProcessSprites.ts`, the timings the `[data-mode]` rules at the end of `globals.css`.
 
 **Then the hero decision (Session 11 follow-up).** Six heroes remain after Session 11g
 (Globe, Atlas, Typewriter, Cells, Wordmark, Photo). Ashton opens the home page, presses
