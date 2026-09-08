@@ -17,8 +17,9 @@ type SectionNavProps = {
 const BAR_HEIGHT = 56;
 
 /**
- * In-page navigation for the long inner pages (About, Students, Nonprofits): a hairline bar
- * that sits right under the hero and sticks beneath the site header while the page scrolls.
+ * In-page navigation for the long inner pages (About, Students, Nonprofits): a glass bar on
+ * the header's surface (same alpha, no hairlines) that sits right under the hero and sticks
+ * beneath the site header while the page scrolls.
  * It lists the page's sections as anchor links (nothing else: the page name is the
  * landmark's label only), underlines the one on screen (the header's current-page language)
  * and scrolls the row so the current link stays visible on phones.
@@ -92,7 +93,7 @@ export function SectionNav({ items, label, className }: SectionNavProps) {
     <nav
       aria-label={`${label} sections`}
       className={cn(
-        "sticky top-(--header-h) z-40 border-y border-line glass [--glass-alpha:80%]",
+        "sticky top-(--header-h) z-40 glass [--glass-alpha:50%]",
         className,
       )}
     >

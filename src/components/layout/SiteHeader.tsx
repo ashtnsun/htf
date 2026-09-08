@@ -13,7 +13,7 @@ import { SplitButton } from "@/components/ui/SplitButton";
 export function SiteHeader() {
   const cta = getPrimaryCta();
   return (
-    <header className="sticky top-0 z-50 h-(--header-h) border-b border-line glass [--glass-alpha:50%]">
+    <header className="sticky top-0 z-50 h-(--header-h) glass [--glass-alpha:50%]">
       <div className="flex h-full items-stretch lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
         <div className="flex items-stretch">
           <NavDrawer cta={cta} />
