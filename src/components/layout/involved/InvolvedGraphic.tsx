@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
-import { PlaneGraphic } from "@/components/layout/involved/PlaneGraphic";
+import { TerminalGraphic } from "@/components/layout/involved/TerminalGraphic";
 import type { InvolvedGraphicProps } from "@/components/layout/involved/types";
 import { DEFAULT_INVOLVED, type InvolvedVariantId } from "@/lib/config/options";
 import { useSiteConfig } from "@/lib/config/store";
@@ -20,29 +20,10 @@ const lazy = (load: () => Promise<ComponentType<InvolvedGraphicProps>>) =>
  * separate chunks fetched only when chosen in the Shift + M menu.
  */
 const VARIANTS: Record<InvolvedVariantId, ComponentType<InvolvedGraphicProps>> = {
-  plane: PlaneGraphic,
-  door: lazy(() => import("@/components/layout/involved/DoorGraphic").then((m) => m.DoorGraphic)),
-  puzzle: lazy(() =>
-    import("@/components/layout/involved/PuzzleGraphic").then((m) => m.PuzzleGraphic),
-  ),
-  canvas: lazy(() =>
-    import("@/components/layout/involved/CanvasGraphic").then((m) => m.CanvasGraphic),
-  ),
+  terminal: TerminalGraphic,
   chat: lazy(() => import("@/components/layout/involved/ChatGraphic").then((m) => m.ChatGraphic)),
   badge: lazy(() =>
     import("@/components/layout/involved/BadgeGraphic").then((m) => m.BadgeGraphic),
-  ),
-  calendar: lazy(() =>
-    import("@/components/layout/involved/CalendarGraphic").then((m) => m.CalendarGraphic),
-  ),
-  terminal: lazy(() =>
-    import("@/components/layout/involved/TerminalGraphic").then((m) => m.TerminalGraphic),
-  ),
-  keycap: lazy(() =>
-    import("@/components/layout/involved/KeycapGraphic").then((m) => m.KeycapGraphic),
-  ),
-  signpost: lazy(() =>
-    import("@/components/layout/involved/SignpostGraphic").then((m) => m.SignpostGraphic),
   ),
 };
 

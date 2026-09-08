@@ -548,7 +548,7 @@
 /* ------------------------------------------------------------------
    Scene graphics (the hero and Get involved variants, brand/PixelDino; the dino process
    scene follows below). One-shot animations (draw, type, pop) run when a scene becomes
-   active; loops (blink, dots) pause while it is inactive.
+   active; loops (blink) pause while it is inactive.
    The global reduced-motion rule flattens all of them to their end state.
 ------------------------------------------------------------------- */
 @layer components {
@@ -571,11 +571,6 @@
   @keyframes blink {
     50% {
       opacity: 0;
-    }
-  }
-  @keyframes dots {
-    to {
-      stroke-dashoffset: -9.1;
     }
   }
   @keyframes float {
@@ -612,9 +607,6 @@
   .anim-blink {
     animation: blink 1s steps(1, end) infinite;
   }
-  .anim-dots {
-    animation: dots 0.8s linear infinite;
-  }
   /* A gentle floating bob for the Get involved frame (no card, nothing else moves). */
   .anim-float {
     animation: float 7s ease-in-out infinite;
@@ -623,7 +615,7 @@
   .anim-eyelid {
     animation: eyelid 6s linear infinite;
   }
-  [data-active="false"] :is(.anim-blink, .anim-dots) {
+  [data-active="false"] .anim-blink {
     animation-play-state: paused;
   }
   [data-active="false"] :is(.anim-draw, .anim-type, .anim-pop) {

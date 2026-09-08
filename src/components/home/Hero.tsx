@@ -24,12 +24,8 @@ const VARIANTS: Record<HeroVariantId, ComponentType<HeroProps>> = {
   typewriter: lazy(() =>
     import("@/components/home/heroes/TypewriterHero").then((m) => m.TypewriterHero),
   ),
-  ticker: lazy(() => import("@/components/home/heroes/TickerHero").then((m) => m.TickerHero)),
-  focus: lazy(() => import("@/components/home/heroes/FocusHero").then((m) => m.FocusHero)),
-  torch: lazy(() => import("@/components/home/heroes/TorchHero").then((m) => m.TorchHero)),
   cells: lazy(() => import("@/components/home/heroes/CellsHero").then((m) => m.CellsHero)),
   wordmark: lazy(() => import("@/components/home/heroes/WordmarkHero").then((m) => m.WordmarkHero)),
-  rows: lazy(() => import("@/components/home/heroes/RowsHero").then((m) => m.RowsHero)),
   photo: lazy(() => import("@/components/home/heroes/PhotoHero").then((m) => m.PhotoHero)),
 };
 

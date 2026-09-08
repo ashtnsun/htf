@@ -23,7 +23,7 @@ type ContactCtaProps = {
 /**
  * Closing call-to-action after the Framer contact block: eyebrow, display headline, copy,
  * the season CTA (Apply Now / Contact Us from content/site.ts) and the floating Get involved
- * graphic (layout/involved: the paper plane by default, nine more in the Shift + M menu; every
+ * graphic (layout/involved: the terminal by default, Chat and Badge in the Shift + M menu; every
  * one a recognizable object, since audit 4 of 2026-09-07).
  */
 export function ContactCta({

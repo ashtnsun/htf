@@ -52,12 +52,12 @@ src/components/
   layout/           SiteHeader, NavDrawer, NavLinks, SiteFooter, PageHero, SectionNav (the
                     sticky section bar under the hero on About / Students / Nonprofits; sets
                     --subnav-h so anchors land below it), FaqSection, ContactCta (+ involved/: the
-                    Get involved graphic, a client switch over ten variants chosen in the Shift + M
-                    menu; GraphicFrame is the shared floating square, PlaneGraphic the default and
-                    in the bundle, Door / Puzzle / Canvas / Chat / Badge / Calendar / Terminal /
-                    Keycap / Signpost lazy chunks), SeasonNote, OnThisPage
-  home/             Hero (client switch over heroes/*: ten variants chosen in the Shift + M
-                    menu, GlobeHero the default and in the bundle, the rest lazy chunks;
+                    Get involved graphic, a client switch over three variants chosen in the Shift + M
+                    menu; GraphicFrame is the shared floating square, TerminalGraphic the default and
+                    in the bundle, Chat / Badge lazy chunks), SeasonNote, OnThisPage
+  home/             Hero (client switch over heroes/*: six variants (Globe, Atlas, Typewriter,
+                    Cells, Wordmark, Photo) chosen in the Shift + M menu, GlobeHero the default and
+                    in the bundle, the rest lazy chunks;
                     HeroShell is the shared frame), Globe (SVG, takes pins), WhatWeDo, Process (+ ProcessScroll,
                     ProcessScene: the footer T-rex as detective, team lead, builder and party
                     host in pixel art that dissolves cell by cell with scroll, the sprites in

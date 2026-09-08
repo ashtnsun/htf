@@ -60,6 +60,20 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
 
+## Session 11g — 2026-09-08 (the hero and Get involved shortlists)
+
+Ashton's call on the Shift + M menu: drop Ticker, Focus, Torch and Rows from the heroes and
+Door, Puzzle, Canvas, Calendar, Keycap, Signpost and Plane from the Get involved graphics;
+Terminal is the Get involved default. `HERO_VARIANTS` is now Globe (default), Atlas,
+Typewriter, Cells, Wordmark, Photo; `INVOLVED_VARIANTS` is Terminal (default, in the bundle),
+Chat, Badge. Their files, the rows in `Hero.tsx` / `InvolvedGraphic.tsx` and the `/dev/ui`
+entries are gone, and so is the CSS only they used (`fly`, `dots`, `involved-press`, `-glow`,
+`-arm`, `-cursor-a` / `-b`). A browser that had a removed id saved falls back to the defaults
+(`store.ts` validates on read; checked, no console errors). Screenshots:
+`docs/screenshots/session-11g/`. The hero decision itself (which of the six ships) is still
+open. The parallel Session 11f session swept the staged deletions and the `/dev/ui` edit into
+its two commits; the rest is `chore(config): …`.
+
 ## Session 11f — 2026-09-08 (the dino process scene)
 
 Ashton's request: the How it works graphic uses the dinosaur. Discover is a detective dino
@@ -1104,14 +1118,13 @@ unchanged.
 the four scenes, the dissolve and the per-step motion; timings are the `[data-mode]` rules at
 the end of `globals.css`, the drawings are string maps in `home/ProcessSprites.ts`.
 
-**Then the hero decision (Session 11 follow-up).** Ashton opens the home page, presses
-Shift + M and picks the hero (PLAN.md §19, the Session 11 log). Set `DEFAULT_HERO` in
+**Then the hero decision (Session 11 follow-up).** Six heroes remain after Session 11g
+(Globe, Atlas, Typewriter, Cells, Wordmark, Photo). Ashton opens the home page, presses
+Shift + M and picks one (PLAN.md §19, the Session 11 log). Set `DEFAULT_HERO` in
 `src/lib/config/options.ts` to the choice, delete the variants that are not kept (their
-files under `src/components/home/heroes/`, their rows in `HERO_VARIANTS` and in `Hero.tsx`),
-and record the choice in PLAN.md §19.
-The same for the Get involved graphic (Session 11b, PLAN.md §20): `DEFAULT_INVOLVED` in the
-same file, the unkept files under `src/components/layout/involved/`, their rows in
-`INVOLVED_VARIANTS` and in `InvolvedGraphic.tsx`, and a line in PLAN.md §20.
+files under `src/components/home/heroes/`, their rows in `HERO_VARIANTS` and in `Hero.tsx`,
+any CSS only they use), and record the choice in PLAN.md §19. The Get involved graphic is
+decided: Terminal is the default, with Chat and Badge still in the menu (PLAN.md §20).
 
 **Then Session 12: application portal, part 4 (go live).** Read `docs/PLAN.md` §5, §6 and
 §12–§16, this file and `docs/DEPLOY.md`, then, in this order:
