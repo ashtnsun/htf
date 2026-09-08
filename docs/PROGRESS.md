@@ -36,6 +36,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 10: home audit 3 (full-bleed hairline rows, centred projects button, the isometric process scene with no counter under it, Impact map lower, 2px divider and green arrow cell on every primary button, plain Who we serve panels, the docking graphic in Get involved)
 - [x] Session 10, audit 4: framed rows, recognizable process pictures (form, team, laptop, rocket), wider marquee fade, "Learn more" buttons and the project-card hover on Who we serve, the paper plane in Get involved
 - [x] Session 11: Shift + M site configuration panel (per browser, ships hidden) with ten home hero variants (Globe stays the default; Atlas, Typewriter, Ticker, Focus, Torch, Cells, Wordmark, Rows, Photo); Ashton picks the one that ships
+- [x] Session 11b: ten Get involved graphic variants as the menu's second setting (Plane stays the default; Door, Puzzle, Canvas, Chat, Badge, Calendar, Terminal, Keycap, Signpost), all recognizable objects without the corner brackets; Ashton picks the one that ships
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -133,6 +134,127 @@ globe (a diagonal drag tips it; it settles back).
    vertically centred, so step 1 and step 4 line up with the scene at both ends of the
    scroll.
 4. `CountUp` default duration 3000 ms (was 1500).
+
+## Session 11b — 2026-09-08 (ten Get involved graphic variants)
+
+**Built:** Ashton asked for ten distinct variants of the Get involved graphic in the
+Shift + M menu, none using the corner pattern on the container, all on brand and meaning
+something rather than abstract. The menu gained its second setting, "Get involved graphic"
+(`INVOLVED_VARIANTS` in `src/lib/config/options.ts`; `SiteConfig` is now `{ hero, involved }`,
+the store parses both keys and ignores unknown ones; `ConfigMenu` renders one generic
+`VariantPicker` per setting, each with a note saying where to see the choice). `layout/ContactCta`
+(server) computes the season props (`getDeadlineParts()` in `content/site.ts`, new: the deadline
+as year / month / day in the club's zone; the cycle name; `site.academicYear`) and renders
+`layout/involved/InvolvedGraphic`, a client switch like `home/Hero`: `PlaneGraphic` (the default)
+ships in the bundle, the nine others are `next/dynamic` chunks behind a square placeholder so
+nothing jumps. `layout/involved/GraphicFrame` is the shared square (the glow, the bob and the
+pointer tilt, `data-involved` + `data-active` on view for the variants' one-shots and loops) with
+a render prop handing each variant `{ active, reduce }`. The viewfinder corner path is gone from
+the plane and appears in none of the others. `PaperPlaneGraphic.tsx` is deleted; the dev UI kit
+page (`/dev/ui`) shows all ten side by side. The variants:
+
+1. **Plane** (default): the paper plane on its dotted flight path, as before minus the corners.
+2. **Door**: HTML boxes rather than SVG: a lit doorway, the leaf turning on a real 3D hinge to
+   58° on view and 74° while the pointer is over the frame, a wedge of light across the floor
+   and a mat in perspective.
+3. **Puzzle**: two jigsaw pieces labelled Students and Nonprofits (eyebrow-style, a green square
+   before each) that slide together on view; the outlines turn green and a blurred green seam
+   lights up once they meet.
+4. **Canvas**: a design canvas (a "Home" artboard) holding a wireframe of an app; a student's
+   cursor (green name tag) and a nonprofit's cursor (outlined tag) each rest on an element
+   they have selected (handles / a dashed outline) and wander the board on slow CSS loops that
+   pause off-screen.
+5. **Chat**: three bubbles: yours (labelled "You"), HTF's reply in green, and a typing indicator
+   whose dots bounce; the bubbles pop in one after another.
+6. **Badge**: a member badge on a lanyard: the real `<HTF/>` glyphs from `brand/logo-paths`, a
+   photo placeholder, name bars, the issuing cycle ("FALL 2026" in season, the academic year
+   otherwise) and a green MEMBER band; it drops from above and swings to rest.
+7. **Calendar**: a wall calendar page for the deadline's month (real data: September 2026, the
+   12th filled green and ringed by a drawn circle); the rows fade in one by one; out of season
+   the header shows the academic year over an empty grid, never an invented date.
+8. **Terminal**: a window with three title squares (one green); `$ htf apply` typed out, three
+   output bars typing in, a drawn check with "sent", then a new prompt with a blinking block.
+9. **Keycap**: a 3D Enter key (top face, two side faces, the return arrow, the word Enter) in a
+   hairline plate; it presses down with the glow under it flaring once on view, and again
+   while the pointer is over the frame.
+10. **Signpost**: a post with a green cap, two arms with green arrowheads, Students pointing
+    left and Nonprofits right, bolts where they meet; the arms swing in on view.
+
+Commits: `feat(layout): ten Get involved graphic variants in the Shift + M menu` and `docs:
+session 11b …`. Not pushed. The parallel session `htf-64` (Session 11c) worked in the same
+tree on other files at the same time; each session staged only its own paths.
+
+**Verified:** `pnpm typecheck`, `pnpm lint`, `pnpm build` (the home page and the four pages with the block are still static: the choice is read on the client, never on the server; no warnings). A Playwright script
+(`.tmp-involved.mjs`, deleted) seeded each choice in localStorage, scrolled the section into
+view at 1440 and 390, waited for the entrance and captured the section:
+`docs/screenshots/session-11b/involved-<id>-1440.png`, `-390.png`, `-1440-reduced.png`
+(prefers-reduced-motion, captured right away: every variant finished) and
+`-1440-pointer.png` for Plane, Door, Canvas, Badge and Keycap, plus
+`config-menu-involved-1440.png` (the panel scrolled to the second setting, Puzzle chosen; the
+stored value read back as `{"hero":"globe","involved":"puzzle"}`). axe with the full tag set:
+0 violations on all ten at 1440 and on the open panel; no horizontal overflow at 390; no
+console or page errors. `pnpm a11y --routes=home,about,students,projects`: 0 violations on all eight scans plus the open drawer. `pnpm screenshots --routes=home`: the standard `home-1440.png`, `home-390.png` and `drawer-390.png` in the same folder.
+
+**Decisions made this session**
+
+1. Ten objects, one meaning each: send (Plane), the door is open (Door), the two audiences fit
+   (Puzzle), build it together (Canvas), a message is enough (Chat), belong (Badge), the
+   deadline (Calendar), apply in a developer's language (Terminal), press to start (Keycap),
+   two ways in (Signpost). Nothing abstract, no particles or isometric scenes, and no
+   viewfinder corners on any container (the plane lost its corner path too).
+2. Facts on the graphics come from content: the calendar's month and day and the badge's
+   cycle name arrive through `ContactCta`'s props from `content/site.ts` (`getDeadlineParts`,
+   `site.season.cycleName`, `site.academicYear`); out of season the calendar shows the
+   academic year over an empty grid rather than an invented date. The words on the pictures
+   are limited to the audiences, "You" / "HTF", "MEMBER", "Enter", "Home", `$ htf apply` and
+   "sent", each in a colour pair that passes AA (axe scans SVG text too).
+3. The frame is hydration-safe: `useReducedMotion()` is honoured only after hydration
+   (`useSyncExternalStore` with a false server snapshot). The old plane set `data-active`
+   from it during hydration, so for a reduced-motion visitor the server's
+   `data-active="false"` mismatched the client's `true`, React left the attribute unpatched
+   (it never repairs attribute mismatches) and the plane never flew for them.
+4. Typing is JS state, not CSS steps: the terminal first typed each character with a 1ms
+   `steps(1, end)` animation and a per-character delay, and Chromium dropped the forwards
+   fill of some of them (whichever ran near the moment the section's `Reveal` finished), so
+   the command read "htf ap". Timers setting a `typed` count, and the whole command under
+   reduced motion, are deterministic.
+5. The bob and the tilt are separate elements in `GraphicFrame`: the old plane had
+   `anim-float` and the inline tilt transform on the same element, and a running CSS
+   animation wins over an inline style, so the tilt never showed.
+6. Door is HTML/CSS (a real `rotateY` on a hinge under perspective); the rest are SVG on the
+   400 × 400 stage in the ProcessScene language (`STROKE` green 1.5, `HAIRLINE`, surface / bg
+   fills). Keycap's press animation uses `animation-fill-mode: backwards` so the pointer's
+   own transform (`group-hover/frame:[transform:translateY(14px)]`) takes over once it has
+   played; `forwards` would have pinned it.
+7. Reduced motion: the global rule flattens the animations, and a new rule zeroes
+   `animation-delay` / `transition-delay` inside `[data-involved]` so staggered one-shots
+   (calendar rows, terminal lines, chat bubbles, signpost arms) are finished at once; the
+   variants also pass `reduce` into the `delay()` helper for the same reason.
+8. The note under each setting points at where to look: for Get involved an in-page link to
+   `#get-involved` on the four pages that end with the block (home, About, Projects, Students;
+   a hard-coded list in `ConfigMenu`), a link home elsewhere. "Reset to defaults" enables
+   when any setting differs (`isDefaultConfig`).
+
+**Known gaps**
+
+- Under prefers-reduced-motion the dev console shows a hydration mismatch on every page:
+  `motion/Reveal` renders a plain div for reduced motion on the client but the motion div on
+  the server (`data-reveal`, the hidden style). Pre-existing and unrelated to the graphics;
+  React regenerates the tree so nothing is visibly wrong. Worth the same
+  `useSyncExternalStore` treatment in a later session.
+- Touch devices get the entrance but not the pointer play (the door's wider swing, the
+  keycap's second press, the tilt).
+- Canvas's cursors wander on fixed loops; they do not react to the pointer.
+- Calendar out of season is an empty grid under the academic year; if that reads as
+  unfinished, hide the variant out of season.
+
+**TODOs for Ashton**
+
+- Open a page that ends with Get involved (home is easiest), press Shift + M and arrow
+  through the ten graphics in the second section. Say which ships; I set `DEFAULT_INVOLVED`
+  and delete the rest (their files under `src/components/layout/involved/`, their rows in
+  `INVOLVED_VARIANTS` and in `InvolvedGraphic.tsx`).
+- The hero choice from Session 11 is still open.
 
 ## Session 11 — 2026-09-08 (Shift + M site configuration menu, ten hero variants)
 
@@ -894,6 +1016,9 @@ Shift + M and picks the hero (PLAN.md §19, the Session 11 log). Set `DEFAULT_HE
 `src/lib/config/options.ts` to the choice, delete the variants that are not kept (their
 files under `src/components/home/heroes/`, their rows in `HERO_VARIANTS` and in `Hero.tsx`),
 and record the choice in PLAN.md §19.
+The same for the Get involved graphic (Session 11b, PLAN.md §20): `DEFAULT_INVOLVED` in the
+same file, the unkept files under `src/components/layout/involved/`, their rows in
+`INVOLVED_VARIANTS` and in `InvolvedGraphic.tsx`, and a line in PLAN.md §20.
 
 **Then Session 12: application portal, part 4 (go live).** Read `docs/PLAN.md` §5, §6 and
 §12–§16, this file and `docs/DEPLOY.md`, then, in this order:
