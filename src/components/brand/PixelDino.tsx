@@ -1,48 +1,18 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
+import { DINO_COLS, DINO_EYE, DINO_ROWS, dinoCells } from "@/components/brand/dino-pixels";
 import { cn } from "@/lib/utils";
 
 /**
- * The offline-page T-rex in HTF green, peeking out from behind the frosted footer. Drawn as a
- * 20×22 pixel map (one <rect> per filled cell, crisp edges), so it scales to any size without
- * blur. The map is traced from the icon, which faces right; the drawing is mirrored so the
- * footer's T-rex looks left, toward the page. It rises into place once when the footer scrolls
+ * The offline-page T-rex in HTF green, peeking out from behind the frosted footer. Drawn from
+ * the 20×22 pixel map in brand/dino-pixels (one <rect> per filled cell, crisp edges), so it
+ * scales to any size without blur. The map faces right, as the icon does; the drawing is
+ * mirrored so the footer's T-rex looks left, toward the page. It rises into place once when the footer scrolls
  * into view and blinks every few seconds; both are off under prefers-reduced-motion.
  * Decoration only: hidden from assistive tech.
  */
-const PIXELS = [
-  "...........########.",
-  "..........##########",
-  "..........##.#######",
-  "..........##########",
-  "..........##########",
-  "..........##########",
-  "..........#####.....",
-  "..........########..",
-  "#........#####......",
-  "#......#######......",
-  "##....##########....",
-  "###..#########.#....",
-  "##############......",
-  "##############......",
-  ".############.......",
-  "..###########.......",
-  "...#########........",
-  "....#######.........",
-  ".....###.##.........",
-  ".....##...#.........",
-  ".....#....#.........",
-  ".....##...##........",
-];
-const COLS = PIXELS[0]!.length;
-const ROWS = PIXELS.length;
-/** The eye is the one empty cell inside the head (row 2, column 12); the eyelid covers it. */
-const EYE = { x: 12, y: 2 };
-
-const cells = PIXELS.flatMap((row, y) =>
-  Array.from(row).flatMap((cell, x) => (cell === "#" ? [{ x, y }] : [])),
-);
+const cells = dinoCells();
 
 type PixelDinoProps = { className?: string };
 
@@ -58,16 +28,16 @@ export function PixelDino({ className }: PixelDinoProps) {
       transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
     >
       <svg
-        viewBox={`0 0 ${COLS} ${ROWS}`}
+        viewBox={`0 0 ${DINO_COLS} ${DINO_ROWS}`}
         className="block h-auto w-full text-green drop-shadow-[0_0_18px_rgba(3,198,82,0.45)]"
         shapeRendering="crispEdges"
         focusable="false"
       >
-        <g fill="currentColor" transform={`translate(${COLS} 0) scale(-1 1)`}>
+        <g fill="currentColor" transform={`translate(${DINO_COLS} 0) scale(-1 1)`}>
           {cells.map(({ x, y }) => (
             <rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} />
           ))}
-          <rect className="anim-eyelid" x={EYE.x} y={EYE.y} width={1} height={1} />
+          <rect className="anim-eyelid" x={DINO_EYE.x} y={DINO_EYE.y} width={1} height={1} />
         </g>
       </svg>
     </motion.div>
