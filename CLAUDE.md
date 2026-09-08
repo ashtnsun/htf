@@ -47,8 +47,9 @@ src/components/
                     PixelDino (footer)
   ui/               primitives: Eyebrow, Headline, SplitButton, Section, Card, Accordion,
                     StatTile (+ CountUp), TestimonialCard, Chip, Field, Media, DottedMap
-  layout/           SiteHeader, NavDrawer, NavLinks, SiteFooter, PageHero, JumpLinks,
-                    FaqSection, ContactCta (+ PaperPlaneGraphic: a paper plane flying its
+  layout/           SiteHeader, NavDrawer, NavLinks, SiteFooter, PageHero, SectionNav (the
+                    sticky section bar under the hero on About / Students / Nonprofits; sets
+                    --subnav-h so anchors land below it), FaqSection, ContactCta (+ PaperPlaneGraphic: a paper plane flying its
                     dotted path on view), SeasonNote, OnThisPage
   home/             Hero, Globe (SVG, takes pins), WhatWeDo, Process (+ ProcessScroll,
                     ProcessScene: one stage whose recognizable pictures (form, team, laptop,

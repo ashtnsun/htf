@@ -257,4 +257,8 @@ Ashton's fourth audit of the built home page, the same day as §16; PROGRESS.md 
 
 ## 18. Amendments — exec board by year (September 8, 2026)
 
-The About page's exec board follows the projects index: every member in `content/exec.ts` belongs to a school year, a chip per year switches boards (newest first and by default, the choice in `?board=` so a board can be linked to), and the cards cross-fade like the project grid. Every card carries a LinkedIn link, so `linkedin` is a required field: a URL, or a "TODO" note that renders a dashed placeholder cell until the real link lands. PROGRESS.md (Session 10b) has the details.
+The About page's exec board follows the projects index: every member in `content/exec.ts` belongs to a school year, a chip per year switches boards (newest first and by default, the choice in `?board=` so a board can be linked to), and the cards cross-fade like the project grid. Every card carries a LinkedIn link, so `linkedin` is a required field: a URL, or a "TODO" note that renders a dashed placeholder cell until the real link lands.
+
+**In-page navigation moves out of the hero.** About, Students and Nonprofits get a section bar (`layout/SectionNav`) right under the hero: a hairline row with the page name and the section links that sticks beneath the site header, underlines the section on screen and scrolls sideways on phones. The heroes carry only their eyebrow, headline, blurb and actions, so a hero redesign does not touch navigation. The "On this page" row inside the hero is gone.
+
+**/apply degrades instead of failing.** When the application database cannot be reached the page shows a "taking a moment" panel with a retry, rather than an error page. PROGRESS.md (Session 10b) has the details.

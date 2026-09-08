@@ -42,7 +42,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 6: Non-profits (how it works with "your part", scope guardrails, partner globe, nonprofit testimonials, FAQ, intake form → `nonprofit_inquiries` / Resend / mailto, share image)
 - [x] Session 6: three.js partner globe with pins (lazy, on demand near the viewport; SVG globe with pins as fallback and first paint)
 - [x] Session 6: analytics (Vercel Web Analytics, Vercel builds only; privacy text) and the Lighthouse pass (numbers and open findings in the Session 6 log)
-- [x] Session 10b: exec board by year (chip per school year, `?board=` in the URL, LinkedIn cell on every card)
+- [x] Session 10b: exec board by year (chip per school year, `?board=` in the URL, LinkedIn cell on every card); the sticky section bar under the hero on About / Students / Nonprofits; /apply survives an unreachable database
 - [ ] Real stats and testimonials: the sections read published items already; needs Ashton's numbers and quotes (`published: true`)
 - [ ] Media handoff swap: needs the photos (`content/media.ts` keys)
 
@@ -79,6 +79,28 @@ violations on /about, typecheck / lint / build clean. Screenshots in
   board hides the chip row.
 - A 2025–26 board of two TODO members exists so the switch is visible; replace or delete it.
 - Slugs carry the year (`ashton-sun-2026`) because one person can sit on several boards.
+
+**Section bar, later the same session.** Ashton asked for a new way to navigate the About,
+Students and Nonprofits pages that stays out of the hero (another session was rebuilding
+heroes). `layout/SectionNav` replaces the `JumpLinks` row that sat inside the hero: a 48px
+hairline bar right under the hero that sticks beneath the site header, with the page name,
+a rule and the section links. A scroll listener (rAF-throttled, no IntersectionObserver)
+underlines the section on screen with the header's current-page language and sets
+`aria-current="location"`; at the bottom of the page the last section wins; on phones the row
+scrolls sideways (`scrollbar-none`) and keeps the current link centred. The bar publishes
+`--subnav-h` on the root element while mounted and `[id] { scroll-margin-top }` adds it, so a
+jump lands 24px below the bar (measured 128px from the top at 1440 and 390). Without
+JavaScript the links are plain anchors. `JumpLinks.tsx` is deleted; `/dev/ui` shows the bar.
+
+**/apply was a 500.** `.env.local` runs the portal against the local Supabase stack and Docker
+was off, so the cycles query threw "fetch failed". Docker's restart left the containers in
+"Exited" (`supabase start` then says "already running"); `supabase stop` + `supabase start`
+recreated them. The page now also degrades: when the cycle query fails it logs the error and
+renders a "The portal is taking a moment" hero with Try again (and Email us once the club
+email is known) instead of the error page; verified by stopping the Kong container.
+Screenshots (`*-sectionnav-*.png`) in `docs/screenshots/session-10b/`; axe 0 violations on
+the three pages. The production build was red at the end of the session only because the
+other session's `Hero.tsx` imported hero files that did not exist yet.
 
 **TODOs for Ashton**
 
