@@ -342,11 +342,6 @@ export function ProcessScene({
           focusable="false"
           className="absolute inset-0 size-full overflow-visible"
         >
-          <path
-            d="M16 44V16H44M356 16H384V44M384 356V384H356M44 384H16V356"
-            fill="none"
-            stroke="var(--line-strong)"
-          />
           {stages.map((stage, j) => {
             const Picture = PICTURES[stage];
             const place = scene[j] ?? { o: 0, dy: 0, s: 1 };

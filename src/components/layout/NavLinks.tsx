@@ -23,7 +23,7 @@ export function NavLinks({ links }: { links: readonly NavLink[] }) {
               aria-current={active ? "page" : undefined}
               className={cn(
                 "relative inline-flex h-10 items-center px-3.5 text-sm font-medium whitespace-nowrap transition-colors duration-200",
-                "after:absolute after:inset-x-3.5 after:-bottom-px after:h-px after:bg-green after:opacity-0 after:transition-opacity after:duration-200",
+                "after:absolute after:inset-x-3.5 after:bottom-1.5 after:h-0.5 after:bg-green after:opacity-0 after:transition-opacity after:duration-200",
                 active ? "text-text after:opacity-100" : "text-muted hover:text-text",
               )}
             >

@@ -37,7 +37,7 @@ function parseValue(value: string) {
  * real value for assistive tech. Renders the value as-is when it has no number or under
  * prefers-reduced-motion.
  */
-export function CountUp({ value, duration = 1500, delay = 0, className }: CountUpProps) {
+export function CountUp({ value, duration = 3000, delay = 0, className }: CountUpProps) {
   const reduce = useReducedMotion();
   const ref = useRef<HTMLSpanElement>(null);
   const parsed = parseValue(value);

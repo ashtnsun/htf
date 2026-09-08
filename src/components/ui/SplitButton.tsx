@@ -93,7 +93,8 @@ export function SplitButton({
     size === "md" && "w-11",
     size === "lg" && "w-14",
     size === "bar" && "w-14 lg:w-16",
-    variant === "primary" && "border-l-2 border-black bg-green text-bg",
+    variant === "primary" && "border-black bg-green text-bg",
+    variant === "primary" && (size === "bar" ? "border-l" : "border-l-2"),
     variant === "secondary" &&
       "border-l border-line-strong bg-surface-2 text-green group-hover:border-green group-hover:bg-green group-hover:text-bg",
   );

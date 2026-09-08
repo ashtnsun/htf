@@ -233,7 +233,7 @@ Ashton's third audit of the built home page; PROGRESS.md (Session 10) has the de
 
 **Impact.** The dotted map starts below the band's top edge and fades out before its own edges, so it never looks cut off.
 
-**Buttons.** Every primary `SplitButton` is the header bar's treatment: green label, green arrow cell, a 2px black divider (it was 1px). Lime is no longer used anywhere.
+**Buttons.** Every primary `SplitButton` is the header bar's treatment: green label, green arrow cell, a 2px black divider (it was 1px; the header bar CTA went back to 1px on 2026-09-08). Lime is no longer used anywhere.
 
 **Who we serve** is two plain panels: eyebrow, title, one sentence, a label and the arrow cell. The index numerals, icon boxes, spec rows, glow and hover grid are gone.
 

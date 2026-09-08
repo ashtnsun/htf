@@ -138,7 +138,7 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
 #277D4A`, `--mint #00EB88`, `--cyan #00E0FF`, `--lime #C8FF3D`. The default Tailwind
   palette is disabled; only these (plus white/black) exist.
 - Lime is defined but unused since audit 3 (2026-09-07): every primary `SplitButton` arrow
-  cell is green with a 2px black divider, like the header bar CTA. Never a text or brand colour.
+  cell is green with a 2px black divider (1px on the header bar `size="bar"` CTA since 2026-09-08). Never a text or brand colour.
 - Type: `text-display-xl/lg` (96/80), `text-display` (64), `text-h2` (48), `text-h3` (32),
   `text-body` / `text-body-lg` (16/18), `text-eyebrow` (12, uppercase, tracked),
   `text-display-fluid` for heroes. Families: `font-display`, `font-body` (both Poppins now;

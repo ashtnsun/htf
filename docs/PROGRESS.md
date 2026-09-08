@@ -58,6 +58,21 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
 
+## Session 11c — 2026-09-08 (four tweaks from Ashton's review)
+
+1. Nav: the current-page underline is 2px and sits at `bottom-1.5` of the link (was a 1px
+   hairline on the link's bottom edge), so it reads as part of the label.
+2. Header bar CTA: the divider between the label and the arrow cell is 1px on the `bar`
+   size only (`SplitButton`); every other primary keeps the 2px divider.
+3. How it works: the corner brackets are gone from `ProcessScene` (the same stills on
+   /nonprofits lose them too). On desktop the sticky scene box is now the full viewport
+   height (`top-0 h-svh`, flex-centred) so the graphic sits at the middle of the screen
+   while the steps scroll; its width is capped at `100svh - header - 8rem` so it never
+   overflows short viewports. The first and last steps are `min-h-svh` and every step is
+   vertically centred, so step 1 and step 4 line up with the scene at both ends of the
+   scroll.
+4. `CountUp` default duration 3000 ms (was 1500).
+
 ## Session 11 — 2026-09-08 (Shift + M site configuration menu, ten hero variants)
 
 **Built:** Ashton asked for a shortcut menu (Shift + M) that opens a configuration panel for

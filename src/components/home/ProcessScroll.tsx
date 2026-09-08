@@ -96,13 +96,13 @@ export function ProcessScroll({ steps }: ProcessScrollProps) {
   return (
     <div className="mt-10 grid gap-8 lg:mt-16 lg:grid-cols-2 lg:gap-16">
       {/* The scene: stuck above the steps on phones, beside them from lg. */}
-      <div className="sticky top-(--header-h) z-10 lg:top-[calc(var(--header-h)+1.5rem)] lg:self-start">
-        <div className="relative -mx-(--gutter) flex justify-center bg-bg px-(--gutter) py-3 lg:mx-0 lg:block lg:bg-transparent lg:p-0">
+      <div className="sticky top-(--header-h) z-10 lg:top-0 lg:flex lg:h-svh lg:items-center lg:self-start">
+        <div className="relative -mx-(--gutter) flex justify-center bg-bg px-(--gutter) py-3 lg:mx-0 lg:w-full lg:bg-transparent lg:p-0">
           <ProcessScene
             stages={stages}
             progress={0}
             store={store}
-            className="w-[min(48vw,13rem)] shrink-0 lg:w-full"
+            className="w-[min(48vw,13rem)] shrink-0 lg:w-[min(100%,calc(100svh-var(--header-h)-8rem))]"
           />
           <div
             aria-hidden="true"
@@ -121,7 +121,7 @@ export function ProcessScroll({ steps }: ProcessScrollProps) {
                 itemsRef.current[i] = el;
               }}
               data-index={i}
-              className="relative flex flex-col justify-center py-10 pl-8 first:pt-2 lg:min-h-[68svh] lg:py-16 lg:pl-12 lg:first:justify-start lg:first:pt-6"
+              className="relative flex flex-col justify-center py-10 pl-8 first:pt-2 lg:min-h-[68svh] lg:py-16 lg:pl-12 lg:first:min-h-svh lg:first:pt-16 lg:last:min-h-svh"
             >
               <div className="relative">
                 {/* marker on the rail */}
