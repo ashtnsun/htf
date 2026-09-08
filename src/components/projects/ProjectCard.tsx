@@ -1,6 +1,7 @@
-import { ArrowUpRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { ProjectFrontmatter, ProjectTag } from "@/lib/content/schemas";
 import { Card } from "@/components/ui/Card";
+import { Chip } from "@/components/ui/Chip";
 import { Media } from "@/components/ui/Media";
 import { cn } from "@/lib/utils";
 
@@ -38,9 +39,11 @@ export function toProjectCardData(project: ProjectCardData): ProjectCardData {
 }
 
 /**
- * Portfolio card: full-bleed cover fading into a caption with the nonprofit label, a rule,
- * the year, then a big title. Hover follows the shared language (corner brackets, title turns
- * green, the arrow cell fills green); nothing moves. The whole card is one link.
+ * Portfolio card: full-bleed cover fading into a caption with the nonprofit label and the
+ * year on one line, a big title with a right-arrow cell, the location and a row of tag
+ * chips. Hover is its own treatment (no corner brackets): the border turns green, the cover
+ * brightens from its resting dim, the title turns green and the arrow cell fills green;
+ * nothing moves. The whole card is one link.
  */
 export function ProjectCard({
   project,
@@ -53,7 +56,8 @@ export function ProjectCard({
     <Card
       href={`/projects/${project.slug}`}
       padding="none"
-      className={cn("group flex flex-col", className)}
+      interactive={false}
+      className={cn("group flex flex-col hover:border-green", className)}
     >
       <div
         className={cn(
@@ -61,7 +65,13 @@ export function ProjectCard({
           size === "featured" ? "aspect-[4/3] md:aspect-[4/5]" : "aspect-[4/3]",
         )}
       >
-        <Media src={project.cover} alt="" fill sizes={sizes} className="object-cover" />
+        <Media
+          src={project.cover}
+          alt=""
+          fill
+          sizes={sizes}
+          className="object-cover brightness-90 transition-[filter] duration-300 group-hover:brightness-100"
+        />
         <div
           aria-hidden="true"
           className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-surface to-transparent"
@@ -73,9 +83,8 @@ export function ProjectCard({
         ) : null}
       </div>
       <div className="flex flex-1 flex-col p-6 md:p-7">
-        <p className="flex items-center gap-4 text-eyebrow font-medium text-muted uppercase">
+        <p className="flex items-baseline justify-between gap-4 text-eyebrow font-medium text-muted uppercase">
           <span className="truncate">{project.nonprofit}</span>
-          <span aria-hidden="true" className="h-px min-w-6 flex-1 bg-line-strong" />
           <span className="shrink-0">{project.year}</span>
         </p>
         <div className="mt-4 flex items-end justify-between gap-6">
@@ -86,12 +95,17 @@ export function ProjectCard({
             aria-hidden="true"
             className="flex size-11 shrink-0 items-center justify-center border border-line-strong bg-surface-2 text-green transition-colors duration-200 group-hover:border-green group-hover:bg-green group-hover:text-bg"
           >
-            <ArrowUpRight className="size-5" />
+            <ArrowRight className="size-5" />
           </span>
         </div>
-        <p className="mt-3 text-sm text-muted">
-          {project.location} · {project.tags.map((t) => TAG_LABEL[t]).join(", ")}
-        </p>
+        <p className="mt-3 text-sm text-muted">{project.location}</p>
+        <ul aria-label="Tags" className="mt-4 flex flex-wrap gap-2">
+          {project.tags.map((tag) => (
+            <li key={tag}>
+              <Chip>{TAG_LABEL[tag]}</Chip>
+            </li>
+          ))}
+        </ul>
       </div>
     </Card>
   );
