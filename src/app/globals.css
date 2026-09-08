@@ -546,10 +546,10 @@
 }
 
 /* ------------------------------------------------------------------
-   Scene graphics (home/ProcessScene, layout/involved/PlaneGraphic, brand/PixelDino). One-shot
-   animations (draw, type, pop, fly) run when a scene becomes active; loops (magnify, blink,
-   flame, trail, dots) pause while it is inactive. The global reduced-motion rule flattens
-   all of them to their end state.
+   Scene graphics (the hero and Get involved variants, brand/PixelDino; the dino process
+   scene follows below). One-shot animations (draw, type, pop) run when a scene becomes
+   active; loops (blink, dots) pause while it is inactive.
+   The global reduced-motion rule flattens all of them to their end state.
 ------------------------------------------------------------------- */
 @layer components {
   @keyframes draw {
@@ -573,30 +573,9 @@
       opacity: 0;
     }
   }
-  @keyframes magnify {
-    50% {
-      transform: translate(-64px, -80px);
-    }
-  }
-  @keyframes flame {
-    50% {
-      transform: scaleY(0.72);
-    }
-  }
-  @keyframes trail {
-    to {
-      transform: translateY(30px);
-      opacity: 0;
-    }
-  }
   @keyframes dots {
     to {
       stroke-dashoffset: -9.1;
-    }
-  }
-  @keyframes fly {
-    from {
-      offset-distance: 0%;
     }
   }
   @keyframes float {
@@ -633,37 +612,10 @@
   .anim-blink {
     animation: blink 1s steps(1, end) infinite;
   }
-  .anim-magnify {
-    animation: magnify 7s ease-in-out infinite;
-  }
-  .anim-flame {
-    transform-origin: 200px 262px;
-    animation: flame 0.5s ease-in-out infinite;
-  }
-  .anim-trail {
-    animation: trail 1.1s linear infinite;
-  }
   .anim-dots {
     animation: dots 0.8s linear infinite;
   }
-  /* The paper plane (layout/involved/PlaneGraphic) flies its path once when the scene becomes
-     active and rests at the end of it. Browsers without offset-path only see it resting. */
-  .anim-fly {
-    transform: translate(352px, 96px) rotate(-33deg);
-  }
-  @supports (offset-rotate: auto) {
-    .anim-fly {
-      transform: none;
-      offset-path: path("M48 318C128 318 128 214 200 214S300 130 352 96");
-      offset-rotate: auto;
-      offset-distance: 100%;
-      animation: fly 2.6s var(--ease-out-quart) both;
-    }
-    [data-active="false"] .anim-fly {
-      offset-distance: 0%;
-    }
-  }
-  /* A gentle floating bob for the scenes (no card, nothing else moves). */
+  /* A gentle floating bob for the Get involved frame (no card, nothing else moves). */
   .anim-float {
     animation: float 7s ease-in-out infinite;
   }
@@ -671,11 +623,163 @@
   .anim-eyelid {
     animation: eyelid 6s linear infinite;
   }
-  [data-active="false"] :is(.anim-blink, .anim-magnify, .anim-flame, .anim-trail, .anim-dots) {
+  [data-active="false"] :is(.anim-blink, .anim-dots) {
     animation-play-state: paused;
   }
-  [data-active="false"] :is(.anim-draw, .anim-type, .anim-pop, .anim-fly) {
+  [data-active="false"] :is(.anim-draw, .anim-type, .anim-pop) {
     animation: none;
+  }
+}
+
+/* ------------------------------------------------------------------
+   The dino process scene (home/ProcessScene). Each step's motion runs only while the scene
+   reports that step in data-mode (the step nearest the scroll progress), so it starts as the
+   step arrives and stops as it leaves. Every keyframe moves by whole cells or flips a frame
+   (steps timing) and ends on the resting frame, which is what the stills and the
+   reduced-motion rule show; the rule at the end also drops the delays.
+------------------------------------------------------------------- */
+@layer components {
+  @keyframes dino-peer {
+    25% {
+      transform: translate(1px, 0);
+    }
+    50% {
+      transform: translate(1px, 1px);
+    }
+    75% {
+      transform: translate(0, 1px);
+    }
+  }
+  @keyframes dino-appear {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes dino-wave-down {
+    0%,
+    20%,
+    40%,
+    100% {
+      opacity: 1;
+    }
+    10%,
+    30% {
+      opacity: 0;
+    }
+  }
+  @keyframes dino-wave-up {
+    0%,
+    20%,
+    40%,
+    100% {
+      opacity: 0;
+    }
+    10%,
+    30% {
+      opacity: 1;
+    }
+  }
+  @keyframes dino-bob {
+    50% {
+      transform: translateY(-1px);
+    }
+  }
+  @keyframes dino-flap-up {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
+  }
+  @keyframes dino-flap-down {
+    0%,
+    100% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+  @keyframes dino-hammer-up {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    60% {
+      opacity: 0;
+    }
+  }
+  @keyframes dino-hammer-down {
+    0%,
+    100% {
+      opacity: 0;
+    }
+    60% {
+      opacity: 1;
+    }
+  }
+  @keyframes dino-spark {
+    0%,
+    80%,
+    100% {
+      opacity: 0;
+    }
+    60% {
+      opacity: 1;
+    }
+  }
+  @keyframes dino-offer {
+    50% {
+      transform: translateX(1px);
+    }
+  }
+  @keyframes dino-fall {
+    to {
+      transform: translateY(12px);
+    }
+  }
+  [data-mode="detective"] .anim-dino-peer {
+    animation: dino-peer 3.2s steps(1, end) infinite;
+  }
+  [data-mode="detective"] .anim-dino-appear {
+    animation: dino-appear 0.01s steps(1, end) both;
+  }
+  [data-mode="team"] .anim-dino-wave-down {
+    animation: dino-wave-down 3s steps(1, end) infinite;
+  }
+  [data-mode="team"] .anim-dino-wave-up {
+    animation: dino-wave-up 3s steps(1, end) infinite;
+  }
+  [data-mode="team"] .anim-dino-bob {
+    animation: dino-bob 1.2s steps(1, end) infinite;
+  }
+  [data-mode="team"] .anim-dino-flap-up {
+    animation: dino-flap-up 0.7s steps(1, end) infinite;
+  }
+  [data-mode="team"] .anim-dino-flap-down {
+    animation: dino-flap-down 0.7s steps(1, end) infinite;
+  }
+  [data-mode="builder"] .anim-dino-hammer-up {
+    animation: dino-hammer-up 1s steps(1, end) infinite;
+  }
+  [data-mode="builder"] .anim-dino-hammer-down {
+    animation: dino-hammer-down 1s steps(1, end) infinite;
+  }
+  [data-mode="builder"] .anim-dino-spark {
+    animation: dino-spark 1s steps(1, end) infinite;
+  }
+  [data-mode="party"] .anim-dino-offer {
+    animation: dino-offer 1.6s steps(1, end) infinite;
+  }
+  [data-mode="party"] .anim-dino-fall {
+    animation: dino-fall 3s steps(12, end) infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-dino] * {
+      animation-delay: 0s !important;
+    }
   }
 }
 
@@ -758,65 +862,6 @@
       transform: rotate(0deg);
     }
   }
-  @keyframes involved-press {
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-    35%,
-    55% {
-      transform: translateY(14px);
-    }
-  }
-  @keyframes involved-glow {
-    0%,
-    100% {
-      opacity: 0.35;
-    }
-    35%,
-    55% {
-      opacity: 0.85;
-    }
-  }
-  @keyframes involved-arm {
-    from {
-      transform: rotate(-12deg);
-      opacity: 0;
-    }
-  }
-  /* The two cursors on the canvas: each rests on its selection, wanders, and comes back. */
-  @keyframes involved-cursor-a {
-    0%,
-    14%,
-    100% {
-      transform: translate(124px, 206px);
-    }
-    40% {
-      transform: translate(236px, 176px);
-    }
-    62% {
-      transform: translate(216px, 250px);
-    }
-    84% {
-      transform: translate(150px, 150px);
-    }
-  }
-  @keyframes involved-cursor-b {
-    0%,
-    12%,
-    100% {
-      transform: translate(150px, 262px);
-    }
-    40% {
-      transform: translate(268px, 150px);
-    }
-    66% {
-      transform: translate(250px, 262px);
-    }
-    86% {
-      transform: translate(176px, 300px);
-    }
-  }
   .anim-involved-fade {
     animation: involved-fade 0.8s var(--ease-out-quart) both;
   }
@@ -833,36 +878,10 @@
     transform-origin: 200px 0;
     animation: involved-swing 2.6s var(--ease-out-quart) both;
   }
-  /* `backwards` only: once the press has played, the pointer's own transform takes over. */
-  .anim-involved-press {
-    animation: involved-press 0.9s var(--ease-out-quart) backwards;
-  }
-  .anim-involved-glow {
-    animation: involved-glow 0.9s var(--ease-out-quart) backwards;
-  }
-  .anim-involved-arm {
-    transform-box: view-box;
-    animation: involved-arm 1s var(--ease-out-expo) both;
-  }
-  .anim-involved-cursor-a {
-    animation: involved-cursor-a 14s ease-in-out infinite;
-  }
-  .anim-involved-cursor-b {
-    animation: involved-cursor-b 17s ease-in-out infinite;
-  }
-  [data-active="false"]
-    :is(.anim-involved-typing, .anim-involved-cursor-a, .anim-involved-cursor-b) {
+  [data-active="false"] .anim-involved-typing {
     animation-play-state: paused;
   }
-  [data-active="false"]
-    :is(
-      .anim-involved-fade,
-      .anim-involved-drop,
-      .anim-involved-swing,
-      .anim-involved-press,
-      .anim-involved-glow,
-      .anim-involved-arm
-    ) {
+  [data-active="false"] :is(.anim-involved-fade, .anim-involved-drop, .anim-involved-swing) {
     animation: none;
   }
   @media (prefers-reduced-motion: reduce) {

@@ -3,14 +3,7 @@ import { Logo } from "@/components/brand/Logo";
 import { PixelDino } from "@/components/brand/PixelDino";
 import { ProcessScene } from "@/components/home/ProcessScene";
 import { BadgeGraphic } from "@/components/layout/involved/BadgeGraphic";
-import { CalendarGraphic } from "@/components/layout/involved/CalendarGraphic";
-import { CanvasGraphic } from "@/components/layout/involved/CanvasGraphic";
 import { ChatGraphic } from "@/components/layout/involved/ChatGraphic";
-import { DoorGraphic } from "@/components/layout/involved/DoorGraphic";
-import { KeycapGraphic } from "@/components/layout/involved/KeycapGraphic";
-import { PlaneGraphic } from "@/components/layout/involved/PlaneGraphic";
-import { PuzzleGraphic } from "@/components/layout/involved/PuzzleGraphic";
-import { SignpostGraphic } from "@/components/layout/involved/SignpostGraphic";
 import { TerminalGraphic } from "@/components/layout/involved/TerminalGraphic";
 import { Globe } from "@/components/home/Globe";
 import { Gallery } from "@/components/projects/Gallery";
@@ -78,23 +71,16 @@ const PAIRS: [string, string, string][] = [
   ["white on green (do not use)", "#f5f5f5", "#03c652"],
 ];
 
-/** Every Get involved variant, with the Fall 2026 deadline the calendar and the badge show. */
+/** Every Get involved variant, with the Fall 2026 deadline the badge shows. */
 const INVOLVED_PROPS = {
   cta: { label: "Apply Now", href: "/apply" },
   season: { cycleName: "Fall 2026", deadline: { year: 2026, month: 9, day: 12 } },
   academicYear: "2026–27",
 };
 const INVOLVED_GRAPHICS = [
-  ["Plane", PlaneGraphic],
-  ["Door", DoorGraphic],
-  ["Puzzle", PuzzleGraphic],
-  ["Canvas", CanvasGraphic],
   ["Chat", ChatGraphic],
   ["Badge", BadgeGraphic],
-  ["Calendar", CalendarGraphic],
   ["Terminal", TerminalGraphic],
-  ["Keycap", KeycapGraphic],
-  ["Signpost", SignpostGraphic],
 ] as const;
 
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
@@ -432,14 +418,14 @@ export default function UiKitPage() {
         </dl>
       </Block>
 
-      <Block title="ProcessScene (form, team, laptop, rocket cross-fading with progress; stills at 0, 0.5, 1, 2, 3)">
-        <div className="grid gap-4 sm:grid-cols-5">
-          {[0, 0.5, 1, 2, 3].map((progress) => (
+      <Block title="ProcessScene (the dino scenes: detective, team, builder, party; the home page dissolves between them cell by cell; stills at 0, 1, 2, 3)">
+        <div className="grid gap-4 sm:grid-cols-4">
+          {[0, 1, 2, 3].map((progress) => (
             <ProcessScene
               key={progress}
-              stages={["form", "team", "laptop", "rocket"]}
+              stages={["detective", "team", "builder", "party"]}
               progress={progress}
-              animate={Number.isInteger(progress)}
+              animate={false}
             />
           ))}
         </div>

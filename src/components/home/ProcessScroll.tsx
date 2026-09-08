@@ -11,12 +11,12 @@ type ProcessScrollProps = { steps: ProcessStep[] };
 const pad = (n: number) => String(n).padStart(2, "0");
 
 /**
- * Scroll-driven process. One floating scene (ProcessScene) evolves continuously as the steps
+ * Scroll-driven process. One pixel-art scene (ProcessScene) evolves continuously as the steps
  * scroll past: the reading line (the middle of the viewport on desktop, a little lower on
  * phones, where the scene sticks to the top) is mapped to a progress value between the step
  * centres, eased frame by frame, and the scene and the step highlight follow it (no counter
- * or progress bar under the scene since the 2026-09-07 audit 3). Under prefers-reduced-motion
- * the scene snaps between stages. Without JavaScript every step is readable and the scene
+ * or progress bar under the scene since the 2026-09-07 audit 3); between steps the scene
+ * dissolves cell by cell. Under prefers-reduced-motion the scene snaps between stages. Without JavaScript every step is readable and the scene
  * shows the first stage.
  */
 export function ProcessScroll({ steps }: ProcessScrollProps) {
@@ -102,7 +102,7 @@ export function ProcessScroll({ steps }: ProcessScrollProps) {
             stages={stages}
             progress={0}
             store={store}
-            className="w-[min(48vw,13rem)] shrink-0 lg:w-[min(100%,calc(100svh-var(--header-h)-8rem))]"
+            className="w-[min(80vw,20rem)] shrink-0 lg:w-[min(100%,calc((100svh-var(--header-h)-8rem)*1.6))]"
           />
           <div
             aria-hidden="true"

@@ -144,8 +144,8 @@ export const processStepSchema = z.object({
   id: slugSchema,
   title: z.string().min(1),
   description: z.string().min(1),
-  /** The picture the step shows in the process scene (home/ProcessScene). */
-  graphic: z.enum(["form", "team", "laptop", "rocket"]),
+  /** The dino the step shows in the process scene (home/ProcessScene). */
+  graphic: z.enum(["detective", "team", "builder", "party"]),
   /** What the nonprofit does at this step ("Your part" on /nonprofits). */
   partner: z.string().min(1).optional(),
 });

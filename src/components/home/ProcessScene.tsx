@@ -1,10 +1,19 @@
 "use client";
 
-import { useEffect, useRef, type JSX } from "react";
-import type { ProcessStep } from "@/lib/content/schemas";
+import { useEffect, useRef } from "react";
+import { DINO_EYE } from "@/components/brand/dino-pixels";
+import {
+  LAYERS,
+  SCENE,
+  TREX_ORIGIN,
+  type Cell,
+  type Ink,
+  type Layer,
+  type Stage,
+} from "@/components/home/ProcessSprites";
 import { cn } from "@/lib/utils";
 
-export type Stage = ProcessStep["graphic"];
+export type { Stage };
 
 /**
  * Tiny external store for the scene's progress (a float from 0 to steps − 1). ProcessScroll
@@ -30,252 +39,95 @@ export class ProgressStore {
 }
 
 /* ------------------------------------------------------------------------------------------
-   Placement. Each step has its own picture on the same 400 × 400 stage; as the progress
-   moves from one step to the next, the current picture rises and fades while the next one
-   comes up from below, so the hand-off is continuous rather than a cut.
+   The dissolve. The T-rex stands through every step; what changes between steps (hats, tools,
+   the team, the gift …) dissolves cell by cell: every cell belongs to one of BUCKETS groups
+   by a hash of its position, and as the progress crosses from one step to the next each
+   group flips at its own point of the crossing, outgoing cells off and incoming cells on.
+   Cells are never half-visible, so the picture stays pixel art all the way through.
 ------------------------------------------------------------------------------------------- */
 
-const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+const BUCKETS = 10;
+const INK: Record<Ink, string> = {
+  green: "var(--green)",
+  white: "var(--text)",
+  tint: "var(--green)",
+};
+const TINT_OPACITY = 0.28;
 
-type Placement = { o: number; dy: number; s: number };
+function bucketOf(x: number, y: number): number {
+  let h = Math.imul(x + 1, 374761393) ^ Math.imul(y + 1, 668265263);
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  h ^= h >>> 16;
+  return (h >>> 0) % BUCKETS;
+}
 
-function sceneAt(p: number, stages: Stage[]): Placement[] {
-  const last = Math.max(0, stages.length - 1);
-  const q = Math.min(last, Math.max(0, p));
-  return stages.map((_, j) => {
-    const d = Math.max(-1, Math.min(1, q - j));
-    return {
-      o: clamp01(1 - (Math.abs(d) - 0.2) / 0.5),
-      dy: -36 * d,
-      s: 1 - 0.08 * Math.abs(d),
-    };
+/** One <path> of the scene: the cells of a layer that share an ink and (live) a bucket. */
+type Piece = { ink: Ink; bucket: number; d: string };
+
+function piecesOf(cells: readonly Cell[], bucketed: boolean): Piece[] {
+  const groups = new Map<string, { ink: Ink; bucket: number; rows: Map<number, Set<number>> }>();
+  for (const [x, y, ink = "green"] of cells) {
+    const bucket = bucketed ? bucketOf(x, y) : 0;
+    const key = `${ink}:${bucket}`;
+    let group = groups.get(key);
+    if (!group) {
+      group = { ink, bucket, rows: new Map() };
+      groups.set(key, group);
+    }
+    let row = group.rows.get(y);
+    if (!row) {
+      row = new Set();
+      group.rows.set(y, row);
+    }
+    row.add(x);
+  }
+  return Array.from(groups.values()).map(({ ink, bucket, rows }) => {
+    let d = "";
+    for (const [y, set] of rows) {
+      const xs = Array.from(set).sort((a, b) => a - b);
+      let start = xs[0]!;
+      let prev = start;
+      for (let i = 1; i <= xs.length; i += 1) {
+        const x = xs[i];
+        if (x === prev + 1) {
+          prev = x;
+          continue;
+        }
+        const w = prev - start + 1;
+        d += `M${start} ${y}h${w}v1h-${w}z`;
+        if (x !== undefined) {
+          start = x;
+          prev = x;
+        }
+      }
+    }
+    return { ink, bucket, d };
   });
 }
 
-const placeTransform = ({ dy, s }: Placement) =>
-  `translate(200 ${(200 + dy).toFixed(2)}) scale(${s.toFixed(3)}) translate(-200 -200)`;
+const LIVE_PIECES = new Map(LAYERS.map((layer) => [layer.key, piecesOf(layer.cells, true)]));
+const STILL_PIECES = new Map(LAYERS.map((layer) => [layer.key, piecesOf(layer.cells, false)]));
 
-/* ------------------------------------------------------------------------------------------
-   The pictures. Line art in the site's wireframe style: green strokes, dark fills. The
-   animation classes are only applied on the live scene, so the stills show every stroke
-   complete.
-------------------------------------------------------------------------------------------- */
+const clampProgress = (p: number, last: number) => Math.min(last, Math.max(0, p));
 
-type PictureProps = { animate: boolean };
-const cls = (animate: boolean, name: string) => (animate ? name : undefined);
+/** The layer's steps as a bitmask over the given stage order. */
+const maskOf = (layer: Layer, stages: readonly Stage[]) =>
+  stages.reduce((mask, stage, i) => (layer.stages.includes(stage) ? mask | (1 << i) : mask), 0);
 
-const STROKE = { stroke: "var(--green)", strokeWidth: 1.5 } as const;
-
-/** Discover: the intake form under a magnifying glass. */
-function FormPicture({ animate }: PictureProps) {
-  const lines: [number, number][] = [
-    [134, 124],
-    [152, 100],
-    [170, 116],
-    [188, 84],
-  ];
-  return (
-    <g>
-      <path d="M116 78H256L292 114V322H116Z" fill="var(--surface)" {...STROKE} />
-      <path d="M256 78V114H292" fill="var(--bg)" {...STROKE} />
-      <rect x="140" y="106" width="76" height="8" fill="var(--green)" />
-      {lines.map(([y, w]) => (
-        <rect key={y} x="140" y={y} width={w} height="4" fill="var(--line-strong)" />
-      ))}
-      <rect x="140" y="214" width="16" height="16" fill="none" {...STROKE} />
-      <path d="M143 222l4 4 7-8" fill="none" stroke="var(--green)" strokeWidth="2" />
-      <rect x="166" y="220" width="72" height="4" fill="var(--line-strong)" />
-      <rect x="140" y="242" width="16" height="16" fill="none" {...STROKE} />
-      <path
-        d="M143 250l4 4 7-8"
-        pathLength="1"
-        fill="none"
-        stroke="var(--green)"
-        strokeWidth="2"
-        className={cls(animate, "anim-draw")}
-        style={{ animationDelay: "0.7s" }}
-      />
-      <rect x="166" y="248" width="56" height="4" fill="var(--line-strong)" />
-      {/* the magnifying glass, gliding over the form */}
-      <g className={cls(animate, "anim-magnify")}>
-        <circle
-          cx="258"
-          cy="252"
-          r="42"
-          fill="var(--green)"
-          fillOpacity="0.1"
-          stroke="var(--green)"
-          strokeWidth="3"
-        />
-        <path
-          d="M232 242a28 28 0 0 1 16-18"
-          fill="none"
-          stroke="var(--green)"
-          strokeOpacity="0.6"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-        <line
-          x1="289"
-          y1="283"
-          x2="332"
-          y2="326"
-          stroke="var(--green)"
-          strokeWidth="7"
-          strokeLinecap="round"
-        />
-      </g>
-    </g>
-  );
+/** Whether a piece shows at progress p, from its layer's mask and its bucket. */
+function shows(p: number, mask: number, bucket: number, last: number): boolean {
+  const q = clampProgress(p, last);
+  const j = Math.floor(q);
+  const k = Math.min(last, j + 1);
+  const t = q - j;
+  const inJ = (mask >> j) & 1;
+  const inK = (mask >> k) & 1;
+  if (inJ && inK) return true;
+  const edge = (bucket + 0.5) / BUCKETS;
+  if (inJ) return t < edge;
+  if (inK) return t >= edge;
+  return false;
 }
-
-const PEOPLE: { x: number; y: number; r: number; lead?: boolean }[] = [
-  { x: 116, y: 156, r: 15 },
-  { x: 284, y: 156, r: 15 },
-  { x: 92, y: 240, r: 15 },
-  { x: 308, y: 240, r: 15 },
-  { x: 140, y: 302, r: 15 },
-  { x: 260, y: 302, r: 15 },
-  { x: 200, y: 206, r: 20, lead: true },
-];
-
-/** Match: the team, the lead in front. */
-function TeamPicture({ animate }: PictureProps) {
-  return (
-    <g>
-      <ellipse
-        cx="200"
-        cy="232"
-        rx="146"
-        ry="98"
-        fill="none"
-        stroke="var(--line-strong)"
-        strokeDasharray="2 6"
-      />
-      {PEOPLE.map((person, i) => {
-        const { x, y, r } = person;
-        const w = 2.1 * r;
-        return (
-          <g
-            key={i}
-            className={cls(animate, "anim-pop")}
-            style={{ animationDelay: `${0.1 + i * 0.12}s` }}
-          >
-            <path
-              d={`M${x - w} ${y + 1.9 * r}A${w} ${w} 0 0 1 ${x + w} ${y + 1.9 * r}Z`}
-              fill="var(--surface)"
-              {...STROKE}
-            />
-            <circle
-              cx={x}
-              cy={y - 0.9 * r}
-              r={r}
-              fill={person.lead ? "var(--green)" : "var(--surface)"}
-              {...STROKE}
-            />
-          </g>
-        );
-      })}
-    </g>
-  );
-}
-
-/** Code rows: indent and the width of the line after the green keyword. */
-const CODE: [number, number][] = [
-  [0, 72],
-  [14, 96],
-  [28, 60],
-  [28, 84],
-  [14, 52],
-  [0, 76],
-];
-
-/** Build: a laptop with code being written. */
-function LaptopPicture({ animate }: PictureProps) {
-  const rowY = (i: number) => 106 + i * 16;
-  const lastRow = CODE.length - 1;
-  const [lastIndent, lastWidth] = CODE[lastRow] ?? [0, 0];
-  return (
-    <g>
-      <rect x="88" y="82" width="224" height="152" fill="var(--bg)" {...STROKE} />
-      <rect x="98" y="92" width="204" height="132" fill="var(--surface)" />
-      <line x1="122" y1="92" x2="122" y2="224" stroke="var(--line-strong)" />
-      {CODE.map(([indent, width], i) => (
-        <g
-          key={i}
-          className={cls(animate, "anim-type")}
-          style={{ animationDelay: `${0.15 + i * 0.16}s` }}
-        >
-          <rect x={132 + indent} y={rowY(i)} width="20" height="5" fill="var(--green)" />
-          <rect x={158 + indent} y={rowY(i)} width={width} height="5" fill="var(--line-strong)" />
-        </g>
-      ))}
-      <rect
-        x={162 + lastIndent + lastWidth}
-        y={rowY(lastRow) - 2}
-        width="2"
-        height="9"
-        fill="var(--green)"
-        className={cls(animate, "anim-blink")}
-      />
-      {/* the check-in bar at the foot of the screen */}
-      <rect x="104" y="212" width="192" height="4" fill="var(--line-strong)" />
-      <rect
-        x="104"
-        y="212"
-        width="128"
-        height="4"
-        fill="var(--green)"
-        className={cls(animate, "anim-type")}
-        style={{ animationDelay: "1.2s" }}
-      />
-      <path d="M56 236H344L336 254H64Z" fill="var(--surface)" {...STROKE} />
-      <rect x="178" y="240" width="44" height="4" fill="var(--line-strong)" />
-    </g>
-  );
-}
-
-/** Deliver: launch. */
-function RocketPicture({ animate }: PictureProps) {
-  return (
-    <g>
-      <g
-        stroke="var(--line-strong)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        className={cls(animate, "anim-trail")}
-      >
-        <line x1="150" y1="262" x2="150" y2="298" />
-        <line x1="250" y1="276" x2="250" y2="320" />
-        <line x1="130" y1="314" x2="130" y2="338" />
-        <line x1="270" y1="330" x2="270" y2="350" />
-      </g>
-      <path d="M170 214L134 268L170 254Z" fill="var(--bg)" strokeLinejoin="round" {...STROKE} />
-      <path d="M230 214L266 268L230 254Z" fill="var(--bg)" strokeLinejoin="round" {...STROKE} />
-      <path
-        d="M200 70C236 104 240 190 230 250H170C160 190 164 104 200 70Z"
-        fill="var(--surface)"
-        stroke="var(--green)"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-      <circle cx="200" cy="158" r="20" fill="var(--bg)" stroke="var(--green)" strokeWidth="2" />
-      <circle cx="200" cy="158" r="11" fill="var(--green)" fillOpacity="0.35" />
-      <path d="M182 250H218L224 262H176Z" fill="var(--green)" />
-      <g className={cls(animate, "anim-flame")}>
-        <path d="M180 262C186 300 214 300 220 262Z" fill="var(--green)" fillOpacity="0.85" />
-        <path d="M190 262C194 284 206 284 210 262Z" fill="var(--bg)" fillOpacity="0.6" />
-      </g>
-    </g>
-  );
-}
-
-const PICTURES: Record<Stage, (props: PictureProps) => JSX.Element> = {
-  form: FormPicture,
-  team: TeamPicture,
-  laptop: LaptopPicture,
-  rocket: RocketPicture,
-};
 
 /* ------------------------------------------------------------------------------------------
    Component
@@ -286,20 +138,22 @@ type ProcessSceneProps = {
   stages: Stage[];
   /** Progress rendered on the server and before the store sends its first value. */
   progress: number;
-  /** Live progress (home page). Without it the scene is a still. */
+  /** Live progress (home page). Without it the scene is a still of the nearest step. */
   store?: ProgressStore;
-  /** Run the pictures' animations (the magnifier, typing, the flame …). Off for the stills. */
+  /** Run the dinos' own motion (the blink, the wave, the hammer …). Off for the stills. */
   animate?: boolean;
   className?: string;
 };
 
 /**
- * One floating stage that shows each step as a recognizable picture: the intake form under
- * a magnifying glass (discover), the team (match), a laptop with code being written (build)
- * and a rocket (deliver). Scroll progress cross-fades the pictures, the outgoing one rising
- * as the next comes up, so the scene stays one continuous object. Renders the given
- * progress on the server; a `store` then patches the DOM directly. Decoration only, hidden
- * from assistive tech.
+ * The process as pixel art on the footer T-rex's own grid: the detective peering through a
+ * magnifying glass at a trail (discover), the team gathering around it: a triceratops, a
+ * stegosaurus and a pterodactyl (match), the builder in a hard hat hammering bricks (build)
+ * and the party dino handing a gift to the partner (deliver). The T-rex stands through every
+ * step; everything else dissolves cell by cell as the scroll progress crosses from one step
+ * to the next, and each step's own motion runs while the scene is on that step (`data-mode`).
+ * Renders the given progress on the server; a `store` then patches the DOM directly.
+ * Decoration only, hidden from assistive tech.
  */
 export function ProcessScene({
   stages,
@@ -308,57 +162,96 @@ export function ProcessScene({
   animate = true,
   className,
 }: ProcessSceneProps) {
-  const rootRef = useRef<HTMLDivElement>(null);
-  const scene = sceneAt(progress, stages);
+  const rootRef = useRef<SVGSVGElement>(null);
+  const last = Math.max(0, stages.length - 1);
+  const live = store !== undefined;
+  const p = clampProgress(progress, last);
+  const mode = stages[Math.round(p)];
+  const layers = LAYERS.filter((layer) =>
+    live
+      ? animate || layer.rest !== false
+      : layer.rest !== false && mode !== undefined && layer.stages.includes(mode),
+  );
 
   useEffect(() => {
     const root = rootRef.current;
     if (!store || !root) return;
-    const groups = Array.from(root.querySelectorAll<SVGGElement>("[data-stage]"));
-    const apply = (p: number) => {
-      const s = sceneAt(p, stages);
-      groups.forEach((el) => {
-        const place = s[Number(el.dataset.stage)];
-        if (!place) return;
-        el.setAttribute("opacity", place.o.toFixed(3));
-        el.setAttribute("transform", placeTransform(place));
-        el.dataset.active = String(animate && place.o > 0.5);
-      });
+    const pieces = Array.from(root.querySelectorAll<SVGPathElement>("path[data-m]")).map((el) => ({
+      el,
+      mask: Number(el.dataset.m),
+      bucket: Number(el.dataset.b),
+      shown: el.getAttribute("opacity") !== "0",
+    }));
+    let shownMode = root.dataset.mode;
+    const apply = (value: number) => {
+      for (const piece of pieces) {
+        const on = shows(value, piece.mask, piece.bucket, last);
+        if (on !== piece.shown) {
+          piece.shown = on;
+          piece.el.setAttribute("opacity", on ? "1" : "0");
+        }
+      }
+      const next = stages[Math.round(clampProgress(value, last))];
+      if (next !== undefined && next !== shownMode) {
+        shownMode = next;
+        root.dataset.mode = next;
+      }
     };
     apply(store.get());
     return store.subscribe(apply);
-  }, [store, stages, animate]);
+  }, [store, stages, last]);
 
   return (
-    <div
-      ref={rootRef}
-      aria-hidden="true"
-      className={cn("relative aspect-square w-full select-none", className)}
-    >
-      <div className="pointer-events-none absolute inset-[18%] bg-[radial-gradient(closest-side,rgba(3,198,82,0.16),transparent)]" />
-      <div className="anim-float size-full">
-        <svg
-          viewBox="0 0 400 400"
-          focusable="false"
-          className="absolute inset-0 size-full overflow-visible"
-        >
-          {stages.map((stage, j) => {
-            const Picture = PICTURES[stage];
-            const place = scene[j] ?? { o: 0, dy: 0, s: 1 };
-            return (
-              <g
-                key={j}
-                data-stage={j}
-                data-active={animate && place.o > 0.5}
-                opacity={place.o.toFixed(3)}
-                transform={placeTransform(place)}
-              >
-                <Picture animate={animate} />
-              </g>
-            );
-          })}
-        </svg>
-      </div>
+    <div aria-hidden="true" className={cn("relative aspect-[8/5] w-full select-none", className)}>
+      <div className="pointer-events-none absolute inset-x-[12%] -inset-y-[4%] bg-[radial-gradient(closest-side,rgba(3,198,82,0.16),transparent)]" />
+      <svg
+        ref={rootRef}
+        viewBox={`0 0 ${SCENE.cols} ${SCENE.rows}`}
+        shapeRendering="crispEdges"
+        focusable="false"
+        data-dino=""
+        data-mode={mode}
+        className="absolute inset-0 size-full overflow-visible"
+      >
+        {layers.map((layer) => {
+          const mask = maskOf(layer, stages);
+          const pieces = (live ? LIVE_PIECES : STILL_PIECES).get(layer.key) ?? [];
+          return (
+            <g
+              key={layer.key}
+              className={animate ? layer.anim : undefined}
+              style={
+                animate && layer.delay !== undefined
+                  ? { animationDelay: `${layer.delay}s` }
+                  : undefined
+              }
+              opacity={layer.rest === false ? 0 : undefined}
+            >
+              {pieces.map((piece) => (
+                <path
+                  key={`${piece.ink}-${piece.bucket}`}
+                  d={piece.d}
+                  fill={INK[piece.ink]}
+                  fillOpacity={piece.ink === "tint" ? TINT_OPACITY : undefined}
+                  data-m={live ? mask : undefined}
+                  data-b={live ? piece.bucket : undefined}
+                  opacity={live && !shows(p, mask, piece.bucket, last) ? 0 : undefined}
+                />
+              ))}
+              {layer.key === "trex" && animate ? (
+                <rect
+                  className="anim-eyelid"
+                  x={TREX_ORIGIN.x + DINO_EYE.x}
+                  y={TREX_ORIGIN.y + DINO_EYE.y}
+                  width={1}
+                  height={1}
+                  fill={INK.green}
+                />
+              ) : null}
+            </g>
+          );
+        })}
+      </svg>
     </div>
   );
 }

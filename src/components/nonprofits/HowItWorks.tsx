@@ -45,7 +45,7 @@ export function HowItWorks({ steps }: { steps: ProcessStep[] }) {
                   stages={stages}
                   progress={i}
                   animate={false}
-                  className="max-w-[14rem]"
+                  className="max-w-[18rem]"
                 />
                 <p className="mt-8 text-eyebrow font-medium text-green uppercase">
                   Step {pad(i + 1)}
