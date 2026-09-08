@@ -32,7 +32,8 @@ Claude Code. Dark theme only.
 ```
 content/            typed content: site.ts (config + season CTA), media.ts (image map),
                     exec.ts, roles.ts, faq.ts, testimonials.ts, stats.ts, services.ts,
-                    process.ts, awards.ts, recruitment.ts, students.ts, about.ts,
+                    process.ts, awards.ts, recruitment.ts, students.ts, about.ts, hero.ts
+                    (the hero copy every variant shares),
                     nonprofits.ts, instagram.ts, privacy.mdx, projects/*.mdx (Zod frontmatter)
 src/app/            routes. page.dev.tsx files exist only in `next dev` (see next.config.ts);
                     contact/actions.ts and nonprofits/actions.ts are the form server actions;
@@ -51,7 +52,9 @@ src/components/
                     sticky section bar under the hero on About / Students / Nonprofits; sets
                     --subnav-h so anchors land below it), FaqSection, ContactCta (+ PaperPlaneGraphic: a paper plane flying its
                     dotted path on view), SeasonNote, OnThisPage
-  home/             Hero, Globe (SVG, takes pins), WhatWeDo, Process (+ ProcessScroll,
+  home/             Hero (client switch over heroes/*: ten variants chosen in the Shift + M
+                    menu, GlobeHero the default and in the bundle, the rest lazy chunks;
+                    HeroShell is the shared frame), Globe (SVG, takes pins), WhatWeDo, Process (+ ProcessScroll,
                     ProcessScene: one stage whose recognizable pictures (form, team, laptop,
                     rocket) cross-fade with scroll; also the stills on /nonprofits),
                     ImpactBand (+ TestimonialMarquee, Awards, AwardCarousel), WhoWeServe (two
@@ -72,6 +75,8 @@ src/components/
                     (review step and the read-only view)
   admin/            ExecOnly, AdminFilters (GET form), ApplicationsTable (+ StatusChip),
                     ReviewPanel (review, status and other reviews; forms post to actions)
+  config/           ConfigMenu (Shift + M: the non-modal site configuration panel; the hero
+                    picker is its first section)
   motion/           Reveal / RevealGroup (fade-and-rise, reduced-motion aware)
   icons/            Instagram / LinkedIn (lucide 1.x has no brand icons)
 src/lib/content/    schemas.ts (Zod) + index.ts (loaders; throw on invalid content)
@@ -88,6 +93,8 @@ src/lib/auth/       schema.ts (sign-in Zod + safeNextPath), state.ts, session.ts
 src/lib/portal/     data.ts (cycle, roles, questions, my application + answers, admin counts; all
                     through RLS), admin.ts (dashboard reads, URL filters, sorting, counts, CSV),
                     format.ts (dates in the club's zone, safe on the client)
+src/lib/config/     options.ts (HERO_VARIANTS, DEFAULT_HERO, SiteConfig), store.ts (localStorage
+                    store + useSiteConfig; the server and the first paint always see the defaults)
 src/lib/geo.ts      sphere maths shared by both globes
 scripts/            validate-content, gen-placeholders, gen-logo-paths.py, gen-world-dots,
                     screenshots, a11y
@@ -118,6 +125,10 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   `external` (default: `/apply` redirects to `season.applyUrl`) or `portal`
   (`NEXT_PUBLIC_APPLY_MODE=portal`: `/apply` is the in-house portal). The portal's cycle,
   roles and questions live in the database (`supabase/seed.sql`), not in `content/`.
+- The hero variant is a per-browser choice (Shift + M, `src/lib/config`), never a build-time
+  or server-side switch: visitors always get `DEFAULT_HERO` from `src/lib/config/options.ts`,
+  and `/` stays static. Every variant renders the copy in `content/hero.ts`, one `h1`
+  (`#hero-title`) and a finished picture under reduced motion.
 
 ## Design tokens (globals.css)
 
@@ -184,6 +195,9 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   and looping effects (count-up, process graphics, testimonial marquee, dinosaur) must have a
   static or paused fallback under reduced motion and, for the marquee, a pause control.
 - Images: `<Media>` (next/image) with `sizes`; SVG placeholders render unoptimized.
+- `cn()` registers the type scale with tailwind-merge (`src/lib/utils.ts`). Add any new
+  `--text-*` token to that list, or a later `text-<colour>` in the same `cn()` call silently
+  drops the size (tailwind-merge cannot tell `text-h2` from a colour).
 
 ## Accessibility rules
 

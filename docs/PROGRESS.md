@@ -35,6 +35,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 8b: home + global audit 2 (Home tab and centred nav, green bar CTA, `nonprofits` spelling, What we do reflow, one scroll-morphing process scene, Impact map backdrop, awards and caption cleanup, Who we serve cards, beacon graphic, footer, green inline links)
 - [x] Session 10: home audit 3 (full-bleed hairline rows, centred projects button, the isometric process scene with no counter under it, Impact map lower, 2px divider and green arrow cell on every primary button, plain Who we serve panels, the docking graphic in Get involved)
 - [x] Session 10, audit 4: framed rows, recognizable process pictures (form, team, laptop, rocket), wider marquee fade, "Learn more" buttons and the project-card hover on Who we serve, the paper plane in Get involved
+- [x] Session 11: Shift + M site configuration panel (per browser, ships hidden) with ten home hero variants (Globe stays the default; Atlas, Typewriter, Ticker, Focus, Torch, Cells, Wordmark, Rows, Photo); Ashton picks the one that ships
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -51,11 +52,130 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 7: schema + sign-in. Migration `20260908000000_application_portal.sql` (profiles, admins, cycles, roles, questions, applications, answers, reviews; RLS, guard trigger, explicit grants), seeds, local Supabase stack, email code + magic-link sign-in (`@supabase/ssr`), `/apply` season landing with account panel, `/auth/confirm`, `src/proxy.ts`, `/apply/form` and `/admin` gates, `NEXT_PUBLIC_APPLY_MODE` switch, `docs/DEPLOY.md` §6
 - [x] Session 8: multi-step application form with autosave (profile → roles → questions → review, one step per URL, works without JavaScript), submit with the confirmation email (Resend), `/apply/submitted`, read-only after submit / deadline
 - [x] Session 9: exec dashboard (`/admin` counts, filters and search in the URL, sortable table, CSV export; `/admin/applications/[id]` with the read-only summary, the review panel, the status control and the other reviews)
-- [ ] Session 11: Resend SMTP and rate limits on the hosted project, keepalive cron, dry run with five exec members, `NEXT_PUBLIC_APPLY_MODE=portal` on production
+- [ ] Session 12: Resend SMTP and rate limits on the hosted project, keepalive cron, dry run with five exec members, `NEXT_PUBLIC_APPLY_MODE=portal` on production
 
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+
+## Session 11 — 2026-09-08 (Shift + M site configuration menu, ten hero variants)
+
+**Built:** Ashton asked for a shortcut menu (Shift + M) that opens a configuration panel for
+the site, with the home hero as its first setting, and ten distinct hero variants to choose
+from. `src/components/config/ConfigMenu.tsx` is the panel: a non-modal dialog on the right
+edge (glass, an X cell like the drawer's, the shortcut shown as keys), one radio row per
+variant with its name and a one-line blurb, "Default" on the shipped one, "Reset to
+defaults", and a link to the home page when the panel is opened elsewhere. Choices live in
+`src/lib/config/store.ts` (localStorage, `htf:config:v1`, cross-tab through the `storage`
+event) behind `useSiteConfig()`; `src/lib/config/options.ts` is the registry
+(`HERO_VARIANTS`, `DEFAULT_HERO`, `SiteConfig`). `home/Hero.tsx` is now a client switch:
+the default `GlobeHero` (the hero exactly as it was) ships with the page, the other nine are
+`next/dynamic` chunks fetched only when chosen. The copy moved to `content/hero.ts`; the
+page passes the season CTA and the partner pins (`HeroProps`). The variants, all in
+`src/components/home/heroes/` on the shared `HeroShell`:
+
+1. **Globe**: unchanged (statement, wireframe globe, glow, grid).
+2. **Atlas**: the statement centred, the dotted world map below with routes drawing out from
+   Purdue to every partner location; pins pop in as each route lands and ping; pointing at a
+   pin brings its route forward.
+3. **Typewriter**: the headline types itself in behind a green block cursor (the eyebrow's
+   square, grown); the cursor blinks when done; a Replay button re-types it.
+4. **Ticker**: the statement as one oversized band between hairlines (the site's `marquee`
+   utilities); drag scrubs it, a Pause / Play button stops it, it pauses off-screen.
+5. **Focus**: the viewfinder brackets as a live element, resting around the green line and
+   locking onto whichever word or the eyebrow the pointer rests on.
+6. **Torch**: the statement in the muted tone with a light that drifts on its own until the
+   pointer takes it over, lifting the words to full white and green where it shines.
+7. **Cells**: the technical grid as a canvas whose cells light up under the pointer and fade
+   over a few seconds, after one diagonal sweep on load.
+8. **Wordmark**: the `<HTF/>` glyphs at full frame width, each drawing its outline and then
+   filling (letters green, marks deep green), tilting toward the pointer; the statement below.
+9. **Rows**: a spec sheet in the language of the full-bleed rows: eyebrow and academic year,
+   one row per headline line, then Students, Nonprofits and the season CTA as framed cells.
+10. **Photo**: the organization photo (still the placeholder) full-bleed under a gradient,
+    the statement and the CTA at the bottom left, a slow parallax on scroll.
+
+Commits: `feat(home): Shift + M site configuration menu with ten hero variants` and `docs:
+session 11 …`. Not pushed. The parallel session `htf-64` committed the exec board and the
+section bar in the same tree; each session staged only its own paths.
+
+**Verified:** `pnpm typecheck`, `pnpm lint`, `pnpm build` (the home page is still static:
+the choice is read on the client, never on the server). A Playwright script drove every
+variant at 1440 and 390 with the choice pre-seeded in localStorage: one `h1` per page, the
+statement intact, no horizontal overflow at 390, no console or page errors, and axe with the
+full tag set reported 0 violations on all twenty scans plus the panel open at both widths.
+The panel: Shift + M opens it, focus lands on the current choice, checking Rows swaps the
+hero live and stores `{"hero":"rows"}`, Escape closes it and returns focus, Shift + M
+reopens it. `pnpm a11y --routes=home` (default hero + drawer): 0 violations. Screenshots in
+`docs/screenshots/session-11/`: `hero-<variant>-1440.png` and `-390.png` for all ten,
+`hero-<variant>-1440-pointer.png` with the pointer resting on the second line (Focus,
+Torch, Cells and Atlas show their interaction there), `config-menu-1440.png` /
+`-390.png` and the same with Rows chosen, plus the standard `home-*.png` full pages.
+
+**Decisions made this session**
+
+1. The choice is per browser (localStorage), not a cookie or a search param: reading either
+   on the server would make `/` dynamic for every visitor. The server and the first client
+   paint always render the default (`useSyncExternalStore` with a default server snapshot);
+   a saved choice takes over right after hydration and the hero remounts (`key`) so the new
+   variant plays its entrance. Visitors never see anything but `DEFAULT_HERO`.
+2. The panel ships in production, hidden: no visible affordance, keyboard only, harmless to
+   a visitor who finds it (it changes only their own view). It is non-modal (no backdrop, no
+   scroll lock, no focus trap) so the hero stays live under the pointer while choosing;
+   Escape closes it, focus returns to where it was, and the shortcut ignores keystrokes in
+   form fields. Choosing a hero (`DEFAULT_HERO` in `options.ts`) is the one code change once
+   Ashton decides; the other variants can then be deleted or kept.
+3. `cn()` now registers the type scale with tailwind-merge (`src/lib/utils.ts`):
+   `text-display-fluid`, `text-h2` and the other `--text-*` tokens looked like colours to it,
+   so a later `text-muted` silently replaced the size (the first Torch build rendered the
+   headline at 16px). `Headline`'s own `text-text` was being dropped the same way, harmlessly,
+   since the body colour is white. Any new `--text-*` token must be added to that list.
+4. Every variant keeps the same semantics: `section[aria-labelledby=hero-title]`, one `h1`,
+   the copy from `content/hero.ts`, graphics `aria-hidden`, and a reduced-motion state that
+   is the finished picture (no drift, sweep, typing, band motion, parallax or tilt).
+   Loops are paused off-screen through `data-live` on the shell (`.anim-hero-ping`) rather
+   than `data-active`, whose rule would reset draw-in strokes every time the hero left view.
+5. Ticker scrubs the CSS marquee animation itself through the Web Animations API
+   (`getAnimations()`, `currentTime`), so no offset bookkeeping and the loop stays seamless;
+   the reduced-motion render is the wrapped statement inside the band.
+6. Torch never uses outlined text: axe would fail the contrast of a transparent fill. The
+   base `h1` is real muted text (7.5:1), the lit copy is an `aria-hidden` duplicate under a
+   radial mask. The light's coordinates are CSS variables on the stage, set from pointer
+   events without React state.
+7. Cells is a 2D canvas driven by a `CellField` class (state out of React, like
+   `SpinController`); the frame loop runs only while a cell is lit or the sweep is running,
+   and stops when the hero leaves view.
+8. Atlas maps `public/maps/world-dots.svg` as the equirectangular grid it is (3.2 units per
+   degree from longitude −180 and latitude 84); routes are quadratic curves bowing upward;
+   pins are HTML boxes positioned in percent so they keep their pixel size at any map width.
+   The pin data is `getPartnerLocations()`, the same placeholders (state and country
+   centroids) as the partner globe.
+9. Rows draws its three cells by hand in the split-button language (label cell, arrow cell,
+   the 2px black divider on the primary) because a `SplitButton` cannot stretch to fill a
+   grid cell; the rails sit at the content edges like the What we do row; the academic year
+   comes from `site.academicYear` and hides on phones where it wrapped.
+10. Typewriter keeps the whole headline in the DOM from the first paint (untyped characters
+    are only transparent), with a `<noscript>` style that shows them, so assistive tech,
+    search and the no-JavaScript render get the full sentence.
+
+**Known gaps**
+
+- The choice cannot be shared by link; a `?hero=` parameter would need a client-side read to
+  keep the page static. Ask if the exec board should vote from links.
+- Touch devices get the entrance motion but not the pointer interactions (Torch drifts on its
+  own, Cells sweeps once, Focus rests on the green line).
+- Photo shows the placeholder art until the organization photo lands in `content/media.ts`.
+- Ticker's band assumes one copy of the statement is wider than the viewport (about
+  2,900px at the largest type size); beyond that a gap would show at the seam.
+- Typewriter delays the largest contentful paint by design (the headline appears over ~1.6s).
+
+**TODOs for Ashton**
+
+- Open the home page, press Shift + M and try the ten heroes (arrow keys move through
+  them). Say which one ships (or which two or three to keep for later) and I will set
+  `DEFAULT_HERO`, delete the rest and note it in PLAN.md.
+- The real organization photo (`org.group-photo`) is what makes Photo a real option.
+- Everything from earlier sessions still stands.
 
 ## Session 10b — 2026-09-08 (exec board by year)
 
@@ -693,7 +813,13 @@ unchanged.
 
 ## Next session starts with
 
-**Session 11: application portal, part 4 (go live).** Read `docs/PLAN.md` §5, §6 and
+**First, the hero decision (Session 11 follow-up).** Ashton opens the home page, presses
+Shift + M and picks the hero (PLAN.md §19, the Session 11 log). Set `DEFAULT_HERO` in
+`src/lib/config/options.ts` to the choice, delete the variants that are not kept (their
+files under `src/components/home/heroes/`, their rows in `HERO_VARIANTS` and in `Hero.tsx`),
+and record the choice in PLAN.md §19.
+
+**Then Session 12: application portal, part 4 (go live).** Read `docs/PLAN.md` §5, §6 and
 §12–§16, this file and `docs/DEPLOY.md`, then, in this order:
 
 1. Keepalive: an `/api/keepalive` route handler that reads one row through the anon key and a
