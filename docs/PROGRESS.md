@@ -37,6 +37,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 10, audit 4: framed rows, recognizable process pictures (form, team, laptop, rocket), wider marquee fade, "Learn more" buttons and the project-card hover on Who we serve, the paper plane in Get involved
 - [x] Session 11: Shift + M site configuration panel (per browser, ships hidden) with ten home hero variants (Globe stays the default; Atlas, Typewriter, Ticker, Focus, Torch, Cells, Wordmark, Rows, Photo); Ashton picks the one that ships
 - [x] Session 11b: ten Get involved graphic variants as the menu's second setting (Plane stays the default; Door, Puzzle, Canvas, Chat, Badge, Calendar, Terminal, Keycap, Signpost), all recognizable objects without the corner brackets; Ashton picks the one that ships
+- [x] Session 11f: How it works drawn with the footer T-rex (detective, team, builder, party) dissolving cell by cell between the steps
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -58,6 +59,71 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+
+## Session 11f — 2026-09-08 (the dino process scene)
+
+Ashton's request: the How it works graphic uses the dinosaur. Discover is a detective dino
+with a magnifying glass; Match adds a few other dinos, all distinct, to form a team; Build is
+a construction dino hammering; Deliver is a party dino handing over a gift box; every
+addition in exactly the footer T-rex's pixel style; and the dinos animate or transition
+between the steps.
+
+**Built** (PLAN.md §21):
+
+1. `brand/dino-pixels.ts`: the 20 × 22 T-rex map moved out of `PixelDino` (which now imports
+   it) with the eye, the arm cells and a `dinoCells()` helper, so the footer and the scene
+   read one map.
+2. `home/ProcessSprites.ts`: the scenes as string maps on the same grid (`#` green, `o`
+   white, `+` the lens tint), placed relative to the T-rex's top-left cell on a 64 × 40
+   stage: the deerstalker, the glass with its handle and eight trail dashes; the triceratops,
+   the stegosaurus and the pterodactyl (body plus a wing frame above and below); the hard
+   hat, the hammer raised and struck, the spark and six bricks; the party hat, the gift with
+   its ribbon and bow, the longer arm, twelve confetti cells in three groups and the
+   long-necked partner. Every layer lists the steps it belongs to; the T-rex body and arm are
+   in all four. Designed in a Pillow renderer in the scratchpad (contact sheets at 12 px and
+   4 px cells) before any React.
+3. `home/ProcessScene`: rewritten. One `<path>` per layer, ink and dissolve bucket (cells
+   merged into row runs; 210 paths live); a hash of each cell's position puts it in one of
+   ten buckets, and as the progress crosses from one step to the next each bucket flips at
+   its own point (outgoing cells off, incoming on), so nothing is ever half-visible. The
+   effect patches `opacity` only on the paths that changed and `data-mode` (the nearest
+   step) on the svg; the stills render only their step's resting layers. Container 8:5, no
+   `anim-float` (a fractional bob would blur the pixels); the glow behind stays.
+4. `globals.css`: `dino-*` keyframes, all `steps()`, gated by `[data-mode]`: the glass peers
+   round a one-cell square, the trail dashes appear one after another, the arm waves twice
+   and the triceratops and stegosaurus bob out of phase while the pterodactyl flaps, the
+   hammer strikes once a second with a spark, the gift is pushed toward the partner and the
+   confetti falls twelve cells in twelve steps; reduced motion drops the delays and every
+   loop ends on its resting frame. The magnify / flame / trail keyframes of the old pictures
+   are gone.
+5. `content/process.ts` + schema: `graphic` is `detective | team | builder | party`.
+   `ProcessScroll`: the scene is `min(80vw, 20rem)` wide on phones and up to 1.6 × the free
+   viewport height on desktop. `HowItWorks`: stills up to 18rem. `/dev/ui`: the four stills.
+
+**Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm a11y` on `/` and
+`/nonprofits` (0 violations at 1440 and 390 and with the drawer open), and a Playwright pass
+that scrolls each step to the reading line and reads the svg: `data-mode` follows the step,
+the loops run only in their step (10 / 7 / 4 / 6 animations), no console errors. Captures in
+`docs/screenshots/session-11f/` (`scene-<step>-<width>.png`, the mid-dissolve frames
+`scene-mid-*`, two hammer frames, the section captures, the nonprofits stills and the
+`review-*.png` contact sheets).
+
+**Decisions**
+
+1. Two inks: dinosaurs green, hats / tools / gift white (`--text`), so a hat does not merge
+   into the head; the lens is a 28% green tint. Still the one cell grid, no outlines.
+2. The T-rex never moves between steps (it is the same character); companions and props
+   dissolve. The dissolve is a hard per-cell flip in ten hashed buckets, not a fade.
+3. The team is three other species (triceratops, stegosaurus, pterodactyl) rather than
+   accessorised T-rexes, and the Deliver partner is a fourth species so it reads as the
+   nonprofit receiving the gift.
+4. The scene no longer floats: a continuous fractional translate softens crisp pixels.
+
+**TODOs**
+
+- Timings and the number of waves / strikes are the `[data-mode]` rules at the end of
+  `globals.css`; the drawings are string maps in `home/ProcessSprites.ts` (edit them like
+  the footer map).
 
 ## Session 11e — 2026-09-08 (the footer T-rex)
 
@@ -1034,7 +1100,11 @@ unchanged.
 
 ## Next session starts with
 
-**First, the hero decision (Session 11 follow-up).** Ashton opens the home page, presses
+**First, Ashton's review of the dino process scene** (Session 11f, `docs/screenshots/session-11f/`):
+the four scenes, the dissolve and the per-step motion; timings are the `[data-mode]` rules at
+the end of `globals.css`, the drawings are string maps in `home/ProcessSprites.ts`.
+
+**Then the hero decision (Session 11 follow-up).** Ashton opens the home page, presses
 Shift + M and picks the hero (PLAN.md §19, the Session 11 log). Set `DEFAULT_HERO` in
 `src/lib/config/options.ts` to the choice, delete the variants that are not kept (their
 files under `src/components/home/heroes/`, their rows in `HERO_VARIANTS` and in `Hero.tsx`),

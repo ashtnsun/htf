@@ -45,7 +45,8 @@ src/proxy.ts        portal only (/apply, /admin): refreshes the Supabase session
                     bounces signed-out visitors off protected pages
 src/components/
   brand/            Logo (inline SVG wordmark; logo-paths.ts is generated, do not hand-edit),
-                    PixelDino (footer)
+                    PixelDino (footer), dino-pixels.ts (the 20×22 T-rex map the footer and the
+                    process scene share)
   ui/               primitives: Eyebrow, Headline, SplitButton, Section, Card, Accordion,
                     StatTile (+ CountUp), TestimonialCard, Chip, Field, Media, DottedMap
   layout/           SiteHeader, NavDrawer, NavLinks, SiteFooter, PageHero, SectionNav (the
@@ -58,8 +59,9 @@ src/components/
   home/             Hero (client switch over heroes/*: ten variants chosen in the Shift + M
                     menu, GlobeHero the default and in the bundle, the rest lazy chunks;
                     HeroShell is the shared frame), Globe (SVG, takes pins), WhatWeDo, Process (+ ProcessScroll,
-                    ProcessScene: one stage whose recognizable pictures (form, team, laptop,
-                    rocket) cross-fade with scroll; also the stills on /nonprofits),
+                    ProcessScene: the footer T-rex as detective, team lead, builder and party
+                    host in pixel art that dissolves cell by cell with scroll, the sprites in
+                    ProcessSprites.ts; also the stills on /nonprofits),
                     ImpactBand (+ TestimonialMarquee, Awards, AwardCarousel), WhoWeServe (two
                     linked panels with a presentational "Learn more" button in a full-bleed
                     row; also the hand-off on /about)
@@ -204,6 +206,10 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   and looping effects (count-up, process graphics, testimonial marquee, dinosaur) must have a
   static or paused fallback under reduced motion and, for the marquee, a pause control.
 - Images: `<Media>` (next/image) with `sizes`; SVG placeholders render unoptimized.
+- Pixel art: every dinosaur drawing reads `brand/dino-pixels` and stays on its cell grid:
+  solid cells, no outlines, details carved as empty cells (the eye), dinosaurs green and
+  props white, motion by whole cells (`steps()` timing), nothing scaled, rotated or
+  fractionally translated (that blurs the pixels).
 - `cn()` registers the type scale with tailwind-merge (`src/lib/utils.ts`). Add any new
   `--text-*` token to that list, or a later `text-<colour>` in the same `cn()` call silently
   drops the size (tailwind-merge cannot tell `text-h2` from a colour).
