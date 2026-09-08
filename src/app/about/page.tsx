@@ -6,8 +6,8 @@ import { Story } from "@/components/about/Story";
 import { Awards } from "@/components/home/Awards";
 import { WhoWeServe } from "@/components/home/WhoWeServe";
 import { ContactCta } from "@/components/layout/ContactCta";
-import { JumpLinks } from "@/components/layout/JumpLinks";
 import { PageHero } from "@/components/layout/PageHero";
+import { SectionNav } from "@/components/layout/SectionNav";
 import { Reveal } from "@/components/motion/Reveal";
 import { Section } from "@/components/ui/Section";
 import { getAboutPage, getAwards, getExec, getExecYears, getInstagramPosts } from "@/lib/content";
@@ -40,9 +40,8 @@ export default function AboutPage() {
         eyebrow="About"
         lines={["Students building", "*for good.*"]}
         blurb="A student organization at Purdue University that builds software for nonprofits around the world, one team and one partner at a time."
-      >
-        <JumpLinks items={SECTIONS} className="mt-0" />
-      </PageHero>
+      />
+      <SectionNav items={SECTIONS} label="About" />
 
       <Mission mission={about.mission} />
       <Story paragraphs={about.story} facts={about.facts} />

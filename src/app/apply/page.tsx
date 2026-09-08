@@ -20,6 +20,7 @@ import {
   type Role,
 } from "@/lib/portal/data";
 import { isPortalConfigured } from "@/lib/supabase/env";
+import { isTodo } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Apply",
@@ -65,7 +66,16 @@ export default async function ApplyPage({ searchParams }: PageProps<"/apply">) {
 
   if (!isPortalConfigured()) return <PortalNotConnected />;
 
-  const [user, cycle] = await Promise.all([getSessionUser(), getActiveCycle()]);
+  const [user, cycle] = await Promise.all([
+    getSessionUser(),
+    getActiveCycle().catch((error: unknown) => {
+      // A database that cannot be reached (project paused, local stack down) should not be
+      // a blank 500 for an applicant: log it and show the "come back" panel instead.
+      console.error(error);
+      return undefined;
+    }),
+  ]);
+  if (cycle === undefined) return <PortalUnavailable />;
   const [roles, application, admin] = await Promise.all([
     cycle ? getOpenRoles(cycle.id) : Promise.resolve<Role[]>([]),
     user && cycle ? getMyApplication(cycle.id, user.id) : Promise.resolve(null),
@@ -198,6 +208,27 @@ function ExternalApply() {
 }
 
 /** Portal mode without the Supabase variables: say so instead of failing. */
+/** The database did not answer: the page stays up with a way to reach us. */
+function PortalUnavailable() {
+  const email = isTodo(site.socials.email) ? null : site.socials.email;
+  return (
+    <PageHero
+      eyebrow="Applications"
+      lines={["The portal is", "*taking a moment.*"]}
+      blurb="We could not reach the application database just now. Nothing you submitted is lost. Try again in a few minutes."
+    >
+      <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+        <SplitButton href="/apply">Try again</SplitButton>
+        {email ? (
+          <SplitButton href={`mailto:${email}`} variant="secondary">
+            Email us
+          </SplitButton>
+        ) : null}
+      </div>
+    </PageHero>
+  );
+}
+
 function PortalNotConnected() {
   return (
     <PageHero

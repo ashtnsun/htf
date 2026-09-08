@@ -4,7 +4,6 @@ import { PixelDino } from "@/components/brand/PixelDino";
 import { ProcessScene } from "@/components/home/ProcessScene";
 import { PaperPlaneGraphic } from "@/components/layout/PaperPlaneGraphic";
 import { Globe } from "@/components/home/Globe";
-import { JumpLinks } from "@/components/layout/JumpLinks";
 import { Gallery } from "@/components/projects/Gallery";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { TeamGrid } from "@/components/projects/TeamGrid";
@@ -16,6 +15,7 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { ChoiceField, TextAreaField, TextField } from "@/components/ui/Field";
 import { Headline } from "@/components/ui/Headline";
 import { Media } from "@/components/ui/Media";
+import { SectionNav } from "@/components/layout/SectionNav";
 import { Section } from "@/components/ui/Section";
 import { SplitButton } from "@/components/ui/SplitButton";
 import { StatTile } from "@/components/ui/StatTile";
@@ -493,9 +493,10 @@ export default function UiKitPage() {
         </p>
       </Block>
 
-      <Block title="JumpLinks (the “On this page” row under page heroes)">
-        <JumpLinks
-          className="mt-0"
+      <Block title="SectionNav (the sticky section bar under the hero on About, Students, Nonprofits)">
+        <SectionNav
+          label="About"
+          className="static"
           items={[
             { href: "#a", label: "Mission" },
             { href: "#b", label: "Who we are" },

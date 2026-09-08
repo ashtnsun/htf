@@ -3,8 +3,8 @@ import Link from "next/link";
 import { getPrimaryCta } from "@content/site";
 import { ContactCta } from "@/components/layout/ContactCta";
 import { FaqSection } from "@/components/layout/FaqSection";
-import { JumpLinks } from "@/components/layout/JumpLinks";
 import { PageHero } from "@/components/layout/PageHero";
+import { SectionNav } from "@/components/layout/SectionNav";
 import { SeasonNote } from "@/components/layout/SeasonNote";
 import { HowWeWork } from "@/components/students/HowWeWork";
 import { Perks } from "@/components/students/Perks";
@@ -50,8 +50,8 @@ export default function StudentsPage() {
           </SplitButton>
           <SeasonNote className="sm:ml-2" />
         </div>
-        <JumpLinks items={SECTIONS} />
       </PageHero>
+      <SectionNav items={SECTIONS} label="Students" />
 
       <RoleRows roles={roles} />
       <RecruitmentTimeline steps={timeline} />

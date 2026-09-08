@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { site } from "@content/site";
 import { FaqSection } from "@/components/layout/FaqSection";
-import { JumpLinks } from "@/components/layout/JumpLinks";
 import { PageHero } from "@/components/layout/PageHero";
+import { SectionNav } from "@/components/layout/SectionNav";
 import { Reveal } from "@/components/motion/Reveal";
 import { HowItWorks } from "@/components/nonprofits/HowItWorks";
 import { IntakeForm } from "@/components/nonprofits/IntakeForm";
@@ -60,8 +60,8 @@ export default function NonprofitsPage() {
         <SplitButton href="#start" size="lg">
           Start a project
         </SplitButton>
-        <JumpLinks items={SECTIONS} />
       </PageHero>
+      <SectionNav items={SECTIONS} label="Nonprofits" />
 
       <HowItWorks steps={steps} />
       <Scope build={page.scope.build} avoid={page.scope.avoid} />
