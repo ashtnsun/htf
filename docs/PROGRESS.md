@@ -84,6 +84,26 @@ of the cell while a copy slid in, which Ashton found buggy, so that was reverted
 CLAUDE.md's hover rule names this as the one exception to "nothing translates". Screenshots:
 `buttons-*.png` and `header-cta-hover.png` in `docs/screenshots/session-11g/`.
 
+Then the recruitment timeline on /students, "cooler and not as large". The vertical spine
+(1274px tall at 1440) is now a horizontal track, `students/TimelineTrack` (client) under the
+same heading: a grid of cells, six across on lg, three on md, two on phones, each cell's top
+edge its piece of the rail with a 12px square node at the left end, the step number and date
+in eyebrow type, the title at `text-body-lg`, a `text-sm` description. Inside the section's
+`RevealGroup` (stagger 0.12) the cells arrive left to right: the rail segment scales in from
+the left, the node pops, the text rises. Segments and nodes go green up to the current step
+(still -1 with no dates), whose node gets a ping ring (`anim-hero-ping`) and the "Now" tag.
+Heights: 587px at 1440 (was 1274), 783 at 768, 1070 at 390 (was 1430); cells below lg carry `pb-10` so wrapped rows keep their distance. Screenshots:
+`timeline-before-*.png`, `timeline-{1440,1440-mid,768,390,1440-reduced}.png`.
+
+Found on the way: under prefers-reduced-motion every `Reveal` section rendered blank. Framer's
+`useReducedMotion` is already true on the client's first render, so `Reveal` switched to a
+plain div while the server had rendered the motion div with the hidden inline styles; React
+never patches attribute mismatches, so `opacity: 0` stayed. `motion/useReducedMotionSafe`
+reports false until hydration (`useSyncExternalStore` with a false server snapshot) and
+`Reveal`, `RevealGroup` and `TimelineTrack` use it, so the static branch is a normal update.
+The footer `PixelDino` still logs the same mismatch under reduced motion (its `initial`
+styles); not touched here.
+
 ## Session 11f — 2026-09-08 (the dino process scene)
 
 Ran alongside a second session (the hero and Get involved decisions) in the same tree.

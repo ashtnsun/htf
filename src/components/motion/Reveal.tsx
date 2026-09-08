@@ -1,7 +1,8 @@
 "use client";
 
-import { motion, useReducedMotion, type Variants } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import type { ReactNode } from "react";
+import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 const HIDDEN = { opacity: 0, y: 28 };
@@ -22,7 +23,8 @@ type RevealGroupProps = {
 
 /**
  * Staggers the <Reveal> children inside it. Under prefers-reduced-motion everything
- * renders in its final state with no animation.
+ * renders in its final state with no animation (from the first update after hydration; see
+ * useReducedMotionSafe).
  */
 export function RevealGroup({
   children,
@@ -31,7 +33,7 @@ export function RevealGroup({
   delay = 0,
   className,
 }: RevealGroupProps) {
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotionSafe();
   if (reduce) return <div className={className}>{children}</div>;
   const viewProps =
     mode === "view"
@@ -64,7 +66,7 @@ type RevealProps = {
  * JavaScript never runs (the server-rendered initial state is invisible).
  */
 export function Reveal({ children, className, standalone = false, delay = 0 }: RevealProps) {
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotionSafe();
   if (reduce) return <div className={className}>{children}</div>;
   if (standalone) {
     return (

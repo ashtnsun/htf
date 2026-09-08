@@ -82,7 +82,9 @@ src/components/
                     ReviewPanel (review, status and other reviews; forms post to actions)
   config/           ConfigMenu (Shift + M: the non-modal site configuration panel; one
                     VariantPicker per setting: the home hero, the Get involved graphic)
-  motion/           Reveal / RevealGroup (fade-and-rise, reduced-motion aware)
+  motion/           Reveal / RevealGroup (fade-and-rise, reduced-motion aware),
+                    useReducedMotionSafe (false until hydration, so the static branch never
+                    mismatches the server's animated markup)
   icons/            Instagram / LinkedIn (lucide 1.x has no brand icons)
 src/lib/content/    schemas.ts (Zod) + index.ts (loaders; throw on invalid content)
 src/lib/forms/      fields.ts (FormState, readValues, honeypot), deliver.ts (Supabase / Resend,
@@ -204,8 +206,11 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   brighten (the green underline marks the current page only). Nothing translates, lifts or scales on hover; the one exception is
   inside a `SplitButton`, whose label rolls within its clipped cell and whose arrow glyph nudges
   while the button itself stays put. Mint is the focus ring only, never a hover colour. Transitions: 200ms colours.
-- Motion: Framer Motion via `Reveal`/`RevealGroup`; check `useReducedMotion` in any client
-  animation and render the final state when it is set. CSS transitions for hover. Scroll-driven
+- Motion: Framer Motion via `Reveal`/`RevealGroup`; check `useReducedMotionSafe`
+  (`components/motion`) in any client animation and render the final state when it is set.
+  Never branch on Framer's raw `useReducedMotion` during the first render: the server rendered
+  the animated markup and React does not patch attribute mismatches, so the hidden styles
+  would stick. CSS transitions for hover. Scroll-driven
   and looping effects (count-up, process graphics, testimonial marquee, dinosaur) must have a
   static or paused fallback under reduced motion and, for the marquee, a pause control.
 - Images: `<Media>` (next/image) with `sizes`; SVG placeholders render unoptimized.
