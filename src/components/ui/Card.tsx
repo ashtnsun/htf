@@ -13,6 +13,8 @@ type CardProps = {
   glass?: boolean;
   as?: "div" | "article" | "li";
   className?: string;
+  /** Hides a purely repeated card (marquee filler) from assistive tech. */
+  "aria-hidden"?: true;
 };
 
 const paddingClass = {
@@ -35,6 +37,7 @@ export function Card({
   glass = false,
   as: Tag = "div",
   className,
+  "aria-hidden": ariaHidden,
 }: CardProps) {
   const hover = interactive ?? Boolean(href);
   const classes = cn(
@@ -48,12 +51,16 @@ export function Card({
   );
   if (href) {
     return (
-      <Tag className="h-full">
+      <Tag className="h-full" aria-hidden={ariaHidden}>
         <Link href={href} className={cn(classes, "h-full")}>
           {children}
         </Link>
       </Tag>
     );
   }
-  return <Tag className={classes}>{children}</Tag>;
+  return (
+    <Tag className={classes} aria-hidden={ariaHidden}>
+      {children}
+    </Tag>
+  );
 }

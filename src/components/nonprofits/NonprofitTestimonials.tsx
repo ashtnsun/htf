@@ -1,14 +1,15 @@
 import type { Testimonial } from "@/lib/content/schemas";
-import { Reveal, RevealGroup } from "@/components/motion/Reveal";
+import { TestimonialMarquee } from "@/components/home/TestimonialMarquee";
+import { Reveal } from "@/components/motion/Reveal";
 import { DottedMap } from "@/components/ui/DottedMap";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Headline } from "@/components/ui/Headline";
 import { Section } from "@/components/ui/Section";
-import { TestimonialCard } from "@/components/ui/TestimonialCard";
 
 /**
- * Quotes from nonprofit partners as a card grid over the dotted map. Hidden until a quote is
- * published (the loader still shows unpublished ones in development, without a note).
+ * Quotes from nonprofit partners in the home page's drifting marquee (with its pause
+ * button) over the dotted map. Hidden until a quote is published (the loader still shows
+ * unpublished ones in development, without a note).
  */
 export function NonprofitTestimonials({ testimonials }: { testimonials: Testimonial[] }) {
   if (testimonials.length === 0) return null;
@@ -24,9 +25,11 @@ export function NonprofitTestimonials({ testimonials }: { testimonials: Testimon
         tone="text"
         className="absolute inset-x-0 top-1/2 mx-auto w-[min(100%,80rem)] -translate-y-1/2 [mask-image:radial-gradient(60%_80%_at_50%_50%,#000_30%,transparent_100%)] opacity-20"
       />
-      <div className="relative container-max container-x">
-        <RevealGroup>
-          <Reveal>
+      <TestimonialMarquee
+        testimonials={testimonials}
+        className="mt-0"
+        heading={
+          <Reveal standalone>
             <Eyebrow>Partners say</Eyebrow>
             <Headline
               as="h2"
@@ -36,17 +39,8 @@ export function NonprofitTestimonials({ testimonials }: { testimonials: Testimon
               className="mt-5"
             />
           </Reveal>
-          <ul className="mt-12 grid gap-4 md:grid-cols-2">
-            {testimonials.map((t) => (
-              <li key={t.id}>
-                <Reveal className="h-full">
-                  <TestimonialCard testimonial={t} as="div" />
-                </Reveal>
-              </li>
-            ))}
-          </ul>
-        </RevealGroup>
-      </div>
+        }
+      />
     </Section>
   );
 }

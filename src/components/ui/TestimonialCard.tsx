@@ -13,6 +13,8 @@ type TestimonialCardProps = {
    */
   layout?: "band" | "grid";
   className?: string;
+  /** Hides a repeated copy (marquee filler) from assistive tech. */
+  "aria-hidden"?: true;
 };
 
 /** Long quotes get the wide card in the band, short ones the narrow card. */
@@ -27,6 +29,7 @@ export function TestimonialCard({
   as = "li",
   layout = "grid",
   className,
+  "aria-hidden": ariaHidden,
 }: TestimonialCardProps) {
   const wide = t.quote.length >= WIDE_QUOTE;
   return (
@@ -34,6 +37,7 @@ export function TestimonialCard({
       as={as}
       padding="lg"
       glass
+      aria-hidden={ariaHidden}
       className={cn(
         "h-full",
         layout === "band" && "shrink-0",
