@@ -2,6 +2,7 @@ import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import { site } from "@content/site";
+import { ConfigMenu } from "@/components/config/ConfigMenu";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import "./globals.css";
@@ -54,6 +55,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
         <SiteFooter />
+        {/* Shift + M: the site configuration panel (hero variants). Saved per browser. */}
+        <ConfigMenu />
         {/* Vercel Web Analytics: cookieless page views. Rendered only on Vercel builds (the
             script 404s elsewhere) and active once enabled on the Vercel project. */}
         {process.env.VERCEL ? <Analytics /> : null}

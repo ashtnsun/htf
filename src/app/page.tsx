@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getPrimaryCta } from "@content/site";
 import { Hero } from "@/components/home/Hero";
 import { ImpactBand } from "@/components/home/ImpactBand";
 import { Process } from "@/components/home/Process";
@@ -10,6 +11,7 @@ import { FaqSection } from "@/components/layout/FaqSection";
 import {
   getAwards,
   getFaq,
+  getPartnerLocations,
   getProcess,
   getServices,
   getStats,
@@ -27,9 +29,14 @@ const linkClass = "font-medium text-green transition-colors duration-200 hover:t
  * hard-coded except section copy.
  */
 export default function HomePage() {
+  // The hero variant is a per-browser choice (Shift + M); the copy, the season CTA and the
+  // partner pins (the Atlas variant) come from content either way.
+  const pins = getPartnerLocations().flatMap((place) =>
+    place.geo ? [{ id: place.id, lat: place.geo[0], lng: place.geo[1] }] : [],
+  );
   return (
     <>
-      <Hero />
+      <Hero cta={getPrimaryCta()} pins={pins} />
       <WhatWeDo services={getServices()} />
       <Process steps={getProcess()} />
       <ImpactBand stats={getStats()} testimonials={getTestimonials()} awards={getAwards()} />
