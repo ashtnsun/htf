@@ -49,9 +49,13 @@ export function PhotoHero({ cta }: HeroProps) {
 
   return (
     <HeroShell ref={ref} grid={false}>
-      {/* the photo, with headroom below for the parallax */}
+      {/* the photo, with headroom below for the parallax; it bleeds a few pixels past the clip
+          on the top and sides so an image's own edge (the placeholder's outline) never shows */}
       <div aria-hidden="true" className="absolute inset-0 overflow-hidden bg-surface">
-        <div ref={imageRef} className="absolute inset-x-0 top-0 h-[125%] will-change-transform">
+        <div
+          ref={imageRef}
+          className="absolute -inset-x-1 -top-1 h-[125%] will-change-transform"
+        >
           <Media
             src="org.group-photo"
             alt=""
