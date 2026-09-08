@@ -10,7 +10,7 @@ import { JumpLinks } from "@/components/layout/JumpLinks";
 import { PageHero } from "@/components/layout/PageHero";
 import { Reveal } from "@/components/motion/Reveal";
 import { Section } from "@/components/ui/Section";
-import { getAboutPage, getAwards, getExec, getInstagramPosts } from "@/lib/content";
+import { getAboutPage, getAwards, getExec, getExecYears, getInstagramPosts } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "About",
@@ -30,6 +30,7 @@ const SECTIONS = [
 export default function AboutPage() {
   const about = getAboutPage();
   const exec = getExec();
+  const execYears = getExecYears();
   const awards = getAwards();
   const posts = getInstagramPosts();
 
@@ -45,7 +46,7 @@ export default function AboutPage() {
 
       <Mission mission={about.mission} />
       <Story paragraphs={about.story} facts={about.facts} />
-      <ExecGrid members={exec} />
+      <ExecGrid members={exec} years={execYears} />
       {awards.length > 0 ? (
         <Section id="awards" aria-labelledby="awards-title" className="border-t border-line">
           <Reveal standalone>

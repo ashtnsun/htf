@@ -233,6 +233,11 @@ export function getExec(): ExecMember[] {
   return items;
 }
 
+/** Board years with at least one member, newest first (the About page's default board). */
+export function getExecYears(): string[] {
+  return [...new Set(getExec().map((e) => e.year))].sort((a, b) => b.localeCompare(a));
+}
+
 export function getRoles(): Role[] {
   const items = parseAll(roleSchema, rolesData, "content/roles.ts");
   assertUnique(items, (r) => r.slug, "content/roles.ts");

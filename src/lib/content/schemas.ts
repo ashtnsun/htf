@@ -5,6 +5,11 @@ export const slugSchema = z
   .string()
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "must be kebab-case (a-z, 0-9, dashes)");
 
+/** A school year or cycle label: "2025" or "2025–26" (en dash). Sorts newest-first as text. */
+export const cycleYearSchema = z
+  .string()
+  .regex(/^\d{4}(?:–\d{2})?$/, 'use "2025" or "2025–26" (en dash)');
+
 /** A media reference: either a key from content/media.ts or a /public path. */
 export const mediaRefSchema = z.string().min(1);
 
@@ -38,7 +43,7 @@ export const projectFrontmatterSchema = z.object({
   title: z.string().min(1),
   nonprofit: z.string().min(1),
   /** Academic cycle, e.g. "2025–26". */
-  year: z.string().regex(/^\d{4}(?:–\d{2})?$/, 'use "2025" or "2025–26" (en dash)'),
+  year: cycleYearSchema,
   location: z.string().min(1),
   tags: z.array(projectTagSchema).min(1),
   summary: z.string().min(10).max(240),
@@ -59,11 +64,18 @@ export const projectFrontmatterSchema = z.object({
   published: z.boolean().default(true),
 });
 
+/** One exec member of one board; the About page shows a board per `year`. */
 export const execMemberSchema = z.object({
   slug: slugSchema,
   name: z.string().min(1),
   role: z.string().min(1),
-  linkedin: z.url().optional(),
+  /** The school year of the board this member sits on, e.g. "2026–27". */
+  year: cycleYearSchema,
+  /**
+   * LinkedIn profile URL. Every card carries the link, so the field is required; a value
+   * starting with "TODO" renders a placeholder cell until the real URL is known.
+   */
+  linkedin: z.union([z.url(), z.string().regex(/^\[?TODO/i, "a URL or a [TODO: …] note")]),
   photo: mediaRefSchema.optional(),
 });
 
