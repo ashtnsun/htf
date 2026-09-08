@@ -38,13 +38,11 @@ type SplitButtonProps = {
 
 /**
  * The split CTA: a label cell and a separate arrow cell, square-cornered. Hover follows the
- * site-wide language: the button itself stays put, and its contents slide. The label rolls up
- * and a copy rises into its place; the arrow leaves through the right edge (diagonally for
- * external links, downward for downloads) while a copy enters from the opposite side. On the
- * secondary variant the border turns green and the arrow cell fills green, so its white arrow
- * turns black. Text on green is always the dark background colour (white on green fails WCAG
- * AA). Both copies live in one clipped box, so the cells never change size; under reduced
- * motion the global rule makes the swap instant.
+ * site-wide language: the button itself stays put. The label rolls up and a copy rises into
+ * its place (both in one clipped line box, so the cell never changes size; instant under
+ * reduced motion), and the arrow glyph nudges along the direction it points. On the secondary
+ * variant the border turns green and the arrow cell fills green, so its white arrow turns
+ * black. Text on green is always the dark background colour (white on green fails WCAG AA).
  */
 export function SplitButton({
   href,
@@ -114,22 +112,15 @@ export function SplitButton({
     "group-hover:translate-y-0",
   );
 
-  /* The arrow's exit and entrance, along the direction the glyph points. */
-  const [out, from] = download
-    ? ["group-hover:translate-y-full", "-translate-y-full"]
-    : isExternal
-      ? ["group-hover:translate-x-full group-hover:-translate-y-full", "-translate-x-full translate-y-full"]
-      : ["group-hover:translate-x-full", "-translate-x-full"];
-  const slideMotion =
-    "transition-[transform,opacity] duration-400 ease-out-expo motion-reduce:transition-none";
-  const iconSize = "size-[1.1em]";
-  const iconOut = cn(iconSize, slideMotion, out, "group-hover:opacity-0");
-  const iconIn = cn(
-    "absolute",
-    iconSize,
-    slideMotion,
-    from,
-    "opacity-0 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100",
+  const icon = cn(
+    "size-[1.1em] transition-transform duration-300 ease-out-expo",
+    pending
+      ? "animate-spin"
+      : download
+        ? "group-hover:translate-y-0.5"
+        : isExternal
+          ? "group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+          : "group-hover:translate-x-1",
   );
 
   const content = (
@@ -142,15 +133,8 @@ export function SplitButton({
           </span>
         </span>
       </span>
-      <span className={cn(arrow, "relative overflow-hidden")} aria-hidden="true">
-        {pending ? (
-          <Icon className={cn(iconSize, "animate-spin")} strokeWidth={2} />
-        ) : (
-          <>
-            <Icon className={iconOut} strokeWidth={2} />
-            <Icon className={iconIn} strokeWidth={2} />
-          </>
-        )}
+      <span className={arrow} aria-hidden="true">
+        <Icon className={icon} strokeWidth={2} />
       </span>
     </>
   );

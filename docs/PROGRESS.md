@@ -76,11 +76,11 @@ its two commits; the rest is `chore(config): …`.
 
 Then `ui/SplitButton`: the secondary arrow is white at rest (was green) and turns black on
 the green hover fill. Every button's contents now slide on hover while the button stays put:
-the label rolls up and an `aria-hidden` copy rises from below (500ms, ease-out-expo), and
-the arrow leaves through the right edge, fading, while a copy enters from the left (400ms;
-diagonal for external links, downward for downloads; the pending spinner does not slide).
-Both copies sit in one clipped box, so nothing resizes (checked: the header bar CTA's box is
+the label rolls up and an `aria-hidden` copy rises from below (500ms, ease-out-expo). Both
+copies sit in one clipped box, so nothing resizes (checked: the header bar CTA's box is
 identical at rest and on hover). `motion-reduce:transition-none` makes the swap instant.
+The arrow keeps its earlier nudge along the direction it points; a first cut had it slide out
+of the cell while a copy slid in, which Ashton found buggy, so that was reverted.
 CLAUDE.md's hover rule names this as the one exception to "nothing translates". Screenshots:
 `buttons-*.png` and `header-cta-hover.png` in `docs/screenshots/session-11g/`.
 

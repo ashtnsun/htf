@@ -184,9 +184,8 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   child of `ul`/`ol` (put `Reveal` inside the `li`).
 - Every CTA is a `SplitButton` (primary: green label, green arrow cell, 2px black divider;
   secondary: outlined, white arrow that turns black on the green hover fill; on hover the
-  label rolls up into a copy and the arrow slides out while a copy slides in, since
-  2026-09-08; `presentational` renders a span for a button inside a card that is itself the
-  link);
+  label rolls up into a copy and the arrow glyph nudges, since 2026-09-08; `presentational`
+  renders a span for a button inside a card that is itself the link);
   every section label is an `Eyebrow`; every heading with a green accent is a `Headline`
   (`*word*` marks the accent).
 - Portal: every page and server action under `/apply` and `/admin` goes through
@@ -203,8 +202,8 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   are already green, medium weight, no underline, and turn white); interactive surfaces get
   `hover-corners` + `border-line-strong` + `bg-surface-2`; arrow cells fill green; nav links
   brighten (the green underline marks the current page only). Nothing translates, lifts or scales on hover; the one exception is
-  inside a `SplitButton`, whose label and arrow slide within their clipped cells while the button
-  itself stays put. Mint is the focus ring only, never a hover colour. Transitions: 200ms colours.
+  inside a `SplitButton`, whose label rolls within its clipped cell and whose arrow glyph nudges
+  while the button itself stays put. Mint is the focus ring only, never a hover colour. Transitions: 200ms colours.
 - Motion: Framer Motion via `Reveal`/`RevealGroup`; check `useReducedMotion` in any client
   animation and render the final state when it is set. CSS transitions for hover. Scroll-driven
   and looping effects (count-up, process graphics, testimonial marquee, dinosaur) must have a
