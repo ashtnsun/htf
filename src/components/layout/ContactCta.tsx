@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
-import { getPrimaryCta } from "@content/site";
+import { getDeadlineParts, getPrimaryCta, site } from "@content/site";
+import { InvolvedGraphic } from "@/components/layout/involved/InvolvedGraphic";
 import { SeasonNote } from "@/components/layout/SeasonNote";
-import { PaperPlaneGraphic } from "@/components/layout/PaperPlaneGraphic";
 import { Reveal } from "@/components/motion/Reveal";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Headline } from "@/components/ui/Headline";
@@ -22,8 +22,9 @@ type ContactCtaProps = {
 
 /**
  * Closing call-to-action after the Framer contact block: eyebrow, display headline, copy,
- * the season CTA (Apply Now / Contact Us from content/site.ts) and the floating paper
- * plane (PaperPlaneGraphic; audit 4 of 2026-09-07 asked for something recognizable).
+ * the season CTA (Apply Now / Contact Us from content/site.ts) and the floating Get involved
+ * graphic (layout/involved: the paper plane by default, nine more in the Shift + M menu; every
+ * one a recognizable object, since audit 4 of 2026-09-07).
  */
 export function ContactCta({
   id = "get-involved",
@@ -34,6 +35,8 @@ export function ContactCta({
   className,
 }: ContactCtaProps) {
   const cta = getPrimaryCta();
+  const deadline = getDeadlineParts();
+  const season = deadline ? { cycleName: site.season.cycleName, deadline } : null;
   const titleId = `${id}-title`;
   const showSecondary = secondary && secondary.href !== cta.href;
   return (
@@ -68,7 +71,7 @@ export function ContactCta({
           <SeasonNote className="mt-5" />
         </Reveal>
         <Reveal standalone delay={0.15} className="mx-auto w-[min(100%,28rem)]">
-          <PaperPlaneGraphic />
+          <InvolvedGraphic cta={cta} season={season} academicYear={site.academicYear} />
         </Reveal>
       </div>
     </Section>

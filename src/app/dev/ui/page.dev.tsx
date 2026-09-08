@@ -2,7 +2,16 @@ import type { Metadata } from "next";
 import { Logo } from "@/components/brand/Logo";
 import { PixelDino } from "@/components/brand/PixelDino";
 import { ProcessScene } from "@/components/home/ProcessScene";
-import { PaperPlaneGraphic } from "@/components/layout/PaperPlaneGraphic";
+import { BadgeGraphic } from "@/components/layout/involved/BadgeGraphic";
+import { CalendarGraphic } from "@/components/layout/involved/CalendarGraphic";
+import { CanvasGraphic } from "@/components/layout/involved/CanvasGraphic";
+import { ChatGraphic } from "@/components/layout/involved/ChatGraphic";
+import { DoorGraphic } from "@/components/layout/involved/DoorGraphic";
+import { KeycapGraphic } from "@/components/layout/involved/KeycapGraphic";
+import { PlaneGraphic } from "@/components/layout/involved/PlaneGraphic";
+import { PuzzleGraphic } from "@/components/layout/involved/PuzzleGraphic";
+import { SignpostGraphic } from "@/components/layout/involved/SignpostGraphic";
+import { TerminalGraphic } from "@/components/layout/involved/TerminalGraphic";
 import { Globe } from "@/components/home/Globe";
 import { Gallery } from "@/components/projects/Gallery";
 import { ProjectCard } from "@/components/projects/ProjectCard";
@@ -68,6 +77,25 @@ const PAIRS: [string, string, string][] = [
   ["green-deep on bg (large text only)", "#277d4a", "#0b0b0b"],
   ["white on green (do not use)", "#f5f5f5", "#03c652"],
 ];
+
+/** Every Get involved variant, with the Fall 2026 deadline the calendar and the badge show. */
+const INVOLVED_PROPS = {
+  cta: { label: "Apply Now", href: "/apply" },
+  season: { cycleName: "Fall 2026", deadline: { year: 2026, month: 9, day: 12 } },
+  academicYear: "2026–27",
+};
+const INVOLVED_GRAPHICS = [
+  ["Plane", PlaneGraphic],
+  ["Door", DoorGraphic],
+  ["Puzzle", PuzzleGraphic],
+  ["Canvas", CanvasGraphic],
+  ["Chat", ChatGraphic],
+  ["Badge", BadgeGraphic],
+  ["Calendar", CalendarGraphic],
+  ["Terminal", TerminalGraphic],
+  ["Keycap", KeycapGraphic],
+  ["Signpost", SignpostGraphic],
+] as const;
 
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -417,9 +445,14 @@ export default function UiKitPage() {
         </div>
       </Block>
 
-      <Block title="PaperPlaneGraphic (Get involved: the plane flies its path on view, pointer tilt)">
-        <div className="max-w-sm">
-          <PaperPlaneGraphic />
+      <Block title="Get involved graphics (layout/involved; the Shift + M menu picks one, Plane is the default)">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+          {INVOLVED_GRAPHICS.map(([name, Graphic]) => (
+            <div key={name}>
+              <p className="text-sm text-muted">{name}</p>
+              <Graphic {...INVOLVED_PROPS} />
+            </div>
+          ))}
         </div>
       </Block>
 

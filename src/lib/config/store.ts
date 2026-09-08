@@ -3,7 +3,9 @@ import {
   CONFIG_STORAGE_KEY,
   DEFAULT_CONFIG,
   DEFAULT_HERO,
+  DEFAULT_INVOLVED,
   isHeroVariantId,
+  isInvolvedVariantId,
   type SiteConfig,
 } from "./options";
 
@@ -22,13 +24,17 @@ let snapshotRaw: string | null | undefined;
 /** Set when localStorage refuses writes (private mode, quota): the choice lives in memory. */
 let memoryOnly = false;
 
+/** Unknown keys and values fall back to the defaults, so an old saved shape never breaks. */
 function parse(raw: string | null): SiteConfig {
   if (!raw) return DEFAULT_CONFIG;
   try {
     const data: unknown = JSON.parse(raw);
-    const hero =
-      typeof data === "object" && data !== null ? (data as { hero?: unknown }).hero : null;
-    return { hero: isHeroVariantId(hero) ? hero : DEFAULT_HERO };
+    const saved =
+      typeof data === "object" && data !== null ? (data as Record<string, unknown>) : {};
+    return {
+      hero: isHeroVariantId(saved.hero) ? saved.hero : DEFAULT_HERO,
+      involved: isInvolvedVariantId(saved.involved) ? saved.involved : DEFAULT_INVOLVED,
+    };
   } catch {
     return DEFAULT_CONFIG;
   }
@@ -69,7 +75,8 @@ function subscribe(listener: () => void) {
   };
 }
 
-function isDefault(config: SiteConfig): boolean {
+/** True when every setting is at its shipped default. */
+export function isDefaultConfig(config: SiteConfig): boolean {
   return (Object.keys(DEFAULT_CONFIG) as (keyof SiteConfig)[]).every(
     (key) => config[key] === DEFAULT_CONFIG[key],
   );
@@ -78,7 +85,7 @@ function isDefault(config: SiteConfig): boolean {
 /** Save a change. Defaults are stored as "nothing" so a fresh browser and a reset look alike. */
 export function setSiteConfig(patch: Partial<SiteConfig>) {
   const next: SiteConfig = { ...getSnapshot(), ...patch };
-  const raw = isDefault(next) ? null : JSON.stringify(next);
+  const raw = isDefaultConfig(next) ? null : JSON.stringify(next);
   try {
     if (raw === null) window.localStorage.removeItem(CONFIG_STORAGE_KEY);
     else window.localStorage.setItem(CONFIG_STORAGE_KEY, raw);

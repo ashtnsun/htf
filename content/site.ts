@@ -102,3 +102,22 @@ export function formatDeadline(now: Date = new Date()): string | null {
     timeZone: site.season.timeZone,
   }).format(new Date(site.season.closesAt));
 }
+
+/**
+ * The deadline as calendar parts in the club's time zone (the Get involved calendar
+ * graphic). `month` is 1–12. Null out of season.
+ */
+export function getDeadlineParts(
+  now: Date = new Date(),
+): { year: number; month: number; day: number } | null {
+  if (!isInSeason(now)) return null;
+  const parts = new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    timeZone: site.season.timeZone,
+  }).formatToParts(new Date(site.season.closesAt));
+  const read = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((part) => part.type === type)?.value);
+  return { year: read("year"), month: read("month"), day: read("day") };
+}

@@ -7,8 +7,13 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { Eyebrow } from "@/components/ui/Eyebrow";
-import { DEFAULT_HERO, HERO_VARIANTS, type HeroVariantId } from "@/lib/config/options";
-import { resetSiteConfig, setSiteConfig, useSiteConfig } from "@/lib/config/store";
+import {
+  DEFAULT_HERO,
+  DEFAULT_INVOLVED,
+  HERO_VARIANTS,
+  INVOLVED_VARIANTS,
+} from "@/lib/config/options";
+import { isDefaultConfig, resetSiteConfig, setSiteConfig, useSiteConfig } from "@/lib/config/store";
 import { cn } from "@/lib/utils";
 
 /** true on the client after hydration, false during SSR; no effect/setState needed. */
@@ -27,6 +32,18 @@ function isTyping(target: EventTarget | null): boolean {
     el?.closest("input, textarea, select, [contenteditable]:not([contenteditable='false'])"),
   );
 }
+
+/** Pages that end with the Get involved block (layout/ContactCta). */
+function hasGetInvolved(pathname: string): boolean {
+  return (
+    pathname === "/" ||
+    pathname === "/about" ||
+    pathname === "/students" ||
+    pathname.startsWith("/projects")
+  );
+}
+
+const linkClass = "font-medium text-green transition-colors duration-200 hover:text-text";
 
 /**
  * The site configuration panel: Shift + M opens and closes it on every page. It is a
@@ -121,27 +138,60 @@ export function ConfigMenu() {
               Choices are saved in this browser only. Visitors see the defaults.
             </p>
 
-            <HeroPicker value={config.hero} />
+            <VariantPicker
+              legend="Home hero"
+              name="hero-variant"
+              options={HERO_VARIANTS}
+              value={config.hero}
+              defaultId={DEFAULT_HERO}
+              onChange={(hero) => setSiteConfig({ hero })}
+              note={
+                pathname !== "/" ? (
+                  <>
+                    The hero is on the{" "}
+                    <Link href="/" className={linkClass}>
+                      home page
+                    </Link>
+                    .
+                  </>
+                ) : null
+              }
+            />
 
-            {pathname !== "/" ? (
-              <p className="mt-6 text-sm text-muted">
-                The hero is on the{" "}
-                <Link
-                  href="/"
-                  className="font-medium text-green transition-colors duration-200 hover:text-text"
-                >
-                  home page
-                </Link>
-                .
-              </p>
-            ) : null}
+            <VariantPicker
+              legend="Get involved graphic"
+              name="involved-variant"
+              options={INVOLVED_VARIANTS}
+              value={config.involved}
+              defaultId={DEFAULT_INVOLVED}
+              onChange={(involved) => setSiteConfig({ involved })}
+              note={
+                hasGetInvolved(pathname) ? (
+                  <>
+                    Get involved is at the{" "}
+                    <a href="#get-involved" className={linkClass}>
+                      foot of this page
+                    </a>
+                    .
+                  </>
+                ) : (
+                  <>
+                    Get involved is at the foot of the{" "}
+                    <Link href="/#get-involved" className={linkClass}>
+                      home page
+                    </Link>
+                    , About, Projects and Students.
+                  </>
+                )
+              }
+            />
           </div>
 
           <div className="flex shrink-0 items-center justify-between border-t border-line px-5 py-3">
             <button
               type="button"
               onClick={resetSiteConfig}
-              disabled={config.hero === DEFAULT_HERO}
+              disabled={isDefaultConfig(config)}
               className="min-h-11 text-sm font-medium text-muted transition-colors duration-200 hover:text-green disabled:pointer-events-none disabled:opacity-40"
             >
               Reset to defaults
@@ -162,17 +212,43 @@ function Key({ children }: { children: string }) {
   );
 }
 
-/** The home hero choice: one row per variant, the selection applied on change. */
-function HeroPicker({ value }: { value: HeroVariantId }) {
+type VariantOption<Id extends string> = {
+  readonly id: Id;
+  readonly name: string;
+  readonly blurb: string;
+};
+
+type VariantPickerProps<Id extends string> = {
+  legend: string;
+  /** The radio group's name. */
+  name: string;
+  options: readonly VariantOption<Id>[];
+  value: Id;
+  defaultId: Id;
+  onChange: (id: Id) => void;
+  /** Where to see the choice, shown under the list. */
+  note?: React.ReactNode;
+};
+
+/** One setting: a row per variant, the selection applied on change. */
+function VariantPicker<Id extends string>({
+  legend,
+  name,
+  options,
+  value,
+  defaultId,
+  onChange,
+  note,
+}: VariantPickerProps<Id>) {
   return (
     <fieldset className="mt-8">
       <legend className="mb-4">
         <Eyebrow as="span" tone="green">
-          Home hero
+          {legend}
         </Eyebrow>
       </legend>
       <div className="border-t border-line">
-        {HERO_VARIANTS.map((variant) => {
+        {options.map((variant) => {
           const checked = variant.id === value;
           return (
             <label
@@ -185,10 +261,10 @@ function HeroPicker({ value }: { value: HeroVariantId }) {
             >
               <input
                 type="radio"
-                name="hero-variant"
+                name={name}
                 value={variant.id}
                 checked={checked}
-                onChange={() => setSiteConfig({ hero: variant.id })}
+                onChange={() => onChange(variant.id)}
                 className="sr-only"
               />
               <span
@@ -203,7 +279,7 @@ function HeroPicker({ value }: { value: HeroVariantId }) {
                   className={cn("block text-sm font-medium", checked ? "text-green" : "text-text")}
                 >
                   {variant.name}
-                  {variant.id === DEFAULT_HERO ? (
+                  {variant.id === defaultId ? (
                     <span className="ml-2 text-xs font-normal text-muted">Default</span>
                   ) : null}
                 </span>
@@ -215,6 +291,7 @@ function HeroPicker({ value }: { value: HeroVariantId }) {
           );
         })}
       </div>
+      {note ? <p className="mt-4 text-sm text-muted">{note}</p> : null}
     </fieldset>
   );
 }

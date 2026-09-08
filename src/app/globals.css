@@ -542,7 +542,7 @@
 }
 
 /* ------------------------------------------------------------------
-   Scene graphics (home/ProcessScene, layout/PaperPlaneGraphic, brand/PixelDino). One-shot
+   Scene graphics (home/ProcessScene, layout/involved/PlaneGraphic, brand/PixelDino). One-shot
    animations (draw, type, pop, fly) run when a scene becomes active; loops (magnify, blink,
    flame, trail, dots) pause while it is inactive. The global reduced-motion rule flattens
    all of them to their end state.
@@ -642,7 +642,7 @@
   .anim-dots {
     animation: dots 0.8s linear infinite;
   }
-  /* The paper plane (layout/PaperPlaneGraphic) flies its path once when the scene becomes
+  /* The paper plane (layout/involved/PlaneGraphic) flies its path once when the scene becomes
      active and rests at the end of it. Browsers without offset-path only see it resting. */
   .anim-fly {
     transform: translate(352px, 96px) rotate(-33deg);
@@ -709,5 +709,162 @@
   }
   [data-live="false"] .anim-hero-ping {
     animation-play-state: paused;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Get involved graphics (layout/involved, chosen in the Shift + M menu). One-shots run when
+   the frame reports data-active (in view); loops pause while it is inactive. The global
+   reduced-motion rule flattens every animation, and the rule at the end also drops the
+   staggered delays inside a frame, so the finished picture is immediate.
+------------------------------------------------------------------- */
+@layer components {
+  @keyframes involved-fade {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes involved-typing {
+    0%,
+    60%,
+    100% {
+      transform: translateY(0);
+    }
+    30% {
+      transform: translateY(-5px);
+    }
+  }
+  @keyframes involved-drop {
+    from {
+      transform: translateY(-48px);
+      opacity: 0;
+    }
+  }
+  @keyframes involved-swing {
+    0% {
+      transform: rotate(-7deg);
+    }
+    45% {
+      transform: rotate(4deg);
+    }
+    75% {
+      transform: rotate(-1.5deg);
+    }
+    100% {
+      transform: rotate(0deg);
+    }
+  }
+  @keyframes involved-press {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    35%,
+    55% {
+      transform: translateY(14px);
+    }
+  }
+  @keyframes involved-glow {
+    0%,
+    100% {
+      opacity: 0.35;
+    }
+    35%,
+    55% {
+      opacity: 0.85;
+    }
+  }
+  @keyframes involved-arm {
+    from {
+      transform: rotate(-12deg);
+      opacity: 0;
+    }
+  }
+  /* The two cursors on the canvas: each rests on its selection, wanders, and comes back. */
+  @keyframes involved-cursor-a {
+    0%,
+    14%,
+    100% {
+      transform: translate(124px, 206px);
+    }
+    40% {
+      transform: translate(236px, 176px);
+    }
+    62% {
+      transform: translate(216px, 250px);
+    }
+    84% {
+      transform: translate(150px, 150px);
+    }
+  }
+  @keyframes involved-cursor-b {
+    0%,
+    12%,
+    100% {
+      transform: translate(150px, 262px);
+    }
+    40% {
+      transform: translate(268px, 150px);
+    }
+    66% {
+      transform: translate(250px, 262px);
+    }
+    86% {
+      transform: translate(176px, 300px);
+    }
+  }
+  .anim-involved-fade {
+    animation: involved-fade 0.8s var(--ease-out-quart) both;
+  }
+  .anim-involved-typing {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: involved-typing 1.2s ease-in-out infinite;
+  }
+  .anim-involved-drop {
+    animation: involved-drop 1.2s var(--ease-out-expo) both;
+  }
+  .anim-involved-swing {
+    transform-box: view-box;
+    transform-origin: 200px 0;
+    animation: involved-swing 2.6s var(--ease-out-quart) both;
+  }
+  /* `backwards` only: once the press has played, the pointer's own transform takes over. */
+  .anim-involved-press {
+    animation: involved-press 0.9s var(--ease-out-quart) backwards;
+  }
+  .anim-involved-glow {
+    animation: involved-glow 0.9s var(--ease-out-quart) backwards;
+  }
+  .anim-involved-arm {
+    transform-box: view-box;
+    animation: involved-arm 1s var(--ease-out-expo) both;
+  }
+  .anim-involved-cursor-a {
+    animation: involved-cursor-a 14s ease-in-out infinite;
+  }
+  .anim-involved-cursor-b {
+    animation: involved-cursor-b 17s ease-in-out infinite;
+  }
+  [data-active="false"]
+    :is(.anim-involved-typing, .anim-involved-cursor-a, .anim-involved-cursor-b) {
+    animation-play-state: paused;
+  }
+  [data-active="false"]
+    :is(
+      .anim-involved-fade,
+      .anim-involved-drop,
+      .anim-involved-swing,
+      .anim-involved-press,
+      .anim-involved-glow,
+      .anim-involved-arm
+    ) {
+    animation: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-involved] * {
+      animation-delay: 0s !important;
+      transition-delay: 0s !important;
+    }
   }
 }
