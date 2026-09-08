@@ -56,22 +56,21 @@ export function ProjectsExplorerView({ projects, years, year, onSelect }: Explor
 
   return (
     <div>
-      <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-        <div role="group" aria-label="Filter by year" className="flex flex-wrap gap-2">
-          {chips.map((chip) => (
-            <ChipButton
-              key={chip.label}
-              selected={chip.value === year}
-              onClick={() => onSelect?.(chip.value)}
-            >
-              {chip.label}
-            </ChipButton>
-          ))}
-        </div>
-        <p aria-live="polite" className="text-sm text-muted">
-          {summary}
-        </p>
+      <div role="group" aria-label="Filter by year" className="flex flex-wrap gap-2">
+        {chips.map((chip) => (
+          <ChipButton
+            key={chip.label}
+            selected={chip.value === year}
+            onClick={() => onSelect?.(chip.value)}
+          >
+            {chip.label}
+          </ChipButton>
+        ))}
       </div>
+      {/* Screen readers still hear the result of a filter; the count is not shown visually. */}
+      <p aria-live="polite" className="sr-only">
+        {summary}
+      </p>
 
       {count > 0 ? (
         <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
