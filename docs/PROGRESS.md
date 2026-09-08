@@ -71,10 +71,12 @@ dinosaur stays: it stays.
    `crispEdges`. The eye is the empty cell at row 2, column 12 and still blinks through the
    `anim-eyelid` rect. Same green (`text-green`), glow, rise-in and reduced-motion behaviour.
 2. `SiteFooter`: the footer sets `--dino-w: clamp(11rem, 16vw, 15rem)`; the dinosaur is that
-   wide (was `clamp(10rem, 16vw, 14rem)`) and the glass panel's top margin is
-   `calc(var(--dino-w) * 0.85)` (was 6rem / 7rem), so at every width the head, arm, tail and
-   body down to the belly sit in the open strip and only the legs are behind the glass (about
-   16 of the 22 rows show).
+   wide (was `clamp(10rem, 16vw, 14rem)`), sits at `right-8` / `sm:right-[12%]` (was
+   `right-4` / `sm:right-[8%]`, Ashton asked for it slightly further left) and the glass
+   panel's top margin is `calc(var(--dino-w) * 0.75)` (was 6rem / 7rem; Ashton chose 0.75
+   over a first 0.85), so at every width the head, arm, tail and body down to the belly sit in
+   the open strip and the belly's taper and the legs are behind the glass (14 of the 22 rows
+   show at 1440, 13.6 at 390).
 3. Checks: typecheck, lint, build, `pnpm a11y` on `/` (0 violations), footer captures at 1440
    and 390 in `docs/screenshots/session-11e/`.
 
