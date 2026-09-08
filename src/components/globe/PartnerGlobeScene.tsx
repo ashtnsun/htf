@@ -12,8 +12,9 @@ import type { SpinController } from "./SpinController";
  * The three.js partner globe: an occluding sphere in the page background colour so only the
  * front hemisphere shows, the wireframe (parallels every 15°, meridians every 12°, like the
  * SVG globe), the land dots of the dotted world map, and one square pin per partner
- * location. The rotation lives in a SpinController owned by the wrapper (PartnerGlobe),
- * which also handles dragging; this file advances it each frame. Loaded on demand with
+ * location. The rotation (spin about the polar axis, plus the drag tilt on top of the
+ * resting GLOBE_TILT) lives in a SpinController owned by the wrapper (PartnerGlobe), which
+ * also handles dragging; this file advances it each frame. Loaded on demand with
  * next/dynamic.
  */
 
@@ -114,6 +115,7 @@ function Scene({
   controller,
   reduceMotion,
 }: Omit<SceneProps, "running" | "onReady">) {
+  const tiltRef = useRef<THREE.Group>(null);
   const groupRef = useRef<THREE.Group>(null);
   const invalidate = useThree((state) => state.invalidate);
   const wire = useMemo(() => wireframeGeometry(), []);
@@ -158,10 +160,11 @@ function Scene({
     );
     if (easing) invalidate();
     if (groupRef.current) groupRef.current.rotation.y = controller.spin;
+    if (tiltRef.current) tiltRef.current.rotation.x = GLOBE_TILT * DEG + controller.tilt;
   });
 
   return (
-    <group rotation={[GLOBE_TILT * DEG, 0, 0]}>
+    <group ref={tiltRef} rotation={[GLOBE_TILT * DEG, 0, 0]}>
       <group ref={groupRef}>
         <mesh>
           <sphereGeometry args={[0.985, 48, 48]} />

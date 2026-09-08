@@ -53,9 +53,10 @@ const noSubscribe = () => () => {};
 /**
  * Globe with partner pins. The SVG wireframe renders first (and is all that renders without
  * WebGL, on data-saver connections, or before JavaScript); the three.js scene loads on
- * demand once the globe scrolls near the viewport and fades in over it. Dragging spins the
- * globe; vertical touch drags still scroll the page. Decoration: the location list next to
- * it is the accessible content.
+ * demand once the globe scrolls near the viewport and fades in over it. Dragging turns the
+ * globe in any direction (sideways spins it, up and down tips it, within limits); vertical
+ * touch drags still scroll the page, so on a phone the tilt comes from diagonal drags.
+ * Decoration: the location list next to it is the accessible content.
  */
 export function PartnerGlobe({ pins, activeId, className }: PartnerGlobeProps) {
   const reduceMotion = useReducedMotion() ?? false;
@@ -66,7 +67,7 @@ export function PartnerGlobe({ pins, activeId, className }: PartnerGlobeProps) {
   const [ready, setReady] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [controller] = useState(() => new SpinController(INITIAL_SPIN * DEG));
-  const dragStart = useRef<number | null>(null);
+  const dragStart = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     const el = rootRef.current;
@@ -87,14 +88,17 @@ export function PartnerGlobe({ pins, activeId, className }: PartnerGlobeProps) {
 
   function onPointerDown(event: PointerEvent<HTMLDivElement>) {
     if (event.pointerType === "mouse" && event.button !== 0) return;
-    dragStart.current = event.clientX;
+    dragStart.current = { x: event.clientX, y: event.clientY };
     controller.startDrag();
     setDragging(true);
     event.currentTarget.setPointerCapture(event.pointerId);
   }
   function onPointerMove(event: PointerEvent<HTMLDivElement>) {
     if (dragStart.current === null) return;
-    controller.drag((event.clientX - dragStart.current) * DRAG_RADIANS_PER_PIXEL);
+    controller.drag(
+      (event.clientX - dragStart.current.x) * DRAG_RADIANS_PER_PIXEL,
+      (event.clientY - dragStart.current.y) * DRAG_RADIANS_PER_PIXEL,
+    );
   }
   function onPointerUp() {
     dragStart.current = null;
