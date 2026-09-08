@@ -4,37 +4,40 @@ import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 /**
- * Pixel dinosaur that peeks out from behind the frosted footer. Drawn as a 22×20 pixel map
- * (one <rect> per filled cell, crisp edges), so it scales to any size without blur. It rises
- * into place once when the footer scrolls into view and blinks every few seconds; both are
- * off under prefers-reduced-motion. Decoration only: hidden from assistive tech.
+ * The offline-page T-rex in HTF green, peeking out from behind the frosted footer. Drawn as a
+ * 20×22 pixel map (one <rect> per filled cell, crisp edges), so it scales to any size without
+ * blur. It rises into place once when the footer scrolls into view and blinks every few
+ * seconds; both are off under prefers-reduced-motion. Decoration only: hidden from assistive
+ * tech.
  */
 const PIXELS = [
-  "......##########......",
-  ".....############.....",
-  ".....##.#########.....",
-  ".....############.....",
-  ".....############.....",
-  ".........#######......",
-  ".....##########.......",
-  ".........######.......",
-  ".........######.......",
-  ".........######.......",
-  ".......########.......",
-  ".......#########....##",
-  "........###########.##",
-  "........############..",
-  ".........#########....",
-  "..........########....",
-  "...........#######....",
-  "...........##..##.....",
-  "...........##..##.....",
-  "..........###..###....",
+  "...........########.",
+  "..........##########",
+  "..........##.#######",
+  "..........##########",
+  "..........##########",
+  "..........##########",
+  "..........#####.....",
+  "..........########..",
+  "#........#####......",
+  "#......#######......",
+  "##....##########....",
+  "###..#########.#....",
+  "##############......",
+  "##############......",
+  ".############.......",
+  "..###########.......",
+  "...#########........",
+  "....#######.........",
+  ".....###.##.........",
+  ".....##...#.........",
+  ".....#....#.........",
+  ".....##...##........",
 ];
 const COLS = PIXELS[0]!.length;
 const ROWS = PIXELS.length;
-/** The eye is the one empty cell inside the head (row 2, column 7); the eyelid covers it. */
-const EYE = { x: 7, y: 2 };
+/** The eye is the one empty cell inside the head (row 2, column 12); the eyelid covers it. */
+const EYE = { x: 12, y: 2 };
 
 const cells = PIXELS.flatMap((row, y) =>
   Array.from(row).flatMap((cell, x) => (cell === "#" ? [{ x, y }] : [])),

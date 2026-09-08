@@ -11,8 +11,9 @@ type Column = { title: string; links: (NavLink & { Icon?: typeof Mail })[] };
 /**
  * Frosted-glass footer (logo, Explore · Get involved · Connect · Legal; no tagline, no
  * newsletter) with the
- * pixel dinosaur peeking out from behind the glass: its head sits in the open strip above
- * the panel, its body shows through the blur as a soft green shape.
+ * pixel T-rex peeking out from behind the glass: its head, arm and most of its body sit in the
+ * open strip above the panel (sized from --dino-w), its legs show through the blur as a soft
+ * green shape.
  */
 export function SiteFooter() {
   const cta = getPrimaryCta();
@@ -40,15 +41,15 @@ export function SiteFooter() {
   ];
 
   return (
-    <footer className="relative mt-8 overflow-hidden">
+    <footer className="relative mt-8 overflow-hidden [--dino-w:clamp(11rem,16vw,15rem)]">
       {/* glow behind the dinosaur, bleeding into the glass */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute top-0 right-[-4rem] h-[30rem] w-[36rem] bg-[radial-gradient(closest-side,rgba(3,198,82,0.28),transparent)] sm:right-[2%]"
       />
-      <PixelDino className="absolute top-3 right-4 z-0 w-[clamp(10rem,16vw,14rem)] sm:right-[8%]" />
+      <PixelDino className="absolute top-3 right-4 z-0 w-(--dino-w) sm:right-[8%]" />
 
-      <div className="relative z-10 mt-24 border-t border-line-strong glass [--glass-alpha:72%] sm:mt-28">
+      <div className="relative z-10 mt-[calc(var(--dino-w)*0.85)] border-t border-line-strong glass [--glass-alpha:72%]">
         <div className="container-max container-x py-14 md:py-20">
           <div className="grid gap-12 lg:grid-cols-[1.4fr_repeat(4,1fr)] lg:gap-8">
             <div className="max-w-xs">
