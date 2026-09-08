@@ -113,7 +113,8 @@ class CellField {
       ctx.moveTo(x, 0);
       ctx.lineTo(x, height);
     }
-    for (let r = 0; r <= rows; r++) {
+    // Skip the top rule (r = 0): flush under the sticky header it reads as the header's border.
+    for (let r = 1; r <= rows; r++) {
       const y = Math.round(r * cell) + 0.5;
       ctx.moveTo(0, y);
       ctx.lineTo(width, y);

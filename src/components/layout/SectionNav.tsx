@@ -93,7 +93,7 @@ export function SectionNav({ items, label, className }: SectionNavProps) {
     <nav
       aria-label={`${label} sections`}
       className={cn(
-        "sticky top-(--header-h) z-40 glass [--glass-alpha:50%]",
+        "sticky top-(--header-h) z-40 glass [--glass-alpha:50%] [--glass-edge:0]",
         className,
       )}
     >

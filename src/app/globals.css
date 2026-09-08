@@ -201,7 +201,9 @@
       linear-gradient(to right, var(--line) 1px, transparent 1px),
       linear-gradient(to bottom, var(--line) 1px, transparent 1px);
     background-size: calc(100% / var(--grid-cols, 6)) var(--grid-row, 10rem);
-    background-position: 0 0;
+    /* Start one pixel up so the first horizontal rule is clipped: under the sticky header it
+       would read as the header's bottom border. */
+    background-position: 0 -1px;
     mask-image: radial-gradient(120% 100% at 50% 40%, #000 35%, transparent 100%);
   }
 }
@@ -251,13 +253,15 @@
 }
 
 /* Frosted glass for anything elevated (header, drawer, footer, floating tiles and cards).
-   Tune the opacity with [--glass-alpha:80%]. Note: backdrop-filter makes the element the
-   containing block for fixed descendants, so portal overlays out of it. */
+   Tune the opacity with [--glass-alpha:80%]; the faint top-edge highlight is
+   [--glass-edge:0] to switch off (the header and the section bar, which must not read as
+   bordered). Note: backdrop-filter makes the element the containing block for fixed
+   descendants, so portal overlays out of it. */
 @utility glass {
   background-color: color-mix(in srgb, var(--surface) var(--glass-alpha, 64%), transparent);
   -webkit-backdrop-filter: blur(20px) saturate(1.4);
   backdrop-filter: blur(20px) saturate(1.4);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, var(--glass-edge, 0.05));
 }
 
 /* A scrolling row without a visible scrollbar (the section bar's links on phones). */
