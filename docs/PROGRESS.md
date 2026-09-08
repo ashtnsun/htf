@@ -74,7 +74,19 @@ entries are gone, and so is the CSS only they used (`fly`, `dots`, `involved-pre
 open. The parallel Session 11f session swept the staged deletions and the `/dev/ui` edit into
 its two commits; the rest is `chore(config): …`.
 
+Then `ui/SplitButton`: the secondary arrow is white at rest (was green) and turns black on
+the green hover fill. Every button's contents now slide on hover while the button stays put:
+the label rolls up and an `aria-hidden` copy rises from below (500ms, ease-out-expo), and
+the arrow leaves through the right edge, fading, while a copy enters from the left (400ms;
+diagonal for external links, downward for downloads; the pending spinner does not slide).
+Both copies sit in one clipped box, so nothing resizes (checked: the header bar CTA's box is
+identical at rest and on hover). `motion-reduce:transition-none` makes the swap instant.
+CLAUDE.md's hover rule names this as the one exception to "nothing translates". Screenshots:
+`buttons-*.png` and `header-cta-hover.png` in `docs/screenshots/session-11g/`.
+
 ## Session 11f — 2026-09-08 (the dino process scene)
+
+Ran alongside a second session (the hero and Get involved decisions) in the same tree.
 
 Ashton's request: the How it works graphic uses the dinosaur. Discover is a detective dino
 with a magnifying glass; Match adds a few other dinos, all distinct, to form a team; Build is
