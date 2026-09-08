@@ -6,9 +6,10 @@ import { cn } from "@/lib/utils";
 /**
  * The offline-page T-rex in HTF green, peeking out from behind the frosted footer. Drawn as a
  * 20×22 pixel map (one <rect> per filled cell, crisp edges), so it scales to any size without
- * blur. It rises into place once when the footer scrolls into view and blinks every few
- * seconds; both are off under prefers-reduced-motion. Decoration only: hidden from assistive
- * tech.
+ * blur. The map is traced from the icon, which faces right; the drawing is mirrored so the
+ * footer's T-rex looks left, toward the page. It rises into place once when the footer scrolls
+ * into view and blinks every few seconds; both are off under prefers-reduced-motion.
+ * Decoration only: hidden from assistive tech.
  */
 const PIXELS = [
   "...........########.",
@@ -62,7 +63,7 @@ export function PixelDino({ className }: PixelDinoProps) {
         shapeRendering="crispEdges"
         focusable="false"
       >
-        <g fill="currentColor">
+        <g fill="currentColor" transform={`translate(${COLS} 0) scale(-1 1)`}>
           {cells.map(({ x, y }) => (
             <rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} />
           ))}

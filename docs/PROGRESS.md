@@ -69,7 +69,9 @@ dinosaur stays: it stays.
    majority vote of the dark pixels in each cell of its 19.5 px grid; the icon's diagonals are
    not quite on the grid, so the back steps two cells once), still one `<rect>` per cell with
    `crispEdges`. The eye is the empty cell at row 2, column 12 and still blinks through the
-   `anim-eyelid` rect. Same green (`text-green`), glow, rise-in and reduced-motion behaviour.
+   `anim-eyelid` rect. The icon faces right; the `<g>` is mirrored (`translate(20 0)
+scale(-1 1)`) so the footer's T-rex looks left, toward the page (Ashton asked for the
+   flip). Same green (`text-green`), glow, rise-in and reduced-motion behaviour.
 2. `SiteFooter`: the footer sets `--dino-w: clamp(11rem, 16vw, 15rem)`; the dinosaur is that
    wide (was `clamp(10rem, 16vw, 14rem)`), sits at `right-8` / `sm:right-[12%]` (was
    `right-4` / `sm:right-[8%]`, Ashton asked for it slightly further left) and the glass
