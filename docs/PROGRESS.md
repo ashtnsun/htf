@@ -58,6 +58,67 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
 
+## Session 11d — 2026-09-08 (seven review tweaks: cards, section bar, timeline, globe, partners, testimonials)
+
+Ran alongside Session 11b/11c (htf-30) on the same tree; file ownership settled by message.
+
+**Built** (one commit each):
+
+1. `projects/ProjectCard`: the nonprofit name and the year share one line with no rule
+   between them (name left, year right, on the arrow cell's column); the arrow cell is a
+   plain right arrow (`ArrowRight`), not the external `ArrowUpRight`. Also committed the
+   orphaned `ProjectsExplorer` change from 2026-09-07 (the "n projects" filter count is
+   `sr-only`, read by screen readers only).
+2. `layout/SectionNav`: the bar is 56px tall (`h-14`, `BAR_HEIGHT` and `--subnav-h`
+   follow) with `px-4` links; the "About |" page name and its divider are gone. The `label`
+   prop stays and names the landmark ("Students sections"), so the three pages and `/dev/ui`
+   are unchanged.
+3. `students/RecruitmentTimeline`: one vertical timeline instead of the three-column card
+   grid. A spine runs down the page with a square node per step; on md+ the step number and
+   date sit right-aligned to the left of the spine, the title and description to the right
+   (13rem / 3.5rem / 1fr, 16rem / 4rem / 1fr on lg); on phones the spine is a 2.5rem left
+   column and the meta line sits above the title. The gap between steps is padding on the
+   content cell, not the `li`, so the spine column spans it (the first version broke between
+   steps). Segments and nodes turn green up to the current step once the steps carry dates;
+   the current one is still marked "Now". Spine is `bg-muted/35`, upcoming nodes
+   `border-muted/60` (`line-strong` was invisible against the grid overlay).
+4. `globe/*`: the partner globe drags in any direction. `SpinController` gained `tilt`
+   (rotation about the screen's horizontal axis on top of `GLOBE_TILT`, clamped to ±1.2 rad),
+   `drag(dx, dy)`, and settles the tilt back to 0 with the same easing as the pin aim once
+   the six-second hold ends or a pin is chosen (snaps under reduced motion). The wrapper
+   tracks both pointer axes; the scene sets the outer group's `rotation.x` each frame.
+   `touch-action: pan-y` stays, so on phones vertical swipes scroll and the tilt comes from
+   diagonal drags.
+5. `nonprofits/PartnersMap`: the location rows lost the "1 project" count and the whole
+   project-link panel under the list (the `aria-live` region and its hint copy). Rows are
+   node + location; the section's "See the projects" button is the way to the projects.
+6. `nonprofits/NonprofitTestimonials`: the partner quotes drift in the home page's
+   `TestimonialMarquee` (pause button, focus pause, reduced-motion scroll row) over the
+   dotted map. The marquee took a `heading` slot (the eyebrow + headline render there, the
+   pause button sits at their baseline) and a `className` for its top margin, and it repeats
+   a short list inside each half of the track (`MIN_CARDS_PER_HALF = 4`) so two quotes do
+   not leave a gap on wide screens; repeated copies are `aria-hidden` (`Card` and
+   `TestimonialCard` now forward `aria-hidden`).
+
+**Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm build` (with the other session's
+uncommitted files in the tree), `pnpm a11y` on /projects, /students, /nonprofits (0
+violations), screenshots in `docs/screenshots/session-11d/`, and a Playwright drag on the
+globe (a diagonal drag tips it; it settles back).
+
+**Decisions**
+
+1. Removing the location's project links means the partner list only drives the globe; the
+   buttons keep `aria-pressed` and the section's button carries the traffic to /projects.
+2. The tilt settles back to rest after the hold rather than staying, so the idle globe always
+   returns to the brand's tipped pose.
+
+**TODOs**
+
+- `content/recruitment.ts` still needs the six dates plus ISO `date` fields; only then do the
+  green spine segments and the "Now" tag appear.
+- If the marquee's pause button should sit lower on the nonprofits page (it aligns with the
+  headline's baseline now), give `TestimonialMarquee` a `controls` position prop.
+
 ## Session 11c — 2026-09-08 (four tweaks from Ashton's review)
 
 1. Nav: the current-page underline is 2px and sits at `bottom-1.5` of the link (was a 1px
