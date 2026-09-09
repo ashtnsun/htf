@@ -21,12 +21,12 @@ const BAR_HEIGHT = 56;
  * the header's surface (same alpha, no hairlines) that sits right under the hero and sticks
  * beneath the site header while the page scrolls.
  * It lists the page's sections as anchor links (nothing else: the page name is the
- * landmark's label only), underlines the one on screen (the header's current-page language)
- * and scrolls the row so the current link stays visible on phones.
+ * landmark's label only), colours the one on screen green (text only, no underline: the
+ * 2026-09-09 review) and scrolls the row so the current link stays visible on phones.
  *
  * The bar sets `--subnav-h` on the root element while mounted; globals.css adds it to every
  * anchor's `scroll-margin-top`, so a jump lands below the bar rather than under it. Without
- * JavaScript the links are plain anchors and nothing is underlined.
+ * JavaScript the links are plain anchors and none is marked current.
  */
 export function SectionNav({ items, label, className }: SectionNavProps) {
   const [current, setCurrent] = useState<string | null>(null);
@@ -110,9 +110,8 @@ export function SectionNav({ items, label, className }: SectionNavProps) {
                   href={item.href}
                   aria-current={active ? "location" : undefined}
                   className={cn(
-                    "relative inline-flex items-center px-4 text-sm font-medium whitespace-nowrap transition-colors duration-200 first:pl-0",
-                    "after:absolute after:inset-x-4 after:-bottom-px after:h-px after:bg-green after:opacity-0 after:transition-opacity after:duration-200 first:after:left-0",
-                    active ? "text-text after:opacity-100" : "text-muted hover:text-text",
+                    "inline-flex items-center px-4 text-sm font-medium whitespace-nowrap transition-colors duration-200 first:pl-0",
+                    active ? "text-green" : "text-muted hover:text-text",
                   )}
                 >
                   {item.label}
