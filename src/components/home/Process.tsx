@@ -5,15 +5,19 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Headline } from "@/components/ui/Headline";
 import { Section } from "@/components/ui/Section";
 
-/** "From discovery to delivery": the section heading plus the scroll-driven step list. */
+/**
+ * "From discovery to delivery": the section heading plus the scroll-driven step list. The
+ * bottom padding is short (the list already ends half a viewport after the last step) so the
+ * Impact band follows soon after Deliver (2026-09-09 review).
+ */
 export function Process({ steps }: { steps: ProcessStep[] }) {
   if (steps.length === 0) return null;
   return (
     <Section
       id="process"
       aria-labelledby="process-title"
-      padding="lg"
-      className="border-t border-line"
+      padding="none"
+      className="border-t border-line pt-24 pb-12 md:pt-36 md:pb-16"
     >
       <Reveal standalone>
         <Eyebrow>How it works</Eyebrow>

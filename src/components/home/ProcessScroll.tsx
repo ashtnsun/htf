@@ -23,8 +23,12 @@ const MARGIN = 0.06;
  * its own clock (about half a second, cell by cell) and then holds, so each picture is what
  * you see for the whole of its step and a paused scroll never lands mid-transition. The step
  * highlight follows the same switch (no counter or progress bar under the scene since the
- * 2026-09-07 audit 3). Every step is a viewport tall from lg (60% of one on phones), so a
- * step holds for that much scroll and one gesture cannot fly past it. Under
+ * 2026-09-07 audit 3). The middle steps are a viewport tall from lg (60% of one on phones),
+ * so a step holds for that much scroll and one gesture cannot fly past it; the first and the
+ * last are half a viewport (`--lead-h`), so the list starts close under the heading and ends
+ * close after the last step (2026-09-09 review). On lg the sticky scene box is that same
+ * half viewport, centred on the reading line: it lines up with the first step before it
+ * sticks and leaves with the last one the moment that step has been centred. Under
  * prefers-reduced-motion the scene cuts instead of dissolving. Without JavaScript every step
  * is readable and the scene shows the first stage.
  */
@@ -77,9 +81,10 @@ export function ProcessScroll({ steps }: ProcessScrollProps) {
   }, [steps.length, store]);
 
   return (
-    <div className="mt-10 grid gap-8 lg:mt-16 lg:grid-cols-2 lg:gap-16">
-      {/* The scene: stuck above the steps on phones, beside them from lg. */}
-      <div className="sticky top-(--header-h) z-10 lg:top-0 lg:flex lg:h-svh lg:items-center lg:self-start">
+    <div className="mt-10 grid gap-8 [--lead-h:50svh] lg:mt-16 lg:grid-cols-2 lg:gap-16">
+      {/* The scene: stuck above the steps on phones, beside them from lg (a half-viewport box
+          centred on the reading line, so its centre is the viewport's while it is stuck). */}
+      <div className="sticky top-(--header-h) z-10 lg:top-[calc(50svh_-_var(--lead-h)_/_2)] lg:flex lg:h-(--lead-h) lg:items-center lg:self-start">
         <div className="relative -mx-(--gutter) flex justify-center bg-bg px-(--gutter) py-3 lg:mx-0 lg:w-full lg:bg-transparent lg:p-0">
           <ProcessScene
             stages={stages}
@@ -104,7 +109,7 @@ export function ProcessScroll({ steps }: ProcessScrollProps) {
                 itemsRef.current[i] = el;
               }}
               data-index={i}
-              className="relative flex min-h-[60svh] flex-col justify-center py-10 pl-8 first:pt-2 lg:min-h-svh lg:py-16 lg:pl-12 lg:first:pt-16"
+              className="relative flex min-h-[60svh] flex-col justify-center py-10 pl-8 first:min-h-(--lead-h) first:pt-2 last:min-h-(--lead-h) lg:min-h-svh lg:py-16 lg:pl-12 lg:first:pt-16"
             >
               <div className="relative">
                 {/* marker on the rail */}
