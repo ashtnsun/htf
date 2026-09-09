@@ -31,17 +31,16 @@ export const site = {
   season: {
     isApplicationSeason: true,
     /**
-     * Where "Apply" leads while applications are open (PLAN.md section 5, "Google Form
-     * fallback"). "external": /apply redirects to applyUrl, the form used this cycle.
-     * "portal": /apply is the in-house application portal (sign in, form, status). The
-     * default stays "external" until the Phase 2 dry run passes; a Vercel preview can flip
-     * it with NEXT_PUBLIC_APPLY_MODE=portal (docs/DEPLOY.md section 6).
+     * The Google Form applicants fill in this cycle: the form's "viewform" link (Send →
+     * link). /apply embeds it (`getApplyForm` adds `embedded=true`) and links to it for
+     * anyone whose browser will not show the frame. While it is a TODO, /apply shows the
+     * visible TODO and sends people to `applyFallbackUrl` instead. Applications go through
+     * Google Forms since 2026-09-09; the in-house portal is parked under parked/ (see
+     * parked/README.md).
      */
-    applyMode: (process.env.NEXT_PUBLIC_APPLY_MODE === "portal" ? "portal" : "external") as
-      "external" | "portal",
-    // TODO(ashton): replace with the Fall 2026 application form URL. Until then the CTA
-    // sends people to the Instagram profile, where the form link lives in the bio.
-    applyUrl: "https://www.instagram.com/hackthefuturepurdue/",
+    applyFormUrl: "TODO: Fall 2026 Google Form link (…/viewform)",
+    /** Where Apply sends people while the form link is a TODO: the profile whose bio links it. */
+    applyFallbackUrl: "https://www.instagram.com/hackthefuturepurdue/",
     // TODO(ashton): confirm this cycle's deadline. ISO 8601 with offset (Eastern time).
     closesAt: "2026-09-12T23:59:00-04:00",
     cycleName: "Fall 2026",
@@ -81,14 +80,16 @@ export function getPrimaryCta(now: Date = new Date()): { label: string; href: st
   return { label: "Contact Us", href: "/contact" };
 }
 
-/** Where /apply sends people while the external form is in use. */
-export function getApplyDestination(): string {
-  return site.season.applyUrl;
-}
-
-/** True when /apply is the in-house portal rather than a redirect to the external form. */
-export function isPortalMode(): boolean {
-  return site.season.applyMode === "portal";
+/**
+ * This cycle's application form: the link to open it and the URL that embeds it on /apply.
+ * Null while `season.applyFormUrl` is still a TODO.
+ */
+export function getApplyForm(): { url: string; embedUrl: string } | null {
+  const url = site.season.applyFormUrl;
+  if (url.startsWith("TODO")) return null;
+  const embed = new URL(url);
+  embed.searchParams.set("embedded", "true");
+  return { url, embedUrl: embed.toString() };
 }
 
 /** "Sep 12, 11:59 PM" in the club's time zone, for deadline notices. Null when out of season. */

@@ -23,9 +23,15 @@ import { Section } from "@/components/ui/Section";
 import { SplitButton } from "@/components/ui/SplitButton";
 import { StatTile } from "@/components/ui/StatTile";
 import { TestimonialCard } from "@/components/ui/TestimonialCard";
-import { AUDIENCES } from "@/lib/contact/schema";
 
 export const metadata: Metadata = { title: "UI kit (dev)", robots: { index: false } };
+
+/** Sample choices for the field demo (the contact form that used them is parked). */
+const AUDIENCES = [
+  { value: "student", label: "A student" },
+  { value: "nonprofit", label: "From a nonprofit" },
+  { value: "other", label: "Someone else" },
+] as const;
 
 /**
  * Development-only gallery of the shared primitives. The `.dev.tsx` extension is

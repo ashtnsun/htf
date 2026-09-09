@@ -14,7 +14,7 @@
     "gen:placeholders": "node scripts/gen-placeholders.mjs",
     "screenshots": "node scripts/screenshots.mjs",
     "a11y": "node scripts/a11y.mjs",
-    "supabase:types": "supabase gen types typescript --local > src/lib/supabase/database.types.ts && prettier --write src/lib/supabase/database.types.ts"
+    "supabase:types": "supabase gen types typescript --local > parked/src/lib/supabase/database.types.ts && prettier --write parked/src/lib/supabase/database.types.ts"
   },
   "dependencies": {
     "@react-three/fiber": "9.7.0",

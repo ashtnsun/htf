@@ -2,9 +2,11 @@
 
 # Hack the Future Purdue — website
 
-Marketing site + (Phase 2) application portal for Hack the Future (HTF), a Purdue student org
-that builds software for nonprofits. One developer (Ashton, design director) working with
-Claude Code. Dark theme only.
+Marketing site for Hack the Future (HTF), a Purdue student org that builds software for
+nonprofits. One developer (Ashton, design director) working with Claude Code. Dark theme
+only. Applications go through a Google Form (embedded on `/apply`) and messages by email;
+the finished Phase 2 application portal and the site forms are parked under `parked/`
+(see `parked/README.md`), not built.
 
 ## Every session
 
@@ -36,13 +38,9 @@ content/            typed content: site.ts (config + season CTA), media.ts (imag
                     (the hero copy every variant shares),
                     nonprofits.ts, instagram.ts, privacy.mdx, projects/*.mdx (Zod frontmatter)
 src/app/            routes. page.dev.tsx files exist only in `next dev` (see next.config.ts);
-                    contact/actions.ts and nonprofits/actions.ts are the form server actions;
-                    apply/ (portal landing + sign-in actions, form/ = the multi-step form and
-                    its actions, submitted/), admin/ (dashboard, applications/[id] review page
-                    + actions, export.csv route handler), auth/confirm (magic-link target) are
-                    the application portal (Phase 2)
-src/proxy.ts        portal only (/apply, /admin): refreshes the Supabase session cookie and
-                    bounces signed-out visitors off protected pages
+                    apply/ is the Google Form page (embedded, with the open-in-a-tab link;
+                    "closed" out of season); contact/ lists email, LinkedIn and Instagram;
+                    no server actions, no proxy
 src/components/
   brand/            Logo (inline SVG wordmark; logo-paths.ts is generated, do not hand-edit),
                     PixelDino (footer), dino-pixels.ts (the 20×22 T-rex map the footer and the
@@ -68,21 +66,12 @@ src/components/
                     row; also the hand-off on /about)
   about/            Mission, Story, ExecGrid (+ ExecBoard: a chip per school year, `?board=` in
                     the URL, LinkedIn cell on every card), InstagramGrid
-  nonprofits/       HowItWorks, Scope, Partners (+ PartnersMap), NonprofitTestimonials,
-                    IntakeForm
+  nonprofits/       HowItWorks (cards share rows through a subgrid), Scope, Partners
+                    (+ PartnersMap), NonprofitTestimonials
   globe/            PartnerGlobe (lazy wrapper, drag, SVG fallback, the hover label for pins
                     with a `label`), PartnerGlobeScene (three.js / R3F, loaded on demand; hover a
                     labelled pin to hold the globe), SpinController, LabelAnchor (places the
                     label from the frame loop), landDots
-  forms/            useFormSubmission (server / mailto modes), SentPanel, Honeypot,
-                    CountedTextArea (live character counter)
-  contact/          ContactForm
-  apply/            SignInForm (email → six-digit code, resend, restart), AccountPanel,
-                    ApplicationForm (client shell: stepper, autosave, aside, review),
-                    ApplicationSteps (profile / roles / questions fields), ApplicationSummary
-                    (review step and the read-only view)
-  admin/            ExecOnly, AdminFilters (GET form), ApplicationsTable (+ StatusChip),
-                    ReviewPanel (review, status and other reviews; forms post to actions)
   config/           ConfigMenu (Shift + M: the non-modal site configuration panel; one
                     VariantPicker per setting: the home hero, the Get involved graphic)
   motion/           Reveal / RevealGroup (fade-and-rise, reduced-motion aware),
@@ -90,19 +79,6 @@ src/components/
                     mismatches the server's animated markup)
   icons/            Instagram / LinkedIn (lucide 1.x has no brand icons)
 src/lib/content/    schemas.ts (Zod) + index.ts (loaders; throw on invalid content)
-src/lib/forms/      fields.ts (FormState, readValues, honeypot), deliver.ts (Supabase / Resend,
-                    sendEmail)
-src/lib/apply/      schema.ts (steps, Zod for profile / roles / answers built from the questions
-                    rows, problems, summary data), state.ts, email.ts (confirmation via Resend)
-src/lib/contact/, src/lib/inquiries/   per-form Zod schema + delivery wrapper
-src/lib/supabase/   env.ts (SUPABASE_URL + SUPABASE_ANON_KEY), server.ts (cookie-bound client,
-                    one per request), proxy.ts (session refresh), database.types.ts (generated:
-                    `supabase gen types typescript --local`, do not hand-edit)
-src/lib/auth/       schema.ts (sign-in Zod + safeNextPath), state.ts, session.ts (getSessionUser,
-                    isAdminUser, requireUser: the data-access gate every portal page uses)
-src/lib/portal/     data.ts (cycle, roles, questions, my application + answers, admin counts; all
-                    through RLS), admin.ts (dashboard reads, URL filters, sorting, counts, CSV),
-                    format.ts (dates in the club's zone, safe on the client)
 src/lib/config/     options.ts (HERO_VARIANTS / DEFAULT_HERO, INVOLVED_VARIANTS / DEFAULT_INVOLVED,
                     SiteConfig), store.ts (localStorage store + useSiteConfig; the server and the
                     first paint always see the defaults)
@@ -110,11 +86,11 @@ src/lib/geo.ts      sphere maths shared by both globes
 scripts/            validate-content, gen-placeholders, gen-logo-paths.py, gen-world-dots,
                     screenshots, a11y
 docs/               PLAN.md, PROGRESS.md, DEPLOY.md, prompts/, screenshots/session-N/
-supabase/           config.toml (local stack on ports 54331+, email templates, redirect URLs),
-                    migrations/ (contact_messages, nonprofit_inquiries: service role only;
-                    application_portal: profiles, admins, cycles, roles, questions, applications,
-                    answers, reviews with RLS + guard trigger), seed.sql (cycle, roles,
-                    questions), seed.local.sql (local admin), templates/sign-in.html
+parked/             the application portal and the site forms, mirrored under parked/src/
+                    (excluded from tsc, ESLint, Prettier and the build; README.md says what is
+                    there and how to restore it)
+supabase/           the parked portal's database: config.toml (local stack on ports 54331+),
+                    migrations/, seed.sql, seed.local.sql, templates/sign-in.html (inert)
 reference/          brand guide, fonts, Instagram graphics, Framer captures (never shipped)
 public/placeholders generated SVG placeholders (pnpm gen:placeholders)
 ```
@@ -132,10 +108,11 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   starts with `TODO`.
 - Spelling: `nonprofits`, one word, everywhere (page title "Nonprofits"); never "non-profits".
 - Season logic lives only in `content/site.ts` (`getPrimaryCta`, `isInSeason`,
-  `formatDeadline`, `isPortalMode`). Every CTA reads from it. `season.applyMode` is
-  `external` (default: `/apply` redirects to `season.applyUrl`) or `portal`
-  (`NEXT_PUBLIC_APPLY_MODE=portal`: `/apply` is the in-house portal). The portal's cycle,
-  roles and questions live in the database (`supabase/seed.sql`), not in `content/`.
+  `formatDeadline`, `getApplyForm`). Every CTA reads from it: in season `/apply`, otherwise
+  `/contact`. `/apply` embeds the Google Form in `season.applyFormUrl` (`getApplyForm` adds
+  `embedded=true`; while the link is a TODO the page shows the TODO and the Instagram
+  fallback). Nothing on the site posts a form: nonprofits and everyone else write to
+  `site.socials.email`.
 - The hero variant and the Get involved graphic are per-browser choices (Shift + M,
   `src/lib/config`), never a build-time or server-side switch: visitors always get
   `DEFAULT_HERO` / `DEFAULT_INVOLVED` from `src/lib/config/options.ts`, and the pages stay
@@ -186,32 +163,26 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   first paint. R3F's JSX types widen React's `ElementType`, so polymorphic `as` props take a
   literal tag union, never `ElementType`. Mutable per-frame state lives in a class with
   methods (`SpinController`), not in ref objects passed as props (React Compiler lint).
-- Forms: a Zod schema in `src/lib/<form>/schema.ts` shared by the client (mailto path,
-  native hints) and the server action; `useFormSubmission` handles both modes;
-  delivery goes through `src/lib/forms/deliver.ts`. Every list renders `li` as the direct
-  child of `ul`/`ol` (put `Reveal` inside the `li`).
+- Every list renders `li` as the direct child of `ul`/`ol` (put `Reveal` inside the `li`,
+  or around the whole list when the cards share rows through `grid-rows-subgrid`, which
+  needs the direct grid → `li` → children chain).
 - Every CTA is a `SplitButton` (primary: green label, green arrow cell, 2px black divider;
   secondary: outlined, white arrow that turns black on the green hover fill; on hover the
   label rolls up into a copy and the arrow glyph nudges, since 2026-09-08; `presentational`
   renders a span for a button inside a card that is itself the link);
   every section label is an `Eyebrow`; every heading with a green accent is a `Headline`
   (`*word*` marks the accent).
-- Portal: every page and server action under `/apply` and `/admin` goes through
-  `src/lib/auth/session.ts` (`requireUser`, `isAdminUser`) and queries Supabase as the
-  signed-in user (`createClient` in `src/lib/supabase/server.ts`), so Row Level Security is
-  the boundary; never use the service role for portal data. `src/proxy.ts` is only the
-  optimistic redirect. Schema changes are new files in `supabase/migrations/` followed by
-  `supabase db reset` and `pnpm supabase:types`. A `<button>` with a function `formAction`
-  cannot carry `name`/`value` (React overrides them): use a hidden input instead. The
-  application form saves leniently (empty is fine, invalid is not) and validates strictly on
-  Continue and on submit; every one of its buttons posts a `nav` value to the one action in
-  `apply/form/actions.ts`, so each move saves first and the form works without JavaScript.
+- Parked code (`parked/`) is not touched by feature work; its rules (RLS as the boundary,
+  hidden inputs instead of `name`/`value` on a `formAction` button, lenient autosave /
+  strict submit) live in `parked/README.md` and in git history for the day it comes back.
 - Hover states are one language everywhere: text links turn green (inline links in body copy
   are already green, medium weight, no underline, and turn white); interactive surfaces get
   `hover-corners` + `border-line-strong` + `bg-surface-2`; arrow cells fill green; nav links
-  brighten (the green underline marks the current page only). Nothing translates, lifts or scales on hover; the one exception is
-  inside a `SplitButton`, whose label rolls within its clipped cell and whose arrow glyph nudges
-  while the button itself stays put. Mint is the focus ring only, never a hover colour. Transitions: 200ms colours.
+  brighten (the green underline marks the current page only in the header; in the section
+  bar the current section is green text, nothing else). Nothing translates, lifts or scales
+  on hover; the one exception is an arrow glyph nudging inside a `SplitButton` (whose label
+  also rolls within its clipped cell) or a project card's arrow cell, while the button or
+  card itself stays put. Mint is the focus ring only, never a hover colour. Transitions: 200ms colours.
 - Motion: Framer Motion via `Reveal`/`RevealGroup`; check `useReducedMotionSafe`
   (`components/motion`) in any client animation and render the final state when it is set.
   Never branch on Framer's raw `useReducedMotion` during the first render: the server rendered
@@ -242,10 +213,9 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
 
 `pnpm dev` · `pnpm build` (validates content first) · `pnpm typecheck` · `pnpm lint` ·
 `pnpm format` · `pnpm validate:content` · `pnpm gen:placeholders` · `pnpm screenshots` ·
-`pnpm a11y` (both need `pnpm dev` running; pass `--base` to point elsewhere).
-Portal: `supabase start` (Docker; ports 54331+) · `supabase db reset` (migrations + seeds) ·
-`pnpm supabase:types` (regenerates `database.types.ts`) · emails at http://localhost:54334 ·
-`.env.local` per `docs/DEPLOY.md` §6 (`NEXT_PUBLIC_APPLY_MODE=portal` to see the portal).
+`pnpm a11y` (both need `pnpm dev` running; pass `--base` to point elsewhere). No env vars
+are needed for anything live (`.env.example`). The parked portal's stack (`supabase start`,
+`supabase db reset`, `pnpm supabase:types`, Mailpit on 54334) is described in `parked/README.md`.
 
 ## Commit style
 

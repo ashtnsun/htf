@@ -1,180 +1,131 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { getApplyDestination, isInSeason, isPortalMode, site } from "@content/site";
-import { AccountPanel } from "@/components/apply/AccountPanel";
-import { SignInForm } from "@/components/apply/SignInForm";
+import { formatDeadline, getApplyForm, isInSeason, site } from "@content/site";
 import { PageHero } from "@/components/layout/PageHero";
 import { Reveal } from "@/components/motion/Reveal";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Section } from "@/components/ui/Section";
 import { SplitButton } from "@/components/ui/SplitButton";
-import { safeNextPath } from "@/lib/auth/schema";
-import { getSessionUser, isAdminUser } from "@/lib/auth/session";
-import {
-  formatCycleDeadline,
-  getActiveCycle,
-  getMyApplication,
-  getOpenRoles,
-  isCycleOpen,
-  type Role,
-} from "@/lib/portal/data";
-import { isPortalConfigured } from "@/lib/supabase/env";
-import { isTodo } from "@/lib/utils";
+import { getRoles } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Apply",
-  description: `Apply to join Hack the Future for ${site.season.cycleName}.`,
-  robots: { index: false },
+  description: `Apply to join Hack the Future for ${site.season.cycleName}: one form for every role, open to all majors, all years and all levels of experience.`,
+  alternates: { canonical: "/apply" },
 };
 
 const inlineLink = "font-medium text-green transition-colors duration-200 hover:text-text";
 
-const STEPS = [
-  {
-    title: "Sign in with your email",
-    body: "We send a six-digit code and a link. No password to remember, and any address works.",
-  },
-  {
-    title: "Fill in the form",
-    body: "Your profile, the roles you want, and a few short answers. Drafts save as you go.",
-  },
-  {
-    title: "Submit before the deadline",
-    body: "You get a confirmation email. We read every application after the deadline and follow up by email.",
-  },
-];
-
-function first(value: string | string[] | undefined): string | undefined {
-  return Array.isArray(value) ? value[0] : value;
-}
-
 /**
- * /apply. In "external" mode (content/site.ts → season.applyMode) this is the redirect to
- * the form used this cycle. In "portal" mode it is the season landing: sign in with an email
- * code, or, once signed in, see where the application stands and continue.
+ * /apply: where every Apply CTA lands. In season it is the cycle's Google Form, embedded
+ * (content/site.ts → season.applyFormUrl, through `getApplyForm`) with a link to open the
+ * form on its own for anyone whose browser will not show the frame; while the form link is
+ * still a TODO the page says so and points at the Instagram profile instead. Out of season
+ * it says applications are closed. Applications went to Google Forms on 2026-09-09; the
+ * in-house portal that used to live here is parked under parked/ (see parked/README.md).
  */
-export default async function ApplyPage({ searchParams }: PageProps<"/apply">) {
-  if (!isPortalMode()) return <ExternalApply />;
-
-  const params = await searchParams;
-  const next = safeNextPath(first(params.next));
-  const notice =
-    first(params.error) === "link"
-      ? "That sign-in link has expired or was already used. Request a new code below."
-      : null;
-
-  if (!isPortalConfigured()) return <PortalNotConnected />;
-
-  const [user, cycle] = await Promise.all([
-    getSessionUser(),
-    getActiveCycle().catch((error: unknown) => {
-      // A database that cannot be reached (project paused, local stack down) should not be
-      // a blank 500 for an applicant: log it and show the "come back" panel instead.
-      console.error(error);
-      return undefined;
-    }),
-  ]);
-  if (cycle === undefined) return <PortalUnavailable />;
-  const [roles, application, admin] = await Promise.all([
-    cycle ? getOpenRoles(cycle.id) : Promise.resolve<Role[]>([]),
-    user && cycle ? getMyApplication(cycle.id, user.id) : Promise.resolve(null),
-    user ? isAdminUser() : Promise.resolve(false),
-  ]);
-  const open = cycle ? isCycleOpen(cycle) : false;
-  const deadline = cycle ? formatCycleDeadline(cycle) : null;
+export default function ApplyPage() {
+  if (!isInSeason()) return <Closed />;
+  const form = getApplyForm();
+  const deadline = formatDeadline();
+  const roles = getRoles().filter((role) => role.open);
 
   return (
     <>
       <PageHero
-        eyebrow={cycle ? `${cycle.name} applications` : "Applications"}
-        lines={
-          open ? ["Apply to", "*Hack the Future.*"] : ["Applications are", "*closed for now.*"]
-        }
-        blurb={
-          open
-            ? "One application covers every role you want. Sign in with your email, no password needed, and your answers save as you go."
-            : "Sign in to see an application you already sent, or follow us on Instagram to hear when the next cycle opens."
-        }
+        eyebrow={`${site.season.cycleName} applications`}
+        lines={["Apply to", "*Hack the Future.*"]}
+        blurb="One form covers every role you want. Open to all majors, all years, and all levels of experience."
       >
-        {open && deadline ? (
+        {deadline ? (
           <p className="text-sm text-muted">
             Applications close <span className="text-text">{deadline}</span>.
           </p>
         ) : null}
       </PageHero>
 
-      <Section aria-labelledby="apply-title" className="border-t border-line">
-        <div className="grid gap-14 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-20">
+      <Section aria-labelledby="apply-form-title" className="border-t border-line">
+        <div className="grid gap-14 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-20">
           <Reveal standalone>
-            <Eyebrow>{user ? "Your account" : "Sign in"}</Eyebrow>
-            <h2 id="apply-title" className="mt-5 text-h3">
-              {user ? "Pick up where you left off." : "Start with your email."}
+            <Eyebrow>Application form</Eyebrow>
+            <h2 id="apply-form-title" className="mt-5 text-h3">
+              {form ? "Fill it in right here." : "The form link is not set yet."}
             </h2>
-            <div className="mt-8">
-              {user ? (
-                <AccountPanel
-                  email={user.email}
-                  cycle={cycle}
-                  application={application}
-                  roleNames={roles
-                    .filter((role) => application?.roles_applied.includes(role.id))
-                    .map((role) => role.name)}
-                  admin={admin}
-                />
-              ) : (
-                <SignInForm next={next} notice={notice} />
-              )}
-            </div>
+            {form ? (
+              <>
+                <div className="mt-8 border border-line bg-surface">
+                  <iframe
+                    src={form.embedUrl}
+                    title={`${site.season.cycleName} application form`}
+                    loading="lazy"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    className="block h-[80svh] min-h-[40rem] w-full bg-white"
+                  />
+                </div>
+                <p className="mt-5 text-sm text-muted">
+                  Blank space above? Some browsers block embedded forms.{" "}
+                  <a
+                    href={form.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={inlineLink}
+                  >
+                    Open the form in a new tab
+                  </a>{" "}
+                  instead.
+                </p>
+              </>
+            ) : (
+              <div className="mt-8 border border-dashed border-line-strong p-6">
+                <p className="text-text">
+                  [TODO: paste the {site.season.cycleName} Google Form link into content/site.ts
+                  (season.applyFormUrl) and this page embeds it.]
+                </p>
+                <p className="mt-2 text-sm text-muted">
+                  Until then, the form is linked from our Instagram bio.
+                </p>
+                <SplitButton href={site.season.applyFallbackUrl} className="mt-6">
+                  Open Instagram
+                </SplitButton>
+              </div>
+            )}
           </Reveal>
 
           <Reveal standalone delay={0.1} className="space-y-12">
             <div>
-              <p className="text-eyebrow font-medium text-muted uppercase">How applying works</p>
-              <ol className="mt-4 border-t border-line">
-                {STEPS.map((step, index) => (
-                  <li key={step.title} className="flex gap-5 border-b border-line py-5">
-                    <span
-                      aria-hidden="true"
-                      className="font-display text-h3 leading-none font-medium text-green"
+              <p className="text-eyebrow font-medium text-muted uppercase">Roles this cycle</p>
+              <ul className="mt-4 border-t border-line">
+                {roles.map((role) => (
+                  <li key={role.slug} className="border-b border-line py-4">
+                    <Link
+                      href={`/students#role-${role.slug}`}
+                      className="group block transition-colors duration-200"
                     >
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                    <span>
-                      <span className="block text-text">{step.title}</span>
-                      <span className="mt-1 block text-sm text-muted">{step.body}</span>
-                    </span>
+                      <span className="block text-text transition-colors duration-200 group-hover:text-green">
+                        {role.title}
+                      </span>
+                      <span className="mt-1 block text-sm text-muted">{role.blurb}</span>
+                    </Link>
                   </li>
                 ))}
-              </ol>
-            </div>
-
-            <div>
-              <p className="text-eyebrow font-medium text-muted uppercase">
-                {cycle ? `Roles this cycle` : "Roles"}
-              </p>
-              {roles.length > 0 ? (
-                <ul className="mt-4 border-t border-line">
-                  {roles.map((role) => (
-                    <li key={role.id} className="border-b border-line py-4">
-                      <span className="block text-text">{role.name}</span>
-                      {role.description ? (
-                        <span className="mt-1 block text-sm text-muted">{role.description}</span>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="mt-4 text-sm text-muted">
-                  [TODO: no roles are configured for this cycle yet (supabase/seed.sql).]
-                </p>
-              )}
+              </ul>
               <p className="mt-4 text-sm text-muted">
-                Responsibilities and time commitment are on the{" "}
+                You can apply for more than one. Responsibilities and time commitment are on the{" "}
                 <Link href="/students#roles" className={inlineLink}>
                   Students page
                 </Link>
-                . Questions?{" "}
+                .
+              </p>
+            </div>
+
+            <div>
+              <p className="text-eyebrow font-medium text-muted uppercase">What happens next</p>
+              <p className="mt-4 text-sm text-muted">
+                We read every application after the deadline and follow up by email. The{" "}
+                <Link href="/students#timeline" className={inlineLink}>
+                  recruitment timeline
+                </Link>{" "}
+                has the dates. Questions?{" "}
                 <Link href="/contact" className={inlineLink}>
                   Contact us
                 </Link>
@@ -188,9 +139,8 @@ export default async function ApplyPage({ searchParams }: PageProps<"/apply">) {
   );
 }
 
-/** Pre-portal behaviour: send applicants to the form in use this cycle. */
-function ExternalApply() {
-  if (isInSeason()) redirect(getApplyDestination());
+/** Out of season: say so and point at the places that announce the next cycle. */
+function Closed() {
   return (
     <PageHero
       eyebrow="Applications"
@@ -201,48 +151,6 @@ function ExternalApply() {
         <SplitButton href={site.socials.instagram}>Follow on Instagram</SplitButton>
         <SplitButton href="/contact" variant="secondary">
           Contact us
-        </SplitButton>
-      </div>
-    </PageHero>
-  );
-}
-
-/** Portal mode without the Supabase variables: say so instead of failing. */
-/** The database did not answer: the page stays up with a way to reach us. */
-function PortalUnavailable() {
-  const email = isTodo(site.socials.email) ? null : site.socials.email;
-  return (
-    <PageHero
-      eyebrow="Applications"
-      lines={["The portal is", "*taking a moment.*"]}
-      blurb="We could not reach the application database just now. Nothing you submitted is lost. Try again in a few minutes."
-    >
-      <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-        <SplitButton href="/apply">Try again</SplitButton>
-        {email ? (
-          <SplitButton href={`mailto:${email}`} variant="secondary">
-            Email us
-          </SplitButton>
-        ) : null}
-      </div>
-    </PageHero>
-  );
-}
-
-function PortalNotConnected() {
-  return (
-    <PageHero
-      eyebrow="Applications"
-      lines={["The portal is", "*not connected yet.*"]}
-      blurb="Sign-in needs the Supabase project. Until it is set up, applications go through the form linked from our Instagram."
-    >
-      <div className="border border-dashed border-line-strong p-6">
-        <p className="text-sm text-muted">
-          [TODO: set SUPABASE_URL and SUPABASE_ANON_KEY (see .env.example and docs/DEPLOY.md section
-          6), or switch NEXT_PUBLIC_APPLY_MODE back to external.]
-        </p>
-        <SplitButton href={site.socials.instagram} className="mt-6">
-          Open Instagram
         </SplitButton>
       </div>
     </PageHero>

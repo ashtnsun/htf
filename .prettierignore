@@ -8,6 +8,8 @@ public/placeholders
 src/components/brand/logo-paths.ts
 docs/PLAN.md
 docs/prompts
+# Parked features keep the formatting they were parked with.
+parked
 
 # Supabase CLI scratch files
 supabase/.temp/

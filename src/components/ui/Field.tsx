@@ -8,7 +8,7 @@ import type {
 import { cn } from "@/lib/utils";
 
 /**
- * Form primitives for the contact form (and the Phase 2 portal). Labels are always visible,
+ * Form primitives (used by the parked contact form and portal, shown in /dev/ui). Labels are always visible,
  * hints and errors are wired through aria-describedby, and an invalid control gets
  * aria-invalid plus a cyan border: the palette has no red, so errors use the brand's
  * complementary colour with an icon so they never rely on colour alone.

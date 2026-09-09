@@ -13,7 +13,7 @@ const PAGES = [
   { href: "/students", label: "Students", blurb: "Roles, the recruitment timeline and FAQ." },
   { href: "/nonprofits", label: "Nonprofits", blurb: "How a partnership works." },
   { href: "/about", label: "About", blurb: "Who we are and who runs the club." },
-  { href: "/contact", label: "Contact", blurb: "Send us a message." },
+  { href: "/contact", label: "Contact", blurb: "Email, LinkedIn and Instagram." },
 ];
 
 const inlineLink = "font-medium text-green transition-colors duration-200 hover:text-text";

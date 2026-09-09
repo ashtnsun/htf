@@ -13,7 +13,16 @@ const eslintConfig = defineConfig([
       "@typescript-eslint/consistent-type-imports": ["warn", { prefer: "type-imports" }],
     },
   },
-  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "public/**", "reference/**"]),
+  globalIgnores([
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+    "public/**",
+    "reference/**",
+    // Parked features (the application portal and the site forms): not in the build.
+    "parked/**",
+  ]),
 ]);
 
 export default eslintConfig;

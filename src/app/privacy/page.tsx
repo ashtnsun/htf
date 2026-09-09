@@ -12,7 +12,7 @@ import { isTodo } from "@/lib/utils";
 export const metadata: Metadata = {
   title: "Privacy policy",
   description:
-    "What Hack the Future collects on this website and in its application portal, why, who processes it, and how to reach us about it.",
+    "What Hack the Future collects on this website, what happens when you email us or apply, who processes it, and how to reach us about it.",
   alternates: { canonical: "/privacy" },
 };
 
@@ -40,7 +40,7 @@ export default function PrivacyPage() {
       <PageHero
         eyebrow="Privacy policy"
         lines={["Your data,", "*handled with care.*"]}
-        blurb="What this website and the application portal collect, why, who processes it for us, and how to ask us about it. Written in plain language on purpose."
+        blurb="What this website collects, what happens when you email us or apply, who processes it for us, and how to ask us about it. Written in plain language on purpose."
       >
         <dl className="flex flex-wrap gap-x-12 gap-y-6">
           <div>
@@ -83,16 +83,16 @@ export default function PrivacyPage() {
                     >
                       {email}
                     </a>{" "}
-                    or use the{" "}
+                    or see the{" "}
                   </>
                 ) : (
-                  <>Use the </>
+                  <>See the </>
                 )}
                 <Link
                   href="/contact"
                   className="font-medium text-green transition-colors duration-200 hover:text-text"
                 >
-                  contact form
+                  contact page
                 </Link>
                 .
               </p>
