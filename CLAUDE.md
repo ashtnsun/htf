@@ -52,9 +52,10 @@ src/components/
   layout/           SiteHeader, NavDrawer, NavLinks, SiteFooter, PageHero, SectionNav (the
                     sticky section bar under the hero on About / Students / Nonprofits; sets
                     --subnav-h so anchors land below it), FaqSection, ContactCta (+ involved/: the
-                    Get involved graphic, a client switch over three variants chosen in the Shift + M
-                    menu; GraphicFrame is the shared floating square, TerminalGraphic the default and
-                    in the bundle, Chat / Badge lazy chunks), SeasonNote, OnThisPage
+                    Get involved graphic, a client switch over four variants chosen in the Shift + M
+                    menu; GraphicFrame is the shared floating square, GlobeGraphic the default and
+                    in the bundle (the partner globe with hoverable country labels; three.js loads
+                    on demand), Terminal / Chat / Badge lazy chunks), SeasonNote, OnThisPage
   home/             Hero (client switch over heroes/*: six variants (Globe, Atlas, Typewriter,
                     Cells, Wordmark, Photo) chosen in the Shift + M menu, GlobeHero the default and
                     in the bundle, the rest lazy chunks;
@@ -69,8 +70,10 @@ src/components/
                     the URL, LinkedIn cell on every card), InstagramGrid
   nonprofits/       HowItWorks, Scope, Partners (+ PartnersMap), NonprofitTestimonials,
                     IntakeForm
-  globe/            PartnerGlobe (lazy wrapper, drag, SVG fallback), PartnerGlobeScene
-                    (three.js / R3F, loaded on demand), SpinController, landDots
+  globe/            PartnerGlobe (lazy wrapper, drag, SVG fallback, the hover label for pins
+                    with a `label`), PartnerGlobeScene (three.js / R3F, loaded on demand; hover a
+                    labelled pin to hold the globe), SpinController, LabelAnchor (places the
+                    label from the frame loop), landDots
   forms/            useFormSubmission (server / mailto modes), SentPanel, Honeypot,
                     CountedTextArea (live character counter)
   contact/          ContactForm

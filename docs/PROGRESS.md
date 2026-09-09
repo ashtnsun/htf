@@ -39,6 +39,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 11b: ten Get involved graphic variants as the menu's second setting (Plane stays the default; Door, Puzzle, Canvas, Chat, Badge, Calendar, Terminal, Keycap, Signpost), all recognizable objects without the corner brackets; Ashton picks the one that ships
 - [x] Session 11f: How it works drawn with the footer T-rex (detective, team, builder, party) dissolving cell by cell between the steps
 - [x] Session 11h: the scene after Ashton's review (hats worn on the head, the team as the T-rex with two smaller pink and blue T-rexes, the gift arm attached and no partner, the dissolve on its own clock)
+- [x] Session 12a: the Get involved graphic is the partner globe (drag, hover a pin for its country, the globe holds while hovered), the new default; Terminal, Chat and Badge stay in the menu
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -60,6 +61,59 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+
+## Session 12a — 2026-09-09 (the Get involved graphic as the partner globe)
+
+**Built:** Ashton: "On the Get involved section, for the graphic, I want it to be like the
+interactive globe on the Partners section on nonprofits page … the points on the map should
+be hoverable to then show the name of the country in a rectangle label. Hovering a point
+should stop the globe from spinning, unhover resumes the spinning." A fourth Get involved
+variant, Globe (`layout/involved/GlobeGraphic`), now the default and in the bundle:
+`globe/PartnerGlobe` inside the shared frame (pointer tilt off, the globe's own glow). Its
+pins are the partner locations from the project files, handed down by `layout/ContactCta`
+with a `label`: the country, read as the last comma-separated part of each project's
+`location` (`PartnerLocation.country`, new in `lib/content`). In the scene every labelled pin
+has an invisible hit disc (raycasting ignores material visibility, rendering honours it);
+pointer over it lights the pin mint, freezes the globe (`SpinController.hover`) and shows the
+label, a hairline rectangle on the page background with a leader line down to the pin,
+positioned from the frame loop through `globe/LabelAnchor` (a class that writes the element's
+transform, the SpinController pattern, so nothing per frame goes through React or a ref
+prop); pointer out resumes the spin at once. Pins on the far side are not hoverable (a
+facing test: the raycaster sees through the occluding sphere). The label follows its pin
+during a drag and hides if the pin turns away. `PartnerGlobe` gained `glow` and the label
+element (only when a pin has a label); the Nonprofits globe is unchanged, its pins have no
+label. Terminal, Chat and Badge stay in the menu (Terminal is a lazy chunk now); the menu
+blurbs and `/dev/ui` list Globe first. The Get involved section is `clip` now like Partners,
+because the globe's glow (`inset-[-10%]`) pushed the phone page to 405 px wide.
+
+**Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm build`; on the production build (port
+3003; the dev server on 3000 was a two-day-old crash-looping process from Ashton's terminal
+that stalled every request, so builds and tests ran on 3003 until htf-30 had it restarted) a
+Playwright sweep found a pin, read "United Kingdom", saw the label's position unchanged over
+1.2 s of hover, the label gone 400 ms after leaving, the same spot empty 2.6 s later (the pin
+had spun on) and the grabbing cursor during a drag; the canvas is lit (6–11 % of pixels) on
+the phone, under reduced motion and both, on `/` and `/nonprofits`; page width 390 on `/` and
+`/about` after the clip; `pnpm a11y` 0 violations on `/`, `/about`, `/nonprofits`.
+Screenshots in `docs/screenshots/session-12/`: `involved-globe-1440.png` (the label up),
+`involved-globe-390-reduced.png`, `home-*.png`, `about-*.png`.
+
+**Decisions:** the country is derived from the location string rather than a new frontmatter
+field: the placeholder projects all end in the country ("…, Indiana, US" → "US") and real
+entries should keep that shape. The label is a DOM element, not a three.js sprite, so it uses
+the site's type and stays crisp. Globe is the default because Ashton asked for the graphic to
+be the globe; three.js (a lazy chunk, as on /nonprofits) now loads near the foot of the home,
+About, Projects and Students pages when the section is within 240 px of the viewport.
+
+**TODOs:**
+
+- Pre-existing, seen while testing, not fixed here: hydration mismatches under
+  prefers-reduced-motion on `/` (`ui/StatTile`'s `CountUp` renders a different span tree) and
+  on `/nonprofits` (`home/TestimonialMarquee` drops its pause button). Both branch on
+  Framer's raw `useReducedMotion` in the first render; switch them to `useReducedMotionSafe`.
+- Once real projects are in: check every `location` ends with the country, or add a
+  `country` field to the project frontmatter and read it in `getPartnerLocations`.
+- The label is centred above the pin; a pin at the very top of the globe puts it over the
+  edge, which reads fine but could flip below when there is no room.
 
 ## Session 11h — 2026-09-08 (the dino process scene, Ashton's review)
 
@@ -1259,7 +1313,8 @@ Shift + M and picks one (PLAN.md §19, the Session 11 log). Set `DEFAULT_HERO` i
 `src/lib/config/options.ts` to the choice, delete the variants that are not kept (their
 files under `src/components/home/heroes/`, their rows in `HERO_VARIANTS` and in `Hero.tsx`,
 any CSS only they use), and record the choice in PLAN.md §19. The Get involved graphic is
-decided: Terminal is the default, with Chat and Badge still in the menu (PLAN.md §20).
+decided again (Session 12a): the partner globe is the default, with Terminal, Chat and Badge
+still in the menu (PLAN.md §20).
 
 **Then Session 12: application portal, part 4 (go live).** Read `docs/PLAN.md` §5, §6 and
 §12–§16, this file and `docs/DEPLOY.md`, then, in this order:
