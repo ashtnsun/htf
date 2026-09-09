@@ -133,8 +133,7 @@ still, `process-<width>.png` the section, `nonprofits-how-it-works-1440.png` the
 3. Nothing attached to the body is ever translated: the offer is an extra arm cell plus the
    box moving, the peer is a vertical lift (the handle's first cell stays beside the hand).
 
-**TODO:** Ashton's second look at the scene (the confetti-only right
-half of Deliver now that the partner is gone).
+**TODO:** Ashton's next look at the scene and the step spacing.
 
 **Follow-up (2026-09-09, the same session):** Ashton, on Match: "remove the different
 accessories on the 2 other dinosaurs, make those two smaller, and make one pink and one blue
@@ -153,6 +152,18 @@ the palette's construction. Checked: `pnpm typecheck`, `pnpm lint`, `pnpm build`
 with the three fills, 7 loops in Match, no console errors); `scene-1-team-*.png`,
 `process-1440.png` and `nonprofits-how-it-works-1440.png` in
 `docs/screenshots/session-11h/` are re-captured.
+
+**Follow-up 2 (2026-09-09):** Ashton: "it's too easy to scroll past a certain step in the
+process", and the Deliver confetti "is reaching too far to the right". Every step is now a
+full viewport tall from lg (`lg:min-h-svh`; the middle two were 68svh, so at 900 px tall the
+scene held them for 684 px of scroll, now 900 px) and 60svh on phones (`min-h-[60svh]`; they
+had no minimum and ran about 280 px, now 506 px at 844 px tall), so a step holds for that
+much scroll and one gesture does not fly past it. The confetti is twelve cells over the dino
+and the gift (local columns 9 to 33, stage columns 11 to 35; it reached column 59). Checked:
+`pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm a11y` (0 violations on `/`), a Playwright
+pass measuring the step heights and centre gaps (900 / 900 / 900 at 1440 × 900, 506 / 506 /
+506 at 390 × 844) and the confetti runs (columns 11 to 35); `scene-3-party-*.png` and
+`process-*.png` (the section, now at Build) re-captured.
 
 ## Session 11g — 2026-09-08 (the hero and Get involved shortlists)
 
