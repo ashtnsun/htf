@@ -38,9 +38,12 @@ content/            typed content: site.ts (config + season CTA), media.ts (imag
                     (the hero copy every variant shares),
                     nonprofits.ts, instagram.ts, privacy.mdx, projects/*.mdx (Zod frontmatter)
 src/app/            routes. page.dev.tsx files exist only in `next dev` (see next.config.ts);
-                    apply/ is the Google Form page (embedded, with the open-in-a-tab link;
-                    "closed" out of season); contact/ lists email, LinkedIn and Instagram;
-                    no server actions, no proxy
+                    apply/ is the Google Form page (one centred column, no banner: a short
+                    heading, the embedded form with the open-in-a-tab link, the "apply" FAQ
+                    under it; "closed" out of season); projects/[slug] is a plain title block,
+                    the cover, the write-up with the team and stack in the right column, the
+                    gallery and the CTA (no banner, jump links or "More projects");
+                    contact/ lists email, LinkedIn and Instagram; no server actions, no proxy
 src/components/
   brand/            Logo (inline SVG wordmark; logo-paths.ts is generated, do not hand-edit),
                     PixelDino (footer), dino-pixels.ts (the 20×22 T-rex map the footer and the
@@ -52,8 +55,9 @@ src/components/
                     --subnav-h so anchors land below it), FaqSection, ContactCta (+ involved/: the
                     Get involved graphic, a client switch over four variants chosen in the Shift + M
                     menu; GraphicFrame is the shared floating square, GlobeGraphic the default and
-                    in the bundle (the partner globe with hoverable country labels; three.js loads
-                    on demand), Terminal / Chat / Badge lazy chunks), SeasonNote, OnThisPage
+                    in the bundle (the partner globe; a hovered pin names its state in the US or
+                    its country elsewhere; three.js loads on demand), Terminal / Chat / Badge
+                    lazy chunks), SeasonNote, OnThisPage (/privacy only)
   home/             Hero (client switch over heroes/*: six variants (Globe, Atlas, Typewriter,
                     Cells, Wordmark, Photo) chosen in the Shift + M menu, GlobeHero the default and
                     in the bundle, the rest lazy chunks;
@@ -63,7 +67,9 @@ src/components/
                     ProcessSprites.ts; also the stills on /nonprofits),
                     ImpactBand (+ TestimonialMarquee, Awards, AwardCarousel), WhoWeServe (two
                     linked panels with a presentational "Learn more" button in a full-bleed
-                    row; also the hand-off on /about)
+                    row, each topped by a pixel picture from WhoWeServeGraphics: a stack of
+                    books, a hand holding out a heart, on the dinosaur's cell grid; also the
+                    hand-off on /about)
   about/            Mission, Story, ExecGrid (+ ExecBoard: a chip per school year, `?board=` in
                     the URL, LinkedIn cell on every card), InstagramGrid
   nonprofits/       HowItWorks (cards share rows through a subgrid), Scope, Partners
@@ -194,7 +200,9 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
 - Pixel art: every dinosaur drawing reads `brand/dino-pixels` and stays on its cell grid:
   solid cells, no outlines, details carved as empty cells (the eye), dinosaurs green and
   props white, motion by whole cells (`steps()` timing), nothing scaled, rotated or
-  fractionally translated (that blurs the pixels).
+  fractionally translated (that blurs the pixels). Other pixel pictures (the Who we serve
+  books and heart) follow the same rules: string maps, white objects with green accents,
+  `shapeRendering="crispEdges"`, a width that is a whole multiple of the map's columns.
 - `cn()` registers the type scale with tailwind-merge (`src/lib/utils.ts`). Add any new
   `--text-*` token to that list, or a later `text-<colour>` in the same `cn()` call silently
   drops the size (tailwind-merge cannot tell `text-h2` from a colour).

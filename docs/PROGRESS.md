@@ -41,6 +41,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 11h: the scene after Ashton's review (hats worn on the head, the team as the T-rex with two smaller pink and blue T-rexes, the gift arm attached and no partner, the dissolve on its own clock)
 - [x] Session 12a: the Get involved graphic is the partner globe (drag, hover a pin for its country, the globe holds while hovered), the new default; Terminal, Chat and Badge stay in the menu
 - [x] Session 13: review pass 5 (fourteen items: marquee header, awards column, the globe still and centred, project-card arrow, no Who we are, green section-bar item, no banner CTAs, centred sticky roles intro, timeline without numbers and with the Now marker and the run-off rail, subgrid How it works, no map behind the nonprofit quotes, Start a project and Contact by email, /apply as the embedded Google Form) and the portal parked under `parked/`
+- [x] Session 14: review pass 6 (eight items: pixel books and heart on Who we serve, globe pins named by state, tighter How it works gaps, no Photo hero CTA, plain project pages with the team on the right and no More projects, top-aligned roles intro, no Now tag, /apply as one centred column with the FAQ under the form)
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -62,6 +63,89 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+
+## Session 14 — 2026-09-09 (review pass 6: eight items)
+
+Ashton's list after Session 13, applied in one pass.
+
+**Built:**
+
+1. **Who we serve pictures.** `home/WhoWeServeGraphics` draws a stack of four books
+   (students) and a cupped hand holding out a heart (nonprofits) as pixel art on 24 × 22
+   string maps, the process scene's way: solid cells, no outlines, the spine titles carved
+   as empty cells, white objects with green accents, one `<path>` per ink with
+   `crispEdges`. Each panel in `home/WhoWeServe` starts with its picture (120 px wide, so
+   5 px cells, with the scene's faint green glow behind it) above the eyebrow and the title;
+   the panels' subgrid has five rows now. Static, `aria-hidden`.
+2. **Globe labels by state.** `getPartnerLocations` (`lib/content`) adds `label`: the part
+   before the country when the location ends in US / USA / United States, otherwise the
+   country; `layout/ContactCta` passes it as the pin label. The four US placeholders read
+   Indiana, Illinois, California and Pennsylvania; hovering a pin on the production build
+   showed "Illinois" (`home-involved-label-1440`).
+3. **How it works gaps.** `home/ProcessScroll`: `--lead-h: 50svh` on the grid; the first
+   and the last step are `min-h-(--lead-h)` (the middle ones stay a viewport tall) and on
+   lg the sticky scene box is `h-(--lead-h)` at `top: calc(50svh - lead / 2)`, so its
+   centre is still the reading line, it still lines up with step 1 before it sticks and it
+   leaves with step 4 the moment that step has been centred. `home/Process` keeps its top
+   padding and cuts the bottom to `pb-12 md:pb-16`. Measured at 1440 × 900: intro paragraph
+   → Step 01 went from 440 to 215 px; Deliver → the Impact label from 672 to 367 px.
+4. **Photo hero without the CTA.** `heroes/PhotoHero` renders the eyebrow and the statement
+   only (it takes no props now).
+5. **Project pages.** `projects/[slug]`: a title block on the page background (back link,
+   nonprofit eyebrow, `text-h2 md:text-display` title, summary, the Year / Location / Type
+   facts, the live link) instead of `PageHero`; the write-up with a 20 rem sticky right
+   column holding the team (`TeamGrid variant="list"`: a hairline list with 40 px avatars
+   and the 44 px LinkedIn cell) and the "Built with" chips; then the gallery and the CTA.
+   `OnThisPage` left the page (it stays on /privacy); `projects/MoreProjects.tsx` and
+   `getRelatedProjects` are deleted.
+6. **Roles intro top-aligned.** `students/RoleRows`: the sticky intro sits at
+   `header + subnav + 2rem` with no fixed height or centring. Measured: at rest the intro
+   and the rows both start at 253 px; scrolled, the bar ends at 112 px and the intro starts
+   at 144 px.
+7. **Timeline without "Now".** `students/TimelineTrack` drops the tag; the current step keeps
+   the green node, the ping ring, the green date and `aria-current="step"`.
+8. **/apply as one centred column.** No `PageHero`: a centred eyebrow, "Apply to Hack the
+   Future." (`text-h2 md:text-display`), one line with the deadline, then the form
+   (`max-w-3xl`: the iframe measured 766 px wide with 337 px of margin each side at 1440),
+   the open-in-a-tab note, and under a hairline the FAQ ("What happens next." over
+   `FaqAccordion`, new in `layout/FaqSection` and shared with `FaqSection`) reading
+   `getFaq("apply")`: three items in `content/faq.ts` (`audience: "apply"`, added to
+   `faqAudienceSchema`): what happens next (the old paragraph, linking to the timeline),
+   more than one role, who can apply, plus a "Something else? Contact us" line. "Roles
+   this cycle" is gone. The closed state uses the same centred layout.
+
+**Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm validate:content` (faq: 20), `pnpm build`
+(35 pages). The dev server on 3000 had a crashed static-paths worker (every
+`/projects/[slug]` request a 500 "Jest worker encountered 2 child process exceptions",
+first logged at 02:24 today, the moment the review script opened a project page; the other
+routes still served), so the checks ran on `pnpm start -p 3003`: the measurements above; no
+console errors on the nine routes at 1440 and 390; page width 390 on /apply and the project
+page; no link inside the photo hero; the embedded form tested with a stand-in link on the
+dev server (`/apply` still compiled there) and the link reverted. `pnpm a11y` on `/`,
+`/about`, `/students`, `/nonprofits`, `/contact`, `/apply`, `/projects`,
+`/projects/placeholder-project-1`, `/privacy` at both widths plus the drawer: 0 violations.
+Screenshots in `docs/screenshots/session-14/`: the sweep (nine routes at 1440 and 390,
+`drawer-390`) plus `home-who-we-serve-1440`, `home-process-{top,end,to-impact}-1440`,
+`home-involved-label-1440`, `home-hero-photo-1440`, `project-{top,writeup}-1440`,
+`students-roles-{sticky,rest}-1440`, `students-timeline-1440`, `apply-embed-{1440,390}`.
+
+**Decisions:** the pictures are pixel art (the site's one illustration language, and the
+process scene sits on the same page) rather than line art; both maps share one 24 × 22 grid
+so the two panels' pictures share a scale and a baseline. The state comes from the
+location string's second-to-last part (no new frontmatter field) and only for the US. The
+first and last steps are half a viewport rather than top-aligned so the scene's box and the
+first step still share a centre; phones use the same variable. The project page keeps the
+gallery and the closing CTA; the facts stay in the title block and the aside holds the team
+and the stack. The apply FAQ is content (`audience: "apply"`) and its items only restate
+copy the page already carried. `Closed` shares the centred layout so /apply never has a
+banner.
+
+**TODOs:**
+
+- Restart the dev server on 3000 (its static-paths worker is dead: project pages 500 there
+  until then; the production build is fine).
+- Ashton: the Google Form link and the club email (unchanged from Session 13).
+- Pre-existing, unchanged: the hero decision (`DEFAULT_HERO`, Session 11 follow-up).
 
 ## Session 13 — 2026-09-09 (review pass 5: fourteen items, Google Forms, the portal parked)
 
@@ -1429,11 +1513,13 @@ unchanged.
 
 ## Next session starts with
 
-**First, Ashton's look at Session 13** (`docs/screenshots/session-13/`): the fourteen review
-items and the Google Form page. Two content values unblock the site: the Fall 2026 Google
-Form link in `content/site.ts` (`season.applyFormUrl`) and the club email
-(`site.socials.email`). Once the real link is in, open `/apply` and confirm the embedded
-form loads (then remove the stand-in wording from the Session 13 TODO).
+**First, Ashton's look at Session 14** (`docs/screenshots/session-14/`): the eight review
+items (the Who we serve pictures, the globe labels, the process gaps, the photo hero, the
+project pages, the roles intro, the timeline, /apply). Restart the dev server on 3000 before
+working (its static-paths worker died during Session 14; project pages 500 there). Two
+content values still unblock the site: the Fall 2026 Google Form link in `content/site.ts`
+(`season.applyFormUrl`) and the club email (`site.socials.email`). Once the real link is in,
+open `/apply` and confirm the embedded form loads.
 
 **Then the hero decision (Session 11 follow-up).** Six heroes remain after Session 11g
 (Globe, Atlas, Typewriter, Cells, Wordmark, Photo). Ashton opens the home page, presses
