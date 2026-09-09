@@ -30,7 +30,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 2: Students page (roles rows with Apply buttons, recruitment timeline, how we work, what you'll get, student FAQ, CTA)
 - [x] Session 3: Projects index (year filter chips) + detail (MDX body via next-mdx-remote, gallery lightbox, live link, team grid, more-projects rail), 8 placeholder projects
 - [x] Session 4: Contact form (server action → Supabase / Resend, mailto fallback), Privacy rewrite (MDX), 404 polish, SEO pass (generated OG PNGs, apple icon, canonical URLs)
-- [ ] Session 4 leftover: deploy to the real domain (`docs/DEPLOY.md`: GitHub org transfer, Vercel project, DNS; needs Ashton's accounts)
+- [ ] Session 4 leftover: deploy to the real domain (`docs/DEPLOY.md`: GitHub org transfer, Vercel project, DNS; needs Ashton's accounts; no environment variables needed since Session 13)
 - [x] Session 5: home + global audit pass (square corners, glass surfaces, one hover language, nav/footer changes with the pixel dinosaur, statement hero, What we do, scroll-driven process, Impact with count-up tiles / testimonial marquee / awards, Who we serve before the FAQ)
 - [x] Session 8b: home + global audit 2 (Home tab and centred nav, green bar CTA, `nonprofits` spelling, What we do reflow, one scroll-morphing process scene, Impact map backdrop, awards and caption cleanup, Who we serve cards, beacon graphic, footer, green inline links)
 - [x] Session 10: home audit 3 (full-bleed hairline rows, centred projects button, the isometric process scene with no counter under it, Impact map lower, 2px divider and green arrow cell on every primary button, plain Who we serve panels, the docking graphic in Get involved)
@@ -40,6 +40,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 11f: How it works drawn with the footer T-rex (detective, team, builder, party) dissolving cell by cell between the steps
 - [x] Session 11h: the scene after Ashton's review (hats worn on the head, the team as the T-rex with two smaller pink and blue T-rexes, the gift arm attached and no partner, the dissolve on its own clock)
 - [x] Session 12a: the Get involved graphic is the partner globe (drag, hover a pin for its country, the globe holds while hovered), the new default; Terminal, Chat and Badge stay in the menu
+- [x] Session 13: review pass 5 (fourteen items: marquee header, awards column, the globe still and centred, project-card arrow, no Who we are, green section-bar item, no banner CTAs, centred sticky roles intro, timeline without numbers and with the Now marker and the run-off rail, subgrid How it works, no map behind the nonprofit quotes, Start a project and Contact by email, /apply as the embedded Google Form) and the portal parked under `parked/`
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -51,16 +52,139 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [ ] Real stats and testimonials: the sections read published items already; needs Ashton's numbers and quotes (`published: true`)
 - [ ] Media handoff swap: needs the photos (`content/media.ts` keys)
 
-### Phase 2 — Application portal (Sessions 7–10)
+### Phase 2 — Application portal (Sessions 7–10; parked under `parked/` since Session 13, 2026-09-09: applications run through a Google Form this cycle)
 
 - [x] Session 7: schema + sign-in. Migration `20260908000000_application_portal.sql` (profiles, admins, cycles, roles, questions, applications, answers, reviews; RLS, guard trigger, explicit grants), seeds, local Supabase stack, email code + magic-link sign-in (`@supabase/ssr`), `/apply` season landing with account panel, `/auth/confirm`, `src/proxy.ts`, `/apply/form` and `/admin` gates, `NEXT_PUBLIC_APPLY_MODE` switch, `docs/DEPLOY.md` §6
 - [x] Session 8: multi-step application form with autosave (profile → roles → questions → review, one step per URL, works without JavaScript), submit with the confirmation email (Resend), `/apply/submitted`, read-only after submit / deadline
 - [x] Session 9: exec dashboard (`/admin` counts, filters and search in the URL, sortable table, CSV export; `/admin/applications/[id]` with the read-only summary, the review panel, the status control and the other reviews)
-- [ ] Session 12: Resend SMTP and rate limits on the hosted project, keepalive cron, dry run with five exec members, `NEXT_PUBLIC_APPLY_MODE=portal` on production
+- [ ] Parked: Resend SMTP and rate limits on the hosted project, keepalive cron, dry run with five exec members, then the switch to the portal (restore steps in `parked/README.md`; only if the club wants the portal for a later cycle)
 
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+
+## Session 13 — 2026-09-09 (review pass 5: fourteen items, Google Forms, the portal parked)
+
+Ashton's numbered list after Session 12a, all fourteen applied in one pass.
+
+**Built:**
+
+1. **Testimonials pause button on the label's line.** `home/TestimonialMarquee` renders a
+   header row (`items-center`: the label and the 44 px button share one centre line) plus an
+   optional `title` slot under it; `nonprofits/NonprofitTestimonials` passes "Partners say"
+   as the label and the headline as the title. The whole header is one `Reveal`. The marquee
+   also reads `useReducedMotionSafe` now (the Session 12a hydration TODO).
+2. **Awards column in the middle of the table.** The record table is `table-fixed` with three
+   equal columns, so the centred Award column sits in the table's middle on the home Impact
+   band and on /about (one component).
+3. **The Get involved globe.** `involved/GlobeGraphic` turns the frame's bob off
+   (`float={false}`): the 7 s `translateY` on the frame moved the WebGL canvas by fractions
+   of a pixel, which resampled its hairlines and land dots (the flicker) and kept the globe
+   off its centre line. Measured at 1440: the left column's centre and the frame's centre are
+   both at 490.1 px.
+4. **Project cards.** The arrow is white at rest (`text-text`), the cell still fills green on
+   hover, and the glyph nudges right (`translate-x-1`, `ease-out-expo`) like every
+   SplitButton's.
+5. **About without Who we are.** `about/Story.tsx` deleted; `story` and `facts` dropped from
+   `content/about.ts` and `aboutPageSchema` (`factSchema` with them); the section bar lists
+   Mission, Exec board, Awards, Instagram.
+6. **Section bar current item.** Green text only (`text-green`), no underline; the header
+   keeps its green underline for the current page.
+7. **No CTA in the Students and Nonprofits banners** (the students hero also loses the
+   deadline note that sat beside its button).
+8. **Roles intro centred while scrolling.** On lg the sticky box is as tall as the viewport
+   below the header and the section bar (`top` and `height` from `--header-h` and
+   `--subnav-h`) with the copy centred in it (measured: top 112 px, height 788 px at
+   1440 × 900). The per-role "Apply as …" button is gone; the "Not recruiting for this role
+   this cycle." note stays for closed roles.
+9. **Recruitment timeline.** The deadline note under the heading is gone; the 01–06 labels are
+   gone; the rail runs from the last cell's right edge to beyond the screen (`left-full
+w-screen` inside the last `li`, the section `overflow-x-clip`; on phones it runs off the
+   last row only, measured 20→389 px against 20→369 px for the other rows); the current step
+   is marked (green node with the ping ring, green date, a "Now" tag) through a new optional
+   `current: true` flag in `recruitmentStepSchema`, set on Callouts in
+   `content/recruitment.ts` (the ISO-date logic still wins once dates exist).
+10. **How it works cards aligned.** Each `li` is `grid-rows-subgrid row-span-5` (scene, step,
+    title, description, your part) with one `Reveal` around the whole list, so titles,
+    descriptions and "Your part" blocks line up across the row (title tops measured equal).
+11. **No map behind the nonprofit quotes.** The `DottedMap` backdrop left
+    `NonprofitTestimonials`; the home Impact band keeps its map.
+12. **Start a project by email.** The intake form is gone from /nonprofits: the section has
+    an "Email us" SplitButton (`mailto:` with a subject) and the address as text, or, while
+    `site.socials.email` is a TODO, the visible TODO with the Instagram button; "What happens
+    next" stays; the contact-page paragraph is gone; the FAQ aside's "Ask us" became "Email
+    us" pointing at `#start`. Content reworded from the form to email: `content/process.ts`
+    (Discover and its partner line), `content/faq.ts` (how nonprofits get involved),
+    `content/nonprofits.ts` (`nextSteps[0]`).
+13. **Contact page** is the hero plus three link tiles (Email, LinkedIn, Instagram) in a
+    hairline row with `hover-corners`; the form and "Before you write" are gone; a TODO
+    address renders as text without a link.
+14. **Applications through Google Forms; the portal parked.** `/apply` is a static page:
+    in season the hero with the deadline, the cycle's Google Form in an iframe
+    (`getApplyForm()` in `content/site.ts` adds `embedded=true` to `season.applyFormUrl`),
+    an "open the form in a new tab" link, the open roles (linked to their rows on /students)
+    and "What happens next"; while the form link is a TODO the page says so and offers the
+    Instagram button (`season.applyFallbackUrl`); out of season the "closed for now" hero.
+    `season.applyMode` / `applyUrl`, `getApplyDestination()` and `isPortalMode()` are gone.
+    The portal and the site forms moved with `git mv` (47 files, history kept) into
+    `parked/src/…` mirroring their old paths: `app/apply/{actions,form,submitted,page}`,
+    `app/admin`, `app/auth`, `proxy.ts`, `components/{apply,admin,forms,contact}`,
+    `components/nonprofits/IntakeForm`, `lib/{apply,auth,portal,supabase,forms,contact,
+inquiries}`, `app/contact/actions.ts`, `app/nonprofits/actions.ts`. `parked/README.md`
+    lists what is there, the environment variables and the restore steps. `parked` is
+    excluded from `tsconfig.json`, ignored by ESLint and Prettier; `package.json`'s
+    `supabase:types` writes into the parked tree; the Supabase packages stay installed.
+    `.env.example` is down to `NEXT_PUBLIC_SITE_URL`; `robots.ts` allows everything (no
+    `/admin`, `/auth`); the sitemap lists `/apply`; `content/privacy.mdx` (effective
+    2026-09-09) covers email and the Google Form (Google as a processor) instead of the
+    contact form and the portal; `/privacy`, the 404 page and `/dev/ui` (its own sample
+    audiences) lost their form references; `docs/DEPLOY.md` §2, §4, §5 and §6 and
+    `CLAUDE.md` describe the new shape. `brand/PixelDino` reads `useReducedMotionSafe` and
+    renders a plain element under reduced motion, which removes the hydration error every
+    page logged under `prefers-reduced-motion`.
+
+**Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm validate:content`, `pnpm build` (35 static
+pages; no `/admin`, `/auth` or proxy in the route list). Playwright against the dev server:
+the measurements above; no console errors on the eight routes at 1440 and on the four
+changed pages at 390 (page width 390); no hydration error under reduced motion on `/`,
+`/students`, `/nonprofits`, `/about`; the nonprofits marquee is the scroll row under reduced
+motion; `/apply` with a stand-in form link renders the iframe (`…&embedded=true`, 755 × 720
+at 1440, 348 × 675 on the phone; Google's own "does not exist" page inside it, since the
+link was fake). `pnpm a11y` on `/`, `/projects`, `/about`, `/students`, `/nonprofits`,
+`/contact`, `/apply`, `/privacy` at both widths plus the drawer: 0 violations. Screenshots in
+`docs/screenshots/session-13/`: the standard sweep (`home`, `about`, `students`,
+`nonprofits`, `contact`, `apply`, `projects` at 1440 and 390, `drawer-390`) plus the
+review captures (`home-involved-1440`, `home-testimonials-header-1440`, `home-awards-1440`,
+`about-sectionnav-1440`, `projects-card-{rest,hover}-1440`, `students-{hero,roles-sticky,
+timeline}-1440`, `nonprofits-{hero,how-it-works,testimonials,start}-1440`,
+`apply-embed-{1440,390}`).
+
+**Decisions:** the section bar's "active colour" is green text (the drawer's language for the
+current page), hover stays white. The rail runs off the right edge only (the ask was "past
+project kickoff"). The current step is a content flag rather than invented dates. Parking
+means a mirrored tree under `parked/` rather than deletion (Ashton: "keep everything stored
+… don't permanently delete all the work"), applied to the site forms as well since the
+portal's confirmation email depends on `lib/forms`; `supabase/` stays at the root because
+the CLI expects it there; `ui/Field.tsx` stays live for `/dev/ui`. `/apply` is now a public,
+indexed page (canonical, in the sitemap). The Google Form is embedded rather than linked
+because Google's `embedded=true` view allows framing; the page still links to the form for
+browsers that block frames.
+
+**TODOs:**
+
+- Ashton: paste the Fall 2026 Google Form `…/viewform` link into `content/site.ts`
+  (`season.applyFormUrl`) and set `site.socials.email`; check the embedded form on the real
+  link (the test used a stand-in URL) and its sign-in / email-collection settings against
+  `content/privacy.mdx`.
+- Move `current: true` in `content/recruitment.ts` as recruitment advances, or add ISO
+  `date`s and drop the flag.
+- `.env.local` on this machine still holds the local Supabase variables and
+  `NEXT_PUBLIC_APPLY_MODE=portal`; nothing reads them now, delete when convenient.
+- The globe flicker: the fix removed the only periodic transform on the canvas; if Ashton
+  still sees a blink, the dev log had one "THREE.WebGLRenderer: Context Lost" line at
+  00:11:55 today (a context loss re-creates the scene, which looks like a blink); the next
+  lever would be `powerPreference` in `globe/PartnerGlobeScene`.
+- Pre-existing, unchanged: the hero decision (`DEFAULT_HERO`, Session 11 follow-up).
 
 ## Session 12a — 2026-09-09 (the Get involved graphic as the partner globe)
 
@@ -1305,7 +1429,11 @@ unchanged.
 
 ## Next session starts with
 
-**First, Ashton's second look at the dino process scene** (Session 11h, `docs/screenshots/session-11h/`): the hats worn on the head, the team as two smaller pink and blue T-rexes beside the lead, the gift held with the arm attached and no partner, and the dissolve on its own clock (600 ms in twelve buckets in `home/ProcessScene`; the hysteresis band in `home/ProcessScroll`). The drawings are string maps in `home/ProcessSprites.ts`, the timings the `[data-mode]` rules at the end of `globals.css`.
+**First, Ashton's look at Session 13** (`docs/screenshots/session-13/`): the fourteen review
+items and the Google Form page. Two content values unblock the site: the Fall 2026 Google
+Form link in `content/site.ts` (`season.applyFormUrl`) and the club email
+(`site.socials.email`). Once the real link is in, open `/apply` and confirm the embedded
+form loads (then remove the stand-in wording from the Session 13 TODO).
 
 **Then the hero decision (Session 11 follow-up).** Six heroes remain after Session 11g
 (Globe, Atlas, Typewriter, Cells, Wordmark, Photo). Ashton opens the home page, presses
@@ -1313,25 +1441,13 @@ Shift + M and picks one (PLAN.md §19, the Session 11 log). Set `DEFAULT_HERO` i
 `src/lib/config/options.ts` to the choice, delete the variants that are not kept (their
 files under `src/components/home/heroes/`, their rows in `HERO_VARIANTS` and in `Hero.tsx`,
 any CSS only they use), and record the choice in PLAN.md §19. The Get involved graphic is
-decided again (Session 12a): the partner globe is the default, with Terminal, Chat and Badge
-still in the menu (PLAN.md §20).
+decided (Session 12a): the partner globe, with Terminal, Chat and Badge still in the menu
+(PLAN.md §20).
 
-**Then Session 12: application portal, part 4 (go live).** Read `docs/PLAN.md` §5, §6 and
-§12–§16, this file and `docs/DEPLOY.md`, then, in this order:
-
-1. Keepalive: an `/api/keepalive` route handler that reads one row through the anon key and a
-   `vercel.json` cron that hits it daily, so the free Supabase project never pauses (PLAN.md
-   §5); a dry-run checklist in `docs/DEPLOY.md` for the five exec testers.
-2. With Ashton: deploy the site (`docs/DEPLOY.md` §1–§5: GitHub org transfer, Vercel project,
-   env vars, DNS); the marketing site ships with `/apply` redirecting to the external form.
-3. Hosted Supabase (`docs/DEPLOY.md` §6): apply the migrations, run `seed.sql` once Ashton
-   confirms the dates, roles and questions, add the exec board to `public.admins`, set the
-   auth URLs and the email templates, configure Resend SMTP and raise the email rate limit.
-4. Dry run on a Vercel preview with `NEXT_PUBLIC_APPLY_MODE=portal`: five exec members apply
-   and review end to end (sign-in email through Resend, the form, the confirmation email, the
-   dashboard, the CSV). Fix what they find.
-5. Flip `NEXT_PUBLIC_APPLY_MODE=portal` on production, redeploy, check every Apply CTA lands
-   on the portal, then update this file and PLAN.md §6.
+**Then deploy** (`docs/DEPLOY.md` §1–§5: GitHub org transfer, Vercel project, DNS; no
+environment variables; the post-deploy checks in §4). The application portal is parked
+(PLAN.md §23, `parked/README.md`); its go-live plan (PLAN.md §5–§6, the old §12–§16) only
+comes back if the club wants the portal for a later cycle.
 
 ## Session 6 — 2026-09-06 (Phase 3: About, Non-profits, partner globe, analytics, Lighthouse)
 
