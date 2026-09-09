@@ -4,7 +4,8 @@ import { Reveal } from "@/components/motion/Reveal";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 
 /**
- * Awards: a three-column record (issuer · award · date) per award, stacked on phones, then
+ * Awards: a three-column record (issuer · award · date) per award, the columns a third of
+ * the table each so the award sits in its middle (2026-09-09 review), stacked on phones, then
  * the photo carousel. The eyebrow is the heading (no title line, 2026-09-07 audit). A
  * subsection of the Impact band on the home page and a section of its own on /about.
  * Reads content/awards.ts.
@@ -30,17 +31,17 @@ export function Awards({ awards, headingLevel = "h3", id }: AwardsProps) {
       </Eyebrow>
 
       {/* Record table from sm up; a stacked list on phones (the hidden one is display:none). */}
-      <table className="mt-8 hidden w-full border-b border-line sm:table">
+      <table className="mt-8 hidden w-full table-fixed border-b border-line sm:table">
         <caption className="sr-only">Awards received by Hack the Future</caption>
         <thead>
           <tr className="text-left text-eyebrow text-muted uppercase">
-            <th scope="col" className="pb-4 font-medium">
+            <th scope="col" className="w-1/3 pb-4 font-medium">
               Issuer
             </th>
-            <th scope="col" className="pb-4 text-center font-medium">
+            <th scope="col" className="w-1/3 pb-4 text-center font-medium">
               Award
             </th>
-            <th scope="col" className="pb-4 text-right font-medium">
+            <th scope="col" className="w-1/3 pb-4 text-right font-medium">
               Date
             </th>
           </tr>
@@ -49,7 +50,7 @@ export function Awards({ awards, headingLevel = "h3", id }: AwardsProps) {
           {awards.map((award) => (
             <tr key={award.id} className="border-t border-line">
               <td className={`${cell} text-muted`}>{award.issuer}</td>
-              <td className={`${cell} text-center text-text`}>{award.title}</td>
+              <td className={`${cell} px-4 text-center text-text`}>{award.title}</td>
               <td className={`${cell} text-right tracking-[0.08em] text-muted uppercase`}>
                 {award.date}
               </td>
