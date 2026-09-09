@@ -4,12 +4,10 @@ import { useReducedMotion } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { hero } from "@content/hero";
 import { HeroShell } from "@/components/home/heroes/HeroShell";
-import type { HeroProps } from "@/components/home/heroes/types";
 import { Reveal, RevealGroup } from "@/components/motion/Reveal";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Headline } from "@/components/ui/Headline";
 import { Media } from "@/components/ui/Media";
-import { SplitButton } from "@/components/ui/SplitButton";
 
 /** How much slower than the page the photo scrolls (the image has 25% of headroom). */
 const PARALLAX = 0.2;
@@ -17,10 +15,10 @@ const PARALLAX = 0.2;
 /**
  * "Photo": the full organization photo (content/media.ts `org.group-photo`, the placeholder
  * until the real one lands) fills the hero, darkened toward the bottom where the statement
- * and the season CTA sit. The photo scrolls a little slower than the page. No parallax under
- * prefers-reduced-motion.
+ * sits. No button: the header bar carries the season CTA (2026-09-09 review). The photo
+ * scrolls a little slower than the page. No parallax under prefers-reduced-motion.
  */
-export function PhotoHero({ cta }: HeroProps) {
+export function PhotoHero() {
   const reduce = useReducedMotion() ?? false;
   const ref = useRef<HTMLElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
@@ -52,10 +50,7 @@ export function PhotoHero({ cta }: HeroProps) {
       {/* the photo, with headroom below for the parallax; it bleeds a few pixels past the clip
           on the top and sides so an image's own edge (the placeholder's outline) never shows */}
       <div aria-hidden="true" className="absolute inset-0 overflow-hidden bg-surface">
-        <div
-          ref={imageRef}
-          className="absolute -inset-x-1 -top-1 h-[125%] will-change-transform"
-        >
+        <div ref={imageRef} className="absolute -inset-x-1 -top-1 h-[125%] will-change-transform">
           <Media
             src="org.group-photo"
             alt=""
@@ -85,12 +80,6 @@ export function PhotoHero({ cta }: HeroProps) {
             lines={[...hero.lines]}
             className="max-w-5xl"
           />
-        </Reveal>
-
-        <Reveal className="mt-8">
-          <SplitButton href={cta.href} size="lg">
-            {cta.label}
-          </SplitButton>
         </Reveal>
       </RevealGroup>
     </HeroShell>
