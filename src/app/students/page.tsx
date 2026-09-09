@@ -1,16 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getPrimaryCta } from "@content/site";
 import { ContactCta } from "@/components/layout/ContactCta";
 import { FaqSection } from "@/components/layout/FaqSection";
 import { PageHero } from "@/components/layout/PageHero";
 import { SectionNav } from "@/components/layout/SectionNav";
-import { SeasonNote } from "@/components/layout/SeasonNote";
 import { HowWeWork } from "@/components/students/HowWeWork";
 import { Perks } from "@/components/students/Perks";
 import { RecruitmentTimeline } from "@/components/students/RecruitmentTimeline";
 import { RoleRows } from "@/components/students/RoleRows";
-import { SplitButton } from "@/components/ui/SplitButton";
 import { getFaq, getRecruitmentTimeline, getRoles, getStudentsPage } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -31,7 +28,6 @@ const SECTIONS = [
 const linkClass = "font-medium text-green transition-colors duration-200 hover:text-text";
 
 export default function StudentsPage() {
-  const cta = getPrimaryCta();
   const roles = getRoles();
   const timeline = getRecruitmentTimeline();
   const { teamStructure, howWeWork, perks } = getStudentsPage();
@@ -43,14 +39,7 @@ export default function StudentsPage() {
         eyebrow="Student involvement"
         lines={["Join us to", "*make an impact.*"]}
         blurb="Open to all majors, all years, and all levels of experience. You can apply for more than one role."
-      >
-        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-          <SplitButton href={cta.href} size="lg">
-            {cta.label}
-          </SplitButton>
-          <SeasonNote className="sm:ml-2" />
-        </div>
-      </PageHero>
+      />
       <SectionNav items={SECTIONS} label="Students" />
 
       <RoleRows roles={roles} />

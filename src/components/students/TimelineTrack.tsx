@@ -29,17 +29,20 @@ type StepState = "done" | "current" | "upcoming";
 
 type TimelineTrackProps = {
   steps: RecruitmentStep[];
-  /** Index of the current step, -1 while no step has a date. */
+  /** Index of the current step, -1 while no step is marked or dated. */
   current: number;
 };
 
 /**
  * The track: a hairline grid of cells, two across on phones, three on tablets, all six on
  * desktop. Each cell's top border is its piece of the rail with the step's node at the left
- * end. Inside the section's RevealGroup the cells arrive left to right: the rail draws, the
- * node pops, the text rises. Segments and nodes are green up to the current step, whose node
- * carries a ping ring and a "Now" tag. Under reduced motion everything is static and final
- * (plain elements from the first update after hydration, like Reveal).
+ * end; after the last step the rail keeps going past the container and off the right edge of
+ * the screen (the section clips it), so the line never just stops at kickoff. Inside the
+ * section's RevealGroup the cells arrive left to right: the rail draws, the node pops, the
+ * text rises. Segments and nodes are green up to the current step, whose node carries a ping
+ * ring and whose label line carries a green "Now" tag (the step numbers went in the
+ * 2026-09-09 review). Under reduced motion everything is static and final (plain elements
+ * from the first update after hydration, like Reveal).
  */
 export function TimelineTrack({ steps, current }: TimelineTrackProps) {
   const reduce = useReducedMotionSafe();
@@ -52,6 +55,7 @@ export function TimelineTrack({ steps, current }: TimelineTrackProps) {
     <ol className="mt-12 grid grid-cols-2 md:mt-16 md:grid-cols-3 lg:grid-cols-6">
       {steps.map((step, i) => {
         const state: StepState = i < current ? "done" : i === current ? "current" : "upcoming";
+        const last = i === steps.length - 1;
         return (
           <Li
             key={step.id}
@@ -69,6 +73,15 @@ export function TimelineTrack({ steps, current }: TimelineTrackProps) {
                 state === "done" ? "bg-green" : "bg-muted/40",
               )}
             />
+            {last ? (
+              // The rail's run-off: from the last cell's right edge to beyond the screen.
+              <Span
+                {...v(rail)}
+                aria-hidden="true"
+                data-reveal=""
+                className="absolute top-0 left-full h-px w-screen origin-left bg-muted/40"
+              />
+            ) : null}
             <Span
               {...v(node)}
               aria-hidden="true"
@@ -85,10 +98,9 @@ export function TimelineTrack({ steps, current }: TimelineTrackProps) {
 
             <Div {...v(text)} data-reveal="">
               <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-eyebrow font-medium uppercase">
-                <span className={state === "upcoming" ? "text-muted" : "text-green"}>
-                  {String(i + 1).padStart(2, "0")}
+                <span className={state === "current" ? "text-green" : "text-text"}>
+                  {step.when}
                 </span>
-                <span className={state === "current" ? "text-green" : "text-text"}>{step.when}</span>
                 {state === "current" ? (
                   <span className="bg-green px-1.5 py-0.5 text-[0.625rem] text-bg">Now</span>
                 ) : null}

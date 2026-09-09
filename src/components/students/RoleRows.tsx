@@ -1,27 +1,28 @@
-import { getPrimaryCta, isInSeason } from "@content/site";
 import type { Role } from "@/lib/content/schemas";
 import { SeasonNote } from "@/components/layout/SeasonNote";
 import { Reveal } from "@/components/motion/Reveal";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Headline } from "@/components/ui/Headline";
 import { Section } from "@/components/ui/Section";
-import { SplitButton } from "@/components/ui/SplitButton";
 import { ROLE_ICONS } from "./roleIcons";
 
 /**
- * The Framer role rows (number label, icon, title, blurb, description, Apply button) plus what
- * the template left out: responsibilities, time commitment and who the role is for. The section
- * heading sticks beside the rows on large screens. In season the button applies for that role;
- * out of season it falls back to the site's Contact CTA.
+ * The Framer role rows (number label, icon, title, blurb, description) plus what the
+ * template left out: responsibilities, time commitment and who the role is for. The per-role
+ * Apply button went in the 2026-09-09 review (the page's CTAs are the header and the closing
+ * section). On large screens the intro sticks beside the rows: its box is as tall as the
+ * viewport below the site header and the section bar (`--subnav-h`, set by SectionNav while
+ * mounted) and the copy sits in the middle of it, so it stays centred on screen while the
+ * rows scroll past and never slips under the bars.
  */
 export function RoleRows({ roles }: { roles: Role[] }) {
-  const cta = getPrimaryCta();
-  const inSeason = isInSeason();
-
   return (
     <Section id="roles" aria-labelledby="roles-title" className="border-t border-line">
       <div className="grid gap-12 lg:grid-cols-[1fr_1.7fr] lg:gap-16">
-        <Reveal standalone className="lg:sticky lg:top-24 lg:self-start">
+        <Reveal
+          standalone
+          className="lg:sticky lg:top-[calc(var(--header-h)+var(--subnav-h,0px))] lg:flex lg:h-[calc(100svh-var(--header-h)-var(--subnav-h,0px))] lg:flex-col lg:justify-center lg:self-start"
+        >
           <Eyebrow>Roles</Eyebrow>
           <Headline
             as="h2"
@@ -86,15 +87,11 @@ export function RoleRows({ roles }: { roles: Role[] }) {
                     </dl>
                   </div>
 
-                  <div className="mt-10 flex sm:justify-end">
-                    {role.open ? (
-                      <SplitButton href={cta.href}>
-                        {inSeason ? `Apply as ${role.title}` : cta.label}
-                      </SplitButton>
-                    ) : (
-                      <p className="text-sm text-muted">Not recruiting for this role this cycle.</p>
-                    )}
-                  </div>
+                  {!role.open ? (
+                    <p className="mt-10 text-sm text-muted">
+                      Not recruiting for this role this cycle.
+                    </p>
+                  ) : null}
                 </Reveal>
               </li>
             );
