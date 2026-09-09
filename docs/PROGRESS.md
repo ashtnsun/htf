@@ -38,7 +38,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 11: Shift + M site configuration panel (per browser, ships hidden) with ten home hero variants (Globe stays the default; Atlas, Typewriter, Ticker, Focus, Torch, Cells, Wordmark, Rows, Photo); Ashton picks the one that ships
 - [x] Session 11b: ten Get involved graphic variants as the menu's second setting (Plane stays the default; Door, Puzzle, Canvas, Chat, Badge, Calendar, Terminal, Keycap, Signpost), all recognizable objects without the corner brackets; Ashton picks the one that ships
 - [x] Session 11f: How it works drawn with the footer T-rex (detective, team, builder, party) dissolving cell by cell between the steps
-- [x] Session 11h: the scene after Ashton's review (hats worn on the head, the team as three T-rexes, the gift arm attached and no partner, the dissolve on its own clock)
+- [x] Session 11h: the scene after Ashton's review (hats worn on the head, the team as the T-rex with two smaller pink and blue T-rexes, the gift arm attached and no partner, the dissolve on its own clock)
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -133,8 +133,26 @@ still, `process-<width>.png` the section, `nonprofits-how-it-works-1440.png` the
 3. Nothing attached to the body is ever translated: the offer is an extra arm cell plus the
    box moving, the peer is a vertical lift (the handle's first cell stays beside the hand).
 
-**TODO:** Ashton's second look at the scene (the team's accessories, the confetti-only right
+**TODO:** Ashton's second look at the scene (the confetti-only right
 half of Deliver now that the partner is gone).
+
+**Follow-up (2026-09-09, the same session):** Ashton, on Match: "remove the different
+accessories on the 2 other dinosaurs, make those two smaller, and make one pink and one blue
+(these colors should match the style of the site)". Done: the teammates are a hand-reduced
+14 × 16 copy of the T-rex map (`SMALL_DINO` in `home/ProcessSprites.ts`, drafted by
+downsampling the 20 × 22 map at 0.7 with an area-majority vote and then redrawn so the carved
+eye, the open mouth, the arm, the tail and both legs survive), mirrored to face the lead and
+standing on its baseline, one pink and one blue, no glasses or cap; their eyelids take their
+colour (`eye.ink`). Two new tokens, built the way the greens are (full saturation, about 60%
+lightness): `--pink #FF3D9E` and `--blue #3388FF`, exposed as `--color-pink` /
+`--color-blue`, documented in CLAUDE.md and in the `/dev/ui` swatches and contrast table
+(6.0:1 and 5.7:1 on bg; decoration only, never text). Three candidate pairs were rendered
+beside the green (a softer pair and a magenta-leaning pair as well); the chosen pair follows
+the palette's construction. Checked: `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm a11y`
+(0 violations on `/` and `/nonprofits`), a Playwright pass at 1440 and 390 (three eyelids
+with the three fills, 7 loops in Match, no console errors); `scene-1-team-*.png`,
+`process-1440.png` and `nonprofits-how-it-works-1440.png` in
+`docs/screenshots/session-11h/` are re-captured.
 
 ## Session 11g — 2026-09-08 (the hero and Get involved shortlists)
 
@@ -1222,7 +1240,7 @@ unchanged.
 
 ## Next session starts with
 
-**First, Ashton's second look at the dino process scene** (Session 11h, `docs/screenshots/session-11h/`): the hats worn on the head, the team as three T-rexes (square glasses, backwards cap), the gift held with the arm attached and no partner, and the dissolve on its own clock (600 ms in twelve buckets in `home/ProcessScene`; the hysteresis band in `home/ProcessScroll`). The drawings are string maps in `home/ProcessSprites.ts`, the timings the `[data-mode]` rules at the end of `globals.css`.
+**First, Ashton's second look at the dino process scene** (Session 11h, `docs/screenshots/session-11h/`): the hats worn on the head, the team as two smaller pink and blue T-rexes beside the lead, the gift held with the arm attached and no partner, and the dissolve on its own clock (600 ms in twelve buckets in `home/ProcessScene`; the hysteresis band in `home/ProcessScroll`). The drawings are string maps in `home/ProcessSprites.ts`, the timings the `[data-mode]` rules at the end of `globals.css`.
 
 **Then the hero decision (Session 11 follow-up).** Six heroes remain after Session 11g
 (Globe, Atlas, Typewriter, Cells, Wordmark, Photo). Ashton opens the home page, presses
