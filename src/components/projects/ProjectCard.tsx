@@ -40,10 +40,11 @@ export function toProjectCardData(project: ProjectCardData): ProjectCardData {
 
 /**
  * Portfolio card: full-bleed cover fading into a caption with the nonprofit label and the
- * year on one line, a big title with a right-arrow cell, the location and a row of tag
- * chips. Hover is its own treatment (no corner brackets): the border turns green, the cover
- * brightens from its resting dim, the title turns green and the arrow cell fills green;
- * nothing moves. The whole card is one link.
+ * year on one line, a big title with a right-arrow cell (white arrow at rest), the location
+ * and a row of tag chips. Hover is its own treatment (no corner brackets): the border turns
+ * green, the cover brightens from its resting dim, the title turns green and the arrow cell
+ * fills green while its glyph nudges right like every SplitButton's (2026-09-09 review); the
+ * card itself stays put. The whole card is one link.
  */
 export function ProjectCard({
   project,
@@ -93,9 +94,9 @@ export function ProjectCard({
           </Heading>
           <span
             aria-hidden="true"
-            className="flex size-11 shrink-0 items-center justify-center border border-line-strong bg-surface-2 text-green transition-colors duration-200 group-hover:border-green group-hover:bg-green group-hover:text-bg"
+            className="flex size-11 shrink-0 items-center justify-center border border-line-strong bg-surface-2 text-text transition-colors duration-200 group-hover:border-green group-hover:bg-green group-hover:text-bg"
           >
-            <ArrowRight className="size-5" />
+            <ArrowRight className="size-5 transition-transform duration-300 ease-out-expo group-hover:translate-x-1" />
           </span>
         </div>
         <p className="mt-3 text-sm text-muted">{project.location}</p>
