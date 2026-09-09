@@ -41,7 +41,7 @@ export function ContactCta({
   const titleId = `${id}-title`;
   const showSecondary = secondary && secondary.href !== cta.href;
   const pins = getPartnerLocations().flatMap((l) =>
-    l.geo ? [{ id: l.id, lat: l.geo[0], lng: l.geo[1], label: l.country }] : [],
+    l.geo ? [{ id: l.id, lat: l.geo[0], lng: l.geo[1], label: l.label }] : [],
   );
   return (
     <Section

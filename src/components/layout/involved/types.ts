@@ -19,7 +19,10 @@ export type InvolvedGraphicProps = {
   season: InvolvedSeason | null;
   /** "2026–27": what the badge and the calendar show when no cycle is open. */
   academicYear: string;
-  /** The partner locations with coordinates, for the Globe variant; `label` is the country. */
+  /**
+   * The partner locations with coordinates, for the Globe variant; `label` is what a hovered
+   * pin says (the state for a partner in the US, the country elsewhere).
+   */
   pins: GlobePin[];
   className?: string;
 };

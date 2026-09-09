@@ -176,12 +176,20 @@ export function getProjectYears(): string[] {
   return [...new Set(getProjects().map((p) => p.year))];
 }
 
+/** Countries whose pins are named by the state instead, as the end of a `location` spells them. */
+const STATE_LABELLED = new Set(["us", "usa", "u.s.", "u.s.a.", "united states"]);
+
 /** A place on the partner globe: every visible project that shares a `location` string. */
 export type PartnerLocation = {
   id: string;
   location: string;
-  /** The last comma-separated part of `location` ("US", "United Kingdom"): the globe's labels. */
+  /** The last comma-separated part of `location` ("US", "United Kingdom"). */
   country: string;
+  /**
+   * What the globe's hover label says: the state for a partner in the US ("Indiana", the
+   * part before the country), the country everywhere else (2026-09-09 review).
+   */
+  label: string;
   /** [latitude, longitude]; missing when no project at this location has `geo` yet. */
   geo?: [number, number];
   projects: Pick<Project, "slug" | "title" | "nonprofit" | "year">[];
@@ -193,8 +201,19 @@ export function getPartnerLocations(): PartnerLocation[] {
   getProjects().forEach((p, i) => {
     let entry = byLocation.get(p.location);
     if (!entry) {
-      const country = p.location.split(",").at(-1)?.trim() || p.location;
-      entry = { id: `loc-${i}`, location: p.location, country, projects: [] };
+      const parts = p.location
+        .split(",")
+        .map((part) => part.trim())
+        .filter(Boolean);
+      const country = parts.at(-1) ?? p.location;
+      const state = STATE_LABELLED.has(country.toLowerCase()) ? parts.at(-2) : undefined;
+      entry = {
+        id: `loc-${i}`,
+        location: p.location,
+        country,
+        label: state ?? country,
+        projects: [],
+      };
       byLocation.set(p.location, entry);
     }
     if (!entry.geo && p.geo) entry.geo = p.geo;

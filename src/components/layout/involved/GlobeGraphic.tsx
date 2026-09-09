@@ -7,7 +7,8 @@ import type { InvolvedGraphicProps } from "@/components/layout/involved/types";
 /**
  * "Globe": the partner globe from the Nonprofits page, with a pin per partner location.
  * Drag it in any direction; hover a pin and the globe holds still while a label names the
- * country, then spins on when the pointer leaves. The frame's pointer tilt and bob are off
+ * place (the state for a partner in the US, the country elsewhere; 2026-09-09 review), then
+ * spins on when the pointer leaves. The frame's pointer tilt and bob are off
  * (the globe has its own motion, and a CSS translate moving the WebGL canvas by fractions of
  * a pixel made its hairlines and land dots shimmer, 2026-09-09 review) and its glow is the
  * globe's own, so the globe sits exactly centred beside the copy. The SVG globe renders first and

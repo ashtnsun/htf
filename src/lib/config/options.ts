@@ -53,7 +53,7 @@ export const INVOLVED_VARIANTS = [
     id: "globe",
     name: "Globe",
     blurb:
-      "The partner globe from the Nonprofits page: drag it, hover a pin for its country. The graphic as it ships.",
+      "The partner globe from the Nonprofits page: drag it, hover a pin for its state or country. The graphic as it ships.",
   },
   {
     id: "terminal",
