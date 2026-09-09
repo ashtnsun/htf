@@ -23,8 +23,10 @@ const MARGIN = 0.06;
  * its own clock (about half a second, cell by cell) and then holds, so each picture is what
  * you see for the whole of its step and a paused scroll never lands mid-transition. The step
  * highlight follows the same switch (no counter or progress bar under the scene since the
- * 2026-09-07 audit 3). Under prefers-reduced-motion the scene cuts instead of dissolving.
- * Without JavaScript every step is readable and the scene shows the first stage.
+ * 2026-09-07 audit 3). Every step is a viewport tall from lg (60% of one on phones), so a
+ * step holds for that much scroll and one gesture cannot fly past it. Under
+ * prefers-reduced-motion the scene cuts instead of dissolving. Without JavaScript every step
+ * is readable and the scene shows the first stage.
  */
 export function ProcessScroll({ steps }: ProcessScrollProps) {
   const [store] = useState(() => new StepStore());
@@ -102,7 +104,7 @@ export function ProcessScroll({ steps }: ProcessScrollProps) {
                 itemsRef.current[i] = el;
               }}
               data-index={i}
-              className="relative flex flex-col justify-center py-10 pl-8 first:pt-2 lg:min-h-[68svh] lg:py-16 lg:pl-12 lg:first:min-h-svh lg:first:pt-16 lg:last:min-h-svh"
+              className="relative flex min-h-[60svh] flex-col justify-center py-10 pl-8 first:pt-2 lg:min-h-svh lg:py-16 lg:pl-12 lg:first:pt-16"
             >
               <div className="relative">
                 {/* marker on the rail */}
