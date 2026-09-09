@@ -303,7 +303,6 @@ export function getAboutPage(): AboutPage {
   const file = "content/about.ts";
   const result = aboutPageSchema.safeParse(aboutData);
   if (!result.success) throw new ContentError(file, z.prettifyError(result.error));
-  assertUnique(result.data.facts, (f) => f.id, file);
   return result.data;
 }
 
@@ -343,7 +342,6 @@ export function validateAllContent(): { counts: Record<string, number> } {
       awards: getAwards({ publishedOnly: false }).length,
       recruitmentTimeline: getRecruitmentTimeline().length,
       studentsPage: Object.values(getStudentsPage()).reduce((n, list) => n + list.length, 0),
-      aboutFacts: getAboutPage().facts.length,
       nonprofitsScope: (({ scope }) => scope.build.length + scope.avoid.length)(
         getNonprofitsPage(),
       ),

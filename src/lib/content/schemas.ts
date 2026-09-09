@@ -175,6 +175,8 @@ export const recruitmentStepSchema = z.object({
   when: z.string().min(1),
   /** Optional ISO date used for ordering and "current step" logic. */
   date: z.iso.date().optional(),
+  /** Marks the step the club is on now while the steps carry no dates (the last one flagged wins). */
+  current: z.boolean().optional(),
   description: z.string().min(1),
 });
 
@@ -224,14 +226,6 @@ export const instagramPostSchema = z.object({
   caption: z.string().min(1).optional(),
 });
 
-/** A short label/value pair ("Founded", "2023"). */
-export const factSchema = z.object({
-  id: slugSchema,
-  label: z.string().min(1),
-  value: z.string().min(1),
-  href: z.string().min(1).optional(),
-});
-
 /** Copy blocks for the About page (exec, awards and the Instagram grid have their own files). */
 export const aboutPageSchema = z.object({
   mission: z.object({
@@ -239,9 +233,6 @@ export const aboutPageSchema = z.object({
     lines: z.array(z.string().min(1)).min(1),
     body: z.string().min(1),
   }),
-  /** "Who we are": one string per paragraph. */
-  story: z.array(z.string().min(1)).min(1),
-  facts: z.array(factSchema).min(1),
 });
 
 /** One item of the scope lists on /nonprofits ("What we build" / "What we don't"). */
@@ -257,7 +248,7 @@ export const nonprofitsPageSchema = z.object({
     build: z.array(scopeItemSchema).min(1),
     avoid: z.array(scopeItemSchema).min(1),
   }),
-  /** Shown beside the intake form: what happens after a nonprofit writes in. */
+  /** Shown beside the email invitation on /nonprofits: what happens after a nonprofit writes in. */
   nextSteps: z.array(z.string().min(1)).min(1),
 });
 
@@ -305,7 +296,6 @@ export type StudentsPage = z.infer<typeof studentsPageSchema>;
 export type StudentsPageInput = z.input<typeof studentsPageSchema>;
 export type InstagramPost = z.infer<typeof instagramPostSchema>;
 export type InstagramPostInput = z.input<typeof instagramPostSchema>;
-export type Fact = z.infer<typeof factSchema>;
 export type AboutPage = z.infer<typeof aboutPageSchema>;
 export type AboutPageInput = z.input<typeof aboutPageSchema>;
 export type ScopeItem = z.infer<typeof scopeItemSchema>;

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { ExecGrid } from "@/components/about/ExecGrid";
 import { InstagramGrid } from "@/components/about/InstagramGrid";
 import { Mission } from "@/components/about/Mission";
-import { Story } from "@/components/about/Story";
 import { Awards } from "@/components/home/Awards";
 import { WhoWeServe } from "@/components/home/WhoWeServe";
 import { ContactCta } from "@/components/layout/ContactCta";
@@ -21,7 +20,6 @@ export const metadata: Metadata = {
 
 const SECTIONS = [
   { href: "#mission", label: "Mission" },
-  { href: "#who-we-are", label: "Who we are" },
   { href: "#exec", label: "Exec board" },
   { href: "#awards", label: "Awards" },
   { href: "#instagram", label: "Instagram" },
@@ -44,7 +42,6 @@ export default function AboutPage() {
       <SectionNav items={SECTIONS} label="About" />
 
       <Mission mission={about.mission} />
-      <Story paragraphs={about.story} facts={about.facts} />
       <ExecGrid members={exec} years={execYears} />
       {awards.length > 0 ? (
         <Section id="awards" aria-labelledby="awards-title" className="border-t border-line">
