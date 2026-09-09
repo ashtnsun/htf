@@ -12,7 +12,8 @@ const EASE = 5;
  * rotation) and the three.js scene (which advances it every frame): `spin` about the polar
  * axis, `tilt` about the screen's horizontal axis on top of the resting GLOBE_TILT, so a drag
  * in any direction turns the globe that way. The tilt is clamped short of the poles and
- * settles back to rest once the globe is left alone. A plain object with methods so React's
+ * settles back to rest once the globe is left alone, and everything freezes while a labelled
+ * pin is hovered. A plain object with methods so React's
  * compiler rules about mutating props stay satisfied: nothing here is React state, and
  * nothing re-renders when it changes.
  */
@@ -24,6 +25,7 @@ export class SpinController {
   private target: number | null = null;
   private dragBase: { spin: number; tilt: number } | null = null;
   private holdUntil = 0;
+  private hovering = false;
 
   constructor(initial: number) {
     this.spin = initial;
@@ -49,6 +51,11 @@ export class SpinController {
     this.dragBase = null;
   }
 
+  /** A pin is under the pointer: freeze the globe until `hover(false)`. */
+  hover(active: boolean) {
+    this.hovering = active;
+  }
+
   /** Ease toward `target` radians (a pin brought to the front) and hold there. */
   aim(target: number) {
     this.target = target;
@@ -65,6 +72,7 @@ export class SpinController {
       this.holdUntil = now + HOLD_SECONDS;
       return false;
     }
+    if (this.hovering) return false;
     let easing = false;
     // Once let go (and whenever a pin is aimed at) the tilt settles back to rest.
     if (this.tilt !== 0 && (this.target !== null || now > this.holdUntil)) {

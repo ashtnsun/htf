@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
-import { TerminalGraphic } from "@/components/layout/involved/TerminalGraphic";
+import { GlobeGraphic } from "@/components/layout/involved/GlobeGraphic";
 import type { InvolvedGraphicProps } from "@/components/layout/involved/types";
 import { DEFAULT_INVOLVED, type InvolvedVariantId } from "@/lib/config/options";
 import { useSiteConfig } from "@/lib/config/store";
@@ -20,7 +20,10 @@ const lazy = (load: () => Promise<ComponentType<InvolvedGraphicProps>>) =>
  * separate chunks fetched only when chosen in the Shift + M menu.
  */
 const VARIANTS: Record<InvolvedVariantId, ComponentType<InvolvedGraphicProps>> = {
-  terminal: TerminalGraphic,
+  globe: GlobeGraphic,
+  terminal: lazy(() =>
+    import("@/components/layout/involved/TerminalGraphic").then((m) => m.TerminalGraphic),
+  ),
   chat: lazy(() => import("@/components/layout/involved/ChatGraphic").then((m) => m.ChatGraphic)),
   badge: lazy(() =>
     import("@/components/layout/involved/BadgeGraphic").then((m) => m.BadgeGraphic),

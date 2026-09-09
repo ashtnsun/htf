@@ -180,6 +180,8 @@ export function getProjectYears(): string[] {
 export type PartnerLocation = {
   id: string;
   location: string;
+  /** The last comma-separated part of `location` ("US", "United Kingdom"): the globe's labels. */
+  country: string;
   /** [latitude, longitude]; missing when no project at this location has `geo` yet. */
   geo?: [number, number];
   projects: Pick<Project, "slug" | "title" | "nonprofit" | "year">[];
@@ -191,7 +193,8 @@ export function getPartnerLocations(): PartnerLocation[] {
   getProjects().forEach((p, i) => {
     let entry = byLocation.get(p.location);
     if (!entry) {
-      entry = { id: `loc-${i}`, location: p.location, projects: [] };
+      const country = p.location.split(",").at(-1)?.trim() || p.location;
+      entry = { id: `loc-${i}`, location: p.location, country, projects: [] };
       byLocation.set(p.location, entry);
     }
     if (!entry.geo && p.geo) entry.geo = p.geo;

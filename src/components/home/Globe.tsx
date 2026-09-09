@@ -51,7 +51,13 @@ const PARALLELS = Array.from(
   (_, i) => ((-90 + PARALLEL_STEP * (i + 1)) * Math.PI) / 180,
 );
 
-export type GlobePin = { id: string; lat: number; lng: number };
+export type GlobePin = {
+  id: string;
+  lat: number;
+  lng: number;
+  /** Shown in a label when the three.js globe's pin is hovered; the SVG globe ignores it. */
+  label?: string;
+};
 
 type GlobeProps = {
   className?: string;

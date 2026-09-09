@@ -4,6 +4,7 @@ import { PixelDino } from "@/components/brand/PixelDino";
 import { ProcessScene } from "@/components/home/ProcessScene";
 import { BadgeGraphic } from "@/components/layout/involved/BadgeGraphic";
 import { ChatGraphic } from "@/components/layout/involved/ChatGraphic";
+import { GlobeGraphic } from "@/components/layout/involved/GlobeGraphic";
 import { TerminalGraphic } from "@/components/layout/involved/TerminalGraphic";
 import { Globe } from "@/components/home/Globe";
 import { Gallery } from "@/components/projects/Gallery";
@@ -80,8 +81,14 @@ const INVOLVED_PROPS = {
   cta: { label: "Apply Now", href: "/apply" },
   season: { cycleName: "Fall 2026", deadline: { year: 2026, month: 9, day: 12 } },
   academicYear: "2026–27",
+  pins: [
+    { id: "us", lat: 39.9, lng: -86.3, label: "US" },
+    { id: "uk", lat: 54.0, lng: -2.5, label: "United Kingdom" },
+    { id: "gh", lat: 7.9, lng: -1.0, label: "Ghana" },
+  ],
 };
 const INVOLVED_GRAPHICS = [
+  ["Globe", GlobeGraphic],
   ["Chat", ChatGraphic],
   ["Badge", BadgeGraphic],
   ["Terminal", TerminalGraphic],
@@ -435,7 +442,7 @@ export default function UiKitPage() {
         </div>
       </Block>
 
-      <Block title="Get involved graphics (layout/involved; the Shift + M menu picks one, Plane is the default)">
+      <Block title="Get involved graphics (layout/involved; the Shift + M menu picks one, Globe is the default)">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
           {INVOLVED_GRAPHICS.map(([name, Graphic]) => (
             <div key={name}>

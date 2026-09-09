@@ -45,13 +45,20 @@ export const DEFAULT_HERO: HeroVariantId = "globe";
 /**
  * The Get involved graphic (layout/ContactCta, at the foot of the home, About, Projects and
  * Students pages). Every variant is a recognizable object that says "start here" in its own
- * way; none uses the viewfinder corner brackets.
+ * way; none uses the viewfinder corner brackets. Globe is the partner globe from /nonprofits
+ * (three.js, loaded when the section is near the viewport; the SVG globe before that).
  */
 export const INVOLVED_VARIANTS = [
   {
+    id: "globe",
+    name: "Globe",
+    blurb:
+      "The partner globe from the Nonprofits page: drag it, hover a pin for its country. The graphic as it ships.",
+  },
+  {
     id: "terminal",
     name: "Terminal",
-    blurb: "A command line types out htf apply and reports back. The graphic as it ships.",
+    blurb: "A command line types out htf apply and reports back.",
   },
   {
     id: "chat",
@@ -67,7 +74,7 @@ export const INVOLVED_VARIANTS = [
 
 export type InvolvedVariantId = (typeof INVOLVED_VARIANTS)[number]["id"];
 
-export const DEFAULT_INVOLVED: InvolvedVariantId = "terminal";
+export const DEFAULT_INVOLVED: InvolvedVariantId = "globe";
 
 export type SiteConfig = {
   hero: HeroVariantId;

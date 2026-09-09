@@ -7,6 +7,7 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Headline } from "@/components/ui/Headline";
 import { Section } from "@/components/ui/Section";
 import { SplitButton } from "@/components/ui/SplitButton";
+import { getPartnerLocations } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
 type ContactCtaProps = {
@@ -23,8 +24,8 @@ type ContactCtaProps = {
 /**
  * Closing call-to-action after the Framer contact block: eyebrow, display headline, copy,
  * the season CTA (Apply Now / Contact Us from content/site.ts) and the floating Get involved
- * graphic (layout/involved: the terminal by default, Chat and Badge in the Shift + M menu; every
- * one a recognizable object, since audit 4 of 2026-09-07).
+ * graphic (layout/involved: the partner globe by default since 2026-09-09, Terminal, Chat and
+ * Badge in the Shift + M menu; every one a recognizable object, since audit 4 of 2026-09-07).
  */
 export function ContactCta({
   id = "get-involved",
@@ -39,11 +40,15 @@ export function ContactCta({
   const season = deadline ? { cycleName: site.season.cycleName, deadline } : null;
   const titleId = `${id}-title`;
   const showSecondary = secondary && secondary.href !== cta.href;
+  const pins = getPartnerLocations().flatMap((l) =>
+    l.geo ? [{ id: l.id, lat: l.geo[0], lng: l.geo[1], label: l.country }] : [],
+  );
   return (
     <Section
       id={id}
       aria-labelledby={titleId}
       grid
+      clip
       padding="lg"
       className={cn("border-t border-line", className)}
     >
@@ -71,7 +76,7 @@ export function ContactCta({
           <SeasonNote className="mt-5" />
         </Reveal>
         <Reveal standalone delay={0.15} className="mx-auto w-[min(100%,28rem)]">
-          <InvolvedGraphic cta={cta} season={season} academicYear={site.academicYear} />
+          <InvolvedGraphic cta={cta} season={season} academicYear={site.academicYear} pins={pins} />
         </Reveal>
       </div>
     </Section>

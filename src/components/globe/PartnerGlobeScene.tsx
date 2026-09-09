@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import type { GlobePin } from "@/components/home/Globe";
 import { DEG, GLOBE_TILT, sphericalToVector } from "@/lib/geo";
+import type { LabelAnchor } from "./LabelAnchor";
 import { loadLandDots } from "./landDots";
 import type { SpinController } from "./SpinController";
 
@@ -14,8 +15,10 @@ import type { SpinController } from "./SpinController";
  * SVG globe), the land dots of the dotted world map, and one square pin per partner
  * location. The rotation (spin about the polar axis, plus the drag tilt on top of the
  * resting GLOBE_TILT) lives in a SpinController owned by the wrapper (PartnerGlobe), which
- * also handles dragging; this file advances it each frame. Loaded on demand with
- * next/dynamic.
+ * also handles dragging; this file advances it each frame. Pins with a `label` are hoverable:
+ * the pointer over one freezes the globe, lights the pin and reports it to the wrapper, which
+ * shows the label at the position this scene writes through the LabelAnchor. Loaded on
+ * demand with next/dynamic.
  */
 
 const GREEN = "#03c652";
@@ -23,6 +26,16 @@ const MINT = "#00eb88";
 const BG = "#0b0b0b";
 const AUTO_SPIN = 3 * DEG; // radians per second, matches the SVG globe
 const CAMERA_Z = 3.8;
+const PIN_RADIUS = 1.012;
+/** Radius of the invisible disc that catches the pointer around a labelled pin (world units). */
+const HIT_RADIUS = 0.075;
+/**
+ * A point on the unit sphere faces the camera when its z (toward the viewer) exceeds 1 / the
+ * camera distance; a little more keeps pins on the very limb from taking the hover.
+ */
+const FRONT_Z = 1 / CAMERA_Z + 0.04;
+/** Pixels between the pin's centre and the label's leader line. */
+const LABEL_GAP = 12;
 
 type SceneProps = {
   pins: GlobePin[];
@@ -31,6 +44,10 @@ type SceneProps = {
   reduceMotion: boolean;
   /** Continuous rendering while in view; on demand otherwise. */
   running: boolean;
+  /** Where the hover label goes; the wrapper attaches its element. */
+  label?: LabelAnchor;
+  /** A labelled pin came under the pointer (or left it: null). */
+  onHover?: (pin: GlobePin | null) => void;
   onReady?: () => void;
 };
 
@@ -63,21 +80,51 @@ function wireframeGeometry(): THREE.BufferGeometry {
 
 const RING = new THREE.EdgesGeometry(new THREE.PlaneGeometry(0.1, 0.1));
 const OUT = new THREE.Vector3(0, 0, 1);
+const X_AXIS = new THREE.Vector3(1, 0, 0);
+const Y_AXIS = new THREE.Vector3(0, 1, 0);
+const scratch = new THREE.Vector3();
+
+/**
+ * A pin's place on the canvas, in pixels from the top left, and how much it faces the viewer
+ * (`facing` is its world z: positive toward the camera). Applies the scene's rotations in
+ * order (spin about the pole, then the tilt) and the camera's projection.
+ */
+function projectPin(
+  pin: GlobePin,
+  controller: SpinController,
+  camera: THREE.Camera,
+  size: { width: number; height: number },
+) {
+  scratch.set(...sphericalToVector(pin.lat, pin.lng, PIN_RADIUS));
+  scratch.applyAxisAngle(Y_AXIS, controller.spin);
+  scratch.applyAxisAngle(X_AXIS, GLOBE_TILT * DEG + controller.tilt);
+  const facing = scratch.z;
+  scratch.project(camera);
+  return {
+    x: ((scratch.x + 1) / 2) * size.width,
+    y: ((1 - scratch.y) / 2) * size.height,
+    facing,
+  };
+}
 
 function Pin({
   pin,
   active,
   reduceMotion,
+  onOver,
+  onOut,
 }: {
   pin: GlobePin;
   active: boolean;
   reduceMotion: boolean;
+  onOver?: (pin: GlobePin) => void;
+  onOut?: (pin: GlobePin) => void;
 }) {
   const ringRef = useRef<THREE.LineSegments>(null);
   const { position, quaternion } = useMemo(() => {
     const dir = new THREE.Vector3(...sphericalToVector(pin.lat, pin.lng));
     return {
-      position: dir.clone().multiplyScalar(1.012),
+      position: dir.clone().multiplyScalar(PIN_RADIUS),
       quaternion: new THREE.Quaternion().setFromUnitVectors(OUT, dir),
     };
   }, [pin.lat, pin.lng]);
@@ -94,12 +141,22 @@ function Pin({
     (ring.material as THREE.LineBasicMaterial).opacity = 1 - t;
   });
 
+  const hoverable = Boolean(pin.label && onOver && onOut);
+
   return (
     <group position={position} quaternion={quaternion}>
       <mesh scale={active ? 1.5 : 1}>
         <planeGeometry args={[0.036, 0.036]} />
         <meshBasicMaterial color={active ? MINT : GREEN} toneMapped={false} />
       </mesh>
+      {hoverable ? (
+        // An invisible disc, far larger than the pin, so the pointer finds it. Raycasting
+        // ignores material visibility; rendering honours it.
+        <mesh onPointerOver={() => onOver?.(pin)} onPointerOut={() => onOut?.(pin)}>
+          <circleGeometry args={[HIT_RADIUS, 20]} />
+          <meshBasicMaterial visible={false} />
+        </mesh>
+      ) : null}
       {active ? (
         <lineSegments ref={ringRef} geometry={RING}>
           <lineBasicMaterial color={MINT} transparent toneMapped={false} />
@@ -114,12 +171,16 @@ function Scene({
   activeId,
   controller,
   reduceMotion,
+  label,
+  onHover,
 }: Omit<SceneProps, "running" | "onReady">) {
   const tiltRef = useRef<THREE.Group>(null);
   const groupRef = useRef<THREE.Group>(null);
   const invalidate = useThree((state) => state.invalidate);
+  const get = useThree((state) => state.get);
   const wire = useMemo(() => wireframeGeometry(), []);
   const [dots, setDots] = useState<THREE.BufferGeometry | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   useEffect(() => () => wire.dispose(), [wire]);
 
@@ -151,7 +212,30 @@ function Scene({
     invalidate();
   }, [activeId, pins, controller, invalidate]);
 
-  useFrame(({ clock }, delta) => {
+  // Let go of the hold if the scene unmounts (or the pins change) mid-hover.
+  useEffect(() => () => controller.hover(false), [controller, pins]);
+
+  function onOver(pin: GlobePin) {
+    const { camera, size } = get();
+    const place = projectPin(pin, controller, camera, size);
+    // The raycaster sees through the occluding sphere: pins on the back are not hoverable.
+    if (place.facing < FRONT_Z) return;
+    label?.place(place.x, place.y - LABEL_GAP);
+    controller.hover(true);
+    setHoveredId(pin.id);
+    onHover?.(pin);
+    invalidate();
+  }
+
+  function onOut(pin: GlobePin) {
+    if (hoveredId !== pin.id) return;
+    controller.hover(false);
+    setHoveredId(null);
+    onHover?.(null);
+    invalidate();
+  }
+
+  useFrame(({ clock, camera, size }, delta) => {
     const easing = controller.step(
       Math.min(delta, 0.1),
       clock.elapsedTime,
@@ -161,6 +245,12 @@ function Scene({
     if (easing) invalidate();
     if (groupRef.current) groupRef.current.rotation.y = controller.spin;
     if (tiltRef.current) tiltRef.current.rotation.x = GLOBE_TILT * DEG + controller.tilt;
+    // The label follows its pin (a drag can move it while the pointer is captured).
+    const hovered = hoveredId === null ? undefined : pins.find((p) => p.id === hoveredId);
+    if (hovered && label) {
+      const place = projectPin(hovered, controller, camera, size);
+      label.place(place.x, place.y - LABEL_GAP, place.facing >= FRONT_Z);
+    }
   });
 
   return (
@@ -187,7 +277,14 @@ function Scene({
           </points>
         ) : null}
         {pins.map((pin) => (
-          <Pin key={pin.id} pin={pin} active={pin.id === activeId} reduceMotion={reduceMotion} />
+          <Pin
+            key={pin.id}
+            pin={pin}
+            active={pin.id === activeId || pin.id === hoveredId}
+            reduceMotion={reduceMotion}
+            onOver={onHover ? onOver : undefined}
+            onOut={onHover ? onOut : undefined}
+          />
         ))}
       </group>
     </group>

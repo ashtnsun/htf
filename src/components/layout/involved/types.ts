@@ -1,3 +1,5 @@
+import type { GlobePin } from "@/components/home/Globe";
+
 /** The open application cycle, as the Get involved graphics need it. */
 export type InvolvedSeason = {
   /** "Fall 2026". */
@@ -17,5 +19,7 @@ export type InvolvedGraphicProps = {
   season: InvolvedSeason | null;
   /** "2026–27": what the badge and the calendar show when no cycle is open. */
   academicYear: string;
+  /** The partner locations with coordinates, for the Globe variant; `label` is the country. */
+  pins: GlobePin[];
   className?: string;
 };
