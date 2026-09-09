@@ -148,8 +148,10 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
 - Colors (CSS vars → Tailwind utilities): `--bg #0B0B0B` (`bg-bg`), `--surface #141414`,
   `--surface-2 #1C1C1C`, `--line rgba(255,255,255,.08)` (`border-line`), `--line-strong`,
   `--text #F5F5F5` (`text-text`), `--muted #A3A3A3`, `--green #03C652`, `--green-deep
-#277D4A`, `--mint #00EB88`, `--cyan #00E0FF`, `--lime #C8FF3D`. The default Tailwind
-  palette is disabled; only these (plus white/black) exist.
+#277D4A`, `--mint #00EB88`, `--cyan #00E0FF`, `--lime #C8FF3D`, `--pink #FF3D9E` and
+  `--blue #3388FF` (the last two are decoration only: the process scene's teammates; never
+  text or a brand colour). The default Tailwind palette is disabled; only these (plus
+  white/black) exist.
 - Lime is defined but unused since audit 3 (2026-09-07): every primary `SplitButton` arrow
   cell is green with a 2px black divider (1px on the header bar `size="bar"` CTA since 2026-09-08). Never a text or brand colour.
 - Type: `text-display-xl/lg` (96/80), `text-display` (64), `text-h2` (48), `text-h3` (32),
@@ -169,7 +171,8 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   `skip-link`, `marquee` / `marquee-track`.
 - Contrast (checked, WCAG AA): text/muted/green/mint/cyan on bg, surface and surface-2 all
   pass; dark text on green (8.6:1) and on lime (16.6:1) pass; white on green FAILS (never);
-  green-deep on bg is 3.8:1 → large text or decoration only. `/dev/ui` shows the table.
+  green-deep on bg is 3.8:1 → large text or decoration only; pink (6.0:1) and blue (5.7:1) on
+  bg pass but stay decoration. `/dev/ui` shows the table.
 
 ## Component rules
 

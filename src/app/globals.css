@@ -16,6 +16,9 @@
   --green-deep: #277d4a;
   --mint: #00eb88;
   --cyan: #00e0ff;
+  /* Decoration only (the process scene's teammates), never text or a brand colour. */
+  --pink: #ff3d9e;
+  --blue: #3388ff;
   /* Lime is an interaction accent only (split-button arrow cell), never a brand color. */
   --lime: #c8ff3d;
 
@@ -47,6 +50,8 @@
   --color-green-deep: var(--green-deep);
   --color-mint: var(--mint);
   --color-cyan: var(--cyan);
+  --color-pink: var(--pink);
+  --color-blue: var(--blue);
   --color-lime: var(--lime);
   --color-white: #ffffff;
   --color-black: #000000;

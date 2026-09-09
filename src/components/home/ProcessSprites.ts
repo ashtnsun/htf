@@ -1,17 +1,18 @@
-import { DINO_ARM, DINO_COLS, DINO_EYE, dinoCells } from "@/components/brand/dino-pixels";
+import { DINO_ARM, DINO_EYE, dinoCells } from "@/components/brand/dino-pixels";
 import type { ProcessStep } from "@/lib/content/schemas";
 
 /**
  * The pixel art of the process scene (home/ProcessScene). Every sprite sits on the same cell
  * grid as the footer T-rex (brand/dino-pixels) and is drawn the same way: solid cells, no
- * outlines, details carved out as empty cells (the eyes). Dinosaurs are green; hats, tools,
- * glasses and the gift are white; the lens of the magnifying glass is a green tint.
+ * outlines, details carved out as empty cells (the eyes). The T-rex is green and its two
+ * teammates pink and blue; hats, tools and the gift are white; the lens of the magnifying
+ * glass is a green tint.
  *
  * The stage is 64 × 40 cells. The T-rex stands at the left in every step (its top-left cell
  * at TREX_ORIGIN, feet on row 33) facing the step text, and everything else is placed
  * relative to it. Hats are worn: their brim covers the head's top row (local row 0) so they
- * sit on the head rather than above it. The team is the same T-rex twice more, mirrored to
- * face the first one, one in glasses and one in a backwards cap. Anything that moves is
+ * sit on the head rather than above it. The team is two smaller copies of the T-rex (a
+ * hand-reduced map on the same grid), mirrored to face the first one. Anything that moves is
  * drawn as whole frames or moves by whole cells that keep it attached to the hand (the
  * hammer's two poses, the extra arm cell as the gift is pushed forward, the glass lifted
  * one row). Each layer lists the steps it belongs to, so the T-rex itself is shared by all
@@ -19,7 +20,7 @@ import type { ProcessStep } from "@/lib/content/schemas";
  */
 
 export type Stage = ProcessStep["graphic"];
-export type Ink = "green" | "white" | "tint";
+export type Ink = "green" | "white" | "tint" | "pink" | "blue";
 /** One filled cell: column, row and ink (green when omitted). */
 export type Cell = readonly [x: number, y: number, ink?: Ink];
 
@@ -35,7 +36,7 @@ export type Layer = {
   /** false: the alternate frame of a two-frame loop, hidden unless the loop runs. */
   rest?: boolean;
   /** The eye of the dinosaur in this layer (stage cell), covered by an eyelid to blink. */
-  eye?: { x: number; y: number; delay?: number };
+  eye?: { x: number; y: number; ink?: Ink; delay?: number };
 };
 
 export const SCENE = { cols: 64, rows: 40 } as const;
@@ -86,19 +87,6 @@ const ARM_UP: [number, number][] = [
   [18, 8],
 ];
 
-/** The same T-rex mirrored to face left, its top-left cell at (ox, oy) in T-rex-local space. */
-function mirrored(ox: number, oy: number): Cell[] {
-  return dinoCells().map(
-    ({ x, y }) =>
-      [TREX_ORIGIN.x + ox + (DINO_COLS - 1 - x), TREX_ORIGIN.y + oy + y, "green"] as const,
-  );
-}
-const mirroredEye = (ox: number, oy: number, delay: number) => ({
-  x: TREX_ORIGIN.x + ox + (DINO_COLS - 1 - DINO_EYE.x),
-  y: TREX_ORIGIN.y + oy + DINO_EYE.y,
-  delay,
-});
-
 /* ---------------------------------------------------------------- discover: the detective */
 
 /** A deerstalker: the tied ear flaps on top, a peak front and back, worn over row 0. */
@@ -136,23 +124,53 @@ const TRAIL = Array.from({ length: 8 }, (_, i) =>
 
 /* ---------------------------------------------------------------- match: the team */
 
-/** Square glasses around the eye of a mirrored T-rex (mirrored-local coordinates). */
-const GLASSES: [number, number][] = [
-  [5, 1],
-  [6, 1],
-  [7, 1],
-  [8, 1],
-  [5, 2],
-  [8, 2],
-  [5, 3],
-  [6, 3],
-  [7, 3],
-  [8, 3],
+/**
+ * The T-rex at about two thirds of its size, reduced by hand from the 20 × 22 map so it keeps
+ * the same features on the same grid: the carved eye, the open mouth, the tiny arm, the tail
+ * and the two legs. Faces right like the big map; the teammates are mirrored to face the lead.
+ */
+const SMALL_DINO: readonly string[] = [
+  "........######",
+  ".......#######",
+  ".......##.####",
+  ".......#######",
+  ".......#######",
+  ".......####...",
+  ".......######.",
+  "#.....####....",
+  "#...#######...",
+  "##.#########..",
+  "##########.#..",
+  ".#########....",
+  "..#######.....",
+  "...##.##......",
+  "...#...#......",
+  "...##..##.....",
 ];
-/** A backwards cap on a mirrored T-rex: the peak sticks out behind the head. */
-const CAP_BACK = ["...ooooo.....", ".ooooooooo...", "oooooooooooo.", "..........oo."];
-const TEAMMATE_A = { x: 22, y: 0 } as const;
-const TEAMMATE_B = { x: 42, y: 0 } as const;
+const SMALL_COLS = SMALL_DINO[0]!.length;
+const SMALL_EYE = { x: 9, y: 2 } as const;
+
+/** A small T-rex mirrored to face left, its top-left cell at (ox, oy) in T-rex-local space. */
+function teammate(ox: number, oy: number, ink: Ink): Cell[] {
+  const cells: Cell[] = [];
+  SMALL_DINO.forEach((row, y) => {
+    Array.from(row).forEach((ch, x) => {
+      if (ch === "#") {
+        cells.push([TREX_ORIGIN.x + ox + (SMALL_COLS - 1 - x), TREX_ORIGIN.y + oy + y, ink]);
+      }
+    });
+  });
+  return cells;
+}
+const teammateEye = (ox: number, oy: number, ink: Ink, delay: number) => ({
+  x: TREX_ORIGIN.x + ox + (SMALL_COLS - 1 - SMALL_EYE.x),
+  y: TREX_ORIGIN.y + oy + SMALL_EYE.y,
+  ink,
+  delay,
+});
+/** Both stand on the T-rex's baseline (their feet on its row 21). */
+const TEAMMATE_A = { x: 26, y: 6 } as const;
+const TEAMMATE_B = { x: 44, y: 6 } as const;
 
 /* ---------------------------------------------------------------- build: the builder */
 
@@ -285,23 +303,17 @@ export const LAYERS: readonly Layer[] = [
   {
     key: "teammate-a",
     stages: ["team"],
-    cells: [
-      ...mirrored(TEAMMATE_A.x, TEAMMATE_A.y),
-      ...at(GLASSES, "white", TEAMMATE_A.x, TEAMMATE_A.y),
-    ],
+    cells: teammate(TEAMMATE_A.x, TEAMMATE_A.y, "pink"),
     anim: "anim-dino-bob",
-    eye: mirroredEye(TEAMMATE_A.x, TEAMMATE_A.y, 2),
+    eye: teammateEye(TEAMMATE_A.x, TEAMMATE_A.y, "pink", 2),
   },
   {
     key: "teammate-b",
     stages: ["team"],
-    cells: [
-      ...mirrored(TEAMMATE_B.x, TEAMMATE_B.y),
-      ...sprite(CAP_BACK, TEAMMATE_B.x, TEAMMATE_B.y - 2),
-    ],
+    cells: teammate(TEAMMATE_B.x, TEAMMATE_B.y, "blue"),
     anim: "anim-dino-bob",
     delay: 0.6,
-    eye: mirroredEye(TEAMMATE_B.x, TEAMMATE_B.y, 4),
+    eye: teammateEye(TEAMMATE_B.x, TEAMMATE_B.y, "blue", 4),
   },
 
   { key: "hat-hard", stages: ["builder"], cells: sprite(HAT_HARD, 9, -4) },

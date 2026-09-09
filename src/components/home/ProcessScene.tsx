@@ -56,6 +56,8 @@ const INK: Record<Ink, string> = {
   green: "var(--green)",
   white: "var(--text)",
   tint: "var(--green)",
+  pink: "var(--pink)",
+  blue: "var(--blue)",
 };
 const TINT_OPACITY = 0.28;
 
@@ -149,8 +151,8 @@ type ProcessSceneProps = {
 
 /**
  * The process as pixel art on the footer T-rex's own grid: the detective peering through a
- * magnifying glass at a trail (discover), the same T-rex twice more, in glasses and a
- * backwards cap, gathered as the team (match), the builder in a hard hat hammering bricks
+ * magnifying glass at a trail (discover), two smaller T-rexes, one pink and one blue,
+ * gathered around it as the team (match), the builder in a hard hat hammering bricks
  * (build) and the party dino holding out a gift (deliver). The T-rex stands through every
  * step; everything else dissolves cell by cell when the step changes, on the scene's own
  * clock, and each step's own motion runs while the scene is on that step (`data-mode`).
@@ -276,7 +278,7 @@ export function ProcessScene({
                   y={layer.eye.y}
                   width={1}
                   height={1}
-                  fill={INK.green}
+                  fill={INK[layer.eye.ink ?? "green"]}
                   opacity={shared ? undefined : 0}
                   style={
                     layer.eye.delay !== undefined

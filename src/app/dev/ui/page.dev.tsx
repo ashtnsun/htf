@@ -42,6 +42,8 @@ const TOKENS = [
   ["mint", "#00eb88"],
   ["cyan", "#00e0ff"],
   ["lime", "#c8ff3d"],
+  ["pink", "#ff3d9e"],
+  ["blue", "#3388ff"],
 ] as const;
 
 /** WCAG 2.x relative luminance + contrast ratio, for the pairing table below. */
@@ -65,6 +67,8 @@ const PAIRS: [string, string, string][] = [
   ["green on surface", "#03c652", "#141414"],
   ["mint on bg", "#00eb88", "#0b0b0b"],
   ["cyan on bg", "#00e0ff", "#0b0b0b"],
+  ["pink on bg (decoration only)", "#ff3d9e", "#0b0b0b"],
+  ["blue on bg (decoration only)", "#3388ff", "#0b0b0b"],
   ["bg on green (buttons)", "#0b0b0b", "#03c652"],
   ["bg on lime (arrow cell)", "#0b0b0b", "#c8ff3d"],
   ["green-deep on bg (large text only)", "#277d4a", "#0b0b0b"],
