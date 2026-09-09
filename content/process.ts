@@ -13,10 +13,10 @@ export const process: ProcessStepInput[] = [
     id: "discover",
     title: "Discover",
     description:
-      "Nonprofits apply through our intake form. We hold a scoping call to understand the problem, the people who will use the solution, and what a win looks like for your organization.",
+      "Nonprofits reach out by email. We hold a scoping call to understand the problem, the people who will use the solution, and what a win looks like for your organization.",
     graphic: "detective",
     partner:
-      "Fill in the intake form and join a scoping call with us. Bring the people who will use the tool.",
+      "Email us about the problem and join a scoping call with us. Bring the people who will use the tool.",
   },
   {
     id: "match",

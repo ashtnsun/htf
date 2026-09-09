@@ -63,7 +63,7 @@ export const nonprofitsPage: NonprofitsPageInput = {
     ],
   },
   nextSteps: [
-    "We read every inquiry and reply by email. [TODO: response window]",
+    "We read every email and reply. [TODO: response window]",
     "If the project looks like a fit, we set up a scoping call to understand the problem and who will use the solution.",
     "Matched projects kick off in the fall with a team of Purdue students and run through the school year. [TODO: confirm when intake closes for the coming cycle]",
   ],

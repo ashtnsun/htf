@@ -42,7 +42,7 @@ export const faq: FaqItemInput[] = [
     id: "how-do-nonprofits-apply",
     question: "How do nonprofits get involved?",
     answer:
-      "[TODO: confirm process] Nonprofits apply through our intake form, we hold a scoping call, and matched projects run over the school year.",
+      "[TODO: confirm process] Nonprofits email us about the problem, we hold a scoping call, and matched projects run over the school year.",
     audience: "home",
     link: { label: "For nonprofits", href: "/nonprofits" },
   },

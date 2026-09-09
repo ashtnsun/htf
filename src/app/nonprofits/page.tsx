@@ -6,7 +6,6 @@ import { PageHero } from "@/components/layout/PageHero";
 import { SectionNav } from "@/components/layout/SectionNav";
 import { Reveal } from "@/components/motion/Reveal";
 import { HowItWorks } from "@/components/nonprofits/HowItWorks";
-import { IntakeForm } from "@/components/nonprofits/IntakeForm";
 import { NonprofitTestimonials } from "@/components/nonprofits/NonprofitTestimonials";
 import { Partners } from "@/components/nonprofits/Partners";
 import { Scope } from "@/components/nonprofits/Scope";
@@ -21,7 +20,6 @@ import {
   getProcess,
   getTestimonials,
 } from "@/lib/content";
-import { isIntakeFormConfigured } from "@/lib/inquiries/deliver";
 import { isTodo } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -41,6 +39,12 @@ const SECTIONS = [
 
 const linkClass = "font-medium text-green transition-colors duration-200 hover:text-text";
 
+/**
+ * Nonprofits: hero (no CTA in the banner since the 2026-09-09 review; the section bar and
+ * the closing section carry the way in), how it works, scope, the partner globe, quotes,
+ * the FAQ, and "Start a project", which since that review is an email address rather than
+ * an intake form: a nonprofit writes to the club and everything else happens on a call.
+ */
 export default function NonprofitsPage() {
   const steps = getProcess();
   const page = getNonprofitsPage();
@@ -48,7 +52,7 @@ export default function NonprofitsPage() {
   const testimonials = getTestimonials().filter((t) => t.kind === "nonprofit");
   const faq = getFaq("nonprofits");
   const email = isTodo(site.socials.email) ? null : site.socials.email;
-  const mode = isIntakeFormConfigured() ? "server" : email ? "mailto" : null;
+  const subject = encodeURIComponent(`Project idea for ${site.name}`);
 
   return (
     <>
@@ -56,11 +60,7 @@ export default function NonprofitsPage() {
         eyebrow="For nonprofits"
         lines={["Bring us a problem.", "*We build the tool.*"]}
         blurb="A team of Purdue students scopes the work with you, builds it over the school year, and hands off a finished product free of charge."
-      >
-        <SplitButton href="#start" size="lg">
-          Start a project
-        </SplitButton>
-      </PageHero>
+      />
       <SectionNav items={SECTIONS} label="Nonprofits" />
 
       <HowItWorks steps={steps} />
@@ -73,8 +73,8 @@ export default function NonprofitsPage() {
         aside={
           <p>
             Something else?{" "}
-            <Link href="/contact" className={linkClass}>
-              Ask us
+            <Link href="#start" className={linkClass}>
+              Email us
             </Link>
             , or read the{" "}
             <Link href="/#faq" className={linkClass}>
@@ -97,25 +97,33 @@ export default function NonprofitsPage() {
               className="mt-5"
             />
             <p className="mt-6 max-w-md text-muted">
-              A rough idea is enough. We scope the details together on a call.
+              A rough idea is enough. Send us an email with who you are, who you serve and the
+              problem you would like solved, and we scope the details together on a call.
             </p>
-            <div className="relative mt-8">
-              {mode ? (
-                <IntakeForm mode={mode} email={email} />
+            <div className="mt-8">
+              {email ? (
+                <>
+                  <SplitButton href={`mailto:${email}?subject=${subject}`} size="lg">
+                    Email us
+                  </SplitButton>
+                  <p className="mt-5 text-sm text-muted">
+                    Or write to{" "}
+                    <a href={`mailto:${email}`} className={linkClass}>
+                      {email}
+                    </a>{" "}
+                    from your own email app.
+                  </p>
+                </>
               ) : (
                 <div className="border border-dashed border-line-strong p-6">
-                  <p className="text-text">The intake form is not connected yet.</p>
+                  <p className="text-text">Email: [TODO: club contact email]</p>
                   <p className="mt-2 text-sm text-muted">
-                    [TODO: set the club email in content/site.ts for the mailto fallback, or add the
-                    Supabase / Resend keys from .env.example.] Until then, message us on Instagram
-                    or use the contact page.
+                    [TODO: set the club email in content/site.ts.] Until then, message us on
+                    Instagram.
                   </p>
-                  <div className="mt-6 flex flex-wrap gap-4">
-                    <SplitButton href={site.socials.instagram}>Message us on Instagram</SplitButton>
-                    <SplitButton href="/contact" variant="secondary">
-                      Contact page
-                    </SplitButton>
-                  </div>
+                  <SplitButton href={site.socials.instagram} className="mt-6">
+                    Message us on Instagram
+                  </SplitButton>
                 </div>
               )}
             </div>
@@ -133,13 +141,6 @@ export default function NonprofitsPage() {
                 </li>
               ))}
             </ol>
-            <p className="mt-8 text-sm text-muted">
-              Prefer email, or not sure yet? The{" "}
-              <Link href="/contact" className={linkClass}>
-                contact page
-              </Link>{" "}
-              works for anything else.
-            </p>
           </Reveal>
         </div>
       </Section>

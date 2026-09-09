@@ -10,7 +10,10 @@ const pad = (n: number) => String(n).padStart(2, "0");
 /**
  * The four process steps from content/process.ts, told from the nonprofit's side: each step
  * carries the process scene frozen at its stage (the home page morphs it on scroll) and a
- * "Your part" line.
+ * "Your part" line. The cards share their rows through a subgrid (scene, step label, title,
+ * description, your part), so every title, description and "Your part" block lines up
+ * across the row however long a neighbour's text runs (2026-09-09 review); the chain has to
+ * be direct (grid → li → children), so one Reveal wraps the whole list.
  */
 export function HowItWorks({ steps }: { steps: ProcessStep[] }) {
   if (steps.length === 0) return null;
@@ -37,10 +40,10 @@ export function HowItWorks({ steps }: { steps: ProcessStep[] }) {
           </p>
         </Reveal>
 
-        <ol className="mt-12 grid gap-px border border-line bg-line sm:grid-cols-2 xl:grid-cols-4">
-          {steps.map((step, i) => (
-            <li key={step.id} className="flex flex-col bg-bg">
-              <Reveal className="flex h-full flex-col p-6 md:p-8">
+        <Reveal>
+          <ol className="mt-12 grid gap-px border border-line bg-line sm:grid-cols-2 xl:grid-cols-4">
+            {steps.map((step, i) => (
+              <li key={step.id} className="row-span-5 grid grid-rows-subgrid bg-bg p-6 md:p-8">
                 <ProcessScene stages={stages} step={i} animate={false} className="max-w-[18rem]" />
                 <p className="mt-8 text-eyebrow font-medium text-green uppercase">
                   Step {pad(i + 1)}
@@ -52,11 +55,13 @@ export function HowItWorks({ steps }: { steps: ProcessStep[] }) {
                     <p className="text-eyebrow font-medium text-muted uppercase">Your part</p>
                     <p className="mt-2 text-sm text-text">{step.partner}</p>
                   </div>
-                ) : null}
-              </Reveal>
-            </li>
-          ))}
-        </ol>
+                ) : (
+                  <div />
+                )}
+              </li>
+            ))}
+          </ol>
+        </Reveal>
       </RevealGroup>
     </Section>
   );
