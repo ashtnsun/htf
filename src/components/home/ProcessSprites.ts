@@ -130,7 +130,7 @@ const TRAIL = Array.from({ length: 8 }, (_, i) =>
  * and the two legs. Faces right like the big map; the teammates are mirrored to face the lead.
  */
 const SMALL_DINO: readonly string[] = [
-  "........######",
+  "........#####.",
   ".......#######",
   ".......##.####",
   ".......#######",
