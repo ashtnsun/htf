@@ -6,20 +6,40 @@ import { cn, isTodo } from "@/lib/utils";
 
 type TeamGridProps = {
   members: TeamMember[];
+  /**
+   * grid = cards, up to three across (the component gallery). list = one hairline-divided
+   * column, for the aside of a project page (the 2026-09-09 review moved the team there).
+   */
+  variant?: "grid" | "list";
   className?: string;
 };
 
-/** Avatar grid for a project team: photo (or a placeholder glyph), name, role, LinkedIn. */
-export function TeamGrid({ members, className }: TeamGridProps) {
+/** A project team: photo (or a placeholder glyph), name, role, LinkedIn. */
+export function TeamGrid({ members, variant = "grid", className }: TeamGridProps) {
   if (members.length === 0) return null;
+  const list = variant === "list";
   return (
-    <ul className={cn("grid gap-3 sm:grid-cols-2 lg:grid-cols-3", className)}>
+    <ul
+      className={cn(
+        list
+          ? "divide-y divide-line border-y border-line"
+          : "grid gap-3 sm:grid-cols-2 lg:grid-cols-3",
+        className,
+      )}
+    >
       {members.map((member, i) => {
         const linkedin = member.linkedin && !isTodo(member.linkedin) ? member.linkedin : null;
+        const avatarClass = cn(
+          "shrink-0 rounded-full border border-line",
+          list ? "size-10" : "size-14",
+        );
         return (
           <li
             key={`${member.name}-${i}`}
-            className="flex items-center gap-4 border border-line bg-surface p-4"
+            className={cn(
+              "flex items-center",
+              list ? "gap-3 py-3" : "gap-4 border border-line bg-surface p-4",
+            )}
           >
             {member.avatar ? (
               <Media
@@ -27,19 +47,24 @@ export function TeamGrid({ members, className }: TeamGridProps) {
                 alt=""
                 width={56}
                 height={56}
-                className="size-14 shrink-0 rounded-full border border-line object-cover"
+                className={cn(avatarClass, "object-cover")}
               />
             ) : (
               <span
                 aria-hidden="true"
-                className="flex size-14 shrink-0 items-center justify-center rounded-full border border-line bg-surface-2 text-muted"
+                className={cn(
+                  avatarClass,
+                  "flex items-center justify-center bg-surface-2 text-muted",
+                )}
               >
-                <User className="size-6" strokeWidth={1.5} />
+                <User className={list ? "size-5" : "size-6"} strokeWidth={1.5} />
               </span>
             )}
             <div className="min-w-0 flex-1">
-              <p className="truncate font-medium text-text">{member.name}</p>
-              <p className="text-sm text-muted">{member.role}</p>
+              <p className={cn("truncate font-medium text-text", list && "text-sm")}>
+                {member.name}
+              </p>
+              <p className={cn("text-muted", list ? "text-xs" : "text-sm")}>{member.role}</p>
             </div>
             {linkedin ? (
               <a

@@ -146,16 +146,6 @@ export function getAllProjects(): Project[] {
   return projects;
 }
 
-/** Other projects for the "More projects" rail: same cycle first, then the rest, newest first. */
-export function getRelatedProjects(slug: string, limit = 3): Project[] {
-  const current = getProject(slug);
-  const others = getProjects().filter((p) => p.slug !== slug);
-  if (!current) return others.slice(0, limit);
-  const sameYear = others.filter((p) => p.year === current.year);
-  const rest = others.filter((p) => p.year !== current.year);
-  return [...sameYear, ...rest].slice(0, limit);
-}
-
 /** Projects visible on the site. Unpublished ones show in development only. */
 export function getProjects(): Project[] {
   const all = getAllProjects();

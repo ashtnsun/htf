@@ -1,12 +1,11 @@
+import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ContactCta } from "@/components/layout/ContactCta";
-import { OnThisPage } from "@/components/layout/OnThisPage";
-import { PageHero } from "@/components/layout/PageHero";
-import { Reveal } from "@/components/motion/Reveal";
+import { Reveal, RevealGroup } from "@/components/motion/Reveal";
 import { Gallery } from "@/components/projects/Gallery";
-import { MoreProjects } from "@/components/projects/MoreProjects";
-import { TAG_LABEL, toProjectCardData } from "@/components/projects/ProjectCard";
+import { TAG_LABEL } from "@/components/projects/ProjectCard";
 import { TeamGrid } from "@/components/projects/TeamGrid";
 import { Chip } from "@/components/ui/Chip";
 import { Eyebrow } from "@/components/ui/Eyebrow";
@@ -15,8 +14,7 @@ import { Media } from "@/components/ui/Media";
 import { MdxBody } from "@/components/ui/MdxBody";
 import { Section } from "@/components/ui/Section";
 import { SplitButton } from "@/components/ui/SplitButton";
-import { getProject, getProjects, getRelatedProjects } from "@/lib/content";
-import { extractHeadings } from "@/lib/mdx";
+import { getProject, getProjects } from "@/lib/content";
 
 /** Unknown slugs 404 instead of rendering on demand. */
 export const dynamicParams = false;
@@ -43,63 +41,81 @@ export async function generateMetadata({
 const factLabel = "text-eyebrow font-medium text-muted uppercase";
 
 /**
- * Project detail: hero (nonprofit, title, summary, facts, live link) → cover → MDX write-up
- * with a sticky "On this page" / "Built with" aside → screenshot gallery with lightbox →
- * team grid → related projects → closing CTA. Sections without content are skipped.
+ * Project detail, kept plain since the 2026-09-09 review: a title block on the page
+ * background (back link, nonprofit, title, summary, the facts and the live link; no banner
+ * glow or grid) → cover → the MDX write-up with the team and the stack in a sticky column on
+ * the right (no jump links) → screenshot gallery with lightbox → closing CTA. No "More
+ * projects" rail. Sections without content are skipped.
  */
 export default async function ProjectPage({ params }: PageProps<"/projects/[slug]">) {
   const { slug } = await params;
   const project = getProject(slug);
   if (!project) notFound();
 
-  const headings = extractHeadings(project.body);
-  const related = getRelatedProjects(project.slug, 3).map(toProjectCardData);
-  const onThisPage = [
-    ...headings.map((h) => ({ href: `#${h.id}`, label: h.text })),
-    ...(project.gallery.length > 0 ? [{ href: "#project-gallery", label: "Gallery" }] : []),
-    ...(project.team.length > 0 ? [{ href: "#project-team", label: "Team" }] : []),
-  ];
-
   return (
     <>
-      <PageHero
-        back={{ href: "/projects", label: "All projects" }}
-        eyebrow={project.nonprofit}
-        lines={[project.title]}
-        blurb={project.summary}
-        stagger={false}
-      >
-        {!project.published ? (
-          <p className="mb-8 inline-block border border-dashed border-line-strong px-3 py-2 text-xs text-muted">
-            Preview: draft project, shown in development only
-          </p>
-        ) : null}
-        <dl className="flex flex-wrap gap-x-12 gap-y-6">
-          <div>
-            <dt className={factLabel}>Year</dt>
-            <dd className="mt-2 text-text">{project.year}</dd>
-          </div>
-          <div>
-            <dt className={factLabel}>Location</dt>
-            <dd className="mt-2 text-text">{project.location}</dd>
-          </div>
-          <div>
-            <dt className={factLabel}>Type</dt>
-            <dd className="mt-2 flex flex-wrap gap-1.5">
-              {project.tags.map((tag) => (
-                <Chip key={tag}>{TAG_LABEL[tag]}</Chip>
-              ))}
-            </dd>
-          </div>
-        </dl>
-        {project.liveUrl ? (
-          <SplitButton href={project.liveUrl} size="lg" className="mt-10">
-            Visit the live site
-          </SplitButton>
-        ) : null}
-      </PageHero>
+      <Section aria-labelledby="page-title" padding="none" className="pt-10 md:pt-14">
+        <RevealGroup mode="mount">
+          <Reveal>
+            <Link
+              href="/projects"
+              className="inline-flex min-h-11 items-center gap-2 text-sm text-muted transition-colors hover:text-text"
+            >
+              <ArrowLeft className="size-4" aria-hidden="true" />
+              All projects
+            </Link>
+          </Reveal>
+          {!project.published ? (
+            <Reveal className="mt-6">
+              <p className="inline-block border border-dashed border-line-strong px-3 py-2 text-xs text-muted">
+                Preview: draft project, shown in development only
+              </p>
+            </Reveal>
+          ) : null}
+          <Reveal className="mt-8">
+            <Eyebrow>{project.nonprofit}</Eyebrow>
+          </Reveal>
+          <Reveal className="mt-6">
+            <Headline
+              as="h1"
+              id="page-title"
+              size="display"
+              lines={[project.title]}
+              className="max-w-4xl text-h2 md:text-display"
+            />
+          </Reveal>
+          <Reveal className="mt-6">
+            <p className="max-w-2xl text-body-lg text-muted">{project.summary}</p>
+          </Reveal>
+          <Reveal className="mt-10">
+            <dl className="flex flex-wrap gap-x-12 gap-y-6">
+              <div>
+                <dt className={factLabel}>Year</dt>
+                <dd className="mt-2 text-text">{project.year}</dd>
+              </div>
+              <div>
+                <dt className={factLabel}>Location</dt>
+                <dd className="mt-2 text-text">{project.location}</dd>
+              </div>
+              <div>
+                <dt className={factLabel}>Type</dt>
+                <dd className="mt-2 flex flex-wrap gap-1.5">
+                  {project.tags.map((tag) => (
+                    <Chip key={tag}>{TAG_LABEL[tag]}</Chip>
+                  ))}
+                </dd>
+              </div>
+            </dl>
+            {project.liveUrl ? (
+              <SplitButton href={project.liveUrl} size="lg" className="mt-10">
+                Visit the live site
+              </SplitButton>
+            ) : null}
+          </Reveal>
+        </RevealGroup>
+      </Section>
 
-      <Section aria-label="Project cover" padding="none">
+      <Section aria-label="Project cover" padding="none" className="mt-12 md:mt-16">
         <div className="relative aspect-[16/9] overflow-hidden border border-line bg-surface">
           <Media
             src={project.cover}
@@ -113,14 +129,17 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
       </Section>
 
       <Section aria-label="Project write-up">
-        {/* Phones: jump links in a row above the write-up. lg+: the same list in the sticky aside. */}
-        <OnThisPage items={onThisPage} variant="row" className="mb-10" />
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-20">
+        <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-20">
           <article className="max-w-3xl">
             <MdxBody source={project.body} />
           </article>
           <aside className="space-y-10 lg:sticky lg:top-24 lg:self-start">
-            <OnThisPage items={onThisPage} variant="list" />
+            {project.team.length > 0 ? (
+              <div>
+                <p className={factLabel}>Team</p>
+                <TeamGrid members={project.team} variant="list" className="mt-4" />
+              </div>
+            ) : null}
             {project.stack.length > 0 ? (
               <div>
                 <p className={factLabel}>Built with</p>
@@ -133,11 +152,6 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
                 </ul>
               </div>
             ) : null}
-            <div>
-              <p className={factLabel}>Partner</p>
-              <p className="mt-3 text-sm text-text">{project.nonprofit}</p>
-              <p className="text-sm text-muted">{project.location}</p>
-            </div>
           </aside>
         </div>
       </Section>
@@ -161,36 +175,6 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
           <Gallery images={project.gallery} label={project.title} className="mt-10" />
         </Section>
       ) : null}
-
-      {project.team.length > 0 ? (
-        <Section
-          id="project-team"
-          aria-labelledby="project-team-title"
-          className="border-t border-line"
-        >
-          <div className="grid gap-10 lg:grid-cols-[1fr_1.7fr] lg:gap-16">
-            <Reveal standalone>
-              <Eyebrow>Team</Eyebrow>
-              <Headline
-                as="h2"
-                id="project-team-title"
-                size="h2"
-                lines={["The students", "*behind it.*"]}
-                className="mt-5"
-              />
-              <p className="mt-6 max-w-sm text-muted">
-                Every project team is one project lead, developers and designers who work with the
-                nonprofit for the whole school year.
-              </p>
-            </Reveal>
-            <Reveal standalone delay={0.1}>
-              <TeamGrid members={project.team} />
-            </Reveal>
-          </div>
-        </Section>
-      ) : null}
-
-      <MoreProjects projects={related} />
 
       <ContactCta
         eyebrow="Work with us"
