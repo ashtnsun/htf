@@ -68,8 +68,8 @@ src/components/
                     ImpactBand (+ TestimonialMarquee, Awards, AwardCarousel), WhoWeServe (two
                     linked panels with a presentational "Learn more" button in a full-bleed
                     row, each topped by a pixel picture from WhoWeServeGraphics: a stack of
-                    books, a hand holding out a heart, on the dinosaur's cell grid; also the
-                    hand-off on /about)
+                    books, a heart floating over an open hand, on the dinosaur's cell grid;
+                    also the hand-off on /about)
   about/            Mission, Story, ExecGrid (+ ExecBoard: a chip per school year, `?board=` in
                     the URL, LinkedIn cell on every card), InstagramGrid
   nonprofits/       HowItWorks (cards share rows through a subgrid), Scope, Partners

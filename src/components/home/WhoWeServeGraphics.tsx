@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
  * process scene (brand/dino-pixels, home/ProcessSprites), drawn the same way: solid cells,
  * no outlines, details carved as empty cells (the title bar on each spine), the object white
  * and the accent green like the scene's props and gift. A stack of books for students, a
- * hand holding out a heart for nonprofits. Both maps are 24 × 22 cells so the two panels'
- * pictures share one scale and one baseline. Static, decoration only: hidden from assistive
+ * heart floating over an open hand for nonprofits. Both maps are 24 × 22 cells so the two
+ * panels' pictures share one scale and one baseline. Static, decoration only: hidden from assistive
  * tech (the panel's eyebrow and title say who it is for).
  */
 export type AudienceGraphicName = "books" | "heart";
@@ -18,10 +18,10 @@ const BOOKS: readonly string[] = [
   "........................",
   "........................",
   "........................",
-  "....oooooooooooooo......",
-  "....oooooooooooooo......",
-  "....oo...ooooooooo......",
-  "....oooooooooooooo......",
+  "....ooooooooooooooo.....",
+  "....ooooooooooooooo.....",
+  "....oo...oooooooooo.....",
+  "....ooooooooooooooo.....",
   "..################......",
   "..################......",
   "..##...###########......",
@@ -37,36 +37,41 @@ const BOOKS: readonly string[] = [
   "........................",
 ];
 
-/** A cupped hand seen from the front (thumb up on the left, fingers curling up on the right) with a heart held over the palm. */
-const HEART_IN_HAND: readonly string[] = [
+/**
+ * A heart floating over an open hand seen from the side, palm up (the "hand holding heart"
+ * icon): the cuff at the left, the knuckle of the thumb as the bump on top, the thumb lying
+ * across the palm toward the fingers, which rise at the right. The palm's hollow and the
+ * underside of the thumb are carved so the thumb, the cuff and the fingers read as parts.
+ */
+const HEART_OVER_HAND: readonly string[] = [
   "........................",
   "........................",
   "........................",
-  "........................",
-  "........###...###.......",
-  ".......#####.#####......",
-  "......###########.......",
-  "......###########.......",
-  ".......#########........",
-  "........#######.........",
-  ".........#####..........",
-  "..........###...........",
-  "...oo......#.ooo.ooo.oo.",
-  "...ooo.......ooo.ooo.oo.",
-  "....ooo......ooooooooooo",
-  ".....ooooooooooooooooooo",
-  "......oooooooooooooooooo",
-  "......ooooooooooooooooo.",
-  ".......ooooooooooooooo..",
-  "........oooooooooooo....",
-  ".........oooooo.........",
-  ".........oooooo.........",
+  "..........###...###.....",
+  ".........#####.#####....",
+  "........#############...",
+  "........#############...",
+  ".........###########....",
+  "..........#########.....",
+  "...........#######......",
+  "............#####.......",
+  ".............###........",
+  "...oooooo.....#......oo.",
+  ".ooooooooooo........oooo",
+  "oooooo...oooooo....ooooo",
+  "oooooo.........ooooooooo",
+  "ooooooooooooooooo...ooo.",
+  "oooooooooooooooooo..ooo.",
+  "oooooo..............ooo.",
+  "oooooooooooooooooooo.oo.",
+  ".ooooooooooooooooooooo..",
+  ".......oooooooooooooo...",
 ];
 
 const INK: Record<string, string> = { "#": "var(--green)", o: "var(--text)" };
 const MAPS: Record<AudienceGraphicName, readonly string[]> = {
   books: BOOKS,
-  heart: HEART_IN_HAND,
+  heart: HEART_OVER_HAND,
 };
 
 /** One <path> per ink, the cells merged into row runs (as the process scene draws its pieces). */
@@ -92,7 +97,7 @@ function pathsOf(rows: readonly string[]): { ink: string; d: string }[] {
 
 const PATHS: Record<AudienceGraphicName, ReturnType<typeof pathsOf>> = {
   books: pathsOf(BOOKS),
-  heart: pathsOf(HEART_IN_HAND),
+  heart: pathsOf(HEART_OVER_HAND),
 };
 
 type AudienceGraphicProps = {
