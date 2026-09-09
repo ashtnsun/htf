@@ -40,9 +40,9 @@ type TimelineTrackProps = {
  * the screen (the section clips it), so the line never just stops at kickoff. Inside the
  * section's RevealGroup the cells arrive left to right: the rail draws, the node pops, the
  * text rises. Segments and nodes are green up to the current step, whose node carries a ping
- * ring and whose label line carries a green "Now" tag (the step numbers went in the
- * 2026-09-09 review). Under reduced motion everything is static and final (plain elements
- * from the first update after hydration, like Reveal).
+ * ring and whose date is green (the step numbers and the "Now" tag went in the 2026-09-09
+ * reviews; `aria-current` still marks the step). Under reduced motion everything is static
+ * and final (plain elements from the first update after hydration, like Reveal).
  */
 export function TimelineTrack({ steps, current }: TimelineTrackProps) {
   const reduce = useReducedMotionSafe();
@@ -97,13 +97,13 @@ export function TimelineTrack({ steps, current }: TimelineTrackProps) {
             </Span>
 
             <Div {...v(text)} data-reveal="">
-              <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-eyebrow font-medium uppercase">
-                <span className={state === "current" ? "text-green" : "text-text"}>
-                  {step.when}
-                </span>
-                {state === "current" ? (
-                  <span className="bg-green px-1.5 py-0.5 text-[0.625rem] text-bg">Now</span>
-                ) : null}
+              <p
+                className={cn(
+                  "text-eyebrow font-medium uppercase",
+                  state === "current" ? "text-green" : "text-text",
+                )}
+              >
+                {step.when}
               </p>
               <h3 className="mt-3 text-body-lg leading-snug font-medium text-text">{step.title}</h3>
               <p className="mt-2 text-sm text-muted">{step.description}</p>

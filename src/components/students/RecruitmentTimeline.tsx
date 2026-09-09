@@ -23,9 +23,10 @@ function currentStepIndex(steps: RecruitmentStep[], now = new Date()): number {
 /**
  * Recruitment timeline from content/recruitment.ts: callouts → applications → deadline →
  * interviews → decisions → kickoff, as one horizontal track (students/TimelineTrack) under
- * the heading. The rail and nodes light up green as far as the current step, which is
- * marked "Now" (the deadline note under the heading went in the 2026-09-09 review). The
- * section clips sideways so the rail can run off the right edge of the screen.
+ * the heading. The rail and nodes light up green as far as the current step, whose node and
+ * date are green (the deadline note under the heading and the "Now" tag went in the
+ * 2026-09-09 reviews). The section clips sideways so the rail can run off the right edge of
+ * the screen.
  */
 export function RecruitmentTimeline({ steps }: { steps: RecruitmentStep[] }) {
   if (steps.length === 0) return null;

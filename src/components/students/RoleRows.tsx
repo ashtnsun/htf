@@ -10,10 +10,10 @@ import { ROLE_ICONS } from "./roleIcons";
  * The Framer role rows (number label, icon, title, blurb, description) plus what the
  * template left out: responsibilities, time commitment and who the role is for. The per-role
  * Apply button went in the 2026-09-09 review (the page's CTAs are the header and the closing
- * section). On large screens the intro sticks beside the rows: its box is as tall as the
- * viewport below the site header and the section bar (`--subnav-h`, set by SectionNav while
- * mounted) and the copy sits in the middle of it, so it stays centred on screen while the
- * rows scroll past and never slips under the bars.
+ * section). On large screens the intro sticks beside the rows, top-aligned with the first
+ * row at rest; while the rows scroll past it holds a little below the site header and the
+ * section bar (`--subnav-h`, set by SectionNav while mounted), so the bars never cover it
+ * (the second 2026-09-09 review replaced the viewport-tall centred box).
  */
 export function RoleRows({ roles }: { roles: Role[] }) {
   return (
@@ -21,7 +21,7 @@ export function RoleRows({ roles }: { roles: Role[] }) {
       <div className="grid gap-12 lg:grid-cols-[1fr_1.7fr] lg:gap-16">
         <Reveal
           standalone
-          className="lg:sticky lg:top-[calc(var(--header-h)+var(--subnav-h,0px))] lg:flex lg:h-[calc(100svh-var(--header-h)-var(--subnav-h,0px))] lg:flex-col lg:justify-center lg:self-start"
+          className="lg:sticky lg:top-[calc(var(--header-h)+var(--subnav-h,0px)+2rem)] lg:self-start"
         >
           <Eyebrow>Roles</Eyebrow>
           <Headline
