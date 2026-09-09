@@ -92,7 +92,8 @@ export const roleSchema = z.object({
   open: z.boolean().default(true),
 });
 
-export const faqAudienceSchema = z.enum(["home", "students", "nonprofits"]);
+/** Which page shows an FAQ item; "apply" is the short list under the application form. */
+export const faqAudienceSchema = z.enum(["home", "students", "nonprofits", "apply"]);
 
 /** Optional "read more" link under an answer, e.g. to the deeper Students / Nonprofits FAQ. */
 export const faqLinkSchema = z.object({

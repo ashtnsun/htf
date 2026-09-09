@@ -21,9 +21,38 @@ type FaqSectionProps = {
 };
 
 /**
- * The Framer FAQ layout: heading on the left, single-open accordion on the right.
- * An answer can end with a link (content/faq.ts → `link`) into a deeper page or section.
+ * The FAQ items as a single-open accordion, the first one open; an answer can end with a link
+ * (content/faq.ts → `link`) into a deeper page or section. FaqSection's right column, and the
+ * list under the application form on /apply.
  */
+export function FaqAccordion({ items, className }: { items: FaqItem[]; className?: string }) {
+  return (
+    <Accordion
+      defaultOpen={items[0]?.id}
+      className={className}
+      items={items.map((f) => ({
+        id: f.id,
+        title: f.question,
+        content: (
+          <>
+            <p>{f.answer}</p>
+            {f.link ? (
+              <Link
+                href={f.link.href}
+                className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-text transition-colors hover:text-green"
+              >
+                {f.link.label}
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            ) : null}
+          </>
+        ),
+      }))}
+    />
+  );
+}
+
+/** The Framer FAQ layout: heading on the left, the accordion on the right. */
 export function FaqSection({
   items,
   id = "faq",
@@ -43,27 +72,7 @@ export function FaqSection({
           {aside ? <div className="mt-6 max-w-sm text-muted">{aside}</div> : null}
         </Reveal>
         <Reveal standalone delay={0.1}>
-          <Accordion
-            defaultOpen={items[0]?.id}
-            items={items.map((f) => ({
-              id: f.id,
-              title: f.question,
-              content: (
-                <>
-                  <p>{f.answer}</p>
-                  {f.link ? (
-                    <Link
-                      href={f.link.href}
-                      className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-text transition-colors hover:text-green"
-                    >
-                      {f.link.label}
-                      <ArrowRight className="size-4" aria-hidden="true" />
-                    </Link>
-                  ) : null}
-                </>
-              ),
-            }))}
-          />
+          <FaqAccordion items={items} />
         </Reveal>
       </div>
     </Section>

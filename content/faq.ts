@@ -2,8 +2,10 @@ import type { FaqItemInput } from "@/lib/content/schemas";
 
 /**
  * FAQ entries. `audience` decides which page shows them: "home" is the short general list
- * (with links into the deeper lists), "students" and "nonprofits" belong to those pages.
- * Answers marked TODO are placeholders for the design director to confirm.
+ * (with links into the deeper lists), "students" and "nonprofits" belong to those pages, and
+ * "apply" is the short list under the application form on /apply (what happens next and the
+ * questions people have while filling it in). Answers marked TODO are placeholders for the
+ * design director to confirm.
  */
 export const faq: FaqItemInput[] = [
   // ------------------------------------------------------------ home (general)
@@ -91,6 +93,30 @@ export const faq: FaqItemInput[] = [
       "[TODO: confirm] We review applications after the deadline, invite applicants to interviews, and send decisions before project kickoff.",
     audience: "students",
     link: { label: "Recruitment timeline", href: "#timeline" },
+  },
+
+  // ------------------------------------------------------------ apply (under the form)
+  {
+    id: "apply-what-happens-next",
+    question: "What happens next?",
+    answer:
+      "We read every application after the deadline and follow up by email. The recruitment timeline has the dates.",
+    audience: "apply",
+    link: { label: "Recruitment timeline", href: "/students#timeline" },
+  },
+  {
+    id: "apply-more-than-one-role",
+    question: "Can I apply for more than one role?",
+    answer:
+      "Yes. One form covers every role you want. Responsibilities and time commitment for each role are on the Students page.",
+    audience: "apply",
+    link: { label: "See the roles", href: "/students#roles" },
+  },
+  {
+    id: "apply-who-can-apply",
+    question: "Who can apply?",
+    answer: "Anyone at Purdue. We are open to all majors, all years, and all levels of experience.",
+    audience: "apply",
   },
 
   // ------------------------------------------------------------ nonprofits
