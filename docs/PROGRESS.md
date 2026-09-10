@@ -52,6 +52,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 15f: Ashton's Privacy policy copy pass (no blurb, no Effective / Status row, no draft badge, the retention and Children sections gone, every [TODO] closed)
 - [x] Session 15h: every email control copies the address (ui/CopyEmail); no mailto links anywhere on the site
 - [x] Session 15g: the 2026-2027 Google Form is live on /apply (the last blocking content value), the page is the form and nothing else
+- [x] Session 15k: alignment pass over every route after the copy passes (the stranded role icon on /students, the Learn more panels' inset back on the site's 32px card grid)
 - [x] Session 15j: /apply links to the form instead of embedding it (a framed card and one button; the iframe could not be made to look right)
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
@@ -74,6 +75,47 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+
+## Session 15k — 2026-09-10 (alignment pass after the copy passes)
+
+Ashton: "Do an alignment pass across the entire site to make sure any changes to
+copy/deletions of elements on the pages didn't mess up any alignments." Every route was shot
+at 1440 and 390 (`docs/screenshots/session-15i/`), read tile by tile, and measured in the
+browser: the left and right edge of every heading, paragraph, list and button per section,
+every grid row checked for ragged card bottoms, and every page checked for horizontal
+overflow. Two things had drifted; everything else lines up.
+
+**Fixed:**
+
+1. **The role icon on /students was stranded.** Session 15c deleted the "Role 01 / 02 / 03"
+   label from each role row, and the row it shared with the icon stayed behind as
+   `flex items-start justify-end` — one icon pushed to the far right of an otherwise empty
+   line, with the title starting back at the left. The icon now sits above the title on the
+   row's left edge (`block size-7`, `mt-6` under it), which is where every other icon on the
+   site sits: the What we do cards, the What you'll get perks, the contact tiles.
+2. **The Learn more panels were inset 8px deeper than every other card.** `WhoWeServe` was
+   the only surface on the site carrying `lg:p-10`; `md:p-8` (32px) is the inset used by the
+   What we do row, the nonprofits How it works cards, the students perks, the stat tiles and
+   the contact tiles. On the home page the two full-bleed rows stack, so "Ship real software"
+   started 8px to the right of "Deliver free software" directly above it. Both rows now start
+   at the same x (98px at 1440).
+
+**Checked and left alone** (measured, not regressions): the exec grid is `xl:grid-cols-4`
+with three 2026–27 members, so the row is three quarters full at 1440 — content, not layout,
+and it fills at `lg`. The recruitment timeline's rail runs off the right edge past the fifth
+step by design (Session 13). The footer's last column reaches the container edge; only the
+short "Privacy" link inside it does not. Both globes (Get involved, Partners) are missing
+from a `pnpm screenshots` capture because three.js loads on demand and the script shoots
+before it paints — shot on their own with a longer wait, both render. Two-column sections
+(mission/photo, roles/rows, prose/aside) have unequal column heights, which is what they are
+for.
+
+**Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm build`. `pnpm a11y` across all nine routes
+at 1440 and 390 plus the drawer: 0 violations on every page of this session's work. (The one
+`heading-order` violation the run reported is inside the Google Forms iframe on /apply, which
+a second session was editing at the time.) Screenshots in `docs/screenshots/session-15i/`.
+
+**TODOs:** unchanged.
 
 ## Session 15 — 2026-09-10 (Ashton's home page copy pass)
 
@@ -2040,7 +2082,8 @@ Students with no TODOs left, the real dates and hours, and the deletions;
 `docs/screenshots/session-15e/`: Nonprofits with the real email and no TODOs;
 `docs/screenshots/session-15f/`: the Privacy policy without its draft framing;
 `docs/screenshots/session-15g/` and `session-15j/`: /apply with the real form, first embedded
-and then linked from a card), and the open
+and then linked from a card; `docs/screenshots/session-15i/`: every route after the
+alignment pass), and the open
 questions in those logs: whether the short "at Purdue" should stay right-aligned over the
 globe, and the three Session 15c readings (what "→ delete" covered on the hero and Roles
 intro, whether the role numbers all go, and what "delete the label only" meant for the team
