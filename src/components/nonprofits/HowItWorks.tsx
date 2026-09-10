@@ -34,10 +34,6 @@ export function HowItWorks({ steps }: { steps: ProcessStep[] }) {
             lines={["One school year,", "*start to handoff.*"]}
             className="mt-5"
           />
-          <p className="mt-6 max-w-md text-muted">
-            A project runs from the first call to the handoff of a finished product. Here is what
-            happens at each step and what we need from your side.
-          </p>
         </Reveal>
 
         <Reveal>

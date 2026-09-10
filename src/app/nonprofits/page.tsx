@@ -20,7 +20,6 @@ import {
   getProcess,
   getTestimonials,
 } from "@/lib/content";
-import { isTodo } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Nonprofits",
@@ -51,16 +50,12 @@ export default function NonprofitsPage() {
   const locations = getPartnerLocations();
   const testimonials = getTestimonials().filter((t) => t.kind === "nonprofit");
   const faq = getFaq("nonprofits");
-  const email = isTodo(site.socials.email) ? null : site.socials.email;
+  const email = site.socials.email;
   const subject = encodeURIComponent(`Project idea for ${site.name}`);
 
   return (
     <>
-      <PageHero
-        eyebrow="For nonprofits"
-        lines={["Bring us a problem.", "*We build the tool.*"]}
-        blurb="A team of Purdue students scopes the work with you, builds it over the school year, and hands off a finished product free of charge."
-      />
+      <PageHero eyebrow="For nonprofits" lines={["Bring us a problem.", "*We build the tool.*"]} />
       <SectionNav items={SECTIONS} label="Nonprofits" />
 
       <HowItWorks steps={steps} />
@@ -101,31 +96,16 @@ export default function NonprofitsPage() {
               problem you would like solved, and we scope the details together on a call.
             </p>
             <div className="mt-8">
-              {email ? (
-                <>
-                  <SplitButton href={`mailto:${email}?subject=${subject}`} size="lg">
-                    Email us
-                  </SplitButton>
-                  <p className="mt-5 text-sm text-muted">
-                    Or write to{" "}
-                    <a href={`mailto:${email}`} className={linkClass}>
-                      {email}
-                    </a>{" "}
-                    from your own email app.
-                  </p>
-                </>
-              ) : (
-                <div className="border border-dashed border-line-strong p-6">
-                  <p className="text-text">Email: [TODO: club contact email]</p>
-                  <p className="mt-2 text-sm text-muted">
-                    [TODO: set the club email in content/site.ts.] Until then, message us on
-                    Instagram.
-                  </p>
-                  <SplitButton href={site.socials.instagram} className="mt-6">
-                    Message us on Instagram
-                  </SplitButton>
-                </div>
-              )}
+              <SplitButton href={`mailto:${email}?subject=${subject}`} size="lg">
+                Email us
+              </SplitButton>
+              <p className="mt-5 text-sm text-muted">
+                Or write to{" "}
+                <a href={`mailto:${email}`} className={linkClass}>
+                  {email}
+                </a>{" "}
+                from your own email app.
+              </p>
             </div>
           </Reveal>
 
