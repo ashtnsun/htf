@@ -2,7 +2,7 @@ import type { GlobePin } from "@/components/home/Globe";
 
 /** The open application cycle, as the Get involved graphics need it. */
 export type InvolvedSeason = {
-  /** "Fall 2026". */
+  /** "2026-2027". */
   cycleName: string;
   /** The deadline in the club's time zone; `month` is 1–12. */
   deadline: { year: number; month: number; day: number };

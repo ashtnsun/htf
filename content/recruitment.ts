@@ -2,7 +2,7 @@ import type { RecruitmentStepInput } from "@/lib/content/schemas";
 
 /**
  * Recruitment timeline for the current cycle (see content/site.ts → season).
- * Dates are TODO until the Fall 2026 schedule is confirmed. For reference, the 2025
+ * Dates are TODO until the 2026-2027 schedule is confirmed. For reference, the 2025
  * callouts were in WTHR 320 on 9/8 and 9/10 plus a virtual session on 9/11.
  * `current: true` marks the step the club is on now (Ashton, 2026-09-09: callouts); move
  * the flag as recruitment advances, or add ISO `date`s and drop it.

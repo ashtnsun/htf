@@ -38,12 +38,12 @@ export const site = {
      * Google Forms since 2026-09-09; the in-house portal is parked under parked/ (see
      * parked/README.md).
      */
-    applyFormUrl: "TODO: Fall 2026 Google Form link (…/viewform)",
+    applyFormUrl: "TODO: 2026-2027 Google Form link (…/viewform)",
     /** Where Apply sends people while the form link is a TODO: the profile whose bio links it. */
     applyFallbackUrl: "https://www.instagram.com/hackthefuturepurdue/",
-    // TODO(ashton): confirm this cycle's deadline. ISO 8601 with offset (Eastern time).
-    closesAt: "2026-09-12T23:59:00-04:00",
-    cycleName: "Fall 2026",
+    /** This cycle's deadline (Ashton, 2026-09-10). ISO 8601 with offset (Eastern time). */
+    closesAt: "2026-09-17T23:59:00-04:00",
+    cycleName: "2026-2027",
     timeZone: "America/Indiana/Indianapolis",
   },
   nav: [

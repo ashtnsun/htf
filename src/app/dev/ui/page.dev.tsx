@@ -82,10 +82,10 @@ const PAIRS: [string, string, string][] = [
   ["white on green (do not use)", "#f5f5f5", "#03c652"],
 ];
 
-/** Every Get involved variant, with the Fall 2026 deadline the badge shows. */
+/** Every Get involved variant, with this cycle's deadline the badge shows. */
 const INVOLVED_PROPS = {
   cta: { label: "Apply Now", href: "/apply" },
-  season: { cycleName: "Fall 2026", deadline: { year: 2026, month: 9, day: 12 } },
+  season: { cycleName: "2026-2027", deadline: { year: 2026, month: 9, day: 17 } },
   academicYear: "2026–27",
   pins: [
     { id: "us", lat: 39.9, lng: -86.3, label: "US" },
