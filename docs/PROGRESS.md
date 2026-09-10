@@ -43,6 +43,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 13: review pass 5 (fourteen items: marquee header, awards column, the globe still and centred, project-card arrow, no Who we are, green section-bar item, no banner CTAs, centred sticky roles intro, timeline without numbers and with the Now marker and the run-off rail, subgrid How it works, no map behind the nonprofit quotes, Start a project and Contact by email, /apply as the embedded Google Form) and the portal parked under `parked/`
 - [x] Session 14: review pass 6 (eight items: pixel books and heart on Who we serve, globe pins named by state, tighter How it works gaps, no Photo hero CTA, plain project pages with the team on the right and no More projects, top-aligned roles intro, no Now tag, /apply as one centred column with the FAQ under the form)
 - [x] Session 14b: Ashton's look at Session 14 (the Who we serve pictures tweaked twice, then removed; the small dinosaurs' snouts rounded; the gift ribbon's end green)
+- [x] Session 15: Ashton's home page copy pass (hero statement and eyebrow, no What we do or Who we serve headline, Process eyebrow, process and FAQ wording, two TODO answers confirmed)
 - [x] Session 14c: no glow behind the process dinosaurs (the home scene and the /nonprofits stills); the footer T-rex keeps its own
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
@@ -65,6 +66,60 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+
+## Session 15 — 2026-09-10 (Ashton's home page copy pass)
+
+Ashton edited the home page's text in a document (copied off the live page) and pasted it
+back with `-->` marking every change. Applied verbatim, one content edit at a time.
+
+**Built:**
+
+1. **Hero** (`content/hero.ts`). Eyebrow "Student Org @ Purdue University" → "Nonprofit
+   Student Org"; the statement "Building software / for nonprofits." → "Hack the Future /
+   at Purdue", with "Hack the Future" as the green line (Ashton's pick of four accent
+   splits). Every hero variant reads the same copy, so all six changed at once, and
+   `heroStatement` ("Hack the Future at Purdue") follows. The home share card's eyebrow
+   (`src/app/opengraph-image.tsx`) follows the hero; its headline stays "Building software
+   for nonprofits, at Purdue." because a link preview has no logo to name the club.
+2. **What we do.** The headline "Built by students, free for nonprofits." is gone. The
+   eyebrow is now the section heading (`<Eyebrow as="h2" id="what-we-do-title">`), so the
+   section keeps its `aria-labelledby` label and the heading order survives with no
+   invisible heading; the photo follows at `mt-10`.
+3. **How it works → Process.** The section eyebrow on the home page only; /nonprofits keeps
+   its own "How it works" (the nav's section bar names it).
+4. **Process steps** (`content/process.ts`). Discover: "what a win looks like" → "what the
+   final handoff looks like". Match: "a team around the project: one project lead, five
+   developers and one or two designers" → "a team of a project lead, developers and
+   designers around the project" (no team size committed to). Build: "a hand-selected team
+   of Purdue students" → "the team of Purdue students". Deliver unchanged.
+5. **FAQ** (`content/faq.ts`). "When can I apply?" loses `[TODO: confirm whether there is a
+spring cycle.]`. "How do nonprofits get involved?" loses `[TODO: confirm process]` and
+   reads "Nonprofits email us about the problem, we hold a call, and the matched projects
+   run over the school year." Two TODOs closed by the edit itself.
+6. **Who we serve.** The eyebrow is "Learn more" and the headline "Two audiences, one
+   mission." is gone; as in What we do, the eyebrow becomes the section's `h2`. `lines` is
+   now optional on `WhoWeServe` (the /about hand-off still passes "Get involved" / "Two ways
+   to join in." and renders its headline). The nonprofits panel reads "Get the tool your
+   team needs." (was "actually needs").
+
+**Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm build`. `pnpm a11y` on `/` at 1440 and 390
+plus the drawer: 0 violations (the two eyebrow-as-heading sections keep their labels).
+Screenshots in `docs/screenshots/session-15/`: `home-{1440,390}`, `about-{1440,390}`,
+`drawer-390`.
+
+**Decisions:** two sections now label themselves with the eyebrow instead of a headline
+rather than carrying a screen-reader-only heading — the visible label is real, so the
+document outline stays honest. The team-size numbers stay in the "What roles can I apply
+for?" FAQ answer (Ashton did not touch it) even though the Match step dropped them.
+
+**Open for Ashton:** the hero's second line is right-aligned by the staggered `Headline`
+(`stagger` puts every line after the first on `md:self-end`), so the short "at Purdue" now
+sits in the middle of the globe rather than beside it, as "for nonprofits." did. Left-aligning
+the line, shrinking or moving the globe, or leaving it are all one-line changes — needs a look
+at `docs/screenshots/session-15/home-1440.png`. "Learn more" as the Who we serve eyebrow
+repeats the two buttons under it; kept as written.
+
+**TODOs:** unchanged (the Google Form link and the club email; the hero variant decision).
 
 ## Session 14c — 2026-09-09 (no glow behind the process dinosaurs)
 
@@ -1598,7 +1653,12 @@ unchanged.
 
 ## Next session starts with
 
-**First, Ashton's look at Session 14c** (`docs/screenshots/session-14c/`: the process
+**First, Ashton's look at Session 15** (`docs/screenshots/session-15/`: the home page with
+his copy edits — the new hero statement over the globe, What we do and Who we serve without
+their headlines), and the one open question there: whether the short "at Purdue" should stay
+right-aligned over the globe. Ashton is editing the other pages' copy the same way (a
+document per page, `-->` marking each change), so expect Projects, About, Students and
+Nonprofits next. Then **Ashton's look at Session 14c** (`docs/screenshots/session-14c/`: the process
 dinosaurs without the glow on the home page and /nonprofits; the footer's glow kept), then
 **Session 14b** (`docs/screenshots/session-14b/`: the Who we serve
 panels without pictures, the small dinosaurs' snouts, the gift ribbon), then the rest of

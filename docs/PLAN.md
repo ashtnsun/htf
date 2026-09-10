@@ -292,3 +292,21 @@ The rest of the review: the testimonial pause button sits on the label's line (h
 ## 24. Amendments — review pass 6 (September 9, 2026)
 
 Ashton's eight-item review after §23 (Session 14). **Home:** the Who we serve panels opened with a pixel picture each (a stack of books for students, a heart for nonprofits) drawn like the process scene, until Ashton's look at Session 14b removed both, so the panels start with the eyebrow again; the How it works list starts half a viewport under its heading and ends half a viewport after Deliver, with a short bottom padding before Impact (the gaps roughly halved); the Photo hero has no button; a hovered pin on the Get involved globe names the state for a partner in the US and the country elsewhere. **Project pages** (revising §3's spec): a plain title block instead of the banner, the write-up with the team and the stack in a sticky right column, no jump links and no "More projects" rail; the gallery and the closing CTA stay. **Students:** the roles intro is top-aligned and sticks just below the section bar; the timeline's current step keeps its green node and loses the "Now" tag. **/apply** (revising §23): one centred column and no banner: a short heading with the deadline, the embedded form, and an FAQ under it (`audience: "apply"` in `content/faq.ts`) that absorbs "What happens next"; the roles list is gone. PROGRESS.md (Session 14) has the measurements.
+
+## 25. Amendments — Ashton's home page copy (September 10, 2026)
+
+Ashton's own edit of the home page's words (Session 15), taken verbatim. **Hero:** the
+eyebrow is "Nonprofit Student Org" (revising §22's "Student Org @ Purdue University", here
+and on the default share card) and the statement is "Hack the Future / at Purdue" with the
+first line green — the club's name, not its pitch, is the h1. **What we do** and **Who we
+serve** drop their headlines ("Built by students, free for nonprofits." and "Two audiences,
+one mission."): each section's eyebrow becomes its `h2`, so the section keeps its label and
+the outline stays honest, and Who we serve's eyebrow reads "Learn more" (`lines` is now
+optional on `WhoWeServe`; /about still passes its own eyebrow and headline). **How it works**
+on the home page is now labelled **Process**; /nonprofits keeps "How it works". **Process
+steps** (`content/process.ts`): Discover scopes "what the final handoff looks like", Match
+names "a team of a project lead, developers and designers" without committing to a team size,
+and Build says "the team of Purdue students". **FAQ**: the spring-cycle and nonprofit-process
+TODOs are answered — nonprofits "email us about the problem, we hold a call, and the matched
+projects run over the school year". PROGRESS.md (Session 15) has the open question about the
+right-aligned second hero line over the globe.
