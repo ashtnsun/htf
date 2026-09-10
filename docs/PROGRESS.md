@@ -55,6 +55,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 15k: alignment pass over every route after the copy passes (the stranded role icon on /students, the Learn more panels' inset back on the site's 32px card grid)
 - [x] Session 15j: /apply links to the form instead of embedding it (a framed card and one button; the iframe could not be made to look right)
 - [x] Session 15m: the form is embedded again, in a frame measured to fit each of its five sections (no nested scrollbar, no white box), with the green brackets around it and the open-in-a-tab button under it
+- [x] Session 15n: the /apply frame is back-proof — two heights instead of five, after checking that nothing cross-origin can say which section the form is showing
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -76,6 +77,55 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+
+## Session 15n — 2026-09-10 (what happens when an applicant goes back)
+
+Ashton: "are you supporting/taking account of if a applicant hits the back button on the
+form?" It was not, and the Session 15m design was worse than its own note admitted: counting
+sections forward means one "Back" leaves the counter permanently ahead, so **every** section
+after it would have been undersized, not just the one.
+
+**What can be detected, checked rather than assumed (2026-09-10, against a production build):**
+
+- The form's own "Back" button is a fresh navigation, not a history traversal: the parent's
+  `history.length` goes up on Back exactly as it does on Next (2 → 3 → 4).
+- The browser's Back does return the frame to the previous section without leaving `/apply`,
+  but **no `popstate` fires on the page** — Chromium does not notify the parent for an
+  iframe-only traversal — so it arrives as one more indistinguishable `load`.
+- The form posts **no message**: a listener on the page recorded nothing across a full load
+  and a section change.
+- Every property of the frame's window is blocked: `location.href`, `history.length`, `name`,
+  `document`, `origin` all throw `SecurityError`.
+
+So there is no signal at all. The fix is to stop needing one.
+
+**Built:** `ApplyForm` now carries **two** heights instead of five — the first section, and
+the tallest of the rest (which is always section 2: 8 questions, then 6, 4, 3, 3). The frame
+starts at the first height and moves to the second on the first navigation, and never changes
+again. Since the only section that is much taller than the others is the first, every way of
+going backwards is covered except returning to section 1 — and that case heals itself the
+moment the applicant moves forward again, with the "Open the form in a new tab" button under
+the frame as the way out meanwhile.
+
+**Checked**, driving the real page: start → Next → Next → Back → Back → Next, measuring the
+form's own document height against the frame at each step —
+
+```
+start: Page 1 of 5, needs 1949px, frame 1970px -> fits
+after Next (section 2): needs 1290px, frame 1310px -> fits
+after Next (section 3): needs 1243px, frame 1310px -> fits
+after form Back (section 2): needs 1290px, frame 1310px -> fits
+after form Back (section 1): needs 1949px, frame 1310px -> SCROLLS (short 639px)
+Next again (section 2): needs 1290px, frame 1310px -> fits
+```
+
+and the forward sweep at 320 / 390 / 768 / 1440: no section scrolls inside the frame.
+`pnpm typecheck`, `pnpm lint`, `pnpm build` clean.
+
+**Decisions:** the cost of one height for sections 2-5 is white space under the two short
+ones — about 485px and 600px at desktop width, more on a phone. Sizing them exactly would
+mean counting sections, which is precisely what breaks when someone goes back, so the trade
+went to the case that cannot be recovered from over the one that is only cosmetic.
 
 ## Session 15m — 2026-09-10 (the form, framed properly)
 
