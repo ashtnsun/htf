@@ -20,7 +20,7 @@ export function Process({ steps }: { steps: ProcessStep[] }) {
       className="border-t border-line pt-24 pb-12 md:pt-36 md:pb-16"
     >
       <Reveal standalone>
-        <Eyebrow>How it works</Eyebrow>
+        <Eyebrow>Process</Eyebrow>
         <Headline
           as="h2"
           id="process-title"

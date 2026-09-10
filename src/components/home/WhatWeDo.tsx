@@ -2,7 +2,7 @@ import { HeartHandshake, Layers, Rocket, type LucideIcon } from "lucide-react";
 import type { Service } from "@/lib/content/schemas";
 import { Reveal, RevealGroup } from "@/components/motion/Reveal";
 import { Eyebrow } from "@/components/ui/Eyebrow";
-import { Headline, renderAccent } from "@/components/ui/Headline";
+import { renderAccent } from "@/components/ui/Headline";
 import { Media } from "@/components/ui/Media";
 import { Section } from "@/components/ui/Section";
 import { SplitButton } from "@/components/ui/SplitButton";
@@ -14,7 +14,8 @@ const ICONS: Record<Service["icon"], LucideIcon> = {
 };
 
 /**
- * "What we do": the full-organization photo (no caption), then three service panels
+ * "What we do": the eyebrow is the section heading (no headline since the 2026-09-10 copy
+ * pass), then the full-organization photo (no caption), then three service panels
  * (content/services.ts) in a full-bleed hairline row (`bleed-row-3`: the horizontal lines
  * run edge to edge, the columns stay on the page container's columns and are framed by
  * vertical rails on both sides), then the link to the projects page, centred. The panels share their row tracks (subgrid), so the icons, titles and
@@ -32,17 +33,12 @@ export function WhatWeDo({ services }: { services: Service[] }) {
       <RevealGroup>
         <div className="container-max container-x">
           <Reveal>
-            <Eyebrow>What we do</Eyebrow>
-            <Headline
-              as="h2"
-              id="what-we-do-title"
-              size="h2"
-              lines={["Built by students,", "*free for nonprofits.*"]}
-              className="mt-5 max-w-3xl md:text-display"
-            />
+            <Eyebrow as="h2" id="what-we-do-title">
+              What we do
+            </Eyebrow>
           </Reveal>
 
-          <Reveal className="mt-12">
+          <Reveal className="mt-10">
             <div className="relative aspect-[4/3] overflow-hidden border border-line bg-surface sm:aspect-[21/9]">
               <Media
                 src="org.group-photo"

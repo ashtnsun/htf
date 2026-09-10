@@ -21,7 +21,7 @@ const PANELS: readonly Panel[] = [
   },
   {
     eyebrow: "Nonprofits",
-    title: "Get the tool your team actually needs.",
+    title: "Get the tool your team needs.",
     copy: "Bring us a problem. A student team scopes it with you, builds it over the school year and hands it off free of charge.",
     href: "/nonprofits",
   },
@@ -35,7 +35,9 @@ type WhoWeServeProps = {
 };
 
 /**
- * Two panels, one per audience, so a first-time visitor finds their page in one click. Each
+ * Two panels, one per audience, so a first-time visitor finds their page in one click. The
+ * home page shows them under the eyebrow alone (no headline since the 2026-09-10 copy pass);
+ * /about passes its own eyebrow and headline. Each
  * panel is one link in a full-bleed hairline row (the same row as "What we do", framed by
  * vertical rails): eyebrow, title, one sentence and a "Learn more" button (a pixel picture
  * above the eyebrow came and went in the 2026-09-09 reviews). Hovering the panel turns the
@@ -47,19 +49,26 @@ type WhoWeServeProps = {
  */
 export function WhoWeServe({
   id = "who-we-serve",
-  eyebrow = "Who we serve",
-  lines = ["Two audiences, *one mission*."],
+  eyebrow = "Learn more",
+  lines,
 }: WhoWeServeProps) {
   const titleId = `${id}-title`;
+  // Without a headline (the home page since the 2026-09-10 copy pass) the eyebrow is the
+  // section heading, so the section keeps its label and the heading order stays intact.
+  const hasHeadline = lines !== undefined && lines.length > 0;
   return (
     <Section id={id} aria-labelledby={titleId} contain={false} className="border-t border-line">
       <div className="container-max container-x">
         <Reveal standalone>
-          <Eyebrow>{eyebrow}</Eyebrow>
-          <Headline as="h2" id={titleId} size="h2" lines={lines} className="mt-5" />
+          <Eyebrow as={hasHeadline ? "p" : "h2"} id={hasHeadline ? undefined : titleId}>
+            {eyebrow}
+          </Eyebrow>
+          {hasHeadline ? (
+            <Headline as="h2" id={titleId} size="h2" lines={lines} className="mt-5" />
+          ) : null}
         </Reveal>
       </div>
-      <Reveal standalone delay={0.1} className="mt-12">
+      <Reveal standalone delay={0.1} className="mt-10">
         <ul className="grid border-y border-line md:bleed-row-2 md:grid-rows-[auto_auto_minmax(0,1fr)_auto]">
           {PANELS.map((panel) => (
             <li
