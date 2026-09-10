@@ -7,7 +7,7 @@ import { Section } from "@/components/ui/Section";
 import { ROLE_ICONS } from "./roleIcons";
 
 /**
- * The Framer role rows (number label, icon, title, blurb, description) plus what the
+ * The Framer role rows (icon, title, blurb, description) plus what the
  * template left out: responsibilities, time commitment and who the role is for. The per-role
  * Apply button went in the 2026-09-09 review (the page's CTAs are the header and the closing
  * section). On large screens the intro sticks beside the rows, top-aligned with the first
@@ -31,26 +31,19 @@ export function RoleRows({ roles }: { roles: Role[] }) {
             lines={["Available", "*roles.*"]}
             className="mt-5 md:text-display"
           />
-          <p className="mt-6 max-w-sm text-muted">
-            Every team is one project lead, five developers and one or two designers, working with
-            one nonprofit for the school year. You can apply for more than one role.
-          </p>
-          <SeasonNote className="mt-4" />
+          <SeasonNote className="mt-6" />
         </Reveal>
 
         <ol className="divide-y divide-line border-y border-line">
-          {roles.map((role, index) => {
+          {roles.map((role) => {
             const Icon = ROLE_ICONS[role.icon];
             return (
               <li key={role.slug} id={`role-${role.slug}`} className="py-10 md:py-14">
                 <Reveal standalone>
-                  <div className="flex items-start justify-between gap-6">
-                    <p className="text-eyebrow font-medium text-muted uppercase">
-                      Role {String(index + 1).padStart(2, "0")}
-                    </p>
+                  <div className="flex items-start justify-end">
                     <Icon aria-hidden="true" className="size-7 text-muted" strokeWidth={1.5} />
                   </div>
-                  <h3 className="mt-6 text-h3 md:text-h2">{role.title}</h3>
+                  <h3 className="mt-4 text-h3 md:text-h2">{role.title}</h3>
                   <p className="mt-2 text-sm text-muted">{role.blurb}</p>
                   <p className="mt-5 max-w-2xl text-body-lg text-text">{role.description}</p>
 

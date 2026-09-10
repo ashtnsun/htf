@@ -35,11 +35,7 @@ export default function StudentsPage() {
 
   return (
     <>
-      <PageHero
-        eyebrow="Student involvement"
-        lines={["Join us to", "*make an impact.*"]}
-        blurb="Open to all majors, all years, and all levels of experience. You can apply for more than one role."
-      />
+      <PageHero eyebrow="Student involvement" lines={["Join us to", "*make an impact.*"]} />
       <SectionNav items={SECTIONS} label="Students" />
 
       <RoleRows roles={roles} />

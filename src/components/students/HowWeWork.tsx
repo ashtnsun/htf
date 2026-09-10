@@ -26,10 +26,6 @@ export function HowWeWork({ seats, steps }: HowWeWorkProps) {
             lines={["One nonprofit, one team,", "*one school year.*"]}
             className="mt-5"
           />
-          <p className="mt-6 max-w-md text-muted">
-            Teams are small on purpose: everyone owns a real piece of the product, and the nonprofit
-            always knows who to talk to.
-          </p>
           <TeamDiagram seats={seats} />
         </Reveal>
 
@@ -55,7 +51,11 @@ export function HowWeWork({ seats, steps }: HowWeWorkProps) {
   );
 }
 
-/** One square per seat: filled green lead, surface developers, mint-outlined designers. */
+/**
+ * One square per seat: filled green lead, surface developers, mint-outlined designers. The
+ * captions came off in the 2026-09-10 copy pass, so each seat carries its count and label for
+ * assistive tech instead (`content/students.ts`).
+ */
 function TeamDiagram({ seats }: { seats: TeamSeat[] }) {
   return (
     <ul aria-label="Team structure" className="mt-10 flex flex-wrap gap-x-6 gap-y-5">
@@ -64,6 +64,9 @@ function TeamDiagram({ seats }: { seats: TeamSeat[] }) {
         const min = seat.minCount ?? seat.count;
         return (
           <li key={seat.id}>
+            <span className="sr-only">
+              {seat.countLabel ?? seat.count} {seat.label}
+            </span>
             <div className="flex gap-2" aria-hidden="true">
               {Array.from({ length: seat.count }, (_, i) => (
                 <span
@@ -80,10 +83,6 @@ function TeamDiagram({ seats }: { seats: TeamSeat[] }) {
                 </span>
               ))}
             </div>
-            <p className="mt-2 text-sm text-muted">
-              <span className="font-medium text-text">{seat.countLabel ?? seat.count}</span>{" "}
-              {seat.label}
-            </p>
           </li>
         );
       })}
