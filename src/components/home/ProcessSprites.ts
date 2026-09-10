@@ -237,14 +237,14 @@ const ARM_REACH: [number, number][] = [
   [19, 11],
 ];
 const BOX = { x: 19, y: 8, w: 7, h: 5 } as const;
-/** A white box with a green ribbon across it and a bow on top; the hand covers the ribbon's end. */
+/** A white box with a green ribbon across it and a bow on top; the reaching hand overlaps the ribbon's end. */
 const GIFT: Cell[] = [
   ...block(BOX.x, BOX.y, BOX.w, BOX.h).map(
     ([x, y]) =>
       [
         TREX_ORIGIN.x + x,
         TREX_ORIGIN.y + y,
-        x === BOX.x + 3 || (y === BOX.y + 2 && x > BOX.x) ? "green" : "white",
+        x === BOX.x + 3 || y === BOX.y + 2 ? "green" : "white",
       ] as const,
   ),
   ...at([
