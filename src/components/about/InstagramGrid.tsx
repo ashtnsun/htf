@@ -21,12 +21,12 @@ export function InstagramGrid({ posts }: { posts: InstagramPost[] }) {
       <RevealGroup>
         <Reveal className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>
-            <Eyebrow>Follow along</Eyebrow>
+            <Eyebrow>Socials</Eyebrow>
             <Headline
               as="h2"
               id="instagram-title"
               size="h2"
-              lines={["Callouts, kickoffs", "*and demo days.*"]}
+              lines={["Follow the", "*Instagram!*"]}
               className="mt-5"
             />
           </div>

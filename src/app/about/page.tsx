@@ -37,7 +37,7 @@ export default function AboutPage() {
       <PageHero
         eyebrow="About"
         lines={["Students building", "*for good.*"]}
-        blurb="A student organization at Purdue University that builds software for nonprofits around the world, one team and one partner at a time."
+        blurb="A student organization at Purdue University that builds software for nonprofits around the world."
       />
       <SectionNav items={SECTIONS} label="About" />
 

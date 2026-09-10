@@ -35,8 +35,9 @@ export function ExecGrid({ members, years }: ExecGridProps) {
             />
           </div>
           <p className="max-w-sm text-muted">
-            The exec board runs recruitment, nonprofit intake and the project cycle. [TODO: how to
-            reach the board, or a line about elections.]
+            The exec board runs recruitment, events, workshops, nonprofit sourcing, and the project
+            cycle. We hold board member recruitment at the end of each school year. Feel free to
+            reach out to any of us!
           </p>
         </Reveal>
         <Reveal className="mt-12">
