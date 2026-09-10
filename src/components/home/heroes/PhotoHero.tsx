@@ -13,8 +13,9 @@ import { Media } from "@/components/ui/Media";
 const PARALLAX = 0.2;
 
 /**
- * "Photo": the full organization photo (content/media.ts `org.group-photo`, the placeholder
- * until the real one lands) fills the hero, darkened toward the bottom where the statement
+ * "Photo", the hero the site ships with since 2026-09-10 (Ashton's pick; it is in the
+ * bundle, the other variants are lazy chunks): the full organization photo (content/media.ts
+ * `org.group-photo`, the placeholder until the real one lands) fills the hero, darkened toward the bottom where the statement
  * sits. No button: the header bar carries the season CTA (2026-09-09 review). The photo
  * scrolls a little slower than the page. No parallax under prefers-reduced-motion.
  */

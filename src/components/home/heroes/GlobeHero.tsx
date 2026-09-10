@@ -6,7 +6,8 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Headline } from "@/components/ui/Headline";
 
 /**
- * "Globe", the hero as designed in the 2026-09-06 audit and the default: eyebrow, the
+ * "Globe", the hero as designed in the 2026-09-06 audit (the default until 2026-09-10, now
+ * one of the menu's variants): eyebrow, the
  * two-line staggered headline with the second line green, the wireframe globe floating
  * behind it, the bottom glow and the grid. No buttons, blurb or scroll marker; the header
  * CTA does that job.

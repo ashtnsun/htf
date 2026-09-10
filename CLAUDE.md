@@ -59,7 +59,7 @@ src/components/
                     its country elsewhere; three.js loads on demand), Terminal / Chat / Badge
                     lazy chunks), SeasonNote, OnThisPage (/privacy only)
   home/             Hero (client switch over heroes/*: six variants (Globe, Atlas, Typewriter,
-                    Cells, Wordmark, Photo) chosen in the Shift + M menu, GlobeHero the default and
+                    Cells, Wordmark, Photo) chosen in the Shift + M menu, PhotoHero the default and
                     in the bundle, the rest lazy chunks;
                     HeroShell is the shared frame), Globe (SVG, takes pins), WhatWeDo, Process (+ ProcessScroll,
                     ProcessScene: the footer T-rex as detective, team lead, builder and party

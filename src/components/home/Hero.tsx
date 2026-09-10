@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
-import { GlobeHero } from "@/components/home/heroes/GlobeHero";
+import { PhotoHero } from "@/components/home/heroes/PhotoHero";
 import type { HeroProps } from "@/components/home/heroes/types";
 import { DEFAULT_HERO, type HeroVariantId } from "@/lib/config/options";
 import { useSiteConfig } from "@/lib/config/store";
@@ -19,14 +19,14 @@ const lazy = (load: () => Promise<ComponentType<HeroProps>>) => dynamic(load, { 
  * separate chunks fetched only when chosen in the Shift + M menu.
  */
 const VARIANTS: Record<HeroVariantId, ComponentType<HeroProps>> = {
-  globe: GlobeHero,
+  globe: lazy(() => import("@/components/home/heroes/GlobeHero").then((m) => m.GlobeHero)),
   atlas: lazy(() => import("@/components/home/heroes/AtlasHero").then((m) => m.AtlasHero)),
   typewriter: lazy(() =>
     import("@/components/home/heroes/TypewriterHero").then((m) => m.TypewriterHero),
   ),
   cells: lazy(() => import("@/components/home/heroes/CellsHero").then((m) => m.CellsHero)),
   wordmark: lazy(() => import("@/components/home/heroes/WordmarkHero").then((m) => m.WordmarkHero)),
-  photo: lazy(() => import("@/components/home/heroes/PhotoHero").then((m) => m.PhotoHero)),
+  photo: PhotoHero,
 };
 
 /**

@@ -9,7 +9,7 @@ export const HERO_VARIANTS = [
   {
     id: "globe",
     name: "Globe",
-    blurb: "The statement with the wireframe globe floating behind it. The hero as it ships.",
+    blurb: "The statement with the wireframe globe floating behind it.",
   },
   {
     id: "atlas",
@@ -34,13 +34,14 @@ export const HERO_VARIANTS = [
   {
     id: "photo",
     name: "Photo",
-    blurb: "The organization photo full-bleed with the statement over it. Parallax on scroll.",
+    blurb:
+      "The organization photo full-bleed with the statement over it, scrolling a little slower than the page. The hero as it ships.",
   },
 ] as const;
 
 export type HeroVariantId = (typeof HERO_VARIANTS)[number]["id"];
 
-export const DEFAULT_HERO: HeroVariantId = "globe";
+export const DEFAULT_HERO: HeroVariantId = "photo";
 
 /**
  * The Get involved graphic (layout/ContactCta, at the foot of the home, About, Projects and
