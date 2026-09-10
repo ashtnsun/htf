@@ -93,7 +93,7 @@ export const PAGE_HERO_VARIANTS = [
     id: "globe",
     name: "Globe",
     blurb:
-      "The wireframe globe, big enough that only its northern cap clears the bottom edge. It turns slowly behind the headline.",
+      "The wireframe globe on the right, two thirds of the hero tall and turning slowly behind the headline.",
   },
   {
     id: "radar",

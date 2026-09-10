@@ -138,8 +138,9 @@ five that keep the shipped hero and change only the graphic in it.
    `h1`, the blurb and the page's actions, revealed on mount in that order) and
    `PageHeroGlow`. A variant is now a section, a graphic and that content block.
 4. **The seven variants.** Frame (the shipped grid, glow and framed column) · Globe (the
-   `home/Globe` wireframe on the right, three fifths of the hero tall, behind the headline,
-   meridians turning) · Radar (rings, a green arm turning every nine seconds, one blip
+   `home/Globe` wireframe on the right, two thirds of the hero tall with its edge on the
+   content container's right edge — it bleeds off the screen edge on phones instead — and the
+   headline in front of it, meridians turning) · Radar (rings, a green arm turning every nine seconds, one blip
    pinging, cropped by the bottom-right corner) · Corridor (the site's frame repeated to a
    vanishing point with spokes, one frame green, another coming forward) · Trace (right-angled
    copper runs and square pads drawing themselves once, faded out toward the headline) ·
