@@ -4,7 +4,7 @@
 
 Marketing site for Hack the Future (HTF), a Purdue student org that builds software for
 nonprofits. One developer (Ashton, design director) working with Claude Code. Dark theme
-only. Applications go through a Google Form (embedded on `/apply`) and messages by email;
+only. Applications go through a Google Form (linked from `/apply`) and messages by email;
 the finished Phase 2 application portal and the site forms are parked under `parked/`
 (see `parked/README.md`), not built.
 
@@ -39,8 +39,8 @@ content/            typed content: site.ts (config + season CTA), media.ts (imag
                     nonprofits.ts, instagram.ts, privacy.mdx, projects/*.mdx (Zod frontmatter)
 src/app/            routes. page.dev.tsx files exist only in `next dev` (see next.config.ts);
                     apply/ is the Google Form page (one centred column, no banner: a short
-                    heading, the embedded form with the open-in-a-tab link, the "apply" FAQ
-                    under it; "closed" out of season); projects/[slug] is a plain title block,
+                    heading with the deadline and a framed card whose button opens the form
+                    in a new tab; "closed" out of season); projects/[slug] is a plain title block,
                     the cover, the write-up with the team and stack in the right column, the
                     gallery and the CTA (no banner, jump links or "More projects");
                     contact/ lists email, LinkedIn and Instagram; no server actions, no proxy
@@ -114,9 +114,10 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
 - Spelling: `nonprofits`, one word, everywhere (page title "Nonprofits"); never "non-profits".
 - Season logic lives only in `content/site.ts` (`getPrimaryCta`, `isInSeason`,
   `formatDeadline`, `getApplyForm`). Every CTA reads from it: in season `/apply`, otherwise
-  `/contact`. `/apply` embeds the Google Form in `season.applyFormUrl` (`getApplyForm` adds
-  `embedded=true`; while the link is a TODO the page shows the TODO and the Instagram
-  fallback). Nothing on the site posts a form: nonprofits and everyone else write to
+  `/contact`. `/apply` links to the Google Form in `season.applyFormUrl` (`getApplyForm`;
+  its `embedUrl` adds `embedded=true` and is unused since 2026-09-10 — the form runs over
+  several sections of differing heights, so a frame means a nested scrollbar or a white gap,
+  and nothing inside Google's page can be styled from here). Nothing on the site posts a form: nonprofits and everyone else write to
   `site.socials.email`, and every email control copies that address to the clipboard
   (`ui/CopyEmail`) — the site has no `mailto:` link, including in MDX.
 - The hero variant and the Get involved graphic are per-browser choices (Shift + M,

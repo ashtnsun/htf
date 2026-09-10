@@ -12,18 +12,20 @@ export const metadata: Metadata = {
   alternates: { canonical: "/apply" },
 };
 
-const inlineLink = "font-medium text-green transition-colors duration-200 hover:text-text";
-/** The one centred column everything on the page sits in: the form is the page. */
-const column = "mx-auto w-full max-w-3xl";
+/** The one centred column everything on the page sits in. */
+const column = "mx-auto w-full max-w-2xl";
 
 /**
  * /apply: where every Apply CTA lands. One centred column, no banner (the second 2026-09-09
  * review): a short heading with the deadline, then the cycle's Google Form embedded
- * (content/site.ts → season.applyFormUrl, through `getApplyForm`) with a link to open it on
- * its own for anyone whose browser will not show the frame. Nothing else: the FAQ under the
- * form came off in the 2026-09-10 copy pass, so the form is the whole page. Out of season it
- * says applications are closed. Applications went to Google Forms on 2026-09-09; the in-house
- * portal that used to live here is parked under parked/.
+ * (content/site.ts → season.applyFormUrl), then the way into the cycle's Google Form. The
+ * form is linked, not embedded: it runs over several sections whose heights differ, so an
+ * iframe means a nested scrollbar or a white gap under the short ones, and nothing of
+ * Google's page can be styled from here (cross-origin). `getApplyForm().embedUrl` still
+ * carries `embedded=true` for the day it goes back in a frame. The FAQ under the form came
+ * off in the same 2026-09-10 copy pass. Out of season the page says applications are closed.
+ * Applications went to Google Forms on 2026-09-09; the in-house portal that used to live
+ * here is parked under parked/.
  */
 export default function ApplyPage() {
   if (!isInSeason()) return <Closed />;
@@ -55,31 +57,19 @@ export default function ApplyPage() {
             ) : null}
           </Reveal>
 
-          <Reveal standalone delay={0.1} className="mt-10 md:mt-12">
+          <Reveal standalone delay={0.1} className="mt-12 md:mt-14">
             {form ? (
-              <>
-                <div className="border border-line bg-surface">
-                  <iframe
-                    src={form.embedUrl}
-                    title={`${site.season.cycleName} application form`}
-                    loading="lazy"
-                    referrerPolicy="strict-origin-when-cross-origin"
-                    className="block h-[80svh] min-h-[40rem] w-full bg-white"
-                  />
-                </div>
-                <p className="mt-5 text-center text-sm text-muted">
-                  Blank space above? Some browsers block embedded forms.{" "}
-                  <a
-                    href={form.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={inlineLink}
-                  >
-                    Open the form in a new tab
-                  </a>{" "}
-                  instead.
+              <div className="frame-marks flex flex-col items-center border border-line bg-surface px-6 py-12 text-center md:px-12 md:py-16">
+                <p className="max-w-sm text-body-lg text-text">
+                  The application runs on Google Forms and opens in a new tab.
                 </p>
-              </>
+                <SplitButton href={form.url} size="lg" className="mt-8">
+                  Open the application form
+                </SplitButton>
+                <p className="mt-6 max-w-sm text-sm text-muted">
+                  Sign in to Google first if you want it to save your progress as you go.
+                </p>
+              </div>
             ) : null}
           </Reveal>
         </div>
