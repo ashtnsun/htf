@@ -42,7 +42,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 12a: the Get involved graphic is the partner globe (drag, hover a pin for its country, the globe holds while hovered), the new default; Terminal, Chat and Badge stay in the menu
 - [x] Session 13: review pass 5 (fourteen items: marquee header, awards column, the globe still and centred, project-card arrow, no Who we are, green section-bar item, no banner CTAs, centred sticky roles intro, timeline without numbers and with the Now marker and the run-off rail, subgrid How it works, no map behind the nonprofit quotes, Start a project and Contact by email, /apply as the embedded Google Form) and the portal parked under `parked/`
 - [x] Session 14: review pass 6 (eight items: pixel books and heart on Who we serve, globe pins named by state, tighter How it works gaps, no Photo hero CTA, plain project pages with the team on the right and no More projects, top-aligned roles intro, no Now tag, /apply as one centred column with the FAQ under the form)
-- [x] Session 14b: Ashton's look at Session 14 (the Who we serve pictures tweaked twice, then removed; the small dinosaurs' snouts rounded)
+- [x] Session 14b: Ashton's look at Session 14 (the Who we serve pictures tweaked twice, then removed; the small dinosaurs' snouts rounded; the gift ribbon's end green)
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -68,7 +68,8 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ## Session 14b — 2026-09-09 (Ashton's look at Session 14: the pictures, then no pictures)
 
 Ashton's three notes on the Session 14 pictures, applied in one pass, then a second look
-(the heart alone, the book longer still), then a third: "remove the two graphics".
+(the heart alone, the book longer still), then a third: "remove the two graphics", and a
+fourth on the deliver step's gift.
 
 **Built:**
 
@@ -84,6 +85,10 @@ Ashton's three notes on the Session 14 pictures, applied in one pass, then a sec
    last cell, so the two teammates' snout corner is rounded like the big map's
    (`DINO_PIXELS` row 0); drawn mirrored, that is the top-left cell of each head. The match
    step on /nonprofits and the team step of the home scene both read from it.
+4. **The gift ribbon's end.** `GIFT` in `home/ProcessSprites` painted the horizontal ribbon
+   from the box's second column, so its leftmost cell (the one the reaching hand overlaps on
+   the alternate frame) showed white in the still and the rest frame; Ashton's crop marked
+   it. The whole ribbon row is green now; the reach frame still turns the cell under it.
 
 **Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm build` (validates content first). `pnpm
 a11y` on `/`, `/nonprofits` and `/about` at 1440 and 390 plus the drawer: 0 violations
@@ -92,7 +97,8 @@ a11y` on `/`, `/nonprofits` and `/about` at 1440 and 390 plus the drawer: 0 viol
 and `/about` recaptured after each look) plus `home-who-we-serve-{1440,390}` (the panels
 without pictures), the two picture versions kept as `home-who-we-serve-hand-*` and
 `home-who-we-serve-heart-*` (each at 1440, 390 and the pictures at 2×),
-`nonprofits-how-it-works-1440` and `nonprofits-how-it-works-match-{1440,390}`.
+`nonprofits-how-it-works-1440`, `nonprofits-how-it-works-match-{1440,390}` and
+`nonprofits-how-it-works-deliver-2x` (the gift after the ribbon fix).
 
 **Decisions:** the pictures are gone at Ashton's word, so the panels are the Session 10
 audit-4 layout again (eyebrow, title, one sentence, "Learn more"); nothing else in the row
@@ -1563,7 +1569,8 @@ unchanged.
 ## Next session starts with
 
 **First, Ashton's look at Session 14b** (`docs/screenshots/session-14b/`: the Who we serve
-panels without pictures, the small dinosaurs' snouts), then the rest of Session 14
+panels without pictures, the small dinosaurs' snouts, the gift ribbon), then the rest of
+Session 14
 (`docs/screenshots/session-14/`): the eight review
 items (the Who we serve pictures, the globe labels, the process gaps, the photo hero, the
 project pages, the roles intro, the timeline, /apply). The dev server on 3000 served every
