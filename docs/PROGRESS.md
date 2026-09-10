@@ -43,7 +43,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 13: review pass 5 (fourteen items: marquee header, awards column, the globe still and centred, project-card arrow, no Who we are, green section-bar item, no banner CTAs, centred sticky roles intro, timeline without numbers and with the Now marker and the run-off rail, subgrid How it works, no map behind the nonprofit quotes, Start a project and Contact by email, /apply as the embedded Google Form) and the portal parked under `parked/`
 - [x] Session 14: review pass 6 (eight items: pixel books and heart on Who we serve, globe pins named by state, tighter How it works gaps, no Photo hero CTA, plain project pages with the team on the right and no More projects, top-aligned roles intro, no Now tag, /apply as one centred column with the FAQ under the form)
 - [x] Session 14b: Ashton's look at Session 14 (the Who we serve pictures tweaked twice, then removed; the small dinosaurs' snouts rounded; the gift ribbon's end green)
-- [x] Session 15: Ashton's home page copy pass (hero statement and eyebrow, no What we do or Who we serve headline, Process eyebrow, process and FAQ wording, two TODO answers confirmed)
+- [x] Session 15: Ashton's home page copy pass (hero statement and eyebrow, "What do we do?" as a heading with no eyebrow, no Who we serve headline, Process eyebrow, process and FAQ wording, two TODO answers confirmed)
 - [x] Session 14c: no glow behind the process dinosaurs (the home scene and the /nonprofits stills); the footer T-rex keeps its own
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
@@ -81,10 +81,11 @@ back with `-->` marking every change. Applied verbatim, one content edit at a ti
    `heroStatement` ("Hack the Future at Purdue") follows. The home share card's eyebrow
    (`src/app/opengraph-image.tsx`) follows the hero; its headline stays "Building software
    for nonprofits, at Purdue." because a link preview has no logo to name the club.
-2. **What we do.** The headline "Built by students, free for nonprofits." is gone. The
-   eyebrow is now the section heading (`<Eyebrow as="h2" id="what-we-do-title">`), so the
-   section keeps its `aria-labelledby` label and the heading order survives with no
-   invisible heading; the photo follows at `mt-10`.
+2. **What we do.** The headline "Built by students, free for nonprofits." went first, with
+   the eyebrow promoted to the section heading; then Ashton's second note reversed the pair:
+   the eyebrow (the green square and the label) is gone and the heading is the question
+   **"What do we _do?_"** with "do?" green, at the old headline's size (`md:text-display`)
+   and the photo back at `mt-12`. It is the only section on the page with no eyebrow.
 3. **How it works → Process.** The section eyebrow on the home page only; /nonprofits keeps
    its own "How it works" (the nav's section bar names it).
 4. **Process steps** (`content/process.ts`). Discover: "what a win looks like" → "what the
@@ -96,7 +97,7 @@ back with `-->` marking every change. Applied verbatim, one content edit at a ti
 spring cycle.]`. "How do nonprofits get involved?" loses `[TODO: confirm process]` and
    reads "Nonprofits email us about the problem, we hold a call, and the matched projects
    run over the school year." Two TODOs closed by the edit itself.
-6. **Who we serve.** The eyebrow is "Learn more" and the headline "Two audiences, one
+6. **Who we serve.** The eyebrow is "Learn more" (kept, unlike What we do's) and the headline "Two audiences, one
    mission." is gone; as in What we do, the eyebrow becomes the section's `h2`. `lines` is
    now optional on `WhoWeServe` (the /about hand-off still passes "Get involved" / "Two ways
    to join in." and renders its headline). The nonprofits panel reads "Get the tool your

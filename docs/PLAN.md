@@ -298,10 +298,12 @@ Ashton's eight-item review after §23 (Session 14). **Home:** the Who we serve p
 Ashton's own edit of the home page's words (Session 15), taken verbatim. **Hero:** the
 eyebrow is "Nonprofit Student Org" (revising §22's "Student Org @ Purdue University", here
 and on the default share card) and the statement is "Hack the Future / at Purdue" with the
-first line green — the club's name, not its pitch, is the h1. **What we do** and **Who we
-serve** drop their headlines ("Built by students, free for nonprofits." and "Two audiences,
-one mission."): each section's eyebrow becomes its `h2`, so the section keeps its label and
-the outline stays honest, and Who we serve's eyebrow reads "Learn more" (`lines` is now
+first line green — the club's name, not its pitch, is the h1. **What we do** loses its eyebrow instead of its
+headline: the section is one heading, the question "What do we *do?*" with "do?" green, at
+the old headline's size, and it is the only section on the page with no green square above
+it. **Who we serve** drops its headline ("Two audiences, one mission.") and its eyebrow
+becomes its `h2`, so the section keeps its label and the outline stays honest; that eyebrow
+reads "Learn more" (`lines` is now
 optional on `WhoWeServe`; /about still passes its own eyebrow and headline). **How it works**
 on the home page is now labelled **Process**; /nonprofits keeps "How it works". **Process
 steps** (`content/process.ts`): Discover scopes "what the final handoff looks like", Match
