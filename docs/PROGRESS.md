@@ -42,7 +42,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 12a: the Get involved graphic is the partner globe (drag, hover a pin for its country, the globe holds while hovered), the new default; Terminal, Chat and Badge stay in the menu
 - [x] Session 13: review pass 5 (fourteen items: marquee header, awards column, the globe still and centred, project-card arrow, no Who we are, green section-bar item, no banner CTAs, centred sticky roles intro, timeline without numbers and with the Now marker and the run-off rail, subgrid How it works, no map behind the nonprofit quotes, Start a project and Contact by email, /apply as the embedded Google Form) and the portal parked under `parked/`
 - [x] Session 14: review pass 6 (eight items: pixel books and heart on Who we serve, globe pins named by state, tighter How it works gaps, no Photo hero CTA, plain project pages with the team on the right and no More projects, top-aligned roles intro, no Now tag, /apply as one centred column with the FAQ under the form)
-- [x] Session 14b: three pixel tweaks from Ashton's look at Session 14 (the nonprofits picture now just a heart, the top book two cells longer, the small dinosaurs' snouts rounded)
+- [x] Session 14b: Ashton's look at Session 14 (the Who we serve pictures tweaked twice, then removed; the small dinosaurs' snouts rounded)
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -65,21 +65,21 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
 
-## Session 14b — 2026-09-09 (three pixel tweaks from Ashton's look at Session 14)
+## Session 14b — 2026-09-09 (Ashton's look at Session 14: the pictures, then no pictures)
 
 Ashton's three notes on the Session 14 pictures, applied in one pass, then a second look
-(the heart alone, the book longer still).
+(the heart alone, the book longer still), then a third: "remove the two graphics".
 
 **Built:**
 
-1. **The nonprofits picture is a heart.** `home/WhoWeServeGraphics` first redrew it as the
-   "hand holding heart" icon Ashton attached (a heart over an open hand seen from the side,
-   the thumb across a hollow palm, the fingers rising at the right); at the second look
-   Ashton asked for just the heart. `HEART` is now a 19 × 16 pixel heart at columns 2–20 on
-   rows 5–20, the books' rows, so the two pictures share a top and a bottom.
-   `HEART_IN_HAND` is gone; the `heart` key, the component and the panels are unchanged.
-2. **The top book two cells longer.** `BOOKS` rows 5–8 run to column 19, so the top book
-   overhangs the book under it by two cells on the right (their right edges were flush).
+1. **No pictures on Who we serve.** `home/WhoWeServeGraphics` is deleted and the panels in
+   `home/WhoWeServe` (and the hand-off on /about) open with the eyebrow again, as they did
+   before Session 14: four subgrid rows (eyebrow, title, copy, button), no `graphic` field.
+   On the way there the nonprofits picture was redrawn as the "hand holding heart" icon
+   Ashton attached (a heart over an open hand seen from the side, `01645da`), then reduced
+   to a 19 × 16 heart on the books' rows (`cd97c38`).
+2. **The top book** grew by one cell, then two (`cd97c38`), before the stack went with the
+   heart.
 3. **The small dinosaurs' snouts.** `SMALL_DINO` row 0 in `home/ProcessSprites` loses its
    last cell, so the two teammates' snout corner is rounded like the big map's
    (`DINO_PIXELS` row 0); drawn mirrored, that is the top-left cell of each head. The match
@@ -87,18 +87,20 @@ Ashton's three notes on the Session 14 pictures, applied in one pass, then a sec
 
 **Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm build` (validates content first). `pnpm
 a11y` on `/`, `/nonprofits` and `/about` at 1440 and 390 plus the drawer: 0 violations
-(again on `/` and `/about` after the second look). Screenshots in
+(again on `/` and `/about` after each look). Screenshots in
 `docs/screenshots/session-14b/`: the sweep (nine routes at 1440 and 390, `drawer-390`; `/`
-and `/about` recaptured after the second look) plus `home-who-we-serve-{1440,390}` and
-`home-who-we-serve-pictures-2x` (both pictures at 2×; the earlier hand version kept as
-`home-who-we-serve-hand-{1440,390,pictures-2x}`), `nonprofits-how-it-works-1440` and
-`nonprofits-how-it-works-match-{1440,390}`.
+and `/about` recaptured after each look) plus `home-who-we-serve-{1440,390}` (the panels
+without pictures), the two picture versions kept as `home-who-we-serve-hand-*` and
+`home-who-we-serve-heart-*` (each at 1440, 390 and the pictures at 2×),
+`nonprofits-how-it-works-1440` and `nonprofits-how-it-works-match-{1440,390}`.
 
-**Decisions:** the heart is sized to the books (19 × 16 on their rows 5–20, 95 × 80 px
-against the stack's 100 × 80) rather than kept at the 13 × 10 of the hand version, which
-looked small on its own; 17 × 14 and 21 × 18 were rendered and rejected (small, boxy). The
-book grows to the right (an overhang) rather than the left, where the edges already
-stagger. The hand version is recorded for the day it is wanted: at 24 cells a solid
+**Decisions:** the pictures are gone at Ashton's word, so the panels are the Session 10
+audit-4 layout again (eyebrow, title, one sentence, "Learn more"); nothing else in the row
+changed. For the record of the two picture rounds: the lone heart was sized to the books
+(19 × 16 on their rows 5–20) rather than kept at the 13 × 10 of the hand version, which
+looked small on its own (17 × 14 and 21 × 18 rendered and rejected); the book grew to the
+right (an overhang) rather than the left, where the edges already stagger. And the hand
+version, for the day it is wanted: at 24 cells a solid
 side-view hand read as a whale (the cuff its head, a carved thumb line its mouth, the
 fingers its fluke) and the icon's palm interior almost vanishes at that scale, so it was
 drawn as parts (a squared cuff, a hollow palm, the thumb's underside carved, the fingers a
@@ -1560,8 +1562,8 @@ unchanged.
 
 ## Next session starts with
 
-**First, Ashton's look at Session 14b** (`docs/screenshots/session-14b/`: the heart, the
-longer top book, the small dinosaurs' snouts), then the rest of Session 14
+**First, Ashton's look at Session 14b** (`docs/screenshots/session-14b/`: the Who we serve
+panels without pictures, the small dinosaurs' snouts), then the rest of Session 14
 (`docs/screenshots/session-14/`): the eight review
 items (the Who we serve pictures, the globe labels, the process gaps, the photo hero, the
 project pages, the roles intro, the timeline, /apply). The dev server on 3000 served every
