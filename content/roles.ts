@@ -1,10 +1,9 @@
 import type { RoleInput } from "@/lib/content/schemas";
 
 /**
- * Roles advertised on the Students page. Seeded from the Instagram graphics
- * (Project Leads / Developers / Designers). The Framer prototype listed
- * Developer / UI/UX Designer / Project Manager instead; TODO(ashton): confirm the list.
- * Descriptions are placeholders.
+ * Roles advertised on the Students page: Project Lead / Developer / Designer, confirmed by
+ * Ashton in the 2026-09-10 copy pass (the Framer prototype's Developer / UI/UX Designer /
+ * Project Manager list is dead). Descriptions, responsibilities and hours are his words.
  */
 export const roles: RoleInput[] = [
   {
@@ -12,28 +11,27 @@ export const roles: RoleInput[] = [
     title: "Project Lead",
     blurb: "Scoping, planning, team leadership",
     description:
-      "[TODO: description] Lead a team of developers and designers through a year-long build for a nonprofit partner.",
+      "Lead a team of developers and designers through a year-long build for a nonprofit partner.",
     responsibilities: [
-      "[TODO] Own the project scope and timeline",
-      "[TODO] Run weekly team meetings and nonprofit check-ins",
-      "[TODO] Unblock the team and review work",
+      "Own the project scope and timeline",
+      "Run team meetings and nonprofit check-ins",
+      "Unblock the team and review work",
     ],
-    timeCommitment: "[TODO: hours per week]",
-    whoItsFor: "[TODO] Students who have shipped a project before and want to lead one.",
+    timeCommitment: "3 hours per week",
+    whoItsFor: "Students who have shipped a project before and want to lead one.",
     icon: "lead",
   },
   {
     slug: "developer",
     title: "Developer",
     blurb: "Front-end, back-end, full-stack",
-    description:
-      "[TODO: description] Build and ship the software a nonprofit will actually use, on a small team.",
+    description: "Work in a team to build and ship the software a nonprofit will actually use.",
     responsibilities: [
-      "[TODO] Implement features across the stack",
-      "[TODO] Review teammates' code",
-      "[TODO] Test and document what you build",
+      "Implement features across the stack",
+      "Work with designers and other developers",
+      "Test and document what you build",
     ],
-    timeCommitment: "[TODO: hours per week]",
+    timeCommitment: "2-3 hours per week",
     whoItsFor: "Open to all majors, all years, and all levels of experience.",
     icon: "code",
   },
@@ -41,14 +39,13 @@ export const roles: RoleInput[] = [
     slug: "designer",
     title: "Designer",
     blurb: "UX research, UI design, prototyping",
-    description:
-      "[TODO: description] Shape how the product works and looks, from research through polished UI.",
+    description: "Shape how the product works and looks, from research through polished UI.",
     responsibilities: [
-      "[TODO] Interview nonprofit staff and map their workflows",
-      "[TODO] Design flows and screens in Figma",
-      "[TODO] Take part in design crits and workshops",
+      "Interview nonprofit staff and map their workflows",
+      "Design flows and screens in Figma",
+      "Take part in design crits and workshops",
     ],
-    timeCommitment: "[TODO: hours per week]",
+    timeCommitment: "2-3 hours per week",
     whoItsFor: "Open to all majors, all years, and all levels of experience.",
     icon: "design",
   },

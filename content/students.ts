@@ -3,9 +3,9 @@ import type { StudentsPageInput } from "@/lib/content/schemas";
 /**
  * Copy blocks for the Students page: how a team is built, how a project year runs, and what
  * members get out of it. Roles, the recruitment timeline and the FAQ live in their own files.
- * Team numbers come from docs/PLAN.md §3 ("1 lead + 5 devs + 1–2 designers"); the perk
- * headings are the three lines from the exec-board Instagram graphic. Lines marked TODO need
- * the design director's confirmation.
+ * Team numbers come from docs/PLAN.md §3 ("1 lead + 5 devs + 1–2 designers") and label the
+ * seat diagram for assistive tech (the captions came off in the 2026-09-10 copy pass). The
+ * project year and the perks are Ashton's words from that pass.
  */
 export const studentsPage: StudentsPageInput = {
   teamStructure: [
@@ -28,22 +28,22 @@ export const studentsPage: StudentsPageInput = {
         "In the fall each team meets its nonprofit, learns how they work today, and agrees on what to build.",
     },
     {
+      id: "workshops",
+      title: "Workshops and events",
+      description:
+        "Developers and designers will partake in workshops, social events, and check-ins.",
+    },
+    {
       id: "build",
       title: "Build through the year",
       description:
-        "[TODO: cadence] Regular team meetings and nonprofit check-ins move the product from a first prototype to something staff can use.",
-    },
-    {
-      id: "crits",
-      title: "Crits, reviews and workshops",
-      description:
-        "Designers bring work to design crits and workshops; developers review each other's code. [TODO: confirm cadence and who runs them.]",
+        "Regular team and nonprofit meetings move the product from a first prototype to something staff can use.",
     },
     {
       id: "handoff",
       title: "Handoff",
       description:
-        "[TODO: confirm] In the spring the team hands the finished product to the nonprofit, with the documentation they need to keep running it.",
+        "In the spring the team hands the finished product to the nonprofit, with the documentation they need to keep running it.",
     },
   ],
   perks: [
@@ -51,21 +51,20 @@ export const studentsPage: StudentsPageInput = {
       id: "real-projects",
       title: "Build real projects",
       description:
-        "Ship software a nonprofit actually uses, with a real client and a real deadline. It is a portfolio piece, not a class assignment.",
+        "Ship software a nonprofit actually uses, with a real client and a real deadline.",
       icon: "projects",
     },
     {
       id: "skills",
       title: "Learn by doing",
-      description:
-        "Pick up the stack, the tools and the habits of a working team through crits, code reviews and workshops. [TODO: confirm mentorship and workshops.]",
+      description: "Pick up the stack, the tools, and the habits of a working team.",
       icon: "skills",
     },
     {
       id: "team",
-      title: "Join a driven team",
+      title: "Join a community",
       description:
-        "A small team for the school year, and a club full of people who like building things for a reason.",
+        "Members will be placed in teams and families of driven and like-minded individuals. There will be fun social events and hangouts throughout the year.",
       icon: "community",
     },
     {

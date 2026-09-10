@@ -61,8 +61,7 @@ export const faq: FaqItemInput[] = [
   {
     id: "students-experience",
     question: "Do I need prior experience?",
-    answer:
-      "No. Applications are open to all majors, all years, and all levels of experience. [TODO: add a line about onboarding and workshops.]",
+    answer: "No. Applications are open to all majors, all years, and all levels of experience.",
     audience: "students",
   },
   {
@@ -83,14 +82,14 @@ export const faq: FaqItemInput[] = [
     id: "students-time",
     question: "How much time does it take?",
     answer:
-      "[TODO: hours per week] Expect a steady weekly commitment for the whole school year rather than a hackathon weekend: team meetings, nonprofit check-ins, and your own build time.",
+      "Two to three hours a week for developers and designers, and about three for project leads. Expect a steady weekly commitment for the whole school year rather than a hackathon weekend: team meetings, nonprofit check-ins, and your own build time.",
     audience: "students",
   },
   {
     id: "students-after-applying",
     question: "What happens after I apply?",
     answer:
-      "[TODO: confirm] We review applications after the deadline, invite applicants to interviews, and send decisions before project kickoff.",
+      "We review applications after the deadline, invite selected applicants to one interview round, and let you know whether you are in for the year.",
     audience: "students",
     link: { label: "Recruitment timeline", href: "#timeline" },
   },
