@@ -46,6 +46,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 15: Ashton's home page copy pass (hero statement and eyebrow, "What do we do?" as a heading with no eyebrow and no photo, no Who we serve headline, Process eyebrow, process and FAQ wording, two TODO answers confirmed, the 2026-2027 cycle and its Sep 17 deadline, Photo as the default hero)
 - [x] Session 14c: no glow behind the process dinosaurs (the home scene and the /nonprofits stills); the footer T-rex keeps its own
 - [x] Session 15b: Ashton's About page copy pass (shorter hero blurb, the club's own mission statement, the real exec-board blurb, "Socials" / "Follow the Instagram!")
+- [x] Session 15d: one Get involved and one Learn more site-wide (the home CTA is the default on Projects, project pages, About and Students; the Learn more panels close /about and /projects)
 - [x] Session 15c: Ashton's Students page copy pass (every [TODO] closed: role descriptions, hours and duties, the real recruitment dates, the project year reordered, the perks rewritten; hero blurb, roles intro, team caption, role numbers and the kickoff step deleted)
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
@@ -141,6 +142,45 @@ a look if Globe ever comes back.)
 **TODOs:** the Google Form link and the club email, and the real organization photo, which
 the Photo hero now shows at the top of the page (`content/media.ts` → `org.group-photo`).
 
+## Session 15d — 2026-09-10 (one Get involved and one Learn more, site-wide)
+
+Ashton: "The Get involved and the Learn more sections on the home page should be used on all
+the other pages that makes sense (e.g. should replace the Work with us section on projects
+page, should replace the Get involved page on the about page)."
+
+**Built:**
+
+1. **One closing CTA everywhere.** The home wording is now `ContactCta`'s default copy, and
+   every page renders `<ContactCta />` with no overrides, so the page ends the same way
+   wherever you are: "Get involved / Let's build something that matters." with the season
+   button, "Contact us" and the deadline note. The three per-page variants are gone —
+   "Work with us / Have a problem worth solving?" (the projects index and every project
+   page, along with its "For nonprofits" secondary button), "Questions? / Talk to the team."
+   (About) and "Ready? / Bring what you know. Learn the rest." (Students). Ashton chose to
+   standardize all four rather than keep the student-specific one.
+2. **The Learn more panels close the pages that are not an audience.** `<WhoWeServe />` with
+   its defaults (the "Learn more" eyebrow, no headline) now sits above the CTA on **/about**,
+   replacing the "Get involved / Two ways to join in." panels Ashton named, and on
+   **/projects**, where it is new: it also carries the "For nonprofits" link the old CTA's
+   secondary button used to. /students and /nonprofits do not get it — one of the two panels
+   would point at the page you are already on — and neither do the project write-ups, which
+   Session 14 deliberately made plain. `eyebrow` and `lines` stay props for the day a page
+   wants its own framing.
+
+**Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm build`. `pnpm a11y` on `/`, `/projects`,
+`/about`, `/students`, `/nonprofits` at 1440 and 390 plus the drawer: 0 violations.
+Screenshots in `docs/screenshots/session-15d/` (`home`, `projects`, `about`, `nonprofits` at
+1440 and 390).
+
+**Decisions:** the home copy became the component's default rather than a constant each page
+imports, so a page that ever needs its own wording still passes props, and the diff at each
+call site is one self-explanatory `<ContactCta />`. /nonprofits keeps its own "Start a
+project" email section (Session 13) instead of the generic CTA: it is the page's real
+conversion step, and the generic block would repeat the audience choice the visitor already
+made.
+
+**TODOs:** unchanged (the Google Form link and the club email; the photos and posts).
+
 ## Session 15c — 2026-09-10 (Ashton's Students page copy pass)
 
 Same routine, on `/students`, plus one instruction over the whole page: **remove every
@@ -193,7 +233,7 @@ Ashton's hyphen (like "2026-2027"), not the en dash the design tokens use elsewh
 intro was taken as the whole paragraph, not just the "You can apply for more than one role."
 sentence. (b) "Role 01 → delete" was applied to all three rows, not only the first. (c) "delete
 the label only" was read as: keep the squares, drop the caption text. Also: the timeline
-headline still reads "From callouts *to kickoff.*" although the kickoff step is gone, and the
+headline still reads "From callouts _to kickoff._" although the kickoff step is gone, and the
 Roles column is now only the headline and the deadline note.
 
 **TODOs:** unchanged (the Google Form link and the club email; About's photos and posts).

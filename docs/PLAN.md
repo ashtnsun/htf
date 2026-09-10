@@ -317,3 +317,15 @@ made: Photo** — the organization photo full-bleed with the statement over it. 
 is `"photo"` and `Hero.tsx` ships it in the bundle with Globe demoted to a lazy chunk; the
 five other variants stay in the Shift + M menu until Ashton wants them gone. What we do lost
 its photo in the same pass, so the picture appears once, at the top.
+
+
+**One Get involved and one Learn more (September 10, 2026, Session 15d).** The closing
+call-to-action is the same block on every page: `ContactCta`'s defaults carry the home
+wording ("Get involved / Let's build something that matters.", the season button, "Contact
+us", the deadline note) and the per-page variants of §3 and §17 — "Work with us" on the
+projects index and the project pages, "Questions?" on About, "Ready?" on Students — are gone.
+The "Learn more" panels (`WhoWeServe` with its defaults) close every page that is not itself
+one of the two audiences: home, /about (in place of its "Get involved / Two ways to join in."
+panels) and /projects. /students and /nonprofits skip them, since a panel would point at the
+page you are on, and the project write-ups stay plain (§24). /nonprofits keeps its own "Start
+a project" email section (§23) as its closing step.
