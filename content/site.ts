@@ -26,7 +26,8 @@ export const site = {
     instagramHandle: "@hackthefuturepurdue",
     // TODO(ashton): confirm; found by searching for the club's LinkedIn company page.
     linkedin: "https://www.linkedin.com/company/hack-the-future-at-purdue",
-    email: "TODO: club contact email",
+    // Ashton, 2026-09-10 (the Nonprofits copy pass).
+    email: "htfpurdue@gmail.com",
   },
   season: {
     isApplicationSeason: true,
