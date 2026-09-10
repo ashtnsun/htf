@@ -34,13 +34,14 @@ export const site = {
     /**
      * The Google Form applicants fill in this cycle: the form's "viewform" link (Send →
      * link). /apply embeds it (`getApplyForm` adds `embedded=true`) and links to it for
-     * anyone whose browser will not show the frame. While it is a TODO, /apply shows the
-     * visible TODO and sends people to `applyFallbackUrl` instead. Applications go through
-     * Google Forms since 2026-09-09; the in-house portal is parked under parked/ (see
-     * parked/README.md).
+     * anyone whose browser will not show the frame. Applications go through Google Forms
+     * since 2026-09-09; the in-house portal is parked under parked/ (see parked/README.md).
+     * Ashton gave the short link https://forms.gle/NuK3Yh3oRsZDitCG8 on 2026-09-10; it is
+     * stored resolved, because a redirect drops the `embedded=true` the iframe needs.
      */
-    applyFormUrl: "TODO: 2026-2027 Google Form link (…/viewform)",
-    /** Where Apply sends people while the form link is a TODO: the profile whose bio links it. */
+    applyFormUrl:
+      "https://docs.google.com/forms/d/e/1FAIpQLScGH_s65J06gxDC6A0BOJL1HtWHk4r0ksqOllObiJddBvNfTQ/viewform",
+    /** Where Apply sends people if the form link is ever a TODO again: the profile whose bio links it. */
     applyFallbackUrl: "https://www.instagram.com/hackthefuturepurdue/",
     /** This cycle's deadline (Ashton, 2026-09-10). ISO 8601 with offset (Eastern time). */
     closesAt: "2026-09-17T23:59:00-04:00",
