@@ -15,8 +15,7 @@ export const process: ProcessStepInput[] = [
     description:
       "Nonprofits reach out by email. We hold a scoping call to understand the problem, the people who will use the solution, and what the final handoff looks like for your organization.",
     graphic: "detective",
-    partner:
-      "Email us about the problem and join a scoping call with us. Bring the people who will use the tool.",
+    partner: "Email us about an opportunity and join a scoping call with us.",
   },
   {
     id: "match",
@@ -25,7 +24,7 @@ export const process: ProcessStepInput[] = [
       "We assemble a team of a project lead, developers and designers around the project, chosen for the skills the build needs.",
     graphic: "team",
     partner:
-      "Meet the team at kickoff and name one point of contact who can answer questions during the year.",
+      "Meet the team and set up recurring meetings throughout the year for updates and questions.",
   },
   {
     id: "build",
@@ -34,7 +33,7 @@ export const process: ProcessStepInput[] = [
       "Over the academic year, the team of Purdue students designs and builds your solution, working closely with your organization through regular check-ins and feedback cycles.",
     graphic: "builder",
     partner:
-      "Join regular check-ins, try the work in progress, and tell the team what is and is not working. [TODO: confirm the check-in cadence]",
+      "Join regular check-ins, try the work in progress, and tell the team what is and is not working.",
   },
   {
     id: "deliver",
@@ -43,6 +42,6 @@ export const process: ProcessStepInput[] = [
       "At the end of the year, we deliver the completed product entirely free of charge, so your organization can continue making an impact.",
     graphic: "party",
     partner:
-      "Receive the finished product, the code and the documentation your team needs to keep running it. [TODO: confirm what the handoff includes]",
+      "Receive the finished product, the code and the documentation your team needs to keep running it.",
   },
 ];

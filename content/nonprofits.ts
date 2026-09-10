@@ -5,7 +5,7 @@ import type { NonprofitsPageInput } from "@/lib/content/schemas";
  * each one) live in content/process.ts, the FAQ in content/faq.ts and quotes in
  * content/testimonials.ts. The "what we build" list follows the services on the club's
  * previous site (web, AI/ML and app platforms); the "what we don't" list and the next-steps
- * copy are sensible defaults marked TODO until the exec board confirms them.
+ * copy were confirmed by Ashton in the 2026-09-10 copy pass.
  */
 export const nonprofitsPage: NonprofitsPageInput = {
   scope: {
@@ -19,8 +19,7 @@ export const nonprofitsPage: NonprofitsPageInput = {
       {
         id: "mobile",
         title: "Mobile apps",
-        description:
-          "Apps for the people you serve or the people who serve them, built for the phones they already have.",
+        description: "Apps for the people you serve or the people who serve them.",
       },
       {
         id: "data-ai",
@@ -39,32 +38,30 @@ export const nonprofitsPage: NonprofitsPageInput = {
       {
         id: "hardware",
         title: "Hardware and on-site IT",
-        description:
-          "We build software. We do not set up networks, devices or office equipment. [TODO: confirm]",
+        description: "We build software. We do not set up networks, devices or office equipment.",
       },
       {
         id: "rush",
         title: "Deadlines before the spring",
         description:
-          "Projects run for the academic year, so something you need next month is not a fit. [TODO: confirm]",
+          "Projects run for the academic year, so something you need next month is not a fit.",
       },
       {
         id: "maintenance",
         title: "Open-ended maintenance",
         description:
-          "We hand off a finished product with documentation. Long-term hosting and upkeep stay with your team. [TODO: confirm what support exists after handoff]",
+          "We hand off a finished product with documentation. Long-term hosting and upkeep stay with your team.",
       },
       {
         id: "commercial",
         title: "Commercial products",
-        description:
-          "Our work is for nonprofits and the communities they serve, not for resale. [TODO: confirm]",
+        description: "Our work is for nonprofits and the communities they serve, not for resale.",
       },
     ],
   },
   nextSteps: [
-    "We read every email and reply. [TODO: response window]",
-    "If the project looks like a fit, we set up a scoping call to understand the problem and who will use the solution.",
-    "Matched projects kick off in the fall with a team of Purdue students and run through the school year. [TODO: confirm when intake closes for the coming cycle]",
+    "We read all emails and will reply to get started.",
+    "If the project looks like a fit, we set up a call to understand the problem and who will use the solution.",
+    "Matched projects kick off in the fall with a team of Purdue students and run through the school year.",
   ],
 };
