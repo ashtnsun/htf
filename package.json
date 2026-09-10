@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "pnpm gen:placeholders && pnpm validate:content && next build",
+    "build": "pnpm gen:placeholders && pnpm gen:icon && pnpm validate:content && next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
@@ -13,6 +13,7 @@
     "validate:content": "tsx --conditions=react-server scripts/validate-content.ts",
     "media:check": "tsx --conditions=react-server scripts/media-check.ts",
     "gen:placeholders": "node scripts/gen-placeholders.mjs",
+    "gen:icon": "node scripts/gen-dino-icon.mjs",
     "screenshots": "node scripts/screenshots.mjs",
     "a11y": "node scripts/a11y.mjs",
     "supabase:types": "supabase gen types typescript --local > parked/src/lib/supabase/database.types.ts && prettier --write parked/src/lib/supabase/database.types.ts"
