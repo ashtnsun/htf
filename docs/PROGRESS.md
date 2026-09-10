@@ -115,6 +115,15 @@ landscape frame, so the centre crop keeps more scenery than person. Better files
 `media/about/exec/2026-27/` under the same names fix all three in one `pnpm media:check
 --import`; a face-first crop of the existing files is the other option.
 
+**Khang's was cropped** on Ashton's word (2026-09-10): the centre crop of the 2048×1536 frame
+cut her at the right edge, so the intake file is now the 4:5 window flush with the right of
+the photo (1229×1536), re-imported with `--force`. Cropping the intake file rather than
+adding an `object-position` field keeps the crop in the picture, where the next import cannot
+lose it — but it does overwrite the original, so a different crop means a fresh copy from
+Ashton's Drive. A stale card after an import is the dev image cache, not the file:
+`rm -rf .next/dev/cache/images` (the URL does not change, so Next keeps serving the old
+derivative). Arav's and Nakul's are still open.
+
 **After Ashton's look:** the board is **five across, not four** — nine members read as 5 + 4.
 Five columns only fit once the container is at its 90rem max, so the fifth column arrives at a
 new `wide:` breakpoint (`--breakpoint-wide: 87.5rem` in `globals.css`), with four from `xl:`
