@@ -54,6 +54,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 15g: the 2026-2027 Google Form is live on /apply (the last blocking content value), the page is the form and nothing else
 - [x] Session 15k: alignment pass over every route after the copy passes (the stranded role icon on /students, the Learn more panels' inset back on the site's 32px card grid)
 - [x] Session 15j: /apply links to the form instead of embedding it (a framed card and one button; the iframe could not be made to look right)
+- [x] Session 15m: the form is embedded again, in a frame measured to fit each of its five sections (no nested scrollbar, no white box), with the green brackets around it and the open-in-a-tab button under it
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -75,6 +76,59 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+
+## Session 15m — 2026-09-10 (the form, framed properly)
+
+Ashton: "remove the link out card, but keep the cta to open link externally, add in the embed
+before the button, just try the best to make the form look good, maybe add some kind of cool
+border on the frame?"
+
+**What the form actually is.** Five sections — 8 questions, then 6, 4, 3, 3 — so it gets much
+shorter as it goes, and every section runs taller the narrower the column. Measured, per width
+(the frame's own width, not the viewport):
+
+| width | §1   | §2   | §3   | §4   | §5   |
+| ----- | ---- | ---- | ---- | ---- | ---- |
+| 320   | 2849 | 2426 | 2101 | 1397 | 1169 |
+| 480   | 2301 | 1702 | 1547 | 1067 | 839  |
+| 768   | 2011 | 1396 | 1305 | 889  | 775  |
+| 880+  | 1949 | 1290 | 1243 | 825  | 713  |
+
+One fixed height cannot serve that: fit §1 and §2–§5 sit in a white box up to 1,700px tall; fit
+§5 and everything scrolls inside the frame.
+
+**Built:**
+
+1. **`src/components/apply/ApplyForm.tsx`** (client, leaf). `SECTION_HEIGHTS` is the measured
+   table above as eight breakpoint steps per section (`h-[…px] min-[360px]:… min-[880px]:…`),
+   each ~20px over what that section needs at the narrowest width in its range. The iframe's
+   `load` event counts sections: every load after the first advances the height **and** scrolls
+   the top of the frame back into view (smooth, instant under `useReducedMotionSafe`) — the
+   browser otherwise leaves the reader halfway down the section that just ended. The count only
+   goes forward, so the form's own "Back" lands on a taller section than the frame expects and
+   that one section scrolls inside until the reader moves on; nothing cross-origin can be read
+   to do better.
+2. **The "cool border"**: a new `corner-brackets` utility in `globals.css` — the site's green
+   viewfinder brackets, drawn permanently instead of on hover, 2px and 1.75rem, at the four
+   corners. The frame under them is `border-line` on `bg-surface` with a 6px / 12px mat, so the
+   white sheet reads as something mounted rather than pasted on. `hover-corners` stays the hover
+   treatment for interactive surfaces; this is the one static use.
+3. **The page**: heading, deadline, the framed form, then the primary "Open the form in a new
+   tab" button and the sign-in note — the link-out card is gone, the CTA it carried is not.
+   The column is back to `max-w-3xl` so Google's own 640px column reaches full width instead of
+   wrapping into a taller form.
+4. **`scripts/measure-apply-form.mjs`** does the measuring: it drives a production build, fills
+   each section with throwaway answers, clicks "Next" (never "Submit"), and prints needs / frame
+   / slack per width and section. Re-run it if the form changes and paste the new numbers in.
+
+**Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm build` clean. The measure script against
+`next start -p 3100` at 320 / 390 / 520 / 768 / 1440: **no section scrolls inside the frame** at
+any width, slack 15–186px. Screenshots in `docs/screenshots/session-15m/`.
+
+**Open for Ashton:** `pnpm a11y --routes=/apply` reports the same 2 violations as Session 15g,
+both inside Google's iframe (a green link at 3.96:1, a heading-order jump). They come with
+embedding a Google Form and cannot be fixed from here; the button under the frame is the way
+out for anyone whose browser blocks it. Every other route is 0.
 
 ## Session 15k — 2026-09-10 (alignment pass after the copy passes)
 
