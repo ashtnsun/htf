@@ -4,9 +4,9 @@
  * stay the same across all of them.
  */
 export const hero = {
-  eyebrow: "Student Org @ Purdue University",
+  eyebrow: "Nonprofit Student Org",
   /** One string per line; *asterisks* mark the green words (Headline syntax). */
-  lines: ["Building software", "*for nonprofits.*"],
+  lines: ["*Hack the Future*", "at Purdue"],
 } as const;
 
 /** The statement as plain text (accessible names, the ticker copies). */

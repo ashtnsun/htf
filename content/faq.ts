@@ -36,7 +36,7 @@ export const faq: FaqItemInput[] = [
     id: "when-to-apply",
     question: "When can I apply?",
     answer:
-      "We recruit at the start of the fall semester: callouts in the first weeks of classes, then applications with a deadline in September. [TODO: confirm whether there is a spring cycle.]",
+      "We recruit at the start of the fall semester: callouts in the first weeks of classes, then applications with a deadline in September.",
     audience: "home",
     link: { label: "Recruitment timeline", href: "/students#timeline" },
   },
@@ -44,7 +44,7 @@ export const faq: FaqItemInput[] = [
     id: "how-do-nonprofits-apply",
     question: "How do nonprofits get involved?",
     answer:
-      "[TODO: confirm process] Nonprofits email us about the problem, we hold a scoping call, and matched projects run over the school year.",
+      "Nonprofits email us about the problem, we hold a call, and the matched projects run over the school year.",
     audience: "home",
     link: { label: "For nonprofits", href: "/nonprofits" },
   },

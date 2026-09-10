@@ -13,7 +13,7 @@ export const process: ProcessStepInput[] = [
     id: "discover",
     title: "Discover",
     description:
-      "Nonprofits reach out by email. We hold a scoping call to understand the problem, the people who will use the solution, and what a win looks like for your organization.",
+      "Nonprofits reach out by email. We hold a scoping call to understand the problem, the people who will use the solution, and what the final handoff looks like for your organization.",
     graphic: "detective",
     partner:
       "Email us about the problem and join a scoping call with us. Bring the people who will use the tool.",
@@ -22,7 +22,7 @@ export const process: ProcessStepInput[] = [
     id: "match",
     title: "Match",
     description:
-      "We assemble a team around the project: one project lead, five developers and one or two designers, chosen for the skills the build needs.",
+      "We assemble a team of a project lead, developers and designers around the project, chosen for the skills the build needs.",
     graphic: "team",
     partner:
       "Meet the team at kickoff and name one point of contact who can answer questions during the year.",
@@ -31,7 +31,7 @@ export const process: ProcessStepInput[] = [
     id: "build",
     title: "Build",
     description:
-      "Over the academic year, a hand-selected team of Purdue students designs and builds your solution, working closely with your organization through regular check-ins and feedback cycles.",
+      "Over the academic year, the team of Purdue students designs and builds your solution, working closely with your organization through regular check-ins and feedback cycles.",
     graphic: "builder",
     partner:
       "Join regular check-ins, try the work in progress, and tell the team what is and is not working. [TODO: confirm the check-in cadence]",
