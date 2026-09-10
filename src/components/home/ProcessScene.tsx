@@ -234,7 +234,6 @@ export function ProcessScene({
 
   return (
     <div aria-hidden="true" className={cn("relative aspect-[8/5] w-full select-none", className)}>
-      <div className="pointer-events-none absolute inset-x-[12%] -inset-y-[4%] bg-[radial-gradient(closest-side,rgba(3,198,82,0.16),transparent)]" />
       <svg
         ref={rootRef}
         viewBox={`0 0 ${SCENE.cols} ${SCENE.rows}`}
