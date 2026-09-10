@@ -55,6 +55,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 15k: alignment pass over every route after the copy passes (the stranded role icon on /students, the Learn more panels' inset back on the site's 32px card grid)
 - [x] Session 15j: /apply links to the form instead of embedding it (a framed card and one button; the iframe could not be made to look right)
 - [x] Session 15m: the form is embedded again, in a frame measured to fit each of its five sections (no nested scrollbar, no white box), with the green brackets around it and the open-in-a-tab button under it
+- [x] Session 15r: seven inner-page hero variants in the Shift + M menu (Frame stays the default; Globe, Radar, Corridor, Trace, Dither, Dino), all the shipped hero with one graphic added; Ashton picks the one that ships
 - [x] Session 15n: the /apply frame is back-proof — two heights instead of five, after checking that nothing cross-origin can say which section the form is showing
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
@@ -110,6 +111,61 @@ says how to split it if those should ever be different photos.
 **Checked:** the loop end to end with a dummy file (staged → detected → copied to
 `public/images/home/` → the media.ts line printed → skipped on a second run), then removed.
 `pnpm typecheck` and `pnpm lint` clean. No visual change, so no screenshots or a11y run.
+
+## Session 15r — 2026-09-10 (five inner-page hero variants in the Shift + M menu)
+
+Ashton: "On the config menu, I want 5 new distinct variants for the heroes of all other pages
+(projects, about, students, nonprofits, contact) not home page". The first five (Blueprint,
+Marquee, Poster, Rows and Dino) went too far from the site: "Remove blueprint marquee poster
+and rows, they are bad, I need 5 new variants that are less like those and more like the
+default frame. You can also expeiment with different graphics, we are known for the globe
+graphic so maybe a variant on that." Dino stayed; the other four were deleted and replaced by
+five that keep the shipped hero and change only the graphic in it.
+
+**Built:**
+
+1. **A third setting in the configuration panel** (`Inner page hero`, `src/lib/config`):
+   `PAGE_HERO_VARIANTS` / `DEFAULT_PAGE_HERO` (`frame`), `pageHero` in `SiteConfig` and the
+   store, one more `VariantPicker` in `ConfigMenu`. Per browser, like the other two settings;
+   visitors always get Frame and the pages stay static.
+2. **`layout/PageHero` is now the switch** over `layout/pageHeroes/*` (Frame in the bundle,
+   the other six `next/dynamic` chunks, remounted on change so the entrance plays). It is what
+   Projects, About, Students, Nonprofits and Contact import — unchanged call sites. `/privacy`
+   and the 404 sit outside the switch and import `pageHeroes/FrameHero` directly, because they
+   are the only pages that pass `back` / `ghost`.
+3. **`pageHeroes/PageHeroShell`** holds what every variant shares: `PageHeroSection` (the
+   `aria-labelledby="page-title"`, clipped section), `PageHeroContent` (the eyebrow, the one
+   `h1`, the blurb and the page's actions, revealed on mount in that order) and
+   `PageHeroGlow`. A variant is now a section, a graphic and that content block.
+4. **The seven variants.** Frame (the shipped grid, glow and framed column) · Globe (the
+   `home/Globe` wireframe on the right, three fifths of the hero tall, behind the headline,
+   meridians turning) · Radar (rings, a green arm turning every nine seconds, one blip
+   pinging, cropped by the bottom-right corner) · Corridor (the site's frame repeated to a
+   vanishing point with spokes, one frame green, another coming forward) · Trace (right-angled
+   copper runs and square pads drawing themselves once, faded out toward the headline) ·
+   Dither (the glow drawn as three checkerboards ramping out of the bottom edge) · Dino (the
+   T-rex walks in along a hairline ground, a cell at a time, and blinks where it stops).
+
+**What the graphics cost in CSS** (`globals.css`, one block): `page-hero-walk` /
+`page-hero-step` (the dinosaur, `steps()` so it moves whole cells), `page-hero-turn`
+(`.anim-page-turn`), `.anim-page-ping` (the existing `hero-ping` keyframes with an SVG
+transform box) and `.page-hero-checks` (a checkerboard sized by `--check-size`). Everything
+else is drawn with tokens.
+
+**Three traps worth remembering**
+
+- **`transform-box: view-box` does not centre on a viewBox that starts negative.** The radar
+  arm rotated about user (112, 112) instead of (0, 0) and swung right off the page. The fix is
+  to rotate a whole `<svg>` element (a normal box, so `transform-origin: center` behaves) laid
+  over the dish, not a `<g>` inside it.
+- **`stroke-dasharray` + `vector-effect: non-scaling-stroke` is measured in screen pixels**, so
+  `pathLength="1"` no longer normalises it and `.anim-draw` renders a 1px dotted line instead of
+  a drawn one. The trace runs keep a plain stroke width.
+- A graphic sized in `%` of a hero grows on the short heroes (Contact) and shrinks on the tall
+  ones (About); every variant was checked on About (blurb), Students (no blurb) and Contact.
+
+**Screenshots:** `docs/screenshots/session-15r/` — every variant on About, Students and
+Contact at 1440, and on About at 390.
 
 ## Session 15n — 2026-09-10 (what happens when an applicant goes back)
 

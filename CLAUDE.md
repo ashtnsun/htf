@@ -57,7 +57,14 @@ src/components/
   ui/               primitives: Eyebrow, Headline, SplitButton, Section, Card, Accordion,
                     StatTile (+ CountUp), TestimonialCard, Chip, Field, Media, DottedMap,
                     CopyEmail (every email control: copies the address, never a mailto link)
-  layout/           SiteHeader, NavDrawer, NavLinks, SiteFooter, PageHero, SectionNav (the
+  layout/           SiteHeader, NavDrawer, NavLinks, SiteFooter, PageHero (a client switch over
+                    pageHeroes/*: seven inner-page heroes (Frame, Globe, Radar, Corridor, Trace,
+                    Dither, Dino) chosen in the Shift + M menu — all the shipped hero's frame with
+                    one graphic added; FrameHero is the default and in the bundle, the rest lazy
+                    chunks; PageHeroShell holds the shared section, the framed column
+                    (PageHeroContent: eyebrow, the one h1, blurb, actions) and the bottom glow;
+                    /privacy and the 404 use FrameHero directly, with its `back` and `ghost`),
+                    SectionNav (the
                     sticky section bar under the hero on About / Students / Nonprofits; sets
                     --subnav-h so anchors land below it), FaqSection, ContactCta (+ involved/: the
                     Get involved graphic, a client switch over four variants chosen in the Shift + M
@@ -84,7 +91,8 @@ src/components/
                     labelled pin to hold the globe), SpinController, LabelAnchor (places the
                     label from the frame loop), landDots
   config/           ConfigMenu (Shift + M: the non-modal site configuration panel; one
-                    VariantPicker per setting: the home hero, the Get involved graphic)
+                    VariantPicker per setting: the home hero, the inner page hero, the Get
+                    involved graphic)
   motion/           Reveal / RevealGroup (fade-and-rise, reduced-motion aware),
                     useReducedMotionSafe (false until hydration, so the static branch never
                     mismatches the server's animated markup)
@@ -96,8 +104,14 @@ src/lib/config/     options.ts (HERO_VARIANTS / DEFAULT_HERO, INVOLVED_VARIANTS 
 src/lib/geo.ts      sphere maths shared by both globes
 scripts/            validate-content, gen-placeholders, gen-logo-paths.py, gen-world-dots,
                     measure-apply-form (the /apply frame heights, against a production build),
-                    screenshots, a11y
+                    media-check (the media/ intake report and import), screenshots,
+                    shot-page-heroes (one shot per inner-page hero variant, the choice seeded
+                    into localStorage; `--reduced` for the reduced-motion pass), a11y
 docs/               PLAN.md, PROGRESS.md, DEPLOY.md, prompts/, screenshots/session-N/
+media/              media intake, git-ignored except the READMEs: real photos are staged here
+                    (one folder per slot area, a README in each with the crop and the minimum
+                    size), `pnpm media:check` lists filled / staged / placeholder slots and
+                    `--import` copies them into public/images and prints the media.ts lines
 parked/             the application portal and the site forms, mirrored under parked/src/
                     (excluded from tsc, ESLint, Prettier and the build; README.md says what is
                     there and how to restore it)
@@ -126,11 +140,14 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   here, so the frame is what the site controls. Nothing on the site posts a form: nonprofits and everyone else write to
   `site.socials.email`, and every email control copies that address to the clipboard
   (`ui/CopyEmail`) — the site has no `mailto:` link, including in MDX.
-- The hero variant and the Get involved graphic are per-browser choices (Shift + M,
-  `src/lib/config`), never a build-time or server-side switch: visitors always get
-  `DEFAULT_HERO` / `DEFAULT_INVOLVED` from `src/lib/config/options.ts`, and the pages stay
+- The home hero, the inner page hero and the Get involved graphic are per-browser choices
+  (Shift + M, `src/lib/config`), never a build-time or server-side switch: visitors always get
+  `DEFAULT_HERO` / `DEFAULT_PAGE_HERO` / `DEFAULT_INVOLVED` from `src/lib/config/options.ts`,
+  and the pages stay
   static. Every hero variant renders the copy in `content/hero.ts`, one `h1` (`#hero-title`)
-  and a finished picture under reduced motion; every Get involved variant is a recognizable
+  and a finished picture under reduced motion; every inner-page hero variant renders the
+  eyebrow, blurb and one `h1` (`#page-title`) its page passes in, and is finished under reduced
+  motion; every Get involved variant is a recognizable
   object (no abstract scenes, no viewfinder corners on its container), decoration only, drawn
   inside `layout/involved/GraphicFrame`, and finished under reduced motion. Anything a
   variant states as fact (the deadline, the cycle name) comes through its props from
@@ -228,7 +245,8 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
 ## Commands
 
 `pnpm dev` · `pnpm build` (validates content first) · `pnpm typecheck` · `pnpm lint` ·
-`pnpm format` · `pnpm validate:content` · `pnpm gen:placeholders` · `pnpm screenshots` ·
+`pnpm format` · `pnpm validate:content` · `pnpm gen:placeholders` ·
+`pnpm media:check` (`--import` to stage media/ into public/) · `pnpm screenshots` ·
 `pnpm a11y` (both need `pnpm dev` running; pass `--base` to point elsewhere). No env vars
 are needed for anything live (`.env.example`). The parked portal's stack (`supabase start`,
 `supabase db reset`, `pnpm supabase:types`, Mailpit on 54334) is described in `parked/README.md`.
