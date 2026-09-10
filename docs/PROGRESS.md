@@ -115,6 +115,20 @@ landscape frame, so the centre crop keeps more scenery than person. Better files
 `media/about/exec/2026-27/` under the same names fix all three in one `pnpm media:check
 --import`; a face-first crop of the existing files is the other option.
 
+**After Ashton's look:** the board is **five across, not four** — nine members read as 5 + 4.
+Five columns only fit once the container is at its 90rem max, so the fifth column arrives at a
+new `wide:` breakpoint (`--breakpoint-wide: 87.5rem` in `globals.css`), with four from `xl:`
+up to it; at 1280 five columns wrapped every name and most roles. Two traps on the way: a
+`min-[1400px]:` arbitrary variant loses to `xl:` no matter where it sits in the class string
+(Prettier's Tailwind plugin sorts it to the front, and the generated CSS orders it before the
+named breakpoints) — a named breakpoint is the fix; and the name in the card footer was
+`truncate`, which at 5 across cut "Jason Gottes…" and "Shreeya Sarur…", so it wraps now
+(`text-balance`) and the row's cards grow together.
+
+**The year chips are gone on purpose**, not lost: `ExecBoardView` renders them only when there
+is more than one board year, and the invented 2025–26 board was deleted. Real names for last
+year's board bring them back with no code change.
+
 **Verified:** `pnpm validate:content` (exec: 9), typecheck, lint and `pnpm build` clean; axe
 on /about at 1440 and 390 with the drawer open, 0 violations; the section shot at both widths
 (`docs/screenshots/session-15t/`).
