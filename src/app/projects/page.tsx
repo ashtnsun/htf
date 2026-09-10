@@ -30,7 +30,7 @@ export default function ProjectsPage() {
       <PageHero
         eyebrow="Projects"
         lines={["Software we built", "*with nonprofits.*"]}
-        blurb="[TODO: intro copy] Every project is a real tool for a real organization, built by a student team over the school year."
+        blurb="Every project is a real tool for a real organization, built by a student team over the school year."
       />
 
       <Section id="all-projects" aria-label="All projects" className="border-t border-line">
