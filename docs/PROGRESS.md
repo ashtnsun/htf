@@ -57,6 +57,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 15m: the form is embedded again, in a frame measured to fit each of its five sections (no nested scrollbar, no white box), with the green brackets around it and the open-in-a-tab button under it
 - [x] Session 15r: seven inner-page hero variants in the Shift + M menu (Frame stays the default; Globe, Radar, Corridor, Trace, Dither, Dino), all the shipped hero with one graphic added; Ashton picks the one that ships
 - [x] Session 15s: the Instagram grid on /about can run off the live account (a Behold JSON feed fetched server-side into the site's own tiles), falling back to the curated posts
+- [x] Session 15t: the real 2026–27 exec board on /about (nine members, names, roles and LinkedIn links, each with the photo they sent); the placeholder 2025–26 board removed
 - [x] Session 15n: the /apply frame is back-proof — two heights instead of five, after checking that nothing cross-origin can say which section the form is showing
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
@@ -79,6 +80,44 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
+
+## Session 15t — 2026-09-10 (the real exec board)
+
+Ashton sent the 2026–27 board — nine names, roles and LinkedIn URLs — and staged a photo
+per person in `media/about/exec/2026-27/`.
+
+**Built:** `content/exec.ts` is the real board in the order Ashton gave it: Arav Shah
+(President), Emily Li (Vice President), Arushi Ravula (Secretary), Jason Gottesman
+(Treasurer), Ben Connelly (Technical Director), Ashton Sun (Design Director), Khang Nguyen
+(Marketing), Shreeya Sarurkar (External Outreach), Nakul Naik (Internal Outreach). Every card
+carries a real LinkedIn link — no TODO cells left on the section — and every card has a
+photo: the staged files were renamed to their slugs, imported with `pnpm media:check --import`
+into `public/images/exec/`, and the nine `exec.*` keys in `content/media.ts` now point at them
+instead of the placeholder SVG.
+
+**Decisions:** the placeholder **2025–26 board is gone** (it existed only so the year switch
+had a second board to show, and its members were invented). With one board `ExecBoardView`
+renders no year chips, which is the right result until a second real board exists — the
+`?board=` machinery is untouched and comes back the moment `content/exec.ts` has another year.
+Slugs and media keys both carry the board year (`ashton-sun-2026`, `exec.ashton-sun-2026`), so
+a member who sits on two boards gets two entries and two photos; the older `exec.ashton-sun`
+key was renamed to match. Roles are written exactly as Ashton sent them — "Marketing",
+"External Outreach", "Internal Outreach", not "… Director". Arushi's and Ben's photos were
+7 MB and 1.3 MB PNGs; both were saved as quality-90 JPEGs in the intake folder before the
+import (Ben's went 6.7 MB → 1.2 MB) because the file ships as-is and `next/image` only
+optimizes what it serves.
+
+**Open for Ashton:** the photos are candid snapshots, not the head-and-shoulders 4:5 portraits
+`media/about/exec/README.md` asks for, and the cards `object-cover` them to 4:5 from the
+centre. Three read badly at card size: **Arav's is 480×360** (the smallest file by far — it
+upscales soft on a retina screen), and **Khang's and Nakul's** faces sit small in a wide
+landscape frame, so the centre crop keeps more scenery than person. Better files dropped into
+`media/about/exec/2026-27/` under the same names fix all three in one `pnpm media:check
+--import`; a face-first crop of the existing files is the other option.
+
+**Verified:** `pnpm validate:content` (exec: 9), typecheck, lint and `pnpm build` clean; axe
+on /about at 1440 and 390 with the drawer open, 0 violations; the section shot at both widths
+(`docs/screenshots/session-15t/`).
 
 ## Session 15s — 2026-09-10 (the Instagram grid off the live account)
 
@@ -2352,7 +2391,9 @@ route during Session 14b (the static-paths worker that died in Session 14 is bac
 email was answered in Session 15e (`htfpurdue@gmail.com`) and the 2026-2027 Google Form went
 into `season.applyFormUrl` in Session 15g, with the embed confirmed against a production build.
 What is left before launch is the deploy itself (`docs/DEPLOY.md` §1–§5) and the real content:
-photos, the exec board, the Instagram posts, the eight projects, stats and testimonials.
+photos, the Instagram posts, the eight projects, stats and testimonials. The exec board is
+real as of Session 15t — nine members with their LinkedIn links and their photos — with three
+of those photos worth replacing (Arav, Khang, Nakul; see that log).
 
 **The hero is decided (Session 15): Photo.** `DEFAULT_HERO` is `"photo"` and `Hero.tsx`
 ships it in the bundle. What is left is optional cleanup, once Ashton is sure: delete the
