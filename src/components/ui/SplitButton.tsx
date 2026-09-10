@@ -104,7 +104,8 @@ export function SplitButton({
   /* Two copies of the label stacked in one clipped line box: the first rolls up and out, the
      second (hidden from assistive tech) rises from below into its place. */
   const roll = "relative block overflow-hidden";
-  const rollMotion = "transition-transform duration-500 ease-out-expo motion-reduce:transition-none";
+  const rollMotion =
+    "transition-transform duration-500 ease-out-expo motion-reduce:transition-none";
   const rollOut = cn("block", rollMotion, "group-hover:-translate-y-full");
   const rollIn = cn(
     "absolute inset-0 block translate-y-full",

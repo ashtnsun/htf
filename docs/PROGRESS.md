@@ -45,6 +45,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 14b: Ashton's look at Session 14 (the Who we serve pictures tweaked twice, then removed; the small dinosaurs' snouts rounded; the gift ribbon's end green)
 - [x] Session 15: Ashton's home page copy pass (hero statement and eyebrow, "What do we do?" as a heading with no eyebrow and no photo, no Who we serve headline, Process eyebrow, process and FAQ wording, two TODO answers confirmed, the 2026-2027 cycle and its Sep 17 deadline, Photo as the default hero)
 - [x] Session 14c: no glow behind the process dinosaurs (the home scene and the /nonprofits stills); the footer T-rex keeps its own
+- [x] Session 15b: Ashton's About page copy pass (shorter hero blurb, the club's own mission statement, the real exec-board blurb, "Socials" / "Follow the Instagram!")
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -114,6 +115,10 @@ spring cycle.]`. "How do nonprofits get involved?" loses `[TODO: confirm process
    `Hero.tsx` swaps the bundling to match: `PhotoHero` is imported statically (server
    rendered, first paint) and `GlobeHero` becomes a lazy chunk like the other four. The
    Shift + M menu still offers all six.
+9. **Projects intro copy** (`src/app/projects/page.tsx`). Ashton: the placeholder line is
+   good as is, so `[TODO: intro copy]` comes off the `PageHero` blurb and it reads "Every
+   project is a real tool for a real organization, built by a student team over the school
+   year." The Session 1 TODO list is annotated as closed.
 
 **Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm build` after each round. `pnpm a11y` on `/`
 at 1440 and 390 plus the drawer: 0 violations (Who we serve's eyebrow-as-heading keeps its
@@ -134,6 +139,41 @@ a look if Globe ever comes back.)
 
 **TODOs:** the Google Form link and the club email, and the real organization photo, which
 the Photo hero now shows at the top of the page (`content/media.ts` → `org.group-photo`).
+
+## Session 15b — 2026-09-10 (Ashton's About page copy pass)
+
+The same routine as Session 15, on `/about`: Ashton pasted the page's text back with `-->`
+marking every change. Applied verbatim; two of the page's `[TODO]` blocks are now real copy.
+
+**Built:**
+
+1. **Page hero blurb** (`src/app/about/page.tsx`). "…builds software for nonprofits around
+   the world, one team and one partner at a time." → "…builds software for nonprofits
+   around the world." The trailing clause is gone.
+2. **Mission body** (`content/about.ts`) is now the club's own mission statement — "We at
+   HTF hope to make a positive impact in the community through software design and
+   development…" — replacing the written-for-them paragraph and
+   `[TODO: mission statement in the club's own words.]`. The headline is unchanged.
+3. **Exec board blurb** (`src/components/about/ExecGrid.tsx`): "runs recruitment, nonprofit
+   intake and the project cycle" → "runs recruitment, events, workshops, nonprofit sourcing,
+   and the project cycle. We hold board member recruitment at the end of each school year.
+   Feel free to reach out to any of us!" `[TODO: how to reach the board, or a line about
+elections.]` is closed by the edit.
+4. **Instagram section** (`src/components/about/InstagramGrid.tsx`): the eyebrow "Follow
+   along" → "Socials" and the headline "Callouts, kickoffs / and demo days." → "Follow the /
+   _Instagram!_" (the accent moves to the second line as before).
+
+**Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm build` clean. `pnpm a11y --routes=/about`:
+0 violations at 1440 and 390 plus the drawer. Screenshots in `docs/screenshots/session-15b/`
+(`about-{1440,390}`, `drawer-390`); the longer mission and exec paragraphs still sit in their
+own columns and the exec blurb stays inside `max-w-sm`.
+
+**Decisions:** the mission body is copied exactly as Ashton wrote it, including "We at HTF"
+and the Oxford commas; the code comment in `content/about.ts` now says the body is the club's
+statement rather than a TODO for the design director.
+
+**TODOs:** unchanged (the Google Form link and the club email, the organization photo, the
+exec names and portraits, the Instagram posts).
 
 ## Session 14c — 2026-09-09 (no glow behind the process dinosaurs)
 
@@ -1667,12 +1707,13 @@ unchanged.
 
 ## Next session starts with
 
-**First, Ashton's look at Session 15** (`docs/screenshots/session-15/`: the home page with
-his copy edits — the new hero statement over the globe, What we do and Who we serve without
-their headlines), and the one open question there: whether the short "at Purdue" should stay
-right-aligned over the globe. Ashton is editing the other pages' copy the same way (a
-document per page, `-->` marking each change), so expect Projects, About, Students and
-Nonprofits next. Then **Ashton's look at Session 14c** (`docs/screenshots/session-14c/`: the process
+**First, Ashton's look at Sessions 15 and 15b** (`docs/screenshots/session-15/`: the home
+page with his copy edits — the new hero statement over the globe, What we do and Who we serve
+without their headlines; `docs/screenshots/session-15b/`: About with the club's mission
+statement, the real exec blurb and the "Socials" heading), and the one open question there:
+whether the short "at Purdue" should stay right-aligned over the globe. Ashton is editing the
+other pages' copy the same way (a document per page, `-->` marking each change), so expect
+Students and Nonprofits next (Home, Projects and About are done). Then **Ashton's look at Session 14c** (`docs/screenshots/session-14c/`: the process
 dinosaurs without the glow on the home page and /nonprofits; the footer's glow kept), then
 **Session 14b** (`docs/screenshots/session-14b/`: the Who we serve
 panels without pictures, the small dinosaurs' snouts, the gift ribbon), then the rest of
@@ -1847,7 +1888,8 @@ the globe scrolls near the viewport.
 **TODOs for Ashton (content and accounts)**
 
 - Everything from Sessions 1–5 still stands.
-- `content/about.ts`: the mission statement, the founding story, the founded year.
+- `content/about.ts`: the mission statement (closed in Session 15b), the founding story, the
+  founded year.
   `content/exec.ts` + `content/media.ts`: the exec board with photos and LinkedIn URLs; the
   exec-board blurb in `ExecGrid.tsx`.
 - `content/instagram.ts`: six post URLs, images (media keys `instagram.post-N`), alt text.
@@ -2202,7 +2244,7 @@ on the dev server.
   Rename the files to real slugs; covers and screenshots go through `content/media.ts`.
 - Confirm the one-per-place assumption (4 U.S. states + 4 countries = 8 nonprofits) and
   whether earlier cycles should be listed.
-- Projects index intro copy (`src/app/projects/page.tsx`).
+- Projects index intro copy (`src/app/projects/page.tsx`). Closed in Session 15: Ashton kept the placeholder line as the copy.
 
 ## Session 2 — 2026-09-04
 
