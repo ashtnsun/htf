@@ -4,8 +4,10 @@ import { join } from "node:path";
 
 /**
  * 180px PNG home-screen icon (iOS ignores SVG favicons): the same generated pixel T-rex as
- * the favicon, inset so iOS's rounded mask cannot clip the tail or the feet. Satori renders
- * an <img> SVG more reliably than inline shapes, so the file is embedded as a data URI.
+ * the favicon, inset so iOS's rounded mask cannot clip the tail or the feet. icon.svg has a
+ * transparent canvas, so the dark ground is painted here — an iOS icon has to be opaque, and
+ * the carved eye needs something behind it. Satori renders an <img> SVG more reliably than
+ * inline shapes, so the file is embedded as a data URI.
  */
 export const size = { width: 180, height: 180 };
 export const contentType = "image/png";
