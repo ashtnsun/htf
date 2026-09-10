@@ -94,7 +94,10 @@ export const faq: FaqItemInput[] = [
     link: { label: "Recruitment timeline", href: "#timeline" },
   },
 
-  // ------------------------------------------------------------ apply (under the form)
+  // ------------------------------------------------------------ apply
+  // Nothing renders these since the 2026-09-10 copy pass: Ashton took the FAQ off /apply,
+  // so the form is the whole page. Kept because the same three questions are the ones
+  // applicants ask; the students list already answers two of them.
   {
     id: "apply-what-happens-next",
     question: "What happens next?",
