@@ -42,7 +42,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 12a: the Get involved graphic is the partner globe (drag, hover a pin for its country, the globe holds while hovered), the new default; Terminal, Chat and Badge stay in the menu
 - [x] Session 13: review pass 5 (fourteen items: marquee header, awards column, the globe still and centred, project-card arrow, no Who we are, green section-bar item, no banner CTAs, centred sticky roles intro, timeline without numbers and with the Now marker and the run-off rail, subgrid How it works, no map behind the nonprofit quotes, Start a project and Contact by email, /apply as the embedded Google Form) and the portal parked under `parked/`
 - [x] Session 14: review pass 6 (eight items: pixel books and heart on Who we serve, globe pins named by state, tighter How it works gaps, no Photo hero CTA, plain project pages with the team on the right and no More projects, top-aligned roles intro, no Now tag, /apply as one centred column with the FAQ under the form)
-- [x] Session 14b: three pixel tweaks from Ashton's look at Session 14 (the nonprofits picture redrawn as a heart floating over an open hand, the top book one cell longer, the small dinosaurs' snouts rounded)
+- [x] Session 14b: three pixel tweaks from Ashton's look at Session 14 (the nonprofits picture now just a heart, the top book two cells longer, the small dinosaurs' snouts rounded)
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -67,41 +67,44 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 ## Session 14b — 2026-09-09 (three pixel tweaks from Ashton's look at Session 14)
 
-Ashton's three notes on the Session 14 pictures, applied in one pass.
+Ashton's three notes on the Session 14 pictures, applied in one pass, then a second look
+(the heart alone, the book longer still).
 
 **Built:**
 
-1. **Heart over an open hand.** The nonprofits picture in `home/WhoWeServeGraphics` is now
-   the "hand holding heart" icon Ashton attached (a heart floating over an open hand seen
-   from the side), pixelized on the same 24 × 22 grid: a 13 × 10 heart at rows 3–12 whose
-   point shares the hand's top row, then the hand at rows 12–21: the cuff at the left, the
-   thumb's knuckle as the bump on top, the thumb lying across a hollow palm with its
-   underside carved, and the fingers a separate bar rising at the right, joined only at the
-   base. `HEART_OVER_HAND` replaces `HEART_IN_HAND`; the `heart` key, the component and
-   the panels are unchanged.
-2. **The top book one cell longer.** `BOOKS` rows 5–8 run to column 18, so the top book
-   overhangs the book under it by one cell on the right (their right edges were flush).
+1. **The nonprofits picture is a heart.** `home/WhoWeServeGraphics` first redrew it as the
+   "hand holding heart" icon Ashton attached (a heart over an open hand seen from the side,
+   the thumb across a hollow palm, the fingers rising at the right); at the second look
+   Ashton asked for just the heart. `HEART` is now a 19 × 16 pixel heart at columns 2–20 on
+   rows 5–20, the books' rows, so the two pictures share a top and a bottom.
+   `HEART_IN_HAND` is gone; the `heart` key, the component and the panels are unchanged.
+2. **The top book two cells longer.** `BOOKS` rows 5–8 run to column 19, so the top book
+   overhangs the book under it by two cells on the right (their right edges were flush).
 3. **The small dinosaurs' snouts.** `SMALL_DINO` row 0 in `home/ProcessSprites` loses its
    last cell, so the two teammates' snout corner is rounded like the big map's
    (`DINO_PIXELS` row 0); drawn mirrored, that is the top-left cell of each head. The match
    step on /nonprofits and the team step of the home scene both read from it.
 
 **Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm build` (validates content first). `pnpm
-a11y` on `/`, `/nonprofits` and `/about` at 1440 and 390 plus the drawer: 0 violations.
-Screenshots in `docs/screenshots/session-14b/`: the sweep (nine routes at 1440 and 390,
-`drawer-390`) plus `home-who-we-serve-{1440,390}`, `home-who-we-serve-pictures-2x` (both
-pictures at 2×), `nonprofits-how-it-works-1440` and
+a11y` on `/`, `/nonprofits` and `/about` at 1440 and 390 plus the drawer: 0 violations
+(again on `/` and `/about` after the second look). Screenshots in
+`docs/screenshots/session-14b/`: the sweep (nine routes at 1440 and 390, `drawer-390`; `/`
+and `/about` recaptured after the second look) plus `home-who-we-serve-{1440,390}` and
+`home-who-we-serve-pictures-2x` (both pictures at 2×; the earlier hand version kept as
+`home-who-we-serve-hand-{1440,390,pictures-2x}`), `nonprofits-how-it-works-1440` and
 `nonprofits-how-it-works-match-{1440,390}`.
 
-**Decisions:** the hand is drawn as parts rather than a filled silhouette: at 24 cells a
-solid side-view hand read as a whale (the cuff its head, a carved thumb line its mouth, the
-fingers its fluke), and the icon's palm interior almost vanishes at that scale, so the
-palm's hollow and the thumb's underside are carved and the fingers stand apart, which keeps
-the language (solid cells, details carved as empty cells) while the picture reads at 5 px
-cells. The heart is 13 × 10 rather than 11 × 8 so it carries the picture, and its point
-drops into the hand's opening as in the icon. The book grows to the right (an overhang)
-rather than the left, where the edges already stagger. Drafts were judged on a Pillow sheet
-at the real 5 px cells beside the icon scaled to the same 120 px, not on the 12 px grid.
+**Decisions:** the heart is sized to the books (19 × 16 on their rows 5–20, 95 × 80 px
+against the stack's 100 × 80) rather than kept at the 13 × 10 of the hand version, which
+looked small on its own; 17 × 14 and 21 × 18 were rendered and rejected (small, boxy). The
+book grows to the right (an overhang) rather than the left, where the edges already
+stagger. The hand version is recorded for the day it is wanted: at 24 cells a solid
+side-view hand read as a whale (the cuff its head, a carved thumb line its mouth, the
+fingers its fluke) and the icon's palm interior almost vanishes at that scale, so it was
+drawn as parts (a squared cuff, a hollow palm, the thumb's underside carved, the fingers a
+separate bar), in the "hand" screenshots and in git history (`01645da`). Drafts were judged
+on a Pillow sheet at the real 5 px cells beside the icon scaled to the same 120 px, not on
+the 12 px grid.
 
 **TODOs:**
 
@@ -1557,8 +1560,8 @@ unchanged.
 
 ## Next session starts with
 
-**First, Ashton's look at Session 14b** (`docs/screenshots/session-14b/`: the heart over the
-open hand, the longer top book, the small dinosaurs' snouts), then the rest of Session 14
+**First, Ashton's look at Session 14b** (`docs/screenshots/session-14b/`: the heart, the
+longer top book, the small dinosaurs' snouts), then the rest of Session 14
 (`docs/screenshots/session-14/`): the eight review
 items (the Who we serve pictures, the globe labels, the process gaps, the photo hero, the
 project pages, the roles intro, the timeline, /apply). The dev server on 3000 served every
