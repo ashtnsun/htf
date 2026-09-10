@@ -46,6 +46,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 15: Ashton's home page copy pass (hero statement and eyebrow, "What do we do?" as a heading with no eyebrow and no photo, no Who we serve headline, Process eyebrow, process and FAQ wording, two TODO answers confirmed, the 2026-2027 cycle and its Sep 17 deadline, Photo as the default hero)
 - [x] Session 14c: no glow behind the process dinosaurs (the home scene and the /nonprofits stills); the footer T-rex keeps its own
 - [x] Session 15b: Ashton's About page copy pass (shorter hero blurb, the club's own mission statement, the real exec-board blurb, "Socials" / "Follow the Instagram!")
+- [x] Session 15c: Ashton's Students page copy pass (every [TODO] closed: role descriptions, hours and duties, the real recruitment dates, the project year reordered, the perks rewritten; hero blurb, roles intro, team caption, role numbers and the kickoff step deleted)
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -139,6 +140,63 @@ a look if Globe ever comes back.)
 
 **TODOs:** the Google Form link and the club email, and the real organization photo, which
 the Photo hero now shows at the top of the page (`content/media.ts` → `org.group-photo`).
+
+## Session 15c — 2026-09-10 (Ashton's Students page copy pass)
+
+Same routine, on `/students`, plus one instruction over the whole page: **remove every
+`[TODO]`**. The page now has none — the answers are Ashton's, not invented.
+
+**Built:**
+
+1. **Deletions.** The page-hero blurb ("Open to all majors… You can apply for more than one
+   role.") and the Roles intro paragraph are gone (`PageHero`'s `blurb` is optional, so the
+   hero is eyebrow + headline); the `Role 01 / 02 / 03` labels come off the role rows (the
+   icon stays, right-aligned); the "Teams are small on purpose…" paragraph and the captions
+   under the team diagram are gone; the **Project kickoff** step is off the timeline.
+2. **Roles** (`content/roles.ts`). All three descriptions lose `[TODO: description]`; Lead's
+   "Run weekly team meetings" → "Run team meetings", Developer's "Review teammates' code" →
+   "Work with designers and other developers", Developer's description → "Work in a team to
+   build and ship the software a nonprofit will actually use." Hours: **3 hours per week**
+   for the lead, **2-3 hours per week** for developers and designers.
+3. **Recruitment** (`content/recruitment.ts`). Callouts **September 8, 10, 11** ("Come learn
+   about the club, meet the team, and ask questions."), applications open **September 10**,
+   deadline **September 17, 11:59 PM** ("Apply before this date!"), interviews and decisions
+   **TBD** with Ashton's descriptions (one interview round, mostly behavioral with some
+   technical; a notification either way).
+4. **How we work** (`content/students.ts`). Step 2 is now **Workshops and events**
+   ("Developers and designers will partake in workshops, social events, and check-ins.") and
+   step 3 **Build through the year** ("Regular team and nonprofit meetings move the product
+   from a first prototype to something staff can use."); the old "Crits, reviews and
+   workshops" step is gone and Handoff loses `[TODO: confirm]`.
+5. **What you'll get.** "Build real projects" drops the portfolio-piece line; "Learn by
+   doing" is "Pick up the stack, the tools, and the habits of a working team."; "Join a
+   driven team" → **"Join a community"** with Ashton's teams-and-families copy.
+6. **Student FAQ** (`content/faq.ts`). Prior experience loses its TODO; "How much time does
+   it take?" now opens with the real hours ("Two to three hours a week for developers and
+   designers, and about three for project leads"); "What happens after I apply?" follows the
+   timeline ("…invite selected applicants to one interview round, and let you know whether
+   you are in for the year").
+
+**Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm build` clean; `pnpm a11y --routes=/students`
+0 violations at 1440 and 390 plus the drawer; `curl /students | grep '\[TODO'` finds nothing.
+Screenshots in `docs/screenshots/session-15c/`.
+
+**Decisions:** the timeline steps now carry ISO `date`s (2026-09-08 / -10 / -17) instead of the
+`current: true` flag, as `content/recruitment.ts` always planned — the marker advances on its
+own and today it sits on "Applications open"; Interviews and Decisions stay dateless while
+they are TBD. The team diagram keeps its squares and its meaning for screen readers: each seat
+renders an `sr-only` "1 project lead" / "5 developers" / "1–2 designers" from
+`content/students.ts`, so the counts are still in the document. "2-3 hours per week" keeps
+Ashton's hyphen (like "2026-2027"), not the en dash the design tokens use elsewhere.
+
+**Open for Ashton:** three readings to confirm. (a) "→ delete" on the hero blurb and the Roles
+intro was taken as the whole paragraph, not just the "You can apply for more than one role."
+sentence. (b) "Role 01 → delete" was applied to all three rows, not only the first. (c) "delete
+the label only" was read as: keep the squares, drop the caption text. Also: the timeline
+headline still reads "From callouts *to kickoff.*" although the kickoff step is gone, and the
+Roles column is now only the headline and the deadline note.
+
+**TODOs:** unchanged (the Google Form link and the club email; About's photos and posts).
 
 ## Session 15b — 2026-09-10 (Ashton's About page copy pass)
 
@@ -1710,10 +1768,13 @@ unchanged.
 **First, Ashton's look at Sessions 15 and 15b** (`docs/screenshots/session-15/`: the home
 page with his copy edits — the new hero statement over the globe, What we do and Who we serve
 without their headlines; `docs/screenshots/session-15b/`: About with the club's mission
-statement, the real exec blurb and the "Socials" heading), and the one open question there:
-whether the short "at Purdue" should stay right-aligned over the globe. Ashton is editing the
-other pages' copy the same way (a document per page, `-->` marking each change), so expect
-Students and Nonprofits next (Home, Projects and About are done). Then **Ashton's look at Session 14c** (`docs/screenshots/session-14c/`: the process
+statement, the real exec blurb and the "Socials" heading; `docs/screenshots/session-15c/`:
+Students with no TODOs left, the real dates and hours, and the deletions), and the open
+questions in those logs: whether the short "at Purdue" should stay right-aligned over the
+globe, and the three Session 15c readings (what "→ delete" covered on the hero and Roles
+intro, whether the role numbers all go, and what "delete the label only" meant for the team
+diagram). Ashton is editing the other pages' copy the same way (a document per page, `-->`
+marking each change), so Nonprofits is next (Home, Projects, About and Students are done). Then **Ashton's look at Session 14c** (`docs/screenshots/session-14c/`: the process
 dinosaurs without the glow on the home page and /nonprofits; the footer's glow kept), then
 **Session 14b** (`docs/screenshots/session-14b/`: the Who we serve
 panels without pictures, the small dinosaurs' snouts, the gift ribbon), then the rest of
