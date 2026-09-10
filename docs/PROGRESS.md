@@ -50,6 +50,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 15c: Ashton's Students page copy pass (every [TODO] closed: role descriptions, hours and duties, the real recruitment dates, the project year reordered, the perks rewritten; hero blurb, roles intro, team caption, role numbers and the kickoff step deleted)
 - [x] Session 15e: Ashton's Nonprofits page copy pass (the club email is real — htfpurdue@gmail.com — every [TODO] on the page closed, the partner section renamed, the placeholder nonprofit quotes removed)
 - [x] Session 15f: Ashton's Privacy policy copy pass (no blurb, no Effective / Status row, no draft badge, the retention and Children sections gone, every [TODO] closed)
+- [x] Session 15g: the 2026-2027 Google Form is live on /apply (the last blocking content value), the page is the form and nothing else
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -182,6 +183,46 @@ conversion step, and the generic block would repeat the audience choice the visi
 made.
 
 **TODOs:** unchanged (the Google Form link and the club email; the photos and posts).
+
+## Session 15g — 2026-09-10 (the application form is live)
+
+Ashton's `/apply` copy pass, and with it **the last content value that blocked the site**:
+the 2026-2027 Google Form. Applications now work end to end.
+
+**Built:**
+
+1. **The form link** (`content/site.ts` → `season.applyFormUrl`). Ashton gave the short link
+   `https://forms.gle/NuK3Yh3oRsZDitCG8`; it is stored **resolved** —
+   `https://docs.google.com/forms/d/e/1FAIpQLScGH_s65J06gxDC6A0BOJL1HtWHk4r0ksqOllObiJddBvNfTQ/viewform`
+   — because `getApplyForm` appends `embedded=true` and a redirect from forms.gle drops the
+   query (the short link's own target already carries `?usp=send_form`). The short link is in
+   the comment above the field.
+2. **The page is the form.** The hero blurb is only the deadline ("Applications close Sep 17,
+   11:59 PM."); the dashed TODO panel, the "Until then, the form is linked from our Instagram
+   bio." line and the two "Open Instagram" buttons are gone with the branch that drew them;
+   and the whole FAQ section under the form — heading, the "Something else?" aside and the
+   three questions — is deleted, along with the `getFaq`, `FaqAccordion` and `Link` imports.
+   The three `audience: "apply"` entries stay in `content/faq.ts` with a comment saying nothing
+   renders them (the students list already answers two).
+
+**Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm build` clean. Verified against the production
+build (`next start -p 3100`), not the dev server: the page's HTML carries the embedded viewform
+URL, and the screenshot in `docs/screenshots/session-15g/` shows the real form loading inside
+the frame — "2026-27 Hack the Future Application", Purdue Email and Full Name — so the embed
+works unauthenticated.
+
+**Decisions:** the resolved viewform URL rather than the short link, for the reason above; both
+open the same form. `applyFallbackUrl` stays in `content/site.ts` for a future cycle whose link
+is not in yet.
+
+**Open for Ashton:** `pnpm a11y --routes=/apply` now reports **2 violations at each width, both
+inside Google's iframe** — a green link at 3.96:1 and a heading-order jump in the form's own
+markup. They are not ours to fix (cross-origin), and the "Open the form in a new tab" link under
+the frame is the way around a browser that blocks the embed. Every other route is still 0.
+
+**TODOs:** nothing blocks the site now. What is left is real content: the photos
+(`content/media.ts`), the exec board, the Instagram posts, the eight projects, and stats and
+testimonials when Ashton has approved numbers and quotes.
 
 ## Session 15f — 2026-09-10 (Ashton's Privacy policy copy pass)
 
@@ -1916,7 +1957,8 @@ without their headlines; `docs/screenshots/session-15b/`: About with the club's 
 statement, the real exec blurb and the "Socials" heading; `docs/screenshots/session-15c/`:
 Students with no TODOs left, the real dates and hours, and the deletions;
 `docs/screenshots/session-15e/`: Nonprofits with the real email and no TODOs;
-`docs/screenshots/session-15f/`: the Privacy policy without its draft framing), and the open
+`docs/screenshots/session-15f/`: the Privacy policy without its draft framing;
+`docs/screenshots/session-15g/`: /apply with the real form embedded), and the open
 questions in those logs: whether the short "at Purdue" should stay right-aligned over the
 globe, and the three Session 15c readings (what "→ delete" covered on the hero and Roles
 intro, whether the role numbers all go, and what "delete the label only" meant for the team
@@ -1930,11 +1972,11 @@ Session 14
 (`docs/screenshots/session-14/`): the eight review
 items (the Who we serve pictures, the globe labels, the process gaps, the photo hero, the
 project pages, the roles intro, the timeline, /apply). The dev server on 3000 served every
-route during Session 14b (the static-paths worker that died in Session 14 is back). One content
-value still unblocks the site: the 2026-2027 Google Form link in `content/site.ts`
-(`season.applyFormUrl`) — the club email was answered in Session 15e
-(`htfpurdue@gmail.com`). Once the real link is in, open `/apply` and confirm the embedded form
-loads.
+route during Session 14b (the static-paths worker that died in Session 14 is back). No content value blocks the site any more: the club
+email was answered in Session 15e (`htfpurdue@gmail.com`) and the 2026-2027 Google Form went
+into `season.applyFormUrl` in Session 15g, with the embed confirmed against a production build.
+What is left before launch is the deploy itself (`docs/DEPLOY.md` §1–§5) and the real content:
+photos, the exec board, the Instagram posts, the eight projects, stats and testimonials.
 
 **The hero is decided (Session 15): Photo.** `DEFAULT_HERO` is `"photo"` and `Hero.tsx`
 ships it in the bundle. What is left is optional cleanup, once Ashton is sure: delete the
