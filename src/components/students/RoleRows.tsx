@@ -10,7 +10,10 @@ import { ROLE_ICONS } from "./roleIcons";
  * The Framer role rows (icon, title, blurb, description) plus what the
  * template left out: responsibilities, time commitment and who the role is for. The per-role
  * Apply button went in the 2026-09-09 review (the page's CTAs are the header and the closing
- * section). On large screens the intro sticks beside the rows, top-aligned with the first
+ * section). The icon sits above the title on the row's left edge, the way every other icon
+ * on the site does: it used to be pushed right to balance the "Role 01" label, which came off
+ * in the 2026-09-10 copy pass and left it stranded in an empty line.
+ * On large screens the intro sticks beside the rows, top-aligned with the first
  * row at rest; while the rows scroll past it holds a little below the site header and the
  * section bar (`--subnav-h`, set by SectionNav while mounted), so the bars never cover it
  * (the second 2026-09-09 review replaced the viewport-tall centred box).
@@ -40,10 +43,8 @@ export function RoleRows({ roles }: { roles: Role[] }) {
             return (
               <li key={role.slug} id={`role-${role.slug}`} className="py-10 md:py-14">
                 <Reveal standalone>
-                  <div className="flex items-start justify-end">
-                    <Icon aria-hidden="true" className="size-7 text-muted" strokeWidth={1.5} />
-                  </div>
-                  <h3 className="mt-4 text-h3 md:text-h2">{role.title}</h3>
+                  <Icon aria-hidden="true" className="block size-7 text-muted" strokeWidth={1.5} />
+                  <h3 className="mt-6 text-h3 md:text-h2">{role.title}</h3>
                   <p className="mt-2 text-sm text-muted">{role.blurb}</p>
                   <p className="mt-5 max-w-2xl text-body-lg text-text">{role.description}</p>
 

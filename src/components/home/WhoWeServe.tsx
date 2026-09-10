@@ -44,7 +44,9 @@ type WhoWeServeProps = {
  * button (a pixel picture above the eyebrow came and went in the 2026-09-09 reviews).
  * Hovering the panel turns the title green and puts the button in its hover state (green
  * border, the arrow cell fills), the treatment the project cards use; nothing moves. The two
- * panels share their row tracks (subgrid), so every line sits at the same height in both.
+ * panels share their row tracks (subgrid), so every line sits at the same height in both, and
+ * they carry the site's card inset (`md:p-8`) so their copy starts on the same left edge as
+ * the "What we do" row above them on the home page.
  * `eyebrow` and `lines` stay props for a page that ever needs its own framing.
  */
 export function WhoWeServe({
@@ -77,7 +79,7 @@ export function WhoWeServe({
             >
               <Link
                 href={panel.href}
-                className="group flex h-full flex-col px-(--gutter) py-8 text-text md:row-span-4 md:grid md:grid-rows-subgrid md:p-8 lg:p-10"
+                className="group flex h-full flex-col px-(--gutter) py-8 text-text md:row-span-4 md:grid md:grid-rows-subgrid md:p-8"
               >
                 <Eyebrow tone="green">{panel.eyebrow}</Eyebrow>
                 <h3 className="mt-4 max-w-md text-h3 transition-colors duration-200 group-hover:text-green md:mt-5">
