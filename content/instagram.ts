@@ -1,8 +1,10 @@
 import type { InstagramPostInput } from "@/lib/content/schemas";
 
 /**
- * Curated Instagram posts for the grid on /about. There is no API involved (an official
- * embed needs a Meta app, see docs/PLAN.md): paste the post URL, drop the image into
+ * The fallback behind the Instagram grid on /about. When `socials.instagramFeedUrl` in
+ * content/site.ts names a Behold feed, the grid draws that account's latest posts instead
+ * (src/lib/content/behold.ts) and these are only used if the feed is unreachable; until
+ * then they are the grid. To curate one by hand: paste the post URL, drop the image into
  * public/ and point a media key at it in content/media.ts. Tiles whose `href` starts with
  * TODO render without a link.
  */

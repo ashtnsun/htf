@@ -227,6 +227,64 @@ export const instagramPostSchema = z.object({
   caption: z.string().min(1).optional(),
 });
 
+/**
+ * The slice of a Behold JSON feed (https://feeds.behold.so/<id>) the grid on /about reads.
+ * Behold holds the Meta app and refreshes the Instagram token, so the site needs neither.
+ * Unknown fields are dropped rather than rejected: a field Behold adds later must not be
+ * able to blank the section.
+ */
+const beholdSizeSchema = z.object({
+  mediaUrl: z.url(),
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+});
+
+export const beholdPostSchema = z.object({
+  id: z.string().min(1),
+  permalink: z.url(),
+  mediaType: z.string().min(1).optional(),
+  /** "hidden" for a post switched off in the Behold dashboard; it stays in the payload. */
+  visibility: z.string().optional(),
+  /** Instagram's own alt text, and null on most posts — the loader writes a fallback. */
+  altText: z.string().nullish(),
+  caption: z.string().nullish(),
+  /** The caption with the hashtag block stripped. */
+  prunedCaption: z.string().nullish(),
+  timestamp: z.string().nullish(),
+  /**
+   * Video posts only, and served from Instagram's CDN, where URLs expire after a few days.
+   * Only used when `sizes` is missing; the sizes below are Behold's own copies and permanent.
+   */
+  thumbnailUrl: z.url().nullish(),
+  sizes: z
+    .object({
+      small: beholdSizeSchema.optional(),
+      medium: beholdSizeSchema.optional(),
+      large: beholdSizeSchema.optional(),
+      full: beholdSizeSchema.optional(),
+    })
+    .optional(),
+});
+
+/** The feed document: account fields the grid ignores, plus the posts. */
+export const beholdFeedSchema = z.object({
+  username: z.string().nullish(),
+  posts: z.array(beholdPostSchema),
+});
+
+/**
+ * One tile of the Instagram grid, from the live feed or from content/instagram.ts.
+ * `src` is a media key, a /public path or a remote image URL; `href` is null while a
+ * curated entry has no post URL yet.
+ */
+export type InstagramTile = {
+  id: string;
+  href: string | null;
+  src: string;
+  alt: string;
+  caption?: string;
+};
+
 /** Copy blocks for the About page (exec, awards and the Instagram grid have their own files). */
 export const aboutPageSchema = z.object({
   mission: z.object({
@@ -296,6 +354,8 @@ export type Perk = z.infer<typeof perkSchema>;
 export type StudentsPage = z.infer<typeof studentsPageSchema>;
 export type StudentsPageInput = z.input<typeof studentsPageSchema>;
 export type InstagramPost = z.infer<typeof instagramPostSchema>;
+export type BeholdPost = z.infer<typeof beholdPostSchema>;
+export type BeholdFeed = z.infer<typeof beholdFeedSchema>;
 export type InstagramPostInput = z.input<typeof instagramPostSchema>;
 export type AboutPage = z.infer<typeof aboutPageSchema>;
 export type AboutPageInput = z.input<typeof aboutPageSchema>;

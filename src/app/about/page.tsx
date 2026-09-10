@@ -9,7 +9,7 @@ import { PageHero } from "@/components/layout/PageHero";
 import { SectionNav } from "@/components/layout/SectionNav";
 import { Reveal } from "@/components/motion/Reveal";
 import { Section } from "@/components/ui/Section";
-import { getAboutPage, getAwards, getExec, getExecYears, getInstagramPosts } from "@/lib/content";
+import { getAboutPage, getAwards, getExec, getExecYears, getInstagramTiles } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "About",
@@ -25,12 +25,12 @@ const SECTIONS = [
   { href: "#instagram", label: "Instagram" },
 ] as const;
 
-export default function AboutPage() {
+export default async function AboutPage() {
   const about = getAboutPage();
   const exec = getExec();
   const execYears = getExecYears();
   const awards = getAwards();
-  const posts = getInstagramPosts();
+  const posts = await getInstagramTiles();
 
   return (
     <>

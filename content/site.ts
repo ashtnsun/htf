@@ -24,6 +24,15 @@ export const site = {
   socials: {
     instagram: "https://www.instagram.com/hackthefuturepurdue/",
     instagramHandle: "@hackthefuturepurdue",
+    /**
+     * The Behold JSON feed behind the grid on /about (https://behold.so → New feed →
+     * Instagram → JSON). Behold holds the Meta app and refreshes the token, so the site
+     * needs no environment variable and no server route; the URL is public, the same one a
+     * browser would fetch. Paste the feed URL here and the grid goes live within the hour
+     * (the whole site revalidates hourly). While this is a TODO — or if Behold is
+     * unreachable when the page rebuilds — the grid falls back to content/instagram.ts.
+     */
+    instagramFeedUrl: "TODO: Behold JSON feed URL (https://feeds.behold.so/…)",
     // TODO(ashton): confirm; found by searching for the club's LinkedIn company page.
     linkedin: "https://www.linkedin.com/company/hack-the-future-at-purdue",
     // Ashton, 2026-09-10 (the Nonprofits copy pass).

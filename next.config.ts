@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
   pageExtensions: isDev ? ["dev.tsx", "tsx", "ts"] : ["tsx", "ts"],
   images: {
     formats: ["image/avif", "image/webp"],
+    // The live Instagram grid on /about. behold.pictures is Behold's CDN, which serves its
+    // own permanent copies of each post; Instagram's own scontent.cdninstagram.com URLs
+    // expire after a few days and are never used (src/lib/content/behold.ts).
+    remotePatterns: [{ protocol: "https", hostname: "behold.pictures" }],
   },
 };
 

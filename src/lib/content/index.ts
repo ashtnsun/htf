@@ -10,6 +10,7 @@ import { exec as execData } from "@content/exec";
 import { faq as faqData } from "@content/faq";
 import { instagramPosts as instagramData } from "@content/instagram";
 import { isMediaKey } from "@content/media";
+import { site } from "@content/site";
 import { nonprofitsPage as nonprofitsData } from "@content/nonprofits";
 import { process as processData } from "@content/process";
 import { recruitmentTimeline as recruitmentData } from "@content/recruitment";
@@ -40,6 +41,7 @@ import {
   type FaqAudience,
   type FaqItem,
   type InstagramPost,
+  type InstagramTile,
   type NonprofitsPage,
   type PrivacyFrontmatter,
   type ProcessStep,
@@ -51,6 +53,8 @@ import {
   type StudentsPage,
   type Testimonial,
 } from "./schemas";
+import { fetchBeholdTiles, FEED_TILE_COUNT } from "./behold";
+import { isTodo } from "@/lib/utils";
 
 /**
  * Typed content loaders. Every loader validates with Zod and throws a readable error,
@@ -328,6 +332,28 @@ export function getInstagramPosts(): InstagramPost[] {
   assertUnique(items, (p) => p.id, "content/instagram.ts");
   items.forEach((p) => assertMediaRef(p.image, "content/instagram.ts"));
   return items;
+}
+
+/**
+ * The tiles the grid on /about draws: the live Behold feed when one is configured and
+ * reachable, otherwise the curated posts above. Async and remote, so unlike every other
+ * loader it is not part of `validateAllContent` — see ./behold.ts.
+ */
+export async function getInstagramTiles(): Promise<InstagramTile[]> {
+  const curated = (): InstagramTile[] =>
+    getInstagramPosts()
+      .slice(0, FEED_TILE_COUNT)
+      .map((post) => ({
+        id: post.id,
+        href: isTodo(post.href) ? null : post.href,
+        src: post.image,
+        alt: post.alt,
+        caption: post.caption,
+      }));
+
+  const feedUrl = site.socials.instagramFeedUrl;
+  if (isTodo(feedUrl)) return curated();
+  return (await fetchBeholdTiles(feedUrl, site.socials.instagramHandle)) ?? curated();
 }
 
 export function getRecruitmentTimeline(): RecruitmentStep[] {

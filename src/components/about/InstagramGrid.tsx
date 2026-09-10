@@ -1,5 +1,5 @@
 import { site } from "@content/site";
-import type { InstagramPost } from "@/lib/content/schemas";
+import type { InstagramTile } from "@/lib/content/schemas";
 import { InstagramIcon } from "@/components/icons/Social";
 import { Reveal, RevealGroup } from "@/components/motion/Reveal";
 import { Eyebrow } from "@/components/ui/Eyebrow";
@@ -7,13 +7,14 @@ import { Headline } from "@/components/ui/Headline";
 import { Media } from "@/components/ui/Media";
 import { Section } from "@/components/ui/Section";
 import { SplitButton } from "@/components/ui/SplitButton";
-import { isTodo } from "@/lib/utils";
 
 /**
- * Curated Instagram grid (content/instagram.ts): square tiles linking to the posts, plus the
- * follow button. No embed script, no Meta app; tiles without a post URL yet are unlinked.
+ * The Instagram grid: square tiles linking to the posts, plus the follow button. The tiles
+ * come from the live Behold feed, or from content/instagram.ts when none is configured
+ * (src/lib/content/behold.ts) — either way they are the site's own markup, drawn server-side.
+ * There is no Meta embed script and no third-party iframe. A tile with no post URL is unlinked.
  */
-export function InstagramGrid({ posts }: { posts: InstagramPost[] }) {
+export function InstagramGrid({ posts }: { posts: InstagramTile[] }) {
   if (posts.length === 0) return null;
   const tile = "relative block aspect-square overflow-hidden border border-line bg-surface";
   return (
@@ -39,10 +40,9 @@ export function InstagramGrid({ posts }: { posts: InstagramPost[] }) {
         </Reveal>
         <ul className="mt-12 grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
           {posts.map((post) => {
-            const href = isTodo(post.href) ? null : post.href;
             const image = (
               <Media
-                src={post.image}
+                src={post.src}
                 alt={post.alt}
                 fill
                 sizes="(min-width: 768px) 30vw, 50vw"
@@ -52,9 +52,9 @@ export function InstagramGrid({ posts }: { posts: InstagramPost[] }) {
             return (
               <li key={post.id}>
                 <Reveal>
-                  {href ? (
+                  {post.href ? (
                     <a
-                      href={href}
+                      href={post.href}
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`${post.alt} (opens Instagram)`}
