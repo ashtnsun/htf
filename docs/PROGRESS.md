@@ -52,6 +52,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 15f: Ashton's Privacy policy copy pass (no blurb, no Effective / Status row, no draft badge, the retention and Children sections gone, every [TODO] closed)
 - [x] Session 15h: every email control copies the address (ui/CopyEmail); no mailto links anywhere on the site
 - [x] Session 15g: the 2026-2027 Google Form is live on /apply (the last blocking content value), the page is the form and nothing else
+- [x] Session 15j: /apply links to the form instead of embedding it (a framed card and one button; the iframe could not be made to look right)
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -231,6 +232,38 @@ silent, and the address is always on screen next to the control, so a browser th
 the clipboard still leaves the reader something to select.
 
 **TODOs:** unchanged.
+
+## Session 15j — 2026-09-10 (the form is linked, not embedded)
+
+Ashton, looking at the embed: "is there a way to make the embed cleaner?", then "do whatever's
+recommended, whatever you think will look the best."
+
+**What the measurements said.** The form is **multi-page** — eight questions and a "Next" — and
+each section is its own document inside the frame. Page 1 needs **1949px** at the embed's
+desktop width and **2365px** at 390px; later sections differ. So no fixed frame height is right
+for all of them: size it to page 1 and the short sections leave a white gap, size it small and
+every section gets a nested scrollbar (what the screenshot showed). Nothing inside the frame can
+be styled from here either — it is cross-origin, so Google's white sheet, its fonts, the "Sign in
+to Google to save your progress" bar and the red asterisks are fixed.
+
+**Built:** the iframe is gone. `/apply` is the heading, the deadline, and a `frame-marks` card on
+`bg-surface`: "The application runs on Google Forms and opens in a new tab.", the large primary
+`SplitButton` ("Open the application form" — `SplitButton` infers the external href, so it opens
+in a new tab with the diagonal arrow), and a muted line, "Sign in to Google first if you want it
+to save your progress as you go." The centred column narrows from `max-w-3xl` to `max-w-2xl` now
+that it holds a card instead of a form.
+
+**Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm build` clean. Against the production build
+again: `pnpm a11y --routes=/apply` is back to **0 violations** at both widths (the two Google
+reported in Session 15g were inside its iframe). Screenshots in `docs/screenshots/session-15j/`.
+
+**Decisions:** `getApplyForm` still returns `embedUrl` with `embedded=true`, and the page comment
+and CLAUDE.md say why it is unused, so putting the form back in a frame is one line if the form
+ever becomes a single page. CLAUDE.md's three descriptions of /apply follow the change.
+
+**Open for Ashton:** the copy on the card is functional micro-copy, not from his document — the
+sign-in line restates what Google's own bar says. The page is short now (heading, card, footer);
+the footer T-rex carries the space below it.
 
 ## Session 15g — 2026-09-10 (the application form is live)
 
@@ -2006,7 +2039,8 @@ statement, the real exec blurb and the "Socials" heading; `docs/screenshots/sess
 Students with no TODOs left, the real dates and hours, and the deletions;
 `docs/screenshots/session-15e/`: Nonprofits with the real email and no TODOs;
 `docs/screenshots/session-15f/`: the Privacy policy without its draft framing;
-`docs/screenshots/session-15g/`: /apply with the real form embedded), and the open
+`docs/screenshots/session-15g/` and `session-15j/`: /apply with the real form, first embedded
+and then linked from a card), and the open
 questions in those logs: whether the short "at Purdue" should stay right-aligned over the
 globe, and the three Session 15c readings (what "→ delete" covered on the hero and Roles
 intro, whether the role numbers all go, and what "delete the label only" meant for the team
