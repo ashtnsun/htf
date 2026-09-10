@@ -29,12 +29,12 @@ export async function generateMetadata({
   const { slug } = await params;
   const project = getProject(slug);
   if (!project) return {};
-  const title = `${project.title} · ${project.nonprofit}`;
   return {
-    title,
+    // The tab reads as the page's own name; the share card keeps the nonprofit for context.
+    title: project.title,
     description: project.summary,
     alternates: { canonical: `/projects/${project.slug}` },
-    openGraph: { title, description: project.summary },
+    openGraph: { title: `${project.title} · ${project.nonprofit}`, description: project.summary },
   };
 }
 

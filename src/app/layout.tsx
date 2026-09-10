@@ -20,10 +20,9 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
-  title: {
-    default: `${site.name} · ${site.tagline}`,
-    template: `%s · ${site.name}`,
-  },
+  // No title template: a tab reads as the page's own name ("Projects", "About"), and only
+  // the home page carries the org name. Every route sets its own `title`.
+  title: `${site.name} · ${site.tagline}`,
   description: site.description,
   openGraph: {
     type: "website",
