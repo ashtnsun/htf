@@ -67,8 +67,7 @@ src/components/
                     ProcessSprites.ts; also the stills on /nonprofits),
                     ImpactBand (+ TestimonialMarquee, Awards, AwardCarousel), WhoWeServe (two
                     linked panels with a presentational "Learn more" button in a full-bleed
-                    row, each topped by a pixel picture from WhoWeServeGraphics: a stack of
-                    books, a heart, on the dinosaur's cell grid; also the hand-off on /about)
+                    row, no pictures; also the hand-off on /about)
   about/            Mission, Story, ExecGrid (+ ExecBoard: a chip per school year, `?board=` in
                     the URL, LinkedIn cell on every card), InstagramGrid
   nonprofits/       HowItWorks (cards share rows through a subgrid), Scope, Partners
@@ -199,8 +198,8 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
 - Pixel art: every dinosaur drawing reads `brand/dino-pixels` and stays on its cell grid:
   solid cells, no outlines, details carved as empty cells (the eye), dinosaurs green and
   props white, motion by whole cells (`steps()` timing), nothing scaled, rotated or
-  fractionally translated (that blurs the pixels). Other pixel pictures (the Who we serve
-  books and heart) follow the same rules: string maps, white objects with green accents,
+  fractionally translated (that blurs the pixels). Any other pixel picture follows the same
+  rules: string maps, white objects with green accents,
   `shapeRendering="crispEdges"`, a width that is a whole multiple of the map's columns.
 - `cn()` registers the type scale with tailwind-merge (`src/lib/utils.ts`). Add any new
   `--text-*` token to that list, or a later `text-<colour>` in the same `cn()` call silently
