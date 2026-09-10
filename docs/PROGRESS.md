@@ -49,6 +49,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 15d: one Get involved and one Learn more site-wide (the home CTA is the default on Projects, project pages, About and Students; the Learn more panels close /about and /projects)
 - [x] Session 15c: Ashton's Students page copy pass (every [TODO] closed: role descriptions, hours and duties, the real recruitment dates, the project year reordered, the perks rewritten; hero blurb, roles intro, team caption, role numbers and the kickoff step deleted)
 - [x] Session 15e: Ashton's Nonprofits page copy pass (the club email is real — htfpurdue@gmail.com — every [TODO] on the page closed, the partner section renamed, the placeholder nonprofit quotes removed)
+- [x] Session 15f: Ashton's Privacy policy copy pass (no blurb, no Effective / Status row, no draft badge, the retention and Children sections gone, every [TODO] closed)
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -181,6 +182,48 @@ conversion step, and the generic block would repeat the audience choice the visi
 made.
 
 **TODOs:** unchanged (the Google Form link and the club email; the photos and posts).
+
+## Session 15f — 2026-09-10 (Ashton's Privacy policy copy pass)
+
+The copy pass reached `/privacy`, again with "remove all TODO labels on this page". The page
+no longer describes itself as a draft, so what is left reads as the club's policy.
+
+**Built:**
+
+1. **The hero is the headline alone.** The blurb, the Effective / Status row and the dashed
+   "[TODO: legal review] This draft was written by the site team, not a lawyer." badge are
+   gone from `src/app/privacy/page.tsx` (with `formatEffectiveDate`). `effectiveDate` and
+   `reviewed` stay in the frontmatter as the record of when the text changed and whether a
+   lawyer has read it; nothing renders them, and the comment in `content/privacy.mdx` says so.
+2. **Two sections deleted.** "How long we keep it" (three retention TODOs) and "Children"
+   (the under-13 line and its legal-review TODO). "On this page" is generated from the
+   headings, so both drop out of the aside and the mobile row on their own.
+3. **The remaining markers.** The intro, the analytics paragraph, the Google Form paragraph
+   and the response-window line lose their TODOs; the sentences around them stand as they
+   were. "Changes to this policy" no longer points at an effective date that is not on the
+   page: "When we change this policy we update the text on this page."
+4. **The email provider is answered from the address.** `htfpurdue@gmail.com` is a Gmail
+   account, so "When you email us" ends "…ours is a Gmail account, so Google receives and
+   stores what you send us", and the processor list is two bullets: Vercel, and "**Google**
+   runs the application form, stores its responses, and carries our email (Gmail)."
+
+**Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm build` clean. The dev server on 3000 serves a
+stale policy (the loader caches the MDX in a module-level `privacyCache`), so this page was
+verified against the production build instead: `next start -p 3100`, `pnpm a11y --base=…:3100`
+0 violations at 1440 and 390 plus the drawer, screenshots in `docs/screenshots/session-15f/`,
+and the prerendered `.next/server/app/privacy.html` scanned for `[TODO`: clean, as are
+`students`, `nonprofits` and `contact`.
+
+**Decisions:** naming Gmail is the one line derived rather than dictated — it follows from the
+address Ashton gave. If the club moves to Purdue's Google Workspace, both mentions change.
+Deleting "How long we keep it" leaves the policy with no retention statement at all; that is
+Ashton's call and worth a second look if the policy ever goes to legal review.
+
+**Open for Ashton:** the parallel session was mid-change in `SplitButton.tsx` and adding
+`src/components/ui/CopyEmail.tsx` while this ran; neither is part of these commits.
+
+**TODOs:** the 2026-2027 Google Form link is still the only content value blocking the site;
+then the photos, the exec board, the Instagram posts and the real projects.
 
 ## Session 15e — 2026-09-10 (Ashton's Nonprofits page copy pass)
 
@@ -1872,13 +1915,14 @@ page with his copy edits — the new hero statement over the globe, What we do a
 without their headlines; `docs/screenshots/session-15b/`: About with the club's mission
 statement, the real exec blurb and the "Socials" heading; `docs/screenshots/session-15c/`:
 Students with no TODOs left, the real dates and hours, and the deletions;
-`docs/screenshots/session-15e/`: Nonprofits with the real email and no TODOs), and the open
+`docs/screenshots/session-15e/`: Nonprofits with the real email and no TODOs;
+`docs/screenshots/session-15f/`: the Privacy policy without its draft framing), and the open
 questions in those logs: whether the short "at Purdue" should stay right-aligned over the
 globe, and the three Session 15c readings (what "→ delete" covered on the hero and Roles
 intro, whether the role numbers all go, and what "delete the label only" meant for the team
 diagram). Ashton is editing the other pages' copy the same way (a document per page, `-->`
 marking each change); every page has now had its pass (Home, Projects, About, Students,
-Nonprofits), so what is left is his look at the results. Then **Ashton's look at Session 14c** (`docs/screenshots/session-14c/`: the process
+Nonprofits, Privacy), so what is left is his look at the results. Then **Ashton's look at Session 14c** (`docs/screenshots/session-14c/`: the process
 dinosaurs without the glow on the home page and /nonprofits; the footer's glow kept), then
 **Session 14b** (`docs/screenshots/session-14b/`: the Who we serve
 panels without pictures, the small dinosaurs' snouts, the gift ribbon), then the rest of
