@@ -50,6 +50,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 15c: Ashton's Students page copy pass (every [TODO] closed: role descriptions, hours and duties, the real recruitment dates, the project year reordered, the perks rewritten; hero blurb, roles intro, team caption, role numbers and the kickoff step deleted)
 - [x] Session 15e: Ashton's Nonprofits page copy pass (the club email is real — htfpurdue@gmail.com — every [TODO] on the page closed, the partner section renamed, the placeholder nonprofit quotes removed)
 - [x] Session 15f: Ashton's Privacy policy copy pass (no blurb, no Effective / Status row, no draft badge, the retention and Children sections gone, every [TODO] closed)
+- [x] Session 15h: every email control copies the address (ui/CopyEmail); no mailto links anywhere on the site
 - [x] Session 15g: the 2026-2027 Google Form is live on /apply (the last blocking content value), the page is the form and nothing else
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
@@ -183,6 +184,53 @@ conversion step, and the generic block would repeat the audience choice the visi
 made.
 
 **TODOs:** unchanged (the Google Form link and the club email; the photos and posts).
+
+## Session 15h — 2026-09-10 (email is copied, never a mailto link)
+
+Ashton: "All email buttons/references should be copy email functionality, not mailto."
+
+**Built:**
+
+1. **`ui/CopyEmail`**, one client module behind every email control. `writeClipboard()` uses
+   the async Clipboard API and falls back to the legacy selection copy where the API is
+   missing or refused (an http preview, an older browser); `useCopy()` holds the shared
+   two-and-a-half-second feedback window. Four shapes on top of it: `CopyEmailButton` (a
+   `SplitButton` whose label never changes, so the button keeps its width — the arrow cell
+   shows a tick and "Copied" appears beside it), `CopyEmailInline` (the address inside a
+   sentence, the site's green inline-link treatment), `CopyEmailIcon` (the drawer's 44px
+   icon square; the envelope becomes a tick) and `CopyEmailShell` (wraps markup the server
+   already rendered — the contact tile, the footer row — in a copy button so those surfaces
+   keep their layout). Every one announces the result through an `sr-only` `role="status"`
+   and carries an `aria-label` of "Copy <address> to the clipboard".
+2. **Every call site.** /nonprofits "Start a project" ("Email us" → "Copy our email", and
+   the address under it copies too; the `mailto:` subject line is gone), the /contact email
+   tile (a copy glyph instead of the diagonal arrow, "Copied" in the tile's top-right), the
+   footer's Connect row, the mobile drawer's icon row, the 404 note ("Tell us at
+   <address>"), the /privacy sidebar, and the address in the policy body — `MdxBody` renders
+   any `mailto:` link in MDX as the inline copy control, so content keeps writing ordinary
+   markdown links.
+3. **`SplitButton` takes an `icon` prop** ("copy" / "check") that replaces the arrow glyph
+   and drops the hover nudge, so a copy button still is a `SplitButton` (the site's rule)
+   without pretending to navigate.
+
+**Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm build`. Playwright with clipboard
+permissions clicked all five controls and read the clipboard back: the contact tile, the
+/nonprofits button, the 404 inline address, the footer row and the drawer icon each put
+`htfpurdue@gmail.com` on the clipboard. `pnpm a11y` on `/`, `/contact`, `/nonprofits`,
+`/privacy` at 1440 and 390 plus the drawer: 0 violations. Screenshots in
+`docs/screenshots/session-15h/` (`contact`, `nonprofits`, `privacy` at both widths, plus the
+five controls in their "Copied" state).
+
+**Decisions:** the button's label stays put and the feedback sits beside it — swapping the
+label to "Copied" made the button jump a step narrower, against the site's "nothing moves"
+rule. The inline control is `inline-block` with `py-0.5 -my-0.5`: vertical padding on an
+inline-block does not change the line box, so the address keeps its place in the sentence
+while the tap target reaches the 24px axe asks for (the /privacy sidebar failed
+`target-size` at 20px before that). Copy failure is visible ("Copy failed") rather than
+silent, and the address is always on screen next to the control, so a browser that refuses
+the clipboard still leaves the reader something to select.
+
+**TODOs:** unchanged.
 
 ## Session 15g — 2026-09-10 (the application form is live)
 

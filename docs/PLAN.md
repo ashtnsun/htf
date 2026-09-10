@@ -329,3 +329,12 @@ one of the two audiences: home, /about (in place of its "Get involved / Two ways
 panels) and /projects. /students and /nonprofits skip them, since a panel would point at the
 page you are on, and the project write-ups stay plain (§24). /nonprofits keeps its own "Start
 a project" email section (§23) as its closing step.
+
+**Email is copied, never opened (September 10, 2026, Session 15h).** The site has no
+`mailto:` link. Every email control — the /nonprofits "Copy our email" button and the address
+under it, the /contact email tile, the footer's Connect row, the drawer's icon row, the 404
+note, the /privacy sidebar and the address in the policy body — puts `site.socials.email` on
+the clipboard through `src/components/ui/CopyEmail.tsx` and says "Copied" for two and a half
+seconds (an `sr-only` `role="status"` says it to assistive tech). A `mailto:` link written in
+MDX renders as that control, so content stays ordinary markdown. `SplitButton` gained an
+`icon` prop ("copy" / "check") so the CTA keeps its shape without pretending to navigate.
