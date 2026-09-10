@@ -43,6 +43,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 13: review pass 5 (fourteen items: marquee header, awards column, the globe still and centred, project-card arrow, no Who we are, green section-bar item, no banner CTAs, centred sticky roles intro, timeline without numbers and with the Now marker and the run-off rail, subgrid How it works, no map behind the nonprofit quotes, Start a project and Contact by email, /apply as the embedded Google Form) and the portal parked under `parked/`
 - [x] Session 14: review pass 6 (eight items: pixel books and heart on Who we serve, globe pins named by state, tighter How it works gaps, no Photo hero CTA, plain project pages with the team on the right and no More projects, top-aligned roles intro, no Now tag, /apply as one centred column with the FAQ under the form)
 - [x] Session 14b: Ashton's look at Session 14 (the Who we serve pictures tweaked twice, then removed; the small dinosaurs' snouts rounded; the gift ribbon's end green)
+- [x] Session 14c: no glow behind the process dinosaurs (the home scene and the /nonprofits stills); the footer T-rex keeps its own
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -64,6 +65,35 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+
+## Session 14c — 2026-09-09 (no glow behind the process dinosaurs)
+
+Ashton: "Remove the glow from any graphic from all the dinosaur graphics page wide, except
+for the footer."
+
+**Built:**
+
+1. **No glow behind the process scene.** `home/ProcessScene` drew a faint green radial
+   gradient (`rgba(3,198,82,0.16)`, closest-side, over the middle 76 % of its box) behind
+   every scene it rendered: the home page's scroll scene at each step, the four stills on
+   /nonprofits and the `/dev/ui` stills. That element is gone; the T-rex, its tools and the
+   team stand on the page background. The footer is untouched, as asked: `brand/PixelDino`
+   keeps its drop-shadow and `layout/SiteFooter` its radial glow bleeding into the glass.
+
+**Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm build` (validates content first). `pnpm
+a11y` on `/` and `/nonprofits` at 1440 and 390 plus the drawer: 0 violations. Screenshots in
+`docs/screenshots/session-14c/`: `home-{1440,390}`, `nonprofits-{1440,390}`, `drawer-390`,
+plus `home-process-{1440,390}` (the scene stuck on the build step), `home-process-scene-2x`,
+`nonprofits-how-it-works-{1440,390}`, `nonprofits-how-it-works-discover-2x` and
+`footer-{1440,390}` (the glow that stays).
+
+**Decisions:** "dinosaur graphics" read as the process scene wherever it renders (the home
+scroll scene, the /nonprofits stills, the dev gallery) plus the footer T-rex; the site's
+other glows (the hero shell's bottom glow, the Get involved globe's, the partner globe's on
+/nonprofits, the page hero band) are not dinosaurs and stay. The removal is one deleted
+element, not a prop: no consumer wants the glow back, and the footer draws its own.
+
+**TODOs:** unchanged (the Google Form link and the club email; the hero decision).
 
 ## Session 14b — 2026-09-09 (Ashton's look at Session 14: the pictures, then no pictures)
 
@@ -1568,7 +1598,9 @@ unchanged.
 
 ## Next session starts with
 
-**First, Ashton's look at Session 14b** (`docs/screenshots/session-14b/`: the Who we serve
+**First, Ashton's look at Session 14c** (`docs/screenshots/session-14c/`: the process
+dinosaurs without the glow on the home page and /nonprofits; the footer's glow kept), then
+**Session 14b** (`docs/screenshots/session-14b/`: the Who we serve
 panels without pictures, the small dinosaurs' snouts, the gift ribbon), then the rest of
 Session 14
 (`docs/screenshots/session-14/`): the eight review
