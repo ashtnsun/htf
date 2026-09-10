@@ -46,9 +46,11 @@ src/app/            routes. page.dev.tsx files exist only in `next dev` (see nex
                     contact/ lists email, LinkedIn and Instagram; no server actions, no proxy
 src/components/
   apply/            ApplyForm (client): the Google Form in a frame tall enough that no
-                    section scrolls inside it, sized per section from measured heights
-                    (`scripts/measure-apply-form.mjs`), scrolling itself back into view on
-                    every "Next"; green `corner-brackets` around it
+                    section scrolls inside it — two measured heights, the first section and
+                    the rest (`scripts/measure-apply-form.mjs`), never a count of sections,
+                    because a cross-origin frame cannot say which one it shows or when the
+                    applicant goes back; it scrolls itself back into view on every "Next",
+                    with green `corner-brackets` around it
   brand/            Logo (inline SVG wordmark; logo-paths.ts is generated, do not hand-edit),
                     PixelDino (footer), dino-pixels.ts (the 20×22 T-rex map the footer and the
                     process scene share)
