@@ -4,7 +4,7 @@
 
 Marketing site for Hack the Future (HTF), a Purdue student org that builds software for
 nonprofits. One developer (Ashton, design director) working with Claude Code. Dark theme
-only. Applications go through a Google Form (linked from `/apply`) and messages by email;
+only. Applications go through a Google Form (embedded on `/apply`) and messages by email;
 the finished Phase 2 application portal and the site forms are parked under `parked/`
 (see `parked/README.md`), not built.
 
@@ -39,12 +39,16 @@ content/            typed content: site.ts (config + season CTA), media.ts (imag
                     nonprofits.ts, instagram.ts, privacy.mdx, projects/*.mdx (Zod frontmatter)
 src/app/            routes. page.dev.tsx files exist only in `next dev` (see next.config.ts);
                     apply/ is the Google Form page (one centred column, no banner: a short
-                    heading with the deadline and a framed card whose button opens the form
-                    in a new tab; "closed" out of season); projects/[slug] is a plain title block,
+                    heading with the deadline, the form framed by components/apply/ApplyForm
+                    and the button that opens it in a new tab; "closed" out of season); projects/[slug] is a plain title block,
                     the cover, the write-up with the team and stack in the right column, the
                     gallery and the CTA (no banner, jump links or "More projects");
                     contact/ lists email, LinkedIn and Instagram; no server actions, no proxy
 src/components/
+  apply/            ApplyForm (client): the Google Form in a frame tall enough that no
+                    section scrolls inside it, sized per section from measured heights
+                    (`scripts/measure-apply-form.mjs`), scrolling itself back into view on
+                    every "Next"; green `corner-brackets` around it
   brand/            Logo (inline SVG wordmark; logo-paths.ts is generated, do not hand-edit),
                     PixelDino (footer), dino-pixels.ts (the 20×22 T-rex map the footer and the
                     process scene share)
@@ -89,6 +93,7 @@ src/lib/config/     options.ts (HERO_VARIANTS / DEFAULT_HERO, INVOLVED_VARIANTS 
                     first paint always see the defaults)
 src/lib/geo.ts      sphere maths shared by both globes
 scripts/            validate-content, gen-placeholders, gen-logo-paths.py, gen-world-dots,
+                    measure-apply-form (the /apply frame heights, against a production build),
                     screenshots, a11y
 docs/               PLAN.md, PROGRESS.md, DEPLOY.md, prompts/, screenshots/session-N/
 parked/             the application portal and the site forms, mirrored under parked/src/
@@ -114,10 +119,9 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
 - Spelling: `nonprofits`, one word, everywhere (page title "Nonprofits"); never "non-profits".
 - Season logic lives only in `content/site.ts` (`getPrimaryCta`, `isInSeason`,
   `formatDeadline`, `getApplyForm`). Every CTA reads from it: in season `/apply`, otherwise
-  `/contact`. `/apply` links to the Google Form in `season.applyFormUrl` (`getApplyForm`;
-  its `embedUrl` adds `embedded=true` and is unused since 2026-09-10 — the form runs over
-  several sections of differing heights, so a frame means a nested scrollbar or a white gap,
-  and nothing inside Google's page can be styled from here). Nothing on the site posts a form: nonprofits and everyone else write to
+  `/contact`. `/apply` embeds the Google Form in `season.applyFormUrl` (`getApplyForm` adds
+  `embedded=true`) and links to it as well; nothing inside Google's page can be styled from
+  here, so the frame is what the site controls. Nothing on the site posts a form: nonprofits and everyone else write to
   `site.socials.email`, and every email control copies that address to the clipboard
   (`ui/CopyEmail`) — the site has no `mailto:` link, including in MDX.
 - The hero variant and the Get involved graphic are per-browser choices (Shift + M,
@@ -149,7 +153,8 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   `rounded-full` is for avatars only. The look is rigid lines and hairline dividers.
 - Surface language: `glass` (frosted: header, drawer, footer, floating tiles and cards;
   `[--glass-alpha:80%]` tunes opacity), `hover-corners` (green viewfinder brackets on
-  hover / focus, the one hover treatment for interactive surfaces), `frame-marks`
+  hover / focus, the one hover treatment for interactive surfaces; `corner-brackets` draws the
+  same brackets permanently, only around the Google Form on /apply), `frame-marks`
   (crosshairs at the corners of framed containers). Other utilities: `container-x` (reads
   `--gutter`), `container-max`, `bleed-row-2` / `bleed-row-3` (a full-bleed hairline row
   whose columns stay on the container's columns: `grid md:bleed-row-3`, first item

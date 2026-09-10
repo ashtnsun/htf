@@ -326,6 +326,45 @@
   }
 }
 
+/* The viewfinder brackets, drawn permanently instead of on hover: for one framed object that
+   is not interactive and cannot be styled from here (the Google Form on /apply). Decoration
+   only — everything interactive keeps `hover-corners`. */
+@utility corner-brackets {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    --corner-size: 1.75rem;
+    background-image:
+      linear-gradient(var(--green), var(--green)), linear-gradient(var(--green), var(--green)),
+      linear-gradient(var(--green), var(--green)), linear-gradient(var(--green), var(--green)),
+      linear-gradient(var(--green), var(--green)), linear-gradient(var(--green), var(--green)),
+      linear-gradient(var(--green), var(--green)), linear-gradient(var(--green), var(--green));
+    background-size:
+      var(--corner-size) 2px,
+      2px var(--corner-size),
+      var(--corner-size) 2px,
+      2px var(--corner-size),
+      var(--corner-size) 2px,
+      2px var(--corner-size),
+      var(--corner-size) 2px,
+      2px var(--corner-size);
+    background-position:
+      left top,
+      left top,
+      right top,
+      right top,
+      left bottom,
+      left bottom,
+      right bottom,
+      right bottom;
+    background-repeat: no-repeat;
+  }
+}
+
 /* Blueprint crosshairs centred on the four corners of a framed container (hero, page heroes,
    `Section frame`). Pure decoration in the hairline colour. */
 @utility frame-marks {

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { formatDeadline, getApplyForm, isInSeason, site } from "@content/site";
+import { ApplyForm } from "@/components/apply/ApplyForm";
 import { Reveal } from "@/components/motion/Reveal";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Headline } from "@/components/ui/Headline";
@@ -12,18 +13,19 @@ export const metadata: Metadata = {
   alternates: { canonical: "/apply" },
 };
 
-/** The one centred column everything on the page sits in. */
-const column = "mx-auto w-full max-w-2xl";
+/**
+ * The one centred column everything on the page sits in. 3xl so the frame is wide enough for
+ * Google's own 640px column to reach full width instead of wrapping into a taller form.
+ */
+const column = "mx-auto w-full max-w-3xl";
 
 /**
  * /apply: where every Apply CTA lands. One centred column, no banner (the second 2026-09-09
  * review): a short heading with the deadline, then the cycle's Google Form embedded
- * (content/site.ts → season.applyFormUrl), then the way into the cycle's Google Form. The
- * form is linked, not embedded: it runs over several sections whose heights differ, so an
- * iframe means a nested scrollbar or a white gap under the short ones, and nothing of
- * Google's page can be styled from here (cross-origin). `getApplyForm().embedUrl` still
- * carries `embedded=true` for the day it goes back in a frame. The FAQ under the form came
- * off in the same 2026-09-10 copy pass. Out of season the page says applications are closed.
+ * (content/site.ts → season.applyFormUrl), the cycle's Google Form in a frame tall enough
+ * that nothing scrolls inside it (components/apply/ApplyForm), and the button that opens the
+ * same form in a new tab for anyone whose browser blocks the frame. The FAQ under the form
+ * came off in the 2026-09-10 copy pass. Out of season the page says applications are closed.
  * Applications went to Google Forms on 2026-09-09; the in-house portal that used to live
  * here is parked under parked/.
  */
@@ -59,17 +61,17 @@ export default function ApplyPage() {
 
           <Reveal standalone delay={0.1} className="mt-12 md:mt-14">
             {form ? (
-              <div className="frame-marks flex flex-col items-center border border-line bg-surface px-6 py-12 text-center md:px-12 md:py-16">
-                <p className="max-w-sm text-body-lg text-text">
-                  The application runs on Google Forms and opens in a new tab.
-                </p>
-                <SplitButton href={form.url} size="lg" className="mt-8">
-                  Open the application form
-                </SplitButton>
-                <p className="mt-6 max-w-sm text-sm text-muted">
-                  Sign in to Google first if you want it to save your progress as you go.
-                </p>
-              </div>
+              <>
+                <ApplyForm
+                  embedUrl={form.embedUrl}
+                  title={`${site.season.cycleName} application form`}
+                />
+                <div className="mt-10 flex flex-col items-center text-center">
+                  <SplitButton href={form.url} size="lg">
+                    Open the form in a new tab
+                  </SplitButton>
+                </div>
+              </>
             ) : null}
           </Reveal>
         </div>
