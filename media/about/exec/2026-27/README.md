@@ -1,10 +1,16 @@
 # 2026–27 board
 
-Waiting on (slugs from `content/exec.ts`):
+Waiting on (slugs from `content/exec.ts`, in the order the cards show):
 
-- `todo-president-2026.jpg` — President ([TODO: name])
+- `arav-shah-2026.jpg` — Arav Shah, President
+- `emily-li-2026.jpg` — Emily Li, Vice President
+- `arushi-ravula-2026.jpg` — Arushi Ravula, Secretary
+- `jason-gottesman-2026.jpg` — Jason Gottesman, Treasurer
+- `ben-connelly-2026.jpg` — Ben Connelly, Technical Director
 - `ashton-sun-2026.jpg` — Ashton Sun, Design Director
-- `todo-exec-3-2026.jpg` — [TODO: name and role]
+- `khang-nguyen-2026.jpg` — Khang Nguyen, Marketing
+- `shreeya-sarurkar-2026.jpg` — Shreeya Sarurkar, External Outreach
+- `nakul-naik-2026.jpg` — Nakul Naik, Internal Outreach
 
-Rename the file when the person's name is confirmed in `content/exec.ts` — the file name must
-match the slug there.
+The file name must match the slug in `content/exec.ts`; `pnpm media:check` matches on it and
+`--import` copies the file into `public/images/exec/`.

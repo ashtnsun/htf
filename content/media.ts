@@ -32,10 +32,16 @@ export const media = {
   "instagram.post-5": `${P}/instagram-checker.svg`,
   "instagram.post-6": `${P}/instagram-globe.svg`,
 
-  // People (key pattern: exec.<slug>)
-  "exec.todo-president": `${P}/exec.svg`,
-  "exec.ashton-sun": `${P}/exec.svg`,
-  "exec.todo-exec-3": `${P}/exec.svg`,
+  // People (key pattern: exec.<slug>, the slug carrying the board year)
+  "exec.arav-shah-2026": "/images/exec/arav-shah-2026.jpeg",
+  "exec.emily-li-2026": "/images/exec/emily-li-2026.jpg",
+  "exec.arushi-ravula-2026": "/images/exec/arushi-ravula-2026.jpg",
+  "exec.jason-gottesman-2026": "/images/exec/jason-gottesman-2026.jpg",
+  "exec.ben-connelly-2026": "/images/exec/ben-connelly-2026.jpg",
+  "exec.ashton-sun-2026": "/images/exec/ashton-sun-2026.jpg",
+  "exec.khang-nguyen-2026": "/images/exec/khang-nguyen-2026.jpg",
+  "exec.shreeya-sarurkar-2026": "/images/exec/shreeya-sarurkar-2026.jpg",
+  "exec.nakul-naik-2026": "/images/exec/nakul-naik-2026.jpg",
   "avatar.placeholder": `${P}/avatar.svg`,
 } as const satisfies Record<string, string>;
 
