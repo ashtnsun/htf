@@ -22,7 +22,9 @@ type ContactCtaProps = {
 };
 
 /**
- * Closing call-to-action after the Framer contact block: eyebrow, display headline, copy,
+ * The closing call-to-action every page ends with, in one wording since 2026-09-10 (the
+ * per-page variants — "Work with us", "Questions?", "Ready?" — are gone): eyebrow, display
+ * headline, copy,
  * the season CTA (Apply Now / Contact Us from content/site.ts) and the floating Get involved
  * graphic (layout/involved: the partner globe by default since 2026-09-09, Terminal, Chat and
  * Badge in the Shift + M menu; every one a recognizable object, since audit 4 of 2026-09-07).
@@ -31,7 +33,7 @@ export function ContactCta({
   id = "get-involved",
   eyebrow = "Get involved",
   lines = ["Let’s build something", "*that matters.*"],
-  copy = "Students and nonprofits both start here.",
+  copy = "Whether you want to ship software for a cause or you run a nonprofit with a problem worth solving, we would love to hear from you.",
   secondary = { label: "Contact us", href: "/contact" },
   className,
 }: ContactCtaProps) {

@@ -67,7 +67,7 @@ src/components/
                     ProcessSprites.ts; also the stills on /nonprofits),
                     ImpactBand (+ TestimonialMarquee, Awards, AwardCarousel), WhoWeServe (two
                     linked panels with a presentational "Learn more" button in a full-bleed
-                    row, no pictures; also the hand-off on /about)
+                    row, no pictures; the "Learn more" hand-off on /about and /projects too)
   about/            Mission, Story, ExecGrid (+ ExecBoard: a chip per school year, `?board=` in
                     the URL, LinkedIn cell on every card), InstagramGrid
   nonprofits/       HowItWorks (cards share rows through a subgrid), Scope, Partners

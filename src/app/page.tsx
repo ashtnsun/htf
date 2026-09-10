@@ -57,7 +57,7 @@ export default function HomePage() {
           </p>
         }
       />
-      <ContactCta copy="Whether you want to ship software for a cause or you run a nonprofit with a problem worth solving, we would love to hear from you." />
+      <ContactCta />
     </>
   );
 }

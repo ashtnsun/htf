@@ -36,16 +36,16 @@ type WhoWeServeProps = {
 
 /**
  * Two panels, one per audience, so a first-time visitor finds their page in one click. The
- * home page shows them under the eyebrow alone (no headline since the 2026-09-10 copy pass);
- * /about passes its own eyebrow and headline. Each
- * panel is one link in a full-bleed hairline row (the same row as "What we do", framed by
- * vertical rails): eyebrow, title, one sentence and a "Learn more" button (a pixel picture
- * above the eyebrow came and went in the 2026-09-09 reviews). Hovering the panel turns the
- * title green and puts the
- * button in its hover state (green border, the arrow cell fills), the treatment the project
- * cards use; nothing moves. The two panels share their row tracks (subgrid), so every line
- * sits at the same height in both. Also the "I'm a student / I'm a nonprofit" hand-off on
- * /about.
+ * "Learn more" hand-off closes every page that is not itself one of the two audiences: home,
+ * /about and /projects all render it with the defaults (the eyebrow alone, no headline, since
+ * the 2026-09-10 copy pass); /students and /nonprofits do not, since one panel would point at
+ * the page you are on. Each panel is one link in a full-bleed hairline row (the same row as
+ * "What we do", framed by vertical rails): eyebrow, title, one sentence and a "Learn more"
+ * button (a pixel picture above the eyebrow came and went in the 2026-09-09 reviews).
+ * Hovering the panel turns the title green and puts the button in its hover state (green
+ * border, the arrow cell fills), the treatment the project cards use; nothing moves. The two
+ * panels share their row tracks (subgrid), so every line sits at the same height in both.
+ * `eyebrow` and `lines` stay props for a page that ever needs its own framing.
  */
 export function WhoWeServe({
   id = "who-we-serve",

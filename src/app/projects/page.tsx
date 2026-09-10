@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { WhoWeServe } from "@/components/home/WhoWeServe";
 import { ContactCta } from "@/components/layout/ContactCta";
 import { PageHero } from "@/components/layout/PageHero";
 import { toProjectCardData } from "@/components/projects/ProjectCard";
@@ -44,12 +45,8 @@ export default function ProjectsPage() {
         </Suspense>
       </Section>
 
-      <ContactCta
-        eyebrow="Work with us"
-        lines={["Have a problem", "*worth solving?*"]}
-        copy="Nonprofits bring us real problems; student teams build the software over a school year. Both start here."
-        secondary={{ label: "For nonprofits", href: "/nonprofits" }}
-      />
+      <WhoWeServe />
+      <ContactCta />
     </>
   );
 }

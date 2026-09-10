@@ -51,16 +51,8 @@ export default function AboutPage() {
         </Section>
       ) : null}
       <InstagramGrid posts={posts} />
-      <WhoWeServe
-        id="get-involved-panels"
-        eyebrow="Get involved"
-        lines={["Two ways", "*to join in.*"]}
-      />
-      <ContactCta
-        eyebrow="Questions?"
-        lines={["Talk to", "*the team.*"]}
-        copy="Whether you are thinking about applying or have a project in mind, a short message is enough to start."
-      />
+      <WhoWeServe />
+      <ContactCta />
     </>
   );
 }

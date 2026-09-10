@@ -176,12 +176,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
         </Section>
       ) : null}
 
-      <ContactCta
-        eyebrow="Work with us"
-        lines={["Have a problem", "*worth solving?*"]}
-        copy="Nonprofits bring us real problems; student teams build the software over a school year. Both start here."
-        secondary={{ label: "For nonprofits", href: "/nonprofits" }}
-      />
+      <ContactCta />
     </>
   );
 }

@@ -59,11 +59,7 @@ export default function StudentsPage() {
           </p>
         }
       />
-      <ContactCta
-        eyebrow="Ready?"
-        lines={["Bring what you know.", "*Learn the rest.*"]}
-        copy="Open to all majors, all years, and all levels of experience. Not sure which role fits? Apply for more than one, or ask us first."
-      />
+      <ContactCta />
     </>
   );
 }
