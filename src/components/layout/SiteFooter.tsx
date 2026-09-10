@@ -4,9 +4,12 @@ import { getPrimaryCta, site, type NavLink } from "@content/site";
 import { InstagramIcon, LinkedinIcon } from "@/components/icons/Social";
 import { Logo } from "@/components/brand/Logo";
 import { PixelDino } from "@/components/brand/PixelDino";
+import { CopyEmailShell } from "@/components/ui/CopyEmail";
 import { isTodo } from "@/lib/utils";
 
-type Column = { title: string; links: (NavLink & { Icon?: typeof Mail })[] };
+/** `copy` marks the club address: the row copies it to the clipboard, it is not a link. */
+type FooterLink = NavLink & { Icon?: typeof Mail; copy?: string | null };
+type Column = { title: string; links: FooterLink[] };
 
 /**
  * Frosted-glass footer (logo, Explore · Get involved · Connect · Legal; no tagline, no
@@ -32,10 +35,22 @@ export function SiteFooter() {
     {
       title: "Connect",
       links: [
-        { label: "Instagram", href: site.socials.instagram, external: true, Icon: InstagramIcon },
-        { label: "LinkedIn", href: site.socials.linkedin, external: true, Icon: LinkedinIcon },
-        { label: "Email", href: `mailto:${site.socials.email}`, Icon: Mail },
-      ].filter((l) => !isTodo(l.href.replace(/^mailto:/, ""))),
+        {
+          label: "Instagram",
+          href: site.socials.instagram,
+          copy: null,
+          external: true,
+          Icon: InstagramIcon,
+        },
+        {
+          label: "LinkedIn",
+          href: site.socials.linkedin,
+          copy: null,
+          external: true,
+          Icon: LinkedinIcon,
+        },
+        { label: "Email", href: "", copy: site.socials.email, Icon: Mail },
+      ].filter((l) => !isTodo(l.copy ?? l.href)),
     },
     { title: "Legal", links: [...site.footer.legal] },
   ];
@@ -69,6 +84,16 @@ export function SiteFooter() {
                     const external = link.external || /^https?:\/\//.test(link.href);
                     const className =
                       "inline-flex items-center gap-2 text-sm text-text transition-colors duration-200 hover:text-green";
+                    if (link.copy) {
+                      return (
+                        <li key={link.label}>
+                          <CopyEmailShell email={link.copy} className={className}>
+                            {link.Icon ? <link.Icon className="size-4 text-muted" /> : null}
+                            {link.label}
+                          </CopyEmailShell>
+                        </li>
+                      );
+                    }
                     return (
                       <li key={link.label}>
                         {external ? (

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, Download, LoaderCircle } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, Copy, Download, LoaderCircle } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +16,8 @@ type SplitButtonProps = {
   size?: "md" | "lg" | "bar";
   /** Opens in a new tab and shows a diagonal arrow. Inferred for http(s) hrefs. */
   external?: boolean;
+  /** Overrides the arrow glyph. "copy"/"check" are the email copy controls (ui/CopyEmail). */
+  icon?: "copy" | "check";
   /** <button> only. */
   type?: "submit" | "button";
   /** <button> only: submitted with the form (e.g. which step to go to next). */
@@ -50,6 +52,7 @@ export function SplitButton({
   variant = "primary",
   size = "md",
   external,
+  icon: iconName,
   type = "button",
   name,
   value,
@@ -64,11 +67,15 @@ export function SplitButton({
   const isExternal = href ? (external ?? /^https?:\/\//.test(href)) : false;
   const Icon = pending
     ? LoaderCircle
-    : download
-      ? Download
-      : isExternal
-        ? ArrowUpRight
-        : ArrowRight;
+    : iconName === "copy"
+      ? Copy
+      : iconName === "check"
+        ? Check
+        : download
+          ? Download
+          : isExternal
+            ? ArrowUpRight
+            : ArrowRight;
 
   const base = cn(
     "group inline-flex items-stretch overflow-hidden font-medium whitespace-nowrap",
@@ -117,11 +124,13 @@ export function SplitButton({
     "size-[1.1em] transition-transform duration-300 ease-out-expo",
     pending
       ? "animate-spin"
-      : download
-        ? "group-hover:translate-y-0.5"
-        : isExternal
-          ? "group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-          : "group-hover:translate-x-1",
+      : iconName
+        ? null
+        : download
+          ? "group-hover:translate-y-0.5"
+          : isExternal
+            ? "group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+            : "group-hover:translate-x-1",
   );
 
   const content = (

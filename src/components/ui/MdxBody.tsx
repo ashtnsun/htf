@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import remarkGfm from "remark-gfm";
+import { CopyEmailInline } from "@/components/ui/CopyEmail";
 import { slugify } from "@/lib/mdx";
 import { cn } from "@/lib/utils";
 
@@ -31,8 +32,15 @@ function heading(Tag: "h2" | "h3") {
   };
 }
 
-/** Internal links go through next/link; external ones open in a new tab. */
+/**
+ * Internal links go through next/link; external ones open in a new tab. An address written
+ * as a `mailto:` link renders as the copy control instead — nothing on the site opens a mail
+ * client since 2026-09-10.
+ */
 function MdxLink({ href = "", children, ...rest }: AnchorHTMLAttributes<HTMLAnchorElement>) {
+  if (href.startsWith("mailto:")) {
+    return <CopyEmailInline email={href.slice("mailto:".length)}>{children}</CopyEmailInline>;
+  }
   if (/^https?:\/\//.test(href)) {
     return (
       <a href={href} target="_blank" rel="noopener noreferrer" {...rest}>

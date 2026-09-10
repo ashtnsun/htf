@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import { ArrowUpRight, Mail } from "lucide-react";
+import { ArrowUpRight, Copy, Mail } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
 import { site } from "@content/site";
 import { InstagramIcon, LinkedinIcon } from "@/components/icons/Social";
 import { PageHero } from "@/components/layout/PageHero";
 import { Reveal } from "@/components/motion/Reveal";
+import { CopyEmailShell } from "@/components/ui/CopyEmail";
 import { Section } from "@/components/ui/Section";
-import { isTodo } from "@/lib/utils";
+import { cn, isTodo } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -20,6 +21,8 @@ type Channel = {
   value: string;
   /** Null while the address is a TODO: the tile shows the value as text, without a link. */
   href: string | null;
+  /** The club address: the tile copies it to the clipboard instead of linking anywhere. */
+  copy?: string | null;
   Icon: ComponentType<SVGProps<SVGSVGElement>>;
 };
 
@@ -28,6 +31,9 @@ type Channel = {
  * hairline row of link tiles. No form since the 2026-09-09 review: messages are handled by
  * email. A TODO address renders as visible TODO text rather than a broken link.
  */
+const tileClass =
+  "group hover-corners flex h-full min-h-56 w-full flex-col justify-between p-6 transition-colors duration-200 hover:bg-surface-2 focus-visible:outline-offset-[-3px] md:p-8";
+
 export default function ContactPage() {
   const email = isTodo(site.socials.email) ? null : site.socials.email;
   const linkedin = isTodo(site.socials.linkedin) ? null : site.socials.linkedin;
@@ -35,7 +41,8 @@ export default function ContactPage() {
     {
       label: "Email",
       value: email ?? "[TODO: club contact email]",
-      href: email ? `mailto:${email}` : null,
+      href: null,
+      copy: email,
       Icon: Mail,
     },
     {
@@ -76,7 +83,12 @@ export default function ContactPage() {
                     <span className="min-w-0 text-body-lg font-medium text-text transition-colors duration-200 group-hover:text-green">
                       {channel.value}
                     </span>
-                    {channel.href ? (
+                    {channel.copy ? (
+                      <Copy
+                        className="mt-1 size-5 shrink-0 text-muted transition-colors duration-200 group-hover:text-green"
+                        aria-hidden="true"
+                      />
+                    ) : channel.href ? (
                       <ArrowUpRight
                         className="mt-1 size-5 shrink-0 text-muted transition-transform duration-300 ease-out-expo group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                         aria-hidden="true"
@@ -87,12 +99,20 @@ export default function ContactPage() {
               );
               return (
                 <li key={channel.label} className="bg-bg">
-                  {channel.href ? (
+                  {channel.copy ? (
+                    <CopyEmailShell
+                      email={channel.copy}
+                      feedback="corner"
+                      className={cn(tileClass, "text-left")}
+                    >
+                      {body}
+                    </CopyEmailShell>
+                  ) : channel.href ? (
                     <a
                       href={channel.href}
                       target={external ? "_blank" : undefined}
                       rel={external ? "noopener noreferrer" : undefined}
-                      className="group hover-corners flex h-full min-h-56 flex-col justify-between p-6 transition-colors duration-200 hover:bg-surface-2 focus-visible:outline-offset-[-3px] md:p-8"
+                      className={tileClass}
                     >
                       {body}
                     </a>

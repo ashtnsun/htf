@@ -49,7 +49,8 @@ src/components/
                     PixelDino (footer), dino-pixels.ts (the 20×22 T-rex map the footer and the
                     process scene share)
   ui/               primitives: Eyebrow, Headline, SplitButton, Section, Card, Accordion,
-                    StatTile (+ CountUp), TestimonialCard, Chip, Field, Media, DottedMap
+                    StatTile (+ CountUp), TestimonialCard, Chip, Field, Media, DottedMap,
+                    CopyEmail (every email control: copies the address, never a mailto link)
   layout/           SiteHeader, NavDrawer, NavLinks, SiteFooter, PageHero, SectionNav (the
                     sticky section bar under the hero on About / Students / Nonprofits; sets
                     --subnav-h so anchors land below it), FaqSection, ContactCta (+ involved/: the
@@ -116,7 +117,8 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   `/contact`. `/apply` embeds the Google Form in `season.applyFormUrl` (`getApplyForm` adds
   `embedded=true`; while the link is a TODO the page shows the TODO and the Instagram
   fallback). Nothing on the site posts a form: nonprofits and everyone else write to
-  `site.socials.email`.
+  `site.socials.email`, and every email control copies that address to the clipboard
+  (`ui/CopyEmail`) — the site has no `mailto:` link, including in MDX.
 - The hero variant and the Get involved graphic are per-browser choices (Shift + M,
   `src/lib/config`), never a build-time or server-side switch: visitors always get
   `DEFAULT_HERO` / `DEFAULT_INVOLVED` from `src/lib/config/options.ts`, and the pages stay

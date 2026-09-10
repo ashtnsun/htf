@@ -4,6 +4,7 @@ import Link from "next/link";
 import { formatDeadline, isInSeason, site } from "@content/site";
 import { PageHero } from "@/components/layout/PageHero";
 import { SplitButton } from "@/components/ui/SplitButton";
+import { CopyEmailInline } from "@/components/ui/CopyEmail";
 import { isTodo } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Page not found", robots: { index: false } };
@@ -75,11 +76,8 @@ export default function NotFound() {
       ) : null}
       {email ? (
         <p className="mt-3 text-sm text-muted">
-          Followed a broken link from somewhere?{" "}
-          <a href={`mailto:${email}`} className={inlineLink}>
-            Tell us
-          </a>{" "}
-          and we will fix it.
+          Followed a broken link from somewhere? Tell us at{" "}
+          <CopyEmailInline email={email} className={inlineLink} /> and we will fix it.
         </p>
       ) : null}
     </PageHero>

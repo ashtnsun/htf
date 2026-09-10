@@ -11,8 +11,8 @@ import { Partners } from "@/components/nonprofits/Partners";
 import { Scope } from "@/components/nonprofits/Scope";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Headline } from "@/components/ui/Headline";
+import { CopyEmailButton, CopyEmailInline } from "@/components/ui/CopyEmail";
 import { Section } from "@/components/ui/Section";
-import { SplitButton } from "@/components/ui/SplitButton";
 import {
   getFaq,
   getNonprofitsPage,
@@ -51,7 +51,6 @@ export default function NonprofitsPage() {
   const testimonials = getTestimonials().filter((t) => t.kind === "nonprofit");
   const faq = getFaq("nonprofits");
   const email = site.socials.email;
-  const subject = encodeURIComponent(`Project idea for ${site.name}`);
 
   return (
     <>
@@ -96,15 +95,11 @@ export default function NonprofitsPage() {
               problem you would like solved, and we scope the details together on a call.
             </p>
             <div className="mt-8">
-              <SplitButton href={`mailto:${email}?subject=${subject}`} size="lg">
-                Email us
-              </SplitButton>
+              <CopyEmailButton email={email} size="lg">
+                Copy our email
+              </CopyEmailButton>
               <p className="mt-5 text-sm text-muted">
-                Or write to{" "}
-                <a href={`mailto:${email}`} className={linkClass}>
-                  {email}
-                </a>{" "}
-                from your own email app.
+                <CopyEmailInline email={email} /> — write to us from your own email app.
               </p>
             </div>
           </Reveal>

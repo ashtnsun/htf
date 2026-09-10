@@ -5,6 +5,7 @@ import { OnThisPage } from "@/components/layout/OnThisPage";
 import { PageHero } from "@/components/layout/PageHero";
 import { MdxBody } from "@/components/ui/MdxBody";
 import { Section } from "@/components/ui/Section";
+import { CopyEmailInline } from "@/components/ui/CopyEmail";
 import { getPrivacyPolicy } from "@/lib/content";
 import { extractHeadings } from "@/lib/mdx";
 import { isTodo } from "@/lib/utils";

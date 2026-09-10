@@ -15,9 +15,17 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ComponentType,
+} from "react";
 import { createPortal } from "react-dom";
 import { site } from "@content/site";
+import { CopyEmailIcon } from "@/components/ui/CopyEmail";
 import { InstagramIcon, LinkedinIcon } from "@/components/icons/Social";
 import { Logo } from "@/components/brand/Logo";
 import { Eyebrow } from "@/components/ui/Eyebrow";
@@ -109,16 +117,25 @@ export function NavDrawer({ cta }: NavDrawerProps) {
   }, [open, close]);
 
   const links = [...site.nav, { label: "Contact", href: "/contact" }];
-  const socials = [
-    { label: "Instagram", href: site.socials.instagram, Icon: InstagramIcon },
-    { label: "LinkedIn", href: site.socials.linkedin, Icon: LinkedinIcon },
+  // `copy` marks the address: it goes to the clipboard instead of opening a mail client.
+  const socialClass =
+    "flex size-11 items-center justify-center border border-line-strong text-text transition-colors duration-200 hover:border-green hover:text-green";
+  const socials: {
+    label: string;
+    href: string;
+    copy: string | null;
+    Icon: ComponentType<{ className?: string }>;
+  }[] = [
+    { label: "Instagram", href: site.socials.instagram, copy: null, Icon: InstagramIcon },
+    { label: "LinkedIn", href: site.socials.linkedin, copy: null, Icon: LinkedinIcon },
     {
       label: "Email",
-      href: `mailto:${site.socials.email}`,
+      href: "",
+      copy: site.socials.email,
       Icon: Mail,
       todo: isTodo(site.socials.email),
     },
-  ].filter((s) => !s.todo && !isTodo(s.href));
+  ].filter((s) => !s.todo && !isTodo(s.href || s.copy));
 
   const transition = reduce
     ? { duration: 0 }
@@ -228,17 +245,26 @@ export function NavDrawer({ cta }: NavDrawerProps) {
                         Social media
                       </Eyebrow>
                       <ul className="flex gap-3">
-                        {socials.map(({ label, href, Icon }) => (
+                        {socials.map(({ label, href, copy, Icon }) => (
                           <li key={label}>
-                            <a
-                              href={href}
-                              target={href.startsWith("http") ? "_blank" : undefined}
-                              rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
-                              aria-label={label}
-                              className="flex size-11 items-center justify-center border border-line-strong text-text transition-colors duration-200 hover:border-green hover:text-green"
-                            >
-                              <Icon className="size-4.5" />
-                            </a>
+                            {copy ? (
+                              <CopyEmailIcon
+                                email={copy}
+                                label={label}
+                                Icon={Icon}
+                                className={socialClass}
+                              />
+                            ) : (
+                              <a
+                                href={href}
+                                target={href.startsWith("http") ? "_blank" : undefined}
+                                rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
+                                aria-label={label}
+                                className={socialClass}
+                              >
+                                <Icon className="size-4.5" />
+                              </a>
+                            )}
                           </li>
                         ))}
                       </ul>
