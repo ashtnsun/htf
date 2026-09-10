@@ -43,7 +43,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 13: review pass 5 (fourteen items: marquee header, awards column, the globe still and centred, project-card arrow, no Who we are, green section-bar item, no banner CTAs, centred sticky roles intro, timeline without numbers and with the Now marker and the run-off rail, subgrid How it works, no map behind the nonprofit quotes, Start a project and Contact by email, /apply as the embedded Google Form) and the portal parked under `parked/`
 - [x] Session 14: review pass 6 (eight items: pixel books and heart on Who we serve, globe pins named by state, tighter How it works gaps, no Photo hero CTA, plain project pages with the team on the right and no More projects, top-aligned roles intro, no Now tag, /apply as one centred column with the FAQ under the form)
 - [x] Session 14b: Ashton's look at Session 14 (the Who we serve pictures tweaked twice, then removed; the small dinosaurs' snouts rounded; the gift ribbon's end green)
-- [x] Session 15: Ashton's home page copy pass (hero statement and eyebrow, "What do we do?" as a heading with no eyebrow, no Who we serve headline, Process eyebrow, process and FAQ wording, two TODO answers confirmed)
+- [x] Session 15: Ashton's home page copy pass (hero statement and eyebrow, "What do we do?" as a heading with no eyebrow and no photo, no Who we serve headline, Process eyebrow, process and FAQ wording, two TODO answers confirmed, the 2026-2027 cycle and its Sep 17 deadline, Photo as the default hero)
 - [x] Session 14c: no glow behind the process dinosaurs (the home scene and the /nonprofits stills); the footer T-rex keeps its own
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
@@ -70,7 +70,8 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ## Session 15 — 2026-09-10 (Ashton's home page copy pass)
 
 Ashton edited the home page's text in a document (copied off the live page) and pasted it
-back with `-->` marking every change. Applied verbatim, one content edit at a time.
+back with `-->` marking every change, then sent two rounds of notes on the result. Applied
+verbatim, one content edit at a time.
 
 **Built:**
 
@@ -81,11 +82,13 @@ back with `-->` marking every change. Applied verbatim, one content edit at a ti
    `heroStatement` ("Hack the Future at Purdue") follows. The home share card's eyebrow
    (`src/app/opengraph-image.tsx`) follows the hero; its headline stays "Building software
    for nonprofits, at Purdue." because a link preview has no logo to name the club.
-2. **What we do.** The headline "Built by students, free for nonprofits." went first, with
-   the eyebrow promoted to the section heading; then Ashton's second note reversed the pair:
+2. **What we do**, over three notes. The headline "Built by students, free for nonprofits."
+   went first, with the eyebrow promoted to the section heading; then the pair reversed —
    the eyebrow (the green square and the label) is gone and the heading is the question
-   **"What do we _do?_"** with "do?" green, at the old headline's size (`md:text-display`)
-   and the photo back at `mt-12`. It is the only section on the page with no eyebrow.
+   **"What do we do?"** with "do?" green; then the heading was sized like every other
+   section heading (plain `size="h2"`, no `md:text-display`) and the organization photo
+   under it removed. The section is now the heading and the three service panels, and it is
+   the only section on the page with no eyebrow. The Photo hero carries that picture instead.
 3. **How it works → Process.** The section eyebrow on the home page only; /nonprofits keeps
    its own "How it works" (the nav's section bar names it).
 4. **Process steps** (`content/process.ts`). Discover: "what a win looks like" → "what the
@@ -97,30 +100,40 @@ back with `-->` marking every change. Applied verbatim, one content edit at a ti
 spring cycle.]`. "How do nonprofits get involved?" loses `[TODO: confirm process]` and
    reads "Nonprofits email us about the problem, we hold a call, and the matched projects
    run over the school year." Two TODOs closed by the edit itself.
-6. **Who we serve.** The eyebrow is "Learn more" (kept, unlike What we do's) and the headline "Two audiences, one
-   mission." is gone; as in What we do, the eyebrow becomes the section's `h2`. `lines` is
-   now optional on `WhoWeServe` (the /about hand-off still passes "Get involved" / "Two ways
-   to join in." and renders its headline). The nonprofits panel reads "Get the tool your
-   team needs." (was "actually needs").
+6. **Who we serve.** The eyebrow is "Learn more" (kept, unlike What we do's) and the
+   headline "Two audiences, one mission." is gone; the eyebrow becomes the section's `h2`.
+   `lines` is now optional on `WhoWeServe` (the /about hand-off still passes "Get involved" /
+   "Two ways to join in." and renders its headline). The nonprofits panel reads "Get the tool
+   your team needs." (was "actually needs").
+7. **The deadline and the cycle's name** (`content/site.ts`). `closesAt` is
+   `2026-09-17T23:59:00-04:00` — Ashton confirmed the date, so that TODO is closed — and
+   `cycleName` is "2026-2027", so the note under every CTA reads "2026-2027 applications
+   close Sep 17, 11:59 PM". The name also feeds /apply's eyebrow and metadata, the 404 note
+   and the Badge graphic; `/dev/ui`'s sample season follows.
+8. **Photo is the hero the site ships** (`src/lib/config/options.ts` → `DEFAULT_HERO`).
+   `Hero.tsx` swaps the bundling to match: `PhotoHero` is imported statically (server
+   rendered, first paint) and `GlobeHero` becomes a lazy chunk like the other four. The
+   Shift + M menu still offers all six.
 
-**Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm build`. `pnpm a11y` on `/` at 1440 and 390
-plus the drawer: 0 violations (the two eyebrow-as-heading sections keep their labels).
-Screenshots in `docs/screenshots/session-15/`: `home-{1440,390}`, `about-{1440,390}`,
+**Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm build` after each round. `pnpm a11y` on `/`
+at 1440 and 390 plus the drawer: 0 violations (Who we serve's eyebrow-as-heading keeps its
+label). Screenshots in `docs/screenshots/session-15/`: `home-{1440,390}`, `about-{1440,390}`,
 `drawer-390`.
 
-**Decisions:** two sections now label themselves with the eyebrow instead of a headline
-rather than carrying a screen-reader-only heading — the visible label is real, so the
-document outline stays honest. The team-size numbers stay in the "What roles can I apply
-for?" FAQ answer (Ashton did not touch it) even though the Match step dropped them.
+**Decisions:** Who we serve labels itself with its eyebrow instead of carrying a
+screen-reader-only heading — the visible label is real, so the document outline stays honest.
+What we do went the other way and kept a real heading, so it is the one section with no
+eyebrow. The team-size numbers stay in the "What roles can I apply for?" FAQ answer (Ashton
+did not touch it) even though the Match step dropped them. "2026-2027" is written with a
+hyphen as Ashton wrote it, not the en dash in `site.academicYear` ("2026–27").
 
-**Open for Ashton:** the hero's second line is right-aligned by the staggered `Headline`
-(`stagger` puts every line after the first on `md:self-end`), so the short "at Purdue" now
-sits in the middle of the globe rather than beside it, as "for nonprofits." did. Left-aligning
-the line, shrinking or moving the globe, or leaving it are all one-line changes — needs a look
-at `docs/screenshots/session-15/home-1440.png`. "Learn more" as the Who we serve eyebrow
-repeats the two buttons under it; kept as written.
+**Open for Ashton:** "Learn more" as the Who we serve eyebrow repeats the two buttons under
+it; kept as written. (The Globe hero staggers its lines, so the short "at Purdue" sits over
+the globe rather than beside it as "for nonprofits." did — moot while Photo ships, but worth
+a look if Globe ever comes back.)
 
-**TODOs:** unchanged (the Google Form link and the club email; the hero variant decision).
+**TODOs:** the Google Form link and the club email, and the real organization photo, which
+the Photo hero now shows at the top of the page (`content/media.ts` → `org.group-photo`).
 
 ## Session 14c — 2026-09-09 (no glow behind the process dinosaurs)
 
@@ -1672,14 +1685,14 @@ content values still unblock the site: the Fall 2026 Google Form link in `conten
 (`season.applyFormUrl`) and the club email (`site.socials.email`). Once the real link is in,
 open `/apply` and confirm the embedded form loads.
 
-**Then the hero decision (Session 11 follow-up).** Six heroes remain after Session 11g
-(Globe, Atlas, Typewriter, Cells, Wordmark, Photo). Ashton opens the home page, presses
-Shift + M and picks one (PLAN.md §19, the Session 11 log). Set `DEFAULT_HERO` in
-`src/lib/config/options.ts` to the choice, delete the variants that are not kept (their
-files under `src/components/home/heroes/`, their rows in `HERO_VARIANTS` and in `Hero.tsx`,
-any CSS only they use), and record the choice in PLAN.md §19. The Get involved graphic is
-decided (Session 12a): the partner globe, with Terminal, Chat and Badge still in the menu
-(PLAN.md §20).
+**The hero is decided (Session 15): Photo.** `DEFAULT_HERO` is `"photo"` and `Hero.tsx`
+ships it in the bundle. What is left is optional cleanup, once Ashton is sure: delete the
+five variants that are not kept (their files under `src/components/home/heroes/`, their rows
+in `HERO_VARIANTS` and in `Hero.tsx`, any CSS only they use). The Photo hero shows the
+placeholder organization photo until the real one lands in `content/media.ts`
+(`org.group-photo`); it is now the first thing on the page, so that photo is the most
+valuable asset outstanding. The Get involved graphic was decided in Session 12a: the partner
+globe, with Terminal, Chat and Badge still in the menu (PLAN.md §20).
 
 **Then deploy** (`docs/DEPLOY.md` §1–§5: GitHub org transfer, Vercel project, DNS; no
 environment variables; the post-deploy checks in §4). The application portal is parked

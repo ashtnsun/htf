@@ -310,5 +310,10 @@ steps** (`content/process.ts`): Discover scopes "what the final handoff looks li
 names "a team of a project lead, developers and designers" without committing to a team size,
 and Build says "the team of Purdue students". **FAQ**: the spring-cycle and nonprofit-process
 TODOs are answered — nonprofits "email us about the problem, we hold a call, and the matched
-projects run over the school year". PROGRESS.md (Session 15) has the open question about the
-right-aligned second hero line over the globe.
+projects run over the school year". **The deadline and the cycle** (`content/site.ts`): applications
+close September 17, 2026 at 11:59 PM Eastern and the cycle is named "2026-2027", so every
+deadline note, /apply, the 404 and the Badge graphic follow. **The hero decision of §19 is
+made: Photo** — the organization photo full-bleed with the statement over it. `DEFAULT_HERO`
+is `"photo"` and `Hero.tsx` ships it in the bundle with Globe demoted to a lazy chunk; the
+five other variants stay in the Shift + M menu until Ashton wants them gone. What we do lost
+its photo in the same pass, so the picture appears once, at the top.
