@@ -45,5 +45,11 @@ next-env.d.ts
 /test-results
 /playwright-report
 
+# media intake: originals stage in media/ and are copied into public/ by
+# `pnpm media:check --import`; only the folder READMEs are tracked.
+/media/**
+!/media/**/
+!/media/**/*.md
+
 # scratch
 .tmp-*

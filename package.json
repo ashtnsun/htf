@@ -11,6 +11,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "validate:content": "tsx --conditions=react-server scripts/validate-content.ts",
+    "media:check": "tsx --conditions=react-server scripts/media-check.ts",
     "gen:placeholders": "node scripts/gen-placeholders.mjs",
     "screenshots": "node scripts/screenshots.mjs",
     "a11y": "node scripts/a11y.mjs",

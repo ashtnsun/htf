@@ -65,7 +65,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 6: analytics (Vercel Web Analytics, Vercel builds only; privacy text) and the Lighthouse pass (numbers and open findings in the Session 6 log)
 - [x] Session 10b: exec board by year (chip per school year, `?board=` in the URL, LinkedIn cell on every card); the sticky section bar under the hero on About / Students / Nonprofits; /apply survives an unreachable database
 - [ ] Real stats and testimonials: the sections read published items already; needs Ashton's numbers and quotes (`published: true`)
-- [ ] Media handoff swap: needs the photos (`content/media.ts` keys)
+- [ ] Media handoff swap: needs the photos. The intake tree is ready (`media/`, one folder per slot with a README; `pnpm media:check` lists the 43 slots and `--import` copies staged files into `public/images/` and prints the `content/media.ts` lines)
 
 ### Phase 2 — Application portal (Sessions 7–10; parked under `parked/` since Session 13, 2026-09-09: applications run through a Google Form this cycle)
 
@@ -77,6 +77,39 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+
+## Session 15p — 2026-09-10 (a place to put the photos)
+
+Ashton made a `media/` folder at the repo root and asked for a structure to drop the site's
+missing images into.
+
+**Built:** `media/` as an intake tree — nothing in it is served; it is the staging area between
+"Ashton has the file" and "the file is on the site". One folder per slot area (`home/`,
+`about/exec/<year>/`, `about/instagram/`, `projects/<slug>/`, `awards/<award-id>/`, `people/`,
+`brand/`, plus `_inbox/` for anything unsorted), each with a README naming the files that go in
+it, the crop and the minimum export size. The root README carries the whole loop, the slot
+table, and the list of what never belongs here (logo, favicon, OG card and every pixel drawing
+are code; partner logos are map dots; `reference/` keeps the source files).
+
+`scripts/media-check.ts` (`pnpm media:check`, tsx with `--conditions=react-server` like
+`validate:content`) derives the slots from the content itself — projects, exec, awards,
+Instagram, testimonials — so a new project or board member adds its slots with no change to the
+script. It reports filled / staged / still-a-placeholder (43 slots today, all placeholders),
+names files sitting in `media/` that match no slot, and warns about media keys shared by several
+slots (`gallery.placeholder-1` covers 8 of them: those need one key each before they can show
+different pictures). `--import` copies staged files into `public/images/…`, refuses to overwrite
+without `--force`, and **prints** the `content/media.ts` lines rather than editing the file.
+
+**Decisions:** the intake files are git-ignored (`/media/**` with the folder READMEs negated) —
+originals stay on disk and in OneDrive, and only the optimized copies under `public/images/`
+ship. Import does not resize: `sharp` is not installed and next/image does the resizing at
+request time, so the rule is "drop the biggest clean version" and the READMEs give minimums.
+`org.group-photo` still feeds both the home hero and the About mission block; the home README
+says how to split it if those should ever be different photos.
+
+**Checked:** the loop end to end with a dummy file (staged → detected → copied to
+`public/images/home/` → the media.ts line printed → skipped on a second run), then removed.
+`pnpm typecheck` and `pnpm lint` clean. No visual change, so no screenshots or a11y run.
 
 ## Session 15n — 2026-09-10 (what happens when an applicant goes back)
 
