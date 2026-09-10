@@ -48,6 +48,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 15b: Ashton's About page copy pass (shorter hero blurb, the club's own mission statement, the real exec-board blurb, "Socials" / "Follow the Instagram!")
 - [x] Session 15d: one Get involved and one Learn more site-wide (the home CTA is the default on Projects, project pages, About and Students; the Learn more panels close /about and /projects)
 - [x] Session 15c: Ashton's Students page copy pass (every [TODO] closed: role descriptions, hours and duties, the real recruitment dates, the project year reordered, the perks rewritten; hero blurb, roles intro, team caption, role numbers and the kickoff step deleted)
+- [x] Session 15e: Ashton's Nonprofits page copy pass (the club email is real — htfpurdue@gmail.com — every [TODO] on the page closed, the partner section renamed, the placeholder nonprofit quotes removed)
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -180,6 +181,67 @@ conversion step, and the generic block would repeat the audience choice the visi
 made.
 
 **TODOs:** unchanged (the Google Form link and the club email; the photos and posts).
+
+## Session 15e — 2026-09-10 (Ashton's Nonprofits page copy pass)
+
+Same routine on `/nonprofits`, again with "remove every `[TODO]`". The headline of this one:
+**the club email is real.** `site.socials.email` is `htfpurdue@gmail.com` (Ashton, 2026-09-10),
+which closes the oldest TODO on the site and lights up the mailto everywhere it was hidden —
+the "Start a project" section, `/contact`, the footer's Connect column, the drawer, `/privacy`
+and the 404 note.
+
+**Built:**
+
+1. **The email.** `content/site.ts` carries the address; the "Start a project" block drops its
+   dashed TODO panel and the "Message us on Instagram" fallback and renders the Email us button
+   with "Or write to htfpurdue@gmail.com" under it (the `isTodo` branch is gone from
+   `src/app/nonprofits/page.tsx`, and its import with it). `content/privacy.mdx`'s contact line
+   now names the address instead of `[TODO: club contact email]`.
+2. **Deletions.** The page-hero blurb and the How it works intro paragraph ("A project runs from
+   the first call…") are gone, as is the Partners intro ("Our 2025–26 partners are based in 8
+   places…"), which took the `cycle` lookup in `Partners.tsx` with it.
+3. **Partners** is now "Where previous / _partners are from._", and the eight locations lose the
+   `[TODO: city]` prefix in the project files' `location` frontmatter — "Indiana, US",
+   "United Kingdom", "Ghana". The loader still reads the state before the country for the globe's
+   hover label, and `geo` is untouched, so the pins are where they were. The nonprofit FAQ's jump
+   link follows the new name ("Where partners are from").
+4. **Your part** (`content/process.ts`). Discover: "Email us about an opportunity and join a
+   scoping call with us." Match: "Meet the team and set up recurring meetings throughout the year
+   for updates and questions." Build and Deliver lose their `[TODO: confirm …]` markers.
+5. **Scope** (`content/nonprofits.ts`). "Mobile apps" ends at "…or the people who serve them.";
+   all four "We don't" items lose their `[TODO: confirm]`.
+6. **What happens next.** "We read all emails and will reply to get started." / "If the project
+   looks like a fit, we set up a call to understand the problem and who will use the solution." /
+   the kickoff line without its TODO.
+7. **Nonprofit FAQ** (`content/faq.ts`). Six answers lose their markers; "How much of our time
+   does it take?" follows Ashton's Match wording ("a scoping call at the start, recurring meetings
+   through the year, and check-ins…").
+8. **The quote band.** The two placeholder nonprofit quotes are deleted from
+   `content/testimonials.ts`, so "In their own words" no longer renders — which is what production
+   always showed (unpublished quotes are development-only). The two student placeholders stay for
+   the home marquee.
+
+**Checked:** `pnpm typecheck`, `pnpm lint`, `pnpm build` clean. Playwright reading
+`document.body.innerText` on every public route: `/nonprofits`, `/students` and `/contact` have no
+`[TODO]` left; what remains is the placeholder projects (`/projects`), the exec board and Instagram
+tiles (`/about`), the student quotes on `/`, and `/privacy`'s legal-review markers. `pnpm a11y` on
+`/nonprofits`, `/contact` and `/privacy`: 0 violations at 1440 and 390 plus the drawer. Screenshots
+in `docs/screenshots/session-15e/` (the globe is a glow in headless Chromium, as in every earlier
+session).
+
+**Decisions:** dropping the `[TODO: city]` prefix rather than inventing cities means the partner
+list and the project cards now read "Indiana, US"; add the city back to a project's `location` when
+the real partner is known. The placeholder nonprofit quotes were deleted rather than left as
+development-only scaffolding, because the instruction was the whole page.
+
+**Open for Ashton:** `/privacy` still names no email provider — the address is Gmail, so
+`[TODO: name the club's email provider…]` and `[TODO: the club's email provider.]` can be answered
+in his privacy pass; the rest of that page is legal review. The Partners globe still lists project
+titles in its data (they are the placeholder titles from `/projects`), but nothing shows them on
+this page.
+
+**TODOs:** the 2026-2027 Google Form link (`season.applyFormUrl`) is now the only content value
+that blocks the site; then the photos, the exec board, the Instagram posts and the real projects.
 
 ## Session 15c — 2026-09-10 (Ashton's Students page copy pass)
 
@@ -1809,12 +1871,14 @@ unchanged.
 page with his copy edits — the new hero statement over the globe, What we do and Who we serve
 without their headlines; `docs/screenshots/session-15b/`: About with the club's mission
 statement, the real exec blurb and the "Socials" heading; `docs/screenshots/session-15c/`:
-Students with no TODOs left, the real dates and hours, and the deletions), and the open
+Students with no TODOs left, the real dates and hours, and the deletions;
+`docs/screenshots/session-15e/`: Nonprofits with the real email and no TODOs), and the open
 questions in those logs: whether the short "at Purdue" should stay right-aligned over the
 globe, and the three Session 15c readings (what "→ delete" covered on the hero and Roles
 intro, whether the role numbers all go, and what "delete the label only" meant for the team
 diagram). Ashton is editing the other pages' copy the same way (a document per page, `-->`
-marking each change), so Nonprofits is next (Home, Projects, About and Students are done). Then **Ashton's look at Session 14c** (`docs/screenshots/session-14c/`: the process
+marking each change); every page has now had its pass (Home, Projects, About, Students,
+Nonprofits), so what is left is his look at the results. Then **Ashton's look at Session 14c** (`docs/screenshots/session-14c/`: the process
 dinosaurs without the glow on the home page and /nonprofits; the footer's glow kept), then
 **Session 14b** (`docs/screenshots/session-14b/`: the Who we serve
 panels without pictures, the small dinosaurs' snouts, the gift ribbon), then the rest of
@@ -1822,10 +1886,11 @@ Session 14
 (`docs/screenshots/session-14/`): the eight review
 items (the Who we serve pictures, the globe labels, the process gaps, the photo hero, the
 project pages, the roles intro, the timeline, /apply). The dev server on 3000 served every
-route during Session 14b (the static-paths worker that died in Session 14 is back). Two
-content values still unblock the site: the Fall 2026 Google Form link in `content/site.ts`
-(`season.applyFormUrl`) and the club email (`site.socials.email`). Once the real link is in,
-open `/apply` and confirm the embedded form loads.
+route during Session 14b (the static-paths worker that died in Session 14 is back). One content
+value still unblocks the site: the 2026-2027 Google Form link in `content/site.ts`
+(`season.applyFormUrl`) — the club email was answered in Session 15e
+(`htfpurdue@gmail.com`). Once the real link is in, open `/apply` and confirm the embedded form
+loads.
 
 **The hero is decided (Session 15): Photo.** `DEFAULT_HERO` is `"photo"` and `Hero.tsx`
 ships it in the bundle. What is left is optional cleanup, once Ashton is sure: delete the
