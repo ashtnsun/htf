@@ -849,6 +849,67 @@
 }
 
 /* ------------------------------------------------------------------
+   Inner-page hero variants (layout/pageHeroes, chosen in the Shift + M menu). Every variant
+   keeps the shipped hero's frame and adds one graphic; the loops here are slow and silent.
+   The global reduced-motion rule flattens one-shots to their end state and leaves the full
+   turns where they started; the dinosaur's walk is switched off there instead, so it simply
+   stands at its resting place on the ground line. The walk moves in whole pixel cells
+   (steps), like every other drawing that reads brand/dino-pixels.
+------------------------------------------------------------------- */
+@layer components {
+  @keyframes page-hero-walk {
+    from {
+      transform: translateX(calc(-36 * var(--dino-cell)));
+    }
+  }
+  @keyframes page-hero-step {
+    50% {
+      transform: translateY(calc(-1 * var(--dino-cell)));
+    }
+  }
+  @keyframes page-hero-turn {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .anim-page-walk {
+    animation: page-hero-walk 3.6s steps(36, end) both;
+  }
+  /* 18 hops of 0.2s = the 3.6s of the walk, so the bob stops when the dinosaur does. */
+  .anim-page-step {
+    animation: page-hero-step 0.2s steps(1, end) 18;
+  }
+  /* One full turn, on a whole <svg> element (a group inside a viewBox centred on the origin
+     takes its transform origin from the box's corner, not from the origin). */
+  .anim-page-turn {
+    transform-origin: center;
+    animation: page-hero-turn var(--turn, 12s) linear infinite;
+  }
+  /* The radar blip's ring, on the hero-ping keyframes (SVG needs its own transform box). */
+  .anim-page-ping {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: hero-ping 2.8s var(--ease-out-quart) infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .anim-page-walk,
+    .anim-page-step {
+      animation: none;
+    }
+  }
+  /* A checkerboard of --check-size cells, the pixel dither the Dither variant stacks. */
+  .page-hero-checks {
+    background-image: conic-gradient(
+      var(--green) 25%,
+      transparent 0 50%,
+      var(--green) 0 75%,
+      transparent 0
+    );
+    background-size: calc(var(--check-size) * 2) calc(var(--check-size) * 2);
+  }
+}
+
+/* ------------------------------------------------------------------
    Get involved graphics (layout/involved, chosen in the Shift + M menu). One-shots run when
    the frame reports data-active (in view); loops pause while it is inactive. The global
    reduced-motion rule flattens every animation, and the rule at the end also drops the

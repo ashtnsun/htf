@@ -1,74 +1,45 @@
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import type { ReactNode } from "react";
-import { Reveal, RevealGroup } from "@/components/motion/Reveal";
-import { Eyebrow } from "@/components/ui/Eyebrow";
-import { Headline } from "@/components/ui/Headline";
+"use client";
 
-type PageHeroProps = {
-  eyebrow: string;
-  /** One string per line; *asterisks* mark green words. */
-  lines: string[];
-  blurb?: string;
-  children?: ReactNode;
-  /** Use the staggered left/right composition. */
-  stagger?: boolean;
-  /** Small "back to the index" link above the eyebrow (detail pages). */
-  back?: { href: string; label: string };
-  /** Huge ghosted word behind the hero (e.g. "404"). Decoration only. */
-  ghost?: string;
+import dynamic from "next/dynamic";
+import type { ComponentType } from "react";
+import { FrameHero } from "@/components/layout/pageHeroes/FrameHero";
+import type { PageHeroProps } from "@/components/layout/pageHeroes/types";
+import { DEFAULT_PAGE_HERO, type PageHeroVariantId } from "@/lib/config/options";
+import { useSiteConfig } from "@/lib/config/store";
+
+/** Keeps the page from jumping while a non-default variant's code loads. */
+function Loading() {
+  return <section aria-hidden="true" className="min-h-[24rem]" />;
+}
+
+const lazy = (load: () => Promise<ComponentType<PageHeroProps>>) =>
+  dynamic(load, { loading: Loading });
+
+/**
+ * The default variant ships with the page (server-rendered, in the bundle); the others are
+ * separate chunks fetched only when chosen in the Shift + M menu.
+ */
+const VARIANTS: Record<PageHeroVariantId, ComponentType<PageHeroProps>> = {
+  frame: FrameHero,
+  globe: lazy(() => import("@/components/layout/pageHeroes/GlobeHero").then((m) => m.GlobeHero)),
+  radar: lazy(() => import("@/components/layout/pageHeroes/RadarHero").then((m) => m.RadarHero)),
+  corridor: lazy(() =>
+    import("@/components/layout/pageHeroes/CorridorHero").then((m) => m.CorridorHero),
+  ),
+  trace: lazy(() => import("@/components/layout/pageHeroes/TraceHero").then((m) => m.TraceHero)),
+  dither: lazy(() => import("@/components/layout/pageHeroes/DitherHero").then((m) => m.DitherHero)),
+  dino: lazy(() => import("@/components/layout/pageHeroes/DinoHero").then((m) => m.DinoHero)),
 };
 
-/** Compact hero for inner pages: eyebrow, split headline, blurb, optional actions. */
-export function PageHero({
-  eyebrow,
-  lines,
-  blurb,
-  children,
-  stagger = true,
-  back,
-  ghost,
-}: PageHeroProps) {
-  return (
-    <section
-      aria-labelledby="page-title"
-      className="grid-overlay relative overflow-hidden [--grid-cols:8] [--grid-row:8rem]"
-    >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-[60%] bg-[radial-gradient(60%_100%_at_50%_100%,rgba(3,198,82,0.35)_0%,rgba(3,198,82,0.08)_45%,transparent_75%)]"
-      />
-      {ghost ? (
-        <span aria-hidden="true" data-ghost={ghost} className="ghost-text top-0 -translate-y-1/4" />
-      ) : null}
-      <RevealGroup
-        mode="mount"
-        className="relative container-max container-x pt-14 pb-20 md:pt-20 md:pb-28 lg:frame-marks lg:mt-6 lg:border-x lg:border-line"
-      >
-        {back ? (
-          <Reveal className="mb-6">
-            <Link
-              href={back.href}
-              className="inline-flex min-h-11 items-center gap-2 text-sm text-muted transition-colors hover:text-text"
-            >
-              <ArrowLeft className="size-4" aria-hidden="true" />
-              {back.label}
-            </Link>
-          </Reveal>
-        ) : null}
-        <Reveal>
-          <Eyebrow>{eyebrow}</Eyebrow>
-        </Reveal>
-        <Reveal className="mt-8 md:mt-12">
-          <Headline as="h1" id="page-title" size="display-fluid" stagger={stagger} lines={lines} />
-        </Reveal>
-        {blurb ? (
-          <Reveal className="mt-8 max-w-xl">
-            <p className="text-body-lg text-muted">{blurb}</p>
-          </Reveal>
-        ) : null}
-        {children ? <Reveal className="mt-8">{children}</Reveal> : null}
-      </RevealGroup>
-    </section>
-  );
+/**
+ * The hero of every inner page (Projects, About, Students, Nonprofits, Contact). Renders
+ * whichever variant the site configuration names (src/lib/config); the server and the first
+ * client paint always show the default, and a saved choice takes over right after hydration.
+ * Remounts on change so the new variant plays its entrance. The 404 and the privacy page sit
+ * outside the switch: they use `pageHeroes/FrameHero` directly, with its `back` and `ghost`.
+ */
+export function PageHero(props: PageHeroProps) {
+  const { pageHero } = useSiteConfig();
+  const Variant = VARIANTS[pageHero] ?? VARIANTS[DEFAULT_PAGE_HERO];
+  return <Variant key={pageHero} {...props} />;
 }

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { site } from "@content/site";
 import { OnThisPage } from "@/components/layout/OnThisPage";
-import { PageHero } from "@/components/layout/PageHero";
+import { FrameHero } from "@/components/layout/pageHeroes/FrameHero";
 import { MdxBody } from "@/components/ui/MdxBody";
 import { Section } from "@/components/ui/Section";
 import { CopyEmailInline } from "@/components/ui/CopyEmail";
@@ -33,7 +33,7 @@ export default function PrivacyPage() {
 
   return (
     <>
-      <PageHero eyebrow="Privacy policy" lines={["Your data,", "*handled with care.*"]} />
+      <FrameHero eyebrow="Privacy policy" lines={["Your data,", "*handled with care.*"]} />
 
       <Section aria-label="Privacy policy text" className="border-t border-line">
         <OnThisPage items={items} variant="row" className="mb-10" />

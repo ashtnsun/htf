@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { formatDeadline, isInSeason, site } from "@content/site";
-import { PageHero } from "@/components/layout/PageHero";
+import { FrameHero } from "@/components/layout/pageHeroes/FrameHero";
 import { SplitButton } from "@/components/ui/SplitButton";
 import { CopyEmailInline } from "@/components/ui/CopyEmail";
 import { isTodo } from "@/lib/utils";
@@ -29,7 +29,7 @@ export default function NotFound() {
   const deadline = formatDeadline();
 
   return (
-    <PageHero
+    <FrameHero
       eyebrow="404"
       ghost="404"
       lines={["Nothing here,", "*yet.*"]}
@@ -80,6 +80,6 @@ export default function NotFound() {
           <CopyEmailInline email={email} className={inlineLink} /> and we will fix it.
         </p>
       ) : null}
-    </PageHero>
+    </FrameHero>
   );
 }

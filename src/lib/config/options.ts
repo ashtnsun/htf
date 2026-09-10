@@ -77,12 +77,70 @@ export type InvolvedVariantId = (typeof INVOLVED_VARIANTS)[number]["id"];
 
 export const DEFAULT_INVOLVED: InvolvedVariantId = "globe";
 
+/**
+ * The inner-page hero (layout/PageHero, at the top of Projects, About, Students, Nonprofits
+ * and Contact). Every variant renders the same eyebrow, `h1` and blurb; only the treatment
+ * around them changes. The 404 and the privacy page keep the shipped hero whatever is chosen.
+ */
+export const PAGE_HERO_VARIANTS = [
+  {
+    id: "frame",
+    name: "Frame",
+    blurb:
+      "The technical grid, the green glow along the bottom edge and the framed column. The hero as it ships.",
+  },
+  {
+    id: "globe",
+    name: "Globe",
+    blurb:
+      "The wireframe globe, big enough that only its northern cap clears the bottom edge. It turns slowly behind the headline.",
+  },
+  {
+    id: "radar",
+    name: "Radar",
+    blurb: "A dish beside the headline: hairline rings, a green arm sweeping, one blip pinging.",
+  },
+  {
+    id: "corridor",
+    name: "Corridor",
+    blurb:
+      "The site's own frame repeated into the distance, with a green one coming forward out of the depth.",
+  },
+  {
+    id: "trace",
+    name: "Trace",
+    blurb:
+      "Circuit traces run in from the edge, turn at right angles and solder down at square pads, drawing themselves once.",
+  },
+  {
+    id: "dither",
+    name: "Dither",
+    blurb:
+      "The green glow drawn in pixels: three checkerboards ramping up out of the bottom edge, in the T-rex's language.",
+  },
+  {
+    id: "dino",
+    name: "Dino",
+    blurb:
+      "The pixel T-rex walks in along a hairline ground under the headline, a cell at a time, and blinks where it stops.",
+  },
+] as const;
+
+export type PageHeroVariantId = (typeof PAGE_HERO_VARIANTS)[number]["id"];
+
+export const DEFAULT_PAGE_HERO: PageHeroVariantId = "frame";
+
 export type SiteConfig = {
   hero: HeroVariantId;
   involved: InvolvedVariantId;
+  pageHero: PageHeroVariantId;
 };
 
-export const DEFAULT_CONFIG: SiteConfig = { hero: DEFAULT_HERO, involved: DEFAULT_INVOLVED };
+export const DEFAULT_CONFIG: SiteConfig = {
+  hero: DEFAULT_HERO,
+  involved: DEFAULT_INVOLVED,
+  pageHero: DEFAULT_PAGE_HERO,
+};
 
 export function isHeroVariantId(value: unknown): value is HeroVariantId {
   return typeof value === "string" && HERO_VARIANTS.some((v) => v.id === value);
@@ -90,6 +148,10 @@ export function isHeroVariantId(value: unknown): value is HeroVariantId {
 
 export function isInvolvedVariantId(value: unknown): value is InvolvedVariantId {
   return typeof value === "string" && INVOLVED_VARIANTS.some((v) => v.id === value);
+}
+
+export function isPageHeroVariantId(value: unknown): value is PageHeroVariantId {
+  return typeof value === "string" && PAGE_HERO_VARIANTS.some((v) => v.id === value);
 }
 
 /** localStorage key. Bump the suffix if the shape ever changes incompatibly. */

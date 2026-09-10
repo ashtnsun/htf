@@ -4,8 +4,10 @@ import {
   DEFAULT_CONFIG,
   DEFAULT_HERO,
   DEFAULT_INVOLVED,
+  DEFAULT_PAGE_HERO,
   isHeroVariantId,
   isInvolvedVariantId,
+  isPageHeroVariantId,
   type SiteConfig,
 } from "./options";
 
@@ -34,6 +36,7 @@ function parse(raw: string | null): SiteConfig {
     return {
       hero: isHeroVariantId(saved.hero) ? saved.hero : DEFAULT_HERO,
       involved: isInvolvedVariantId(saved.involved) ? saved.involved : DEFAULT_INVOLVED,
+      pageHero: isPageHeroVariantId(saved.pageHero) ? saved.pageHero : DEFAULT_PAGE_HERO,
     };
   } catch {
     return DEFAULT_CONFIG;

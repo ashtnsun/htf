@@ -10,8 +10,10 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import {
   DEFAULT_HERO,
   DEFAULT_INVOLVED,
+  DEFAULT_PAGE_HERO,
   HERO_VARIANTS,
   INVOLVED_VARIANTS,
+  PAGE_HERO_VARIANTS,
 } from "@/lib/config/options";
 import { isDefaultConfig, resetSiteConfig, setSiteConfig, useSiteConfig } from "@/lib/config/store";
 import { cn } from "@/lib/utils";
@@ -41,6 +43,14 @@ function hasGetInvolved(pathname: string): boolean {
     pathname === "/students" ||
     pathname.startsWith("/projects")
   );
+}
+
+/**
+ * Pages whose hero comes from the switch (layout/PageHero). The project write-ups open on a
+ * plain title block, and /privacy and the 404 keep the shipped hero, so none of them count.
+ */
+function hasPageHero(pathname: string): boolean {
+  return ["/projects", "/about", "/students", "/nonprofits", "/contact"].includes(pathname);
 }
 
 const linkClass = "font-medium text-green transition-colors duration-200 hover:text-text";
@@ -155,6 +165,44 @@ export function ConfigMenu() {
                     .
                   </>
                 ) : null
+              }
+            />
+
+            <VariantPicker
+              legend="Inner page hero"
+              name="page-hero-variant"
+              options={PAGE_HERO_VARIANTS}
+              value={config.pageHero}
+              defaultId={DEFAULT_PAGE_HERO}
+              onChange={(pageHero) => setSiteConfig({ pageHero })}
+              note={
+                hasPageHero(pathname) ? (
+                  <>It is the hero at the top of this page.</>
+                ) : (
+                  <>
+                    This hero is on{" "}
+                    <Link href="/projects" className={linkClass}>
+                      Projects
+                    </Link>
+                    ,{" "}
+                    <Link href="/about" className={linkClass}>
+                      About
+                    </Link>
+                    ,{" "}
+                    <Link href="/students" className={linkClass}>
+                      Students
+                    </Link>
+                    ,{" "}
+                    <Link href="/nonprofits" className={linkClass}>
+                      Nonprofits
+                    </Link>{" "}
+                    and{" "}
+                    <Link href="/contact" className={linkClass}>
+                      Contact
+                    </Link>
+                    .
+                  </>
+                )
               }
             />
 
