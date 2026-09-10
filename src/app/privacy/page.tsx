@@ -18,17 +18,12 @@ export const metadata: Metadata = {
 
 const factLabel = "text-eyebrow font-medium text-muted uppercase";
 
-/** "2026-09-06" -> "September 6, 2026" (UTC so the calendar date never shifts). */
-function formatEffectiveDate(iso: string): string {
-  return new Intl.DateTimeFormat("en-US", { dateStyle: "long", timeZone: "UTC" }).format(
-    new Date(`${iso}T00:00:00Z`),
-  );
-}
-
 /**
  * Privacy policy: the text lives in content/privacy.mdx (validated frontmatter + MDX body)
  * and renders through <MdxBody> with a sticky "On this page" aside, like a project write-up.
- * Until `reviewed: true` is set in the frontmatter, a visible draft badge stays on the page.
+ * The hero is the headline alone since the 2026-09-10 copy pass: Ashton took off the blurb,
+ * the Effective / Status row and the draft badge, so `effectiveDate` and `reviewed` are now
+ * only the record kept in the frontmatter.
  */
 export default function PrivacyPage() {
   const policy = getPrivacyPolicy();
@@ -37,31 +32,7 @@ export default function PrivacyPage() {
 
   return (
     <>
-      <PageHero
-        eyebrow="Privacy policy"
-        lines={["Your data,", "*handled with care.*"]}
-        blurb="What this website collects, what happens when you email us or apply, who processes it for us, and how to ask us about it. Written in plain language on purpose."
-      >
-        <dl className="flex flex-wrap gap-x-12 gap-y-6">
-          <div>
-            <dt className={factLabel}>Effective</dt>
-            <dd className="mt-2 text-text">
-              <time dateTime={policy.effectiveDate}>
-                {formatEffectiveDate(policy.effectiveDate)}
-              </time>
-            </dd>
-          </div>
-          <div>
-            <dt className={factLabel}>Status</dt>
-            <dd className="mt-2 text-text">{policy.reviewed ? "Reviewed" : "Draft"}</dd>
-          </div>
-        </dl>
-        {!policy.reviewed ? (
-          <p className="mt-8 inline-block border border-dashed border-line-strong px-3 py-2 text-xs text-muted">
-            [TODO: legal review] This draft was written by the site team, not a lawyer.
-          </p>
-        ) : null}
-      </PageHero>
+      <PageHero eyebrow="Privacy policy" lines={["Your data,", "*handled with care.*"]} />
 
       <Section aria-label="Privacy policy text" className="border-t border-line">
         <OnThisPage items={items} variant="row" className="mb-10" />
@@ -76,14 +47,7 @@ export default function PrivacyPage() {
               <p className="mt-3 text-sm text-muted">
                 {email ? (
                   <>
-                    Email{" "}
-                    <a
-                      href={`mailto:${email}`}
-                      className="font-medium text-green transition-colors duration-200 hover:text-text"
-                    >
-                      {email}
-                    </a>{" "}
-                    or see the{" "}
+                    Email <CopyEmailInline email={email} /> or see the{" "}
                   </>
                 ) : (
                   <>See the </>
