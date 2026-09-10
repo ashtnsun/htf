@@ -115,9 +115,12 @@ landscape frame, so the centre crop keeps more scenery than person. Better files
 `media/about/exec/2026-27/` under the same names fix all three in one `pnpm media:check
 --import`; a face-first crop of the existing files is the other option.
 
-**Khang's was cropped** on Ashton's word (2026-09-10): the centre crop of the 2048×1536 frame
-cut her at the right edge, so the intake file is now the 4:5 window flush with the right of
-the photo (1229×1536), re-imported with `--force`. Cropping the intake file rather than
+**Khang's was cropped** on Ashton's word (2026-09-10), twice. Moving the 4:5 window to the
+right of the 2048×1536 frame (1229×1536) was not enough: **the photo itself ends at her arm**,
+so any window that includes her waist slices her at the right. The fix was to frame closer —
+a 720×900 head-and-shoulders crop with the eyes about a third down, both shoulders leaving the
+frame the way they do in a portrait — which is what `media/about/exec/README.md` asks for
+anyway. Re-imported with `--force`. Cropping the intake file rather than
 adding an `object-position` field keeps the crop in the picture, where the next import cannot
 lose it — but it does overwrite the original, so a different crop means a fresh copy from
 Ashton's Drive. A stale card after an import is the dev image cache, not the file:
