@@ -165,8 +165,19 @@ else is drawn with tokens.
 - A graphic sized in `%` of a hero grows on the short heroes (Contact) and shrinks on the tall
   ones (About); every variant was checked on About (blurb), Students (no blurb) and Contact.
 
+**Ashton's picks, same session.** Globe is `DEFAULT_PAGE_HERO` (so it ships in the bundle and
+Frame becomes a lazy chunk; /privacy and the 404 still import FrameHero directly). The globe
+hangs off the content container's right edge at two thirds of the hero's height — against the
+viewport it read small and detached — and bleeds off the screen edge on phones instead. The
+About and Projects heroes lost their blurbs, so those pages open on the eyebrow and the
+headline alone. And the staggered headline now always overlaps: `pageHeroes/OverlapLines` (the
+Globe variant only) measures the rendered lines after mount and pulls a line left until a
+quarter of the shorter one sits under the line above, never past the column's left edge and
+never below `md`. It is a transform, so nothing re-wraps; Projects ("with nonprofits." already
+under "we built") is untouched, About and Students move.
+
 **Screenshots:** `docs/screenshots/session-15r/` — every variant on About, Students and
-Contact at 1440, and on About at 390.
+Contact at 1440, and on About and Students at 390.
 
 ## Session 15n — 2026-09-10 (what happens when an applicant goes back)
 

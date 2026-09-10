@@ -24,7 +24,7 @@ export function GlobeHero(props: PageHeroProps) {
           </div>
         </div>
       </div>
-      <PageHeroContent {...props} className="z-10" />
+      <PageHeroContent {...props} overlap className="z-10" />
     </PageHeroSection>
   );
 }

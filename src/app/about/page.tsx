@@ -34,11 +34,7 @@ export default function AboutPage() {
 
   return (
     <>
-      <PageHero
-        eyebrow="About"
-        lines={["Students building", "*for good.*"]}
-        blurb="A student organization at Purdue University that builds software for nonprofits around the world."
-      />
+      <PageHero eyebrow="About" lines={["Students building", "*for good.*"]} />
       <SectionNav items={SECTIONS} label="About" />
 
       <Mission mission={about.mission} />

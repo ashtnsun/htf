@@ -28,11 +28,7 @@ export default function ProjectsPage() {
 
   return (
     <>
-      <PageHero
-        eyebrow="Projects"
-        lines={["Software we built", "*with nonprofits.*"]}
-        blurb="Every project is a real tool for a real organization, built by a student team over the school year."
-      />
+      <PageHero eyebrow="Projects" lines={["Software we built", "*with nonprofits.*"]} />
 
       <Section id="all-projects" aria-label="All projects" className="border-t border-line">
         {hasDrafts ? (

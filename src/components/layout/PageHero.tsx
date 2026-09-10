@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
-import { FrameHero } from "@/components/layout/pageHeroes/FrameHero";
+import { GlobeHero } from "@/components/layout/pageHeroes/GlobeHero";
 import type { PageHeroProps } from "@/components/layout/pageHeroes/types";
 import { DEFAULT_PAGE_HERO, type PageHeroVariantId } from "@/lib/config/options";
 import { useSiteConfig } from "@/lib/config/store";
@@ -20,8 +20,8 @@ const lazy = (load: () => Promise<ComponentType<PageHeroProps>>) =>
  * separate chunks fetched only when chosen in the Shift + M menu.
  */
 const VARIANTS: Record<PageHeroVariantId, ComponentType<PageHeroProps>> = {
-  frame: FrameHero,
-  globe: lazy(() => import("@/components/layout/pageHeroes/GlobeHero").then((m) => m.GlobeHero)),
+  globe: GlobeHero,
+  frame: lazy(() => import("@/components/layout/pageHeroes/FrameHero").then((m) => m.FrameHero)),
   radar: lazy(() => import("@/components/layout/pageHeroes/RadarHero").then((m) => m.RadarHero)),
   corridor: lazy(() =>
     import("@/components/layout/pageHeroes/CorridorHero").then((m) => m.CorridorHero),
@@ -36,7 +36,8 @@ const VARIANTS: Record<PageHeroVariantId, ComponentType<PageHeroProps>> = {
  * whichever variant the site configuration names (src/lib/config); the server and the first
  * client paint always show the default, and a saved choice takes over right after hydration.
  * Remounts on change so the new variant plays its entrance. The 404 and the privacy page sit
- * outside the switch: they use `pageHeroes/FrameHero` directly, with its `back` and `ghost`.
+ * outside the switch: they use `pageHeroes/FrameHero` directly, with its `back` and `ghost`
+ * (which is why Frame is a chunk here even though it is a shipped hero elsewhere).
  */
 export function PageHero(props: PageHeroProps) {
   const { pageHero } = useSiteConfig();

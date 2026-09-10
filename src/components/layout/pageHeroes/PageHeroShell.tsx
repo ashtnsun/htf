@@ -1,4 +1,5 @@
 import type { ComponentPropsWithRef, ReactNode } from "react";
+import { OverlapLines } from "@/components/layout/pageHeroes/OverlapLines";
 import { Reveal, RevealGroup } from "@/components/motion/Reveal";
 import type { PageHeroProps } from "@/components/layout/pageHeroes/types";
 import { Eyebrow } from "@/components/ui/Eyebrow";
@@ -33,6 +34,8 @@ export const pageHeroFrameClass =
 type PageHeroContentProps = PageHeroProps & {
   /** Rendered above the eyebrow (the "back to the index" link on detail pages). */
   before?: ReactNode;
+  /** Hold the staggered lines together (see OverlapLines); the Globe variant asks for it. */
+  overlap?: boolean;
   className?: string;
 };
 
@@ -48,8 +51,12 @@ export function PageHeroContent({
   children,
   stagger = true,
   before,
+  overlap = false,
   className,
 }: PageHeroContentProps) {
+  const headline = (
+    <Headline as="h1" id="page-title" size="display-fluid" stagger={stagger} lines={lines} />
+  );
   return (
     <RevealGroup mode="mount" className={cn(pageHeroFrameClass, className)}>
       {before ? <Reveal className="mb-6">{before}</Reveal> : null}
@@ -57,7 +64,7 @@ export function PageHeroContent({
         <Eyebrow>{eyebrow}</Eyebrow>
       </Reveal>
       <Reveal className="mt-8 md:mt-12">
-        <Headline as="h1" id="page-title" size="display-fluid" stagger={stagger} lines={lines} />
+        {overlap ? <OverlapLines>{headline}</OverlapLines> : headline}
       </Reveal>
       {blurb ? (
         <Reveal className="mt-8 max-w-xl">
