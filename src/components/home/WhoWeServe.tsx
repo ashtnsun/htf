@@ -42,8 +42,8 @@ type WhoWeServeProps = {
 /**
  * Two panels, one per audience, so a first-time visitor finds their page in one click. Each
  * panel is one link in a full-bleed hairline row (the same row as "What we do", framed by
- * vertical rails): a pixel picture (a stack of books for students, a hand holding out a heart
- * for nonprofits, drawn like the process scene; 2026-09-09 review), eyebrow, title, one
+ * vertical rails): a pixel picture (a stack of books for students, a heart for nonprofits,
+ * drawn like the process scene; 2026-09-09 review), eyebrow, title, one
  * sentence and a "Learn more" button. Hovering the panel turns the title green and puts the
  * button in its hover state (green border, the arrow cell fills), the treatment the project
  * cards use; nothing moves. The two panels share their row tracks (subgrid), so every line
