@@ -56,6 +56,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 15j: /apply links to the form instead of embedding it (a framed card and one button; the iframe could not be made to look right)
 - [x] Session 15m: the form is embedded again, in a frame measured to fit each of its five sections (no nested scrollbar, no white box), with the green brackets around it and the open-in-a-tab button under it
 - [x] Session 15r: seven inner-page hero variants in the Shift + M menu (Frame stays the default; Globe, Radar, Corridor, Trace, Dither, Dino), all the shipped hero with one graphic added; Ashton picks the one that ships
+- [x] Session 15s: the Instagram grid on /about can run off the live account (a Behold JSON feed fetched server-side into the site's own tiles), falling back to the curated posts
 - [x] Session 15n: the /apply frame is back-proof — two heights instead of five, after checking that nothing cross-origin can say which section the form is showing
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
@@ -77,7 +78,52 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 ### Phase 4 — Later
 
-- [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans), Instagram API embed
+- [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
+
+## Session 15s — 2026-09-10 (the Instagram grid off the live account)
+
+Ashton asked whether the account could be embedded on /about so the posts show up by
+themselves. Three ways exist and only one keeps the design: Instagram's own `embed.js`
+blockquote is a white, rounded, unstylable iframe per post (and still one post at a time, so
+it does not even automate anything); the Meta Graph API means a developer app, an access token
+to refresh every 60 days, and the site's first environment variable; a hosted feed hands over
+JSON and the site draws its own tiles. Took the third.
+
+**Built:** `src/lib/content/behold.ts` fetches a [Behold](https://behold.so) JSON feed on the
+server and maps it to tiles — newest first, posts hidden in Behold's dashboard skipped,
+capped at the grid's six. `getInstagramTiles()` (`src/lib/content/index.ts`) is what /about
+calls: the live feed when one is configured and reachable, `content/instagram.ts` otherwise.
+`InstagramGrid` now takes an `InstagramTile` (`{ id, href, src, alt, caption? }`) instead of a
+curated post, so both sources render the same markup: the site's own square tiles with the
+hairline border and `hover-corners`, no Meta script, no third-party iframe, nothing
+cross-origin on the page.
+
+**Decisions:** the feed URL lives in `content/site.ts` (`socials.instagramFeedUrl`), not an
+environment variable — it is public by design (the same URL a browser would fetch), and this
+keeps "the site needs no env vars" true. Images come from `sizes.medium` on `behold.pictures`,
+Behold's own permanent copies; the `mediaUrl` Instagram hands out expires after a few days and
+is never used, so `next.config.ts` allows only that one host. **Nothing here throws** — unlike
+every loader in `src/lib/content/index.ts`, which throws on bad content. This is a third
+party's server: a 404, a timeout (8s), or a shape change logs a warning and falls back to the
+curated grid, because an outage must never fail `pnpm build` or blank the section. Alt text
+prefers Instagram's own, which is null on most posts, then the first line of the
+hashtag-stripped caption (trimmed to 140 characters — a screen reader should not read three
+paragraphs per tile), then "Instagram post by @hackthefuturepurdue, <month year>"; each tile is
+a link, so it always needs a name. Freshness rides the hourly `revalidate` already on the root
+layout — no new cadence, and /about stays `○ (Static)` in the build output.
+
+**Checked:** the mapper against a real feed (Behold's public demo, six posts → six tiles with
+permalinks and CDN images); /about rendering them through next/image, and the optimizer
+returning real bytes for a `behold.pictures` URL (so `remotePatterns` is right); the fallback
+with a 404 feed id (page still 200, curated placeholders) and with the TODO value; axe on
+/about at 1440 and 390 with the live feed, 0 violations; `pnpm typecheck`, `pnpm lint` and
+`pnpm build` clean. Screenshot: `docs/screenshots/session-15s/about-instagram-live-feed.png`.
+
+**Ashton's move:** sign in at behold.so, switch @hackthefuturepurdue to a professional
+(Business or Creator) account if it is not one already — free, in the Instagram app — connect
+it, make a **JSON** feed, and paste the `https://feeds.behold.so/…` URL over the TODO in
+`content/site.ts`. The grid goes live on the next deploy. Left undone until then, and
+`content/instagram.ts` keeps its six placeholder tiles as the fallback.
 
 ## Session 15p — 2026-09-10 (a place to put the photos)
 

@@ -84,7 +84,8 @@ src/components/
                     linked panels with a presentational "Learn more" button in a full-bleed
                     row, no pictures; the "Learn more" hand-off on /about and /projects too)
   about/            Mission, Story, ExecGrid (+ ExecBoard: a chip per school year, `?board=` in
-                    the URL, LinkedIn cell on every card), InstagramGrid
+                    the URL, LinkedIn cell on every card), InstagramGrid (takes InstagramTile,
+                    live feed or curated — the same tiles either way)
   nonprofits/       HowItWorks (cards share rows through a subgrid), Scope, Partners
                     (+ PartnersMap), NonprofitTestimonials
   globe/            PartnerGlobe (lazy wrapper, drag, SVG fallback, the hover label for pins
@@ -98,7 +99,8 @@ src/components/
                     useReducedMotionSafe (false until hydration, so the static branch never
                     mismatches the server's animated markup)
   icons/            Instagram / LinkedIn (lucide 1.x has no brand icons)
-src/lib/content/    schemas.ts (Zod) + index.ts (loaders; throw on invalid content)
+src/lib/content/    schemas.ts (Zod) + index.ts (loaders; throw on invalid content),
+                    behold.ts (the live Instagram feed; never throws, falls back)
 src/lib/config/     options.ts (HERO_VARIANTS / DEFAULT_HERO, INVOLVED_VARIANTS / DEFAULT_INVOLVED,
                     SiteConfig), store.ts (localStorage store + useSiteConfig; the server and the
                     first paint always see the defaults)
@@ -141,6 +143,13 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   here, so the frame is what the site controls. Nothing on the site posts a form: nonprofits and everyone else write to
   `site.socials.email`, and every email control copies that address to the clipboard
   (`ui/CopyEmail`) — the site has no `mailto:` link, including in MDX.
+- The Instagram grid on /about reads a Behold JSON feed (`socials.instagramFeedUrl` in
+  `content/site.ts`, public, never an env var) through `getInstagramTiles()`, and draws the
+  site's own tiles from it — no Meta embed script, no third-party iframe. `src/lib/content/behold.ts`
+  is the one place in the codebase that must never throw on bad content: a 404, a timeout or a
+  shape change falls back to `content/instagram.ts` so an outage cannot fail the build or blank
+  the section. Images come only from `sizes.*` on `behold.pictures` (permanent); Instagram's own
+  `mediaUrl` expires and is never used.
 - The home hero, the inner page hero and the Get involved graphic are per-browser choices
   (Shift + M, `src/lib/config`), never a build-time or server-side switch: visitors always get
   `DEFAULT_HERO` / `DEFAULT_PAGE_HERO` / `DEFAULT_INVOLVED` from `src/lib/config/options.ts`,
