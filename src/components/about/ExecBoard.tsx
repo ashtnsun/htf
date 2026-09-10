@@ -11,7 +11,7 @@ import { isTodo } from "@/lib/utils";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 const PHOTO_SIZES =
-  "(min-width: 1280px) 22vw, (min-width: 1024px) 30vw, (min-width: 640px) 45vw, 100vw";
+  "(min-width: 1400px) 18vw, (min-width: 1280px) 22vw, (min-width: 1024px) 30vw, (min-width: 640px) 45vw, 100vw";
 
 type BoardData = {
   members: ExecMember[];
@@ -77,7 +77,9 @@ export function ExecBoardView({ members, years, year, onSelect }: BoardViewProps
         {`${year} board, ${count} ${count === 1 ? "member" : "members"}`}
       </p>
 
-      <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {/* Five across once the container is at its 90rem max (the nine-member board reads as
+          5 + 4); four below that, where five would wrap every name and role. */}
+      <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 wide:grid-cols-5">
         <AnimatePresence initial={false} mode="popLayout">
           {visible.map((member) => (
             <motion.li
@@ -128,7 +130,7 @@ function ExecCard({ member }: { member: ExecMember }) {
       </div>
       <div className="flex flex-1 items-center gap-4 p-5">
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-body-lg font-medium text-text">{member.name}</h3>
+          <h3 className="text-body-lg font-medium text-balance text-text">{member.name}</h3>
           <p className="mt-0.5 text-sm text-muted">{member.role}</p>
         </div>
         {linkedin ? (

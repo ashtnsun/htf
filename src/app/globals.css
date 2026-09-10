@@ -68,6 +68,10 @@
   --radius-sm: 0px;
   --radius-md: 0px;
 
+  /* One breakpoint past xl, at the container's own 90rem max: the point where a grid can
+     add a column without the content column getting any wider (the exec board's 5 across). */
+  --breakpoint-wide: 87.5rem;
+
   /* Type scale (rem @16px): display 96/80/64, h2 48, h3 32, body 16/18, eyebrow 12. */
   --text-display-xl: 6rem;
   --text-display-xl--line-height: 0.95;
