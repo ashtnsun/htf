@@ -9,13 +9,15 @@ const VIEW_TOP = -720;
 const VIEW_HEIGHT = 740;
 /** Pause on the finished mark before it leaves for the header. */
 const HOLD_MS = 300;
-/** Matches the transition on `.intro-mark` in globals.css. */
-const FLIGHT_MS = 900;
+/** Matches the transform transition on `.intro-mark` in globals.css. */
+const FLIGHT_MS = 1100;
+/** The page keeps settling after the mark lands: the longest reveal transition in globals.css. */
+const SETTLE_MS = 700;
 
 /**
  * The home page's arrival: a black screen, the <HTF/> wordmark drawing and filling in the centre
  * (the Wordmark hero's animation), then the mark flying into the header logo while the page
- * fades in underneath. Whether it plays is decided before first paint by the inline script in
+ * settles in underneath ("reveal"), the header logo taking over as it lands ("landed"). Whether it plays is decided before first paint by the inline script in
  * the root layout (`home/intro-script.ts`), which sets `data-intro="play"` on <html>: once per tab
  * session, on `/` only, never under reduced motion or automation (`?intro` forces it). Without
  * that attribute this renders nothing visible. Any key, click, wheel or touch skips to the end.
@@ -51,7 +53,13 @@ export function HomeIntro() {
       const scale = target.width / from.width;
       mark.style.transform = `translate(${target.left - from.left}px, ${target.top - from.top}px) scale(${scale})`;
       root.dataset.intro = "reveal";
-      timers.push(window.setTimeout(finish, FLIGHT_MS + 50));
+      // The real header logo takes over where the mark lands; the page finishes fading after.
+      timers.push(
+        window.setTimeout(() => {
+          root.dataset.intro = "landed";
+          timers.push(window.setTimeout(finish, SETTLE_MS));
+        }, FLIGHT_MS),
+      );
     };
 
     // A reload that restores a scrolled position has nothing to land on: show the page.
