@@ -1,7 +1,7 @@
 "use client";
 
-import { useReducedMotion } from "framer-motion";
 import { useEffect, useRef } from "react";
+import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
 import { cn } from "@/lib/utils";
 
 type CountUpProps = {
@@ -38,7 +38,9 @@ function parseValue(value: string) {
  * prefers-reduced-motion.
  */
 export function CountUp({ value, duration = 3000, delay = 0, className }: CountUpProps) {
-  const reduce = useReducedMotion();
+  // Hydration-safe: Framer's raw hook is already true on the client's first render, which made
+  // this markup differ from the server's and threw the whole page into a client re-render.
+  const reduce = useReducedMotionSafe();
   const ref = useRef<HTMLSpanElement>(null);
   const parsed = parseValue(value);
   const animate = Boolean(parsed) && !reduce;
