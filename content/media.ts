@@ -42,6 +42,16 @@ export const media = {
   "exec.khang-nguyen-2026": "/images/exec/khang-nguyen-2026.jpg",
   "exec.shreeya-sarurkar-2026": "/images/exec/shreeya-sarurkar-2026.jpg",
   "exec.nakul-naik-2026": "/images/exec/nakul-naik-2026.jpg",
+  "exec.tanay-gondil-2025": "/images/exec/tanay-gondil-2025.jpg",
+  "exec.mahika-parakh-2025": "/images/exec/mahika-parakh-2025.jpg",
+  "exec.lalitha-chandolu-2025": "/images/exec/lalitha-chandolu-2025.jpg",
+  "exec.devansh-khandelwal-2025": "/images/exec/devansh-khandelwal-2025.jpg",
+  "exec.ryan-erickson-2025": "/images/exec/ryan-erickson-2025.jpg",
+  "exec.vipula-shirse-2025": "/images/exec/vipula-shirse-2025.jpg",
+  "exec.seth-parent-2025": "/images/exec/seth-parent-2025.jpg",
+  "exec.arushi-ravula-2025": "/images/exec/arushi-ravula-2025.jpg",
+  "exec.emily-li-2025": "/images/exec/emily-li-2025.jpg",
+  "exec.youngjun-yoo-2025": "/images/exec/youngjun-yoo-2025.jpg",
   "avatar.placeholder": `${P}/avatar.svg`,
 } as const satisfies Record<string, string>;
 

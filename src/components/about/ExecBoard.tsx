@@ -101,11 +101,11 @@ export function ExecBoardView({ members, years, year, onSelect }: BoardViewProps
 
 /**
  * One member: a 4:5 photo, name, role and the LinkedIn cell. The cell is a link when the URL
- * is known and a dimmed placeholder while `linkedin` is still a TODO, so every card has the
- * same footer and the link's place is visible before the content lands.
+ * is known and a dimmed placeholder while `linkedin` is still a TODO, so the link's place is
+ * visible before the content lands. A member with no LinkedIn at all gets no cell.
  */
 function ExecCard({ member }: { member: ExecMember }) {
-  const linkedin = isTodo(member.linkedin) ? null : member.linkedin;
+  const linkedin = member.linkedin && !isTodo(member.linkedin) ? member.linkedin : null;
   const cell =
     "flex size-11 shrink-0 items-center justify-center border transition-colors duration-200";
   return (
@@ -143,7 +143,7 @@ function ExecCard({ member }: { member: ExecMember }) {
           >
             <LinkedinIcon className="size-4" />
           </a>
-        ) : (
+        ) : member.linkedin ? (
           <span
             aria-hidden="true"
             title="[TODO: LinkedIn URL]"
@@ -151,7 +151,7 @@ function ExecCard({ member }: { member: ExecMember }) {
           >
             <LinkedinIcon className="size-4" />
           </span>
-        )}
+        ) : null}
       </div>
     </article>
   );

@@ -72,10 +72,12 @@ export const execMemberSchema = z.object({
   /** The school year of the board this member sits on, e.g. "2026–27". */
   year: cycleYearSchema,
   /**
-   * LinkedIn profile URL. Every card carries the link, so the field is required; a value
-   * starting with "TODO" renders a placeholder cell until the real URL is known.
+   * LinkedIn profile URL. A value starting with "TODO" renders a placeholder cell until the
+   * real URL is known; leave the field out for a member who has no LinkedIn (no cell).
    */
-  linkedin: z.union([z.url(), z.string().regex(/^\[?TODO/i, "a URL or a [TODO: …] note")]),
+  linkedin: z
+    .union([z.url(), z.string().regex(/^\[?TODO/i, "a URL or a [TODO: …] note")])
+    .optional(),
   photo: mediaRefSchema.optional(),
 });
 
