@@ -58,9 +58,12 @@ src/components/
                     StatTile (+ CountUp), TestimonialCard, Chip, Field, Media, DottedMap,
                     CopyEmail (every email control: copies the address, never a mailto link)
   layout/           SiteHeader, NavDrawer, NavLinks, SiteFooter, PageHero (a client switch over
-                    pageHeroes/*: seven inner-page heroes (Globe, Frame, Radar, Corridor, Trace,
-                    Dither, Dino) chosen in the Shift + M menu — all the same frame with one
-                    graphic added; GlobeHero is the default and in the bundle, the rest lazy
+                    pageHeroes/*: twelve inner-page heroes (Globe, Frame, Radar, Corridor, Trace,
+                    Dither, Dino, and since Session 15z Editorial (a short title block), Pixels
+                    (the page's icon in pixelIcons.ts), Viewfinder, Cameo (a process dinosaur per
+                    page) and Dock (the copy docks into the section bar via --subnav-inset))
+                    chosen in the Shift + M menu; the per-page ones read usePageKey (the
+                    pathname); GlobeHero is the default and in the bundle, the rest lazy
                     chunks (OverlapLines, the client measure that keeps a staggered headline's
                     lines overlapping, is the Globe hero's); PageHeroShell holds the shared section, the framed column
                     (PageHeroContent: eyebrow, the one h1, blurb, actions) and the bottom glow;

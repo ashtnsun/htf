@@ -85,6 +85,58 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 15z — 2026-09-15 (five more inner-page heroes)
+
+Ashton did not like the inner-page heroes and asked for ideas, then for five of them as
+Shift + M variants. The default (Globe) is unchanged; nothing ships differently to visitors.
+
+**Built** (`src/components/layout/pageHeroes/`, all lazy chunks):
+
+- **Editorial**: a short title block, no graphic. A hairline index row (eyebrow, and "02 / 05":
+  the header nav's order without Home, then Contact), the headline left-aligned at h2 → display
+  → display-lg, the blurb and actions in a right column with a hairline rule when the page has
+  them. Ends on a hairline so the section bar reads as its last row. About 355px tall at 1440.
+- **Pixels**: a fine square grid (12 / 16 / 20px) anchored to the hero's bottom-right corner, and
+  the page's picture prints into it cell by cell in reading order, then a green block cursor
+  blinks: code window (Projects), heart (About), rocket (Students), toolbox (Nonprofits),
+  envelope (Contact), maps in `pixelIcons.ts`. The picture is positioned in whole cells from
+  the right and bottom (CSS `round()`), so lit cells sit in grid squares. Below 90rem it goes
+  under the copy (the longest headlines reach it at 1280), from 90rem it sits beside it.
+  Headline not staggered. A puzzle piece was tried for Nonprofits and did not read at this size.
+- **Viewfinder**: green corner brackets lock onto the copy on load (scale + fade, 900ms glide),
+  a centre crosshair (md+), REC square blinking with a running 24fps timecode (textContent from
+  rAF, zero under reduced motion), Purdue's coordinates (the Atlas hero's origin) and
+  "ISO 400 · 1/60 · f/2.8" in the corners.
+- **Cameo**: the Dino hero's walk-in, but with the process dinosaur for the page, straight from
+  `home/ProcessScene` held on one step through its own `StepStore` (so the step's motion runs):
+  detective (Projects), party host (About), builder (Students), the team (Nonprofits). Contact
+  gets a new pose drawn in CameoHero: the T-rex holding out a white envelope with a green flap,
+  on the party dino's `data-mode` motion. 5px / 6px cells.
+- **Dock**: the shipped frame; on scroll the copy scales to 0.6 from its top-left and fades
+  (Framer `useScroll`; the rails stay put), and once the hero is under the header the page's
+  eyebrow docks at the left of the sticky bar, portalled to the body. On pages with SectionNav
+  it sets `--subnav-inset` on the root and the links slide right (SectionNav now has
+  `data-section-nav` and pads its list by the variable); on Projects and Contact the label
+  brings its own glass bar. Reduced motion: no scaling, the label just appears.
+
+`usePageKey.ts` (pathname → page, and the page index) is shared by the per-page variants.
+`shot-page-heroes.mjs` lists the twelve and takes `--only a,b`.
+
+**Checked:** typecheck, lint, build clean; `pnpm a11y` on the five inner routes clean, plus an
+axe pass of each new variant on /about, /projects and /contact at 1440 and 390 (Dock scrolled):
+0 violations. Screenshots in `docs/screenshots/session-15z/` (the `-reduced` ones are the
+reduced-motion pass; `*-dock-mid-*` / `*-dock-docked-*` are Dock mid-scroll and docked).
+
+**Decisions / TODOs:**
+
+- [ ] Ashton to try the five in Shift + M and pick one (or none) to become `DEFAULT_PAGE_HERO`;
+      then the unused variants can go.
+- The Pixels icons and the Cameo envelope are first passes, judged at real size in screenshots;
+  the toolbox latch reads as a gap in the band.
+
+**Next session starts with:** Ashton's pick among the inner-page heroes, then the Behold feed URL
+for the Instagram grid and the project write-ups.
+
 ## Session 15y — 2026-09-15 (the home intro)
 
 Ashton asked for an intro on the home page: a black screen, the Wordmark hero's logo animation,
