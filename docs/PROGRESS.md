@@ -116,8 +116,10 @@ fine at card size.
 **VPWA's short name:** on Ashton's word the card's label reads "VPWA" and the project page
 spells out Volunteer Partnerships for West Africa. That is a new optional frontmatter field,
 `nonprofitShort`, read only by `ProjectCard` (the page eyebrow, the share image and the page
-title keep `nonprofit`). A running dev server keeps serving the old label until it restarts:
-`getAllProjects()` caches the MDX in memory and nothing watches `content/projects/`.
+title keep `nonprofit`). Ashton's dev server kept showing the full name after the change:
+`getAllProjects()` and `getPrivacyPolicy()` memoised the MDX in memory and nothing in `next dev`
+watches `content/`, so any edit to a project file needed a server restart. They now memoise in
+production only (`CACHE_FILES`); in development each request re-reads the files.
 
 **Decisions:** nothing in the posts says what the teams built, so **titles stay
 `[TODO: project title]`** (all eight cards show it), as do What we built, Final result, team,
