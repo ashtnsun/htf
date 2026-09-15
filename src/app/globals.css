@@ -942,10 +942,32 @@
     transform-origin: center;
     animation: hero-ping 2.8s var(--ease-out-quart) infinite;
   }
+  /* Pixels: each cell switches on at its own moment (whole cells, never half-lit). */
+  @keyframes page-pixel-on {
+    from {
+      opacity: 0;
+    }
+  }
+  .anim-pixel-on {
+    animation: page-pixel-on 0.01s steps(1, end) both;
+  }
+  /* Viewfinder: the brackets start wide and faint, then lock onto the copy. */
+  @keyframes page-viewfinder-lock {
+    from {
+      opacity: 0;
+      transform: scale(1.05);
+    }
+  }
+  .anim-viewfinder-lock {
+    animation: page-viewfinder-lock 900ms var(--ease-glide) 350ms both;
+  }
   @media (prefers-reduced-motion: reduce) {
     .anim-page-walk,
     .anim-page-step {
       animation: none;
+    }
+    :is([data-pixels], [data-viewfinder]) * {
+      animation-delay: 0s !important;
     }
   }
   /* A checkerboard of --check-size cells, the pixel dither the Dither variant stacks. */

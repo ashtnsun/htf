@@ -17,7 +17,22 @@ const OUT = args.find((a) => !a.startsWith("--")) ?? "docs/screenshots/page-hero
 const BASE = value("base", "http://localhost:3000");
 const REDUCED = flag("reduced");
 /** Every id in PAGE_HERO_VARIANTS (src/lib/config/options.ts). */
-const VARIANTS = ["frame", "globe", "radar", "corridor", "trace", "dither", "dino"];
+const DEFAULT_VARIANTS = [
+  "frame",
+  "globe",
+  "radar",
+  "corridor",
+  "trace",
+  "dither",
+  "dino",
+  "editorial",
+  "pixels",
+  "viewfinder",
+  "cameo",
+  "dock",
+];
+/** `--only a,b` shoots just those variants. */
+const VARIANTS = value("only", "") ? value("only", "").split(",") : DEFAULT_VARIANTS;
 /** About has a blurb, Students does not, Contact is the shortest hero. */
 const ROUTES = ["/about", "/students", "/contact"];
 /** The graphics need their entrance (the dinosaur's walk is the longest, at 3.6s). */

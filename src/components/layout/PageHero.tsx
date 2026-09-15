@@ -29,6 +29,15 @@ const VARIANTS: Record<PageHeroVariantId, ComponentType<PageHeroProps>> = {
   trace: lazy(() => import("@/components/layout/pageHeroes/TraceHero").then((m) => m.TraceHero)),
   dither: lazy(() => import("@/components/layout/pageHeroes/DitherHero").then((m) => m.DitherHero)),
   dino: lazy(() => import("@/components/layout/pageHeroes/DinoHero").then((m) => m.DinoHero)),
+  editorial: lazy(() =>
+    import("@/components/layout/pageHeroes/EditorialHero").then((m) => m.EditorialHero),
+  ),
+  pixels: lazy(() => import("@/components/layout/pageHeroes/PixelsHero").then((m) => m.PixelsHero)),
+  viewfinder: lazy(() =>
+    import("@/components/layout/pageHeroes/ViewfinderHero").then((m) => m.ViewfinderHero),
+  ),
+  cameo: lazy(() => import("@/components/layout/pageHeroes/CameoHero").then((m) => m.CameoHero)),
+  dock: lazy(() => import("@/components/layout/pageHeroes/DockHero").then((m) => m.DockHero)),
 };
 
 /**

@@ -123,6 +123,36 @@ export const PAGE_HERO_VARIANTS = [
     blurb:
       "The pixel T-rex walks in along a hairline ground under the headline, a cell at a time, and blinks where it stops.",
   },
+  {
+    id: "editorial",
+    name: "Editorial",
+    blurb:
+      "A short title block set like a magazine page: an index row with the page's number, the headline, the blurb in its own column. The section bar reads as its last row.",
+  },
+  {
+    id: "pixels",
+    name: "Pixels",
+    blurb:
+      "A fine square grid, and the page's own picture prints into it cell by cell: code, a heart, a rocket, a toolbox, an envelope.",
+  },
+  {
+    id: "viewfinder",
+    name: "Viewfinder",
+    blurb:
+      "A camera's view: green brackets lock onto the copy, with a REC timecode, Purdue's coordinates and the exposure in the corners.",
+  },
+  {
+    id: "cameo",
+    name: "Cameo",
+    blurb:
+      "A process dinosaur walks in dressed for the page: detective, party host, builder, the team, or carrying a letter on Contact.",
+  },
+  {
+    id: "dock",
+    name: "Dock",
+    blurb:
+      "Scroll, and the copy shrinks away and docks as the page's name at the left of the sticky section bar.",
+  },
 ] as const;
 
 export type PageHeroVariantId = (typeof PAGE_HERO_VARIANTS)[number]["id"];

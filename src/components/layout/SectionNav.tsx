@@ -27,6 +27,10 @@ const BAR_HEIGHT = 56;
  * The bar sets `--subnav-h` on the root element while mounted; globals.css adds it to every
  * anchor's `scroll-margin-top`, so a jump lands below the bar rather than under it. Without
  * JavaScript the links are plain anchors and none is marked current.
+ *
+ * The Dock page hero (pageHeroes/DockHero) docks the page's name over the bar's left end; it
+ * finds the bar by `data-section-nav` and sets `--subnav-inset` on the root while docked, which
+ * pads the links over to make room.
  */
 export function SectionNav({ items, label, className }: SectionNavProps) {
   const [current, setCurrent] = useState<string | null>(null);
@@ -91,6 +95,7 @@ export function SectionNav({ items, label, className }: SectionNavProps) {
 
   return (
     <nav
+      data-section-nav=""
       aria-label={`${label} sections`}
       className={cn(
         "sticky top-(--header-h) z-40 glass [--glass-alpha:50%] [--glass-edge:0]",
@@ -100,7 +105,7 @@ export function SectionNav({ items, label, className }: SectionNavProps) {
       <div className="container-max flex h-14 items-center container-x">
         <ul
           ref={listRef}
-          className="-mx-(--gutter) flex h-full flex-1 items-stretch gap-2 overflow-x-auto px-(--gutter)"
+          className="-mx-(--gutter) flex h-full flex-1 items-stretch gap-2 overflow-x-auto pr-(--gutter) pl-[calc(var(--gutter)+var(--subnav-inset,0px))] transition-[padding] duration-500 ease-in-out-soft"
         >
           {items.map((item) => {
             const active = item.href.slice(1) === current;
