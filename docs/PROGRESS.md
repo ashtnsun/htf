@@ -58,6 +58,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 15r: seven inner-page hero variants in the Shift + M menu (Frame stays the default; Globe, Radar, Corridor, Trace, Dither, Dino), all the shipped hero with one graphic added; Ashton picks the one that ships
 - [x] Session 15s: the Instagram grid on /about can run off the live account (a Behold JSON feed fetched server-side into the site's own tiles), falling back to the curated posts
 - [x] Session 15t: the real 2026–27 exec board on /about (nine members, names, roles and LinkedIn links, each with the photo they sent); the placeholder 2025–26 board removed
+- [x] Session 15w: the eight 2025–26 projects named for their nonprofits (slugs, cities, map pins, who-they-are copy from the club's posts), logo covers; titles, what was built, team, stack and screenshots still TODO
 - [x] Session 15v: the real 2025–26 exec board on /about (ten members with photos and LinkedIn links), so the year chips are back
 - [x] Session 15n: the /apply frame is back-proof — two heights instead of five, after checking that nothing cross-origin can say which section the form is showing
 
@@ -81,6 +82,47 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
+
+## Session 15w — 2026-09-15 (the 2025–26 nonprofits)
+
+Ashton dropped the club's eight Instagram posts for last year's partners in `media/projects/`
+(name, location, a paragraph about the nonprofit, its logo) and asked for the placeholders
+to be filled from them, with the nonprofits' logos as project covers for now.
+
+**Built:** the eight placeholder projects already sat in the posts' eight locations, so each
+became one nonprofit, file and slug renamed (the URL is the slug): `sheltering-wings`
+(Danville, Indiana), `share-food-share-love` (Brookfield, Illinois), `midtown-family-services`
+(San Jose, California), `mill-creek-urban-farm` (Philadelphia, Pennsylvania), `sleep-pod`
+(United Kingdom), `pratigya` (Ranchi, Jharkhand, India), `vpwa` (Ghana),
+`we-the-world-botswana` (Gaborone, Botswana). Each has the nonprofit's name, the city and its
+coordinates (so the partner globe and the Partners list on /nonprofits move to the cities),
+a summary condensed from the post, and the post's paragraph as the first Overview paragraph.
+Cities are from the nonprofits' own sites or listings; Sleep Pod and VPWA stay at country
+level (no confirmed city). `content/media.ts` keys, the `media/projects/<slug>/` intake
+folders (with new READMEs), the `/dev/ui` sample cards and the README's a11y example follow
+the new slugs. The posts and their zip moved to `media/_inbox/projects-2025-26-posts/`.
+
+**Covers:** 2400×1350 JPEGs, the logo centred on `--surface` (#141414), the way the posts put
+it on black, and inside the middle square so the 4:3 and featured 4:5 crops keep it. Logos
+from the official sites (Sheltering Wings, Midtown, Mill Creek's boxed badge, Sleep Pod's
+white version, Pratigya with its dark box keyed out, VPWA's on a white box). **We The World
+Botswana has no logo online** (only the parent WE, The World network's), and Share Food Share
+Love's site only serves a 109 px one, so both are cut from Ashton's posts. Sheltering Wings
+(242 px), Sleep Pod (298 px) and the two post cuts (150–170 px) are small sources scaled up
+about 3×, soft on the detail page on a retina screen; fine at card size.
+
+**Decisions:** nothing in the posts says what the teams built, so **titles stay
+`[TODO: project title]`** (all eight cards show it), as do What we built, Final result, team,
+stack and the screenshot gallery. The **tags are still the invented placeholder tags** (the
+schema needs one) and should be checked. The post calls VPWA "Volunteer Partnerships for
+Africa"; the organization's registered name is **Volunteer Partnerships for West Africa**, which
+the site uses. The grid sorts by title, so with eight identical titles it falls back to slug
+order (Midtown first); real titles fix it.
+
+**Verified:** `pnpm validate:content` (projects: 8), typecheck, lint and `pnpm build` clean
+(the eight new static paths); `pnpm a11y` on /projects and /projects/sheltering-wings, 0
+violations; /projects at 1440 and 390, /projects/pratigya and the /nonprofits partners map
+in Playwright, no console errors. Shots in `docs/screenshots/session-15w/`.
 
 ## Session 15v — 2026-09-15 (the 2025–26 exec board)
 
