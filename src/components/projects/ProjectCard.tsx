@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 export type ProjectCardData = Pick<
   ProjectFrontmatter,
-  "slug" | "title" | "nonprofit" | "year" | "location" | "tags" | "cover"
+  "slug" | "title" | "nonprofit" | "nonprofitShort" | "year" | "location" | "tags" | "cover"
 > & {
   /** Unpublished projects only render in development; the card marks them as drafts. */
   published?: boolean;
@@ -34,8 +34,9 @@ export const TAG_LABEL: Record<ProjectTag, string> = {
 
 /** Serialisable subset of a project for cards (keeps MDX bodies out of client payloads). */
 export function toProjectCardData(project: ProjectCardData): ProjectCardData {
-  const { slug, title, nonprofit, year, location, tags, cover, published } = project;
-  return { slug, title, nonprofit, year, location, tags, cover, published };
+  const { slug, title, nonprofit, nonprofitShort, year, location, tags, cover, published } =
+    project;
+  return { slug, title, nonprofit, nonprofitShort, year, location, tags, cover, published };
 }
 
 /**
@@ -85,7 +86,7 @@ export function ProjectCard({
       </div>
       <div className="flex flex-1 flex-col p-6 md:p-7">
         <p className="flex items-baseline justify-between gap-4 text-eyebrow font-medium text-muted uppercase">
-          <span className="truncate">{project.nonprofit}</span>
+          <span className="truncate">{project.nonprofitShort ?? project.nonprofit}</span>
           <span className="shrink-0">{project.year}</span>
         </p>
         <div className="mt-4 flex items-end justify-between gap-6">

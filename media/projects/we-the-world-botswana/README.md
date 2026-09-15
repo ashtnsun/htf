@@ -2,7 +2,8 @@
 
 We The World Botswana, 2025–26 — `content/projects/we-the-world-botswana.mdx`.
 
-`cover.jpg` is a stand-in: the nonprofit's logo centred on the site's dark surface (2400 × 1350).
+`cover.jpg` is a stand-in: the nonprofit's logo (the "WE" mark, white background removed)
+centred on the site's dark surface (2400 × 1350).
 Replace it with a real cover when there is one (16:9, ≥ 2400 × 1350), then
 `pnpm media:check --import --force`.
 

@@ -42,6 +42,11 @@ export const projectFrontmatterSchema = z.object({
   slug: slugSchema,
   title: z.string().min(1),
   nonprofit: z.string().min(1),
+  /**
+   * A shorter name for the project card's label (e.g. "VPWA"); the project page always shows
+   * `nonprofit` in full. Leave it out when the full name fits.
+   */
+  nonprofitShort: z.string().min(1).optional(),
   /** Academic cycle, e.g. "2025–26". */
   year: cycleYearSchema,
   location: z.string().min(1),
