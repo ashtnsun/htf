@@ -6,7 +6,7 @@ import { ProjectCard, type ProjectCardData } from "@/components/projects/Project
 import { ChipButton } from "@/components/ui/Chip";
 import { DURATION, EASE_GLIDE } from "@/lib/motion";
 
-const CARD_SIZES = "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw";
+const CARD_SIZES = "(min-width: 1024px) 33vw, 50vw";
 
 type ExplorerData = {
   projects: ProjectCardData[];
@@ -73,7 +73,7 @@ export function ProjectsExplorerView({ projects, years, year, onSelect }: Explor
       </p>
 
       {count > 0 ? (
-        <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-10 grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
           <AnimatePresence initial={false}>
             {visible.map((project) => (
               <motion.li

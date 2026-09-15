@@ -122,14 +122,14 @@ export function ProjectCard({
           </span>
         ) : null}
       </div>
-      <p className="flex items-baseline justify-between gap-4 px-6 pt-6 text-eyebrow font-medium text-muted uppercase md:px-7 md:pt-7">
+      <p className="flex items-baseline justify-between gap-4 px-4 pt-4 text-eyebrow sm:px-6 sm:pt-6 font-medium text-muted uppercase md:px-7 md:pt-7">
         {inactive ? null : <span className="truncate">{nonprofitName}</span>}
         <span className="shrink-0">{project.year}</span>
       </p>
-      <div className="mt-4 flex items-start justify-between gap-6 px-6 md:px-7">
+      <div className="mt-3 flex items-start justify-between gap-6 px-4 sm:mt-4 sm:px-6 md:px-7">
         <Heading
           className={cn(
-            "text-h3 font-medium text-text",
+            "text-body-lg font-medium text-text sm:text-h3",
             !inactive && "transition-colors duration-500 group-hover:text-green",
           )}
         >
@@ -147,7 +147,7 @@ export function ProjectCard({
         <span
           aria-hidden="true"
           className={cn(
-            "flex size-11 shrink-0 items-center justify-center self-end border",
+            "hidden size-11 shrink-0 items-center justify-center self-end border sm:flex",
             inactive
               ? "border-line bg-surface text-muted opacity-50"
               : "border-line-strong bg-surface-2 text-text transition-colors group-hover:border-green group-hover:bg-green group-hover:text-bg",
@@ -161,10 +161,10 @@ export function ProjectCard({
           />
         </span>
       </div>
-      <p className="mt-3 px-6 text-sm text-muted md:px-7">{project.location}</p>
+      <p className="mt-2 px-4 text-sm text-muted sm:mt-3 sm:px-6 md:px-7">{project.location}</p>
       <ul
         aria-label="Tags"
-        className="mt-4 flex flex-wrap content-start gap-2 px-6 pb-6 md:px-7 md:pb-7"
+        className="mt-3 flex flex-wrap content-start gap-2 px-4 pb-4 sm:mt-4 sm:px-6 sm:pb-6 md:px-7 md:pb-7"
       >
         {project.tags.map((tag) => (
           <li key={tag}>

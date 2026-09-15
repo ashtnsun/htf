@@ -83,6 +83,9 @@ export function NavDrawer({ cta }: NavDrawerProps) {
     if (!open) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    // iOS Safari scrolls the page under a locked body unless the root is locked too
+    const previousRoot = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
     const panel = panelRef.current;
     const trigger = triggerRef.current;
     const first = panel?.querySelector<HTMLElement>(FOCUSABLE);
@@ -113,7 +116,9 @@ export function NavDrawer({ cta }: NavDrawerProps) {
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = previous;
-      trigger?.focus();
+      document.documentElement.style.overflow = previousRoot;
+      // preventScroll: restoring focus must not jump the new page after a link closed the drawer
+      trigger?.focus({ preventScroll: true });
     };
   }, [open, close]);
 
@@ -160,7 +165,10 @@ export function NavDrawer({ cta }: NavDrawerProps) {
         ? createPortal(
             <AnimatePresence>
               {open ? (
-                <div className="fixed inset-0 z-[60] [view-transition-name:nav-drawer] lg:hidden">
+                <motion.div
+                  exit={{ pointerEvents: "none" }}
+                  className="fixed inset-0 z-[60] [view-transition-name:nav-drawer] lg:hidden"
+                >
                   <motion.button
                     type="button"
                     aria-label="Close menu"
@@ -269,7 +277,7 @@ export function NavDrawer({ cta }: NavDrawerProps) {
                       </ul>
                     </div>
                   </motion.div>
-                </div>
+                </motion.div>
               ) : null}
             </AnimatePresence>,
             document.body,

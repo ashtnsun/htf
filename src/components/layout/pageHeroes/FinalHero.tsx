@@ -27,10 +27,10 @@ export function FinalHero(props: PageHeroProps) {
           backgroundPosition: "0 -1px",
         }}
       />
-      {/* the Globe hero's wireframe globe, centred on the right edge of the content container */}
+      {/* the Globe hero's wireframe globe, fully in frame, its right side on the content container's right edge */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div className="container-max flex h-full items-center justify-end container-x">
-          <div className="-mr-[22%] aspect-square h-1/2 opacity-70 md:mr-0 md:h-2/3">
+          <div className="aspect-square w-1/2 max-w-full opacity-70 md:h-2/3 md:w-auto">
             <Globe className="size-full" />
           </div>
         </div>
