@@ -16,5 +16,5 @@ Inside each folder:
 Covers and screenshots both need alt text and captions in the project's `.mdx`, plus the real
 title, nonprofit, summary, stack and team — an image alone does not finish a project page.
 
-The eight folders here are the placeholder projects the site ships with. When a real project
-replaces one, rename the folder to the real slug at the same time as the `.mdx` file.
+The eight folders here are the 2025–26 projects. When a project is renamed, rename its folder
+at the same time as the `.mdx` file.

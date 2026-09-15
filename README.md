@@ -35,7 +35,7 @@ Visual + accessibility checks (need `pnpm dev` running in another terminal):
 pnpm screenshots --out=docs/screenshots/session-N --routes=/,/projects
 pnpm a11y --routes=/,/projects,/students
 # --dialog also opens the gallery lightbox on routes that have one (Git Bash: MSYS_NO_PATHCONV=1)
-pnpm a11y --routes=/projects/placeholder-project-1 --dialog=Enlarge
+pnpm a11y --routes=/projects/sheltering-wings --dialog=Enlarge
 ```
 
 ## Deploy

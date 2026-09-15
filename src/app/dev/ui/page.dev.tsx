@@ -293,7 +293,7 @@ export default function UiKitPage() {
           <Card href="/projects" padding="none" className="group">
             <div className="relative aspect-video">
               <Media
-                src="projects.placeholder-project-1.cover"
+                src="projects.sheltering-wings.cover"
                 alt=""
                 fill
                 sizes="33vw"
@@ -342,25 +342,25 @@ export default function UiKitPage() {
         <div className="grid gap-6 md:grid-cols-2">
           <ProjectCard
             project={{
-              slug: "placeholder-project-1",
+              slug: "sheltering-wings",
               title: "Sample project title",
               nonprofit: "Sample nonprofit",
               year: "2025–26",
               location: "Sample city, ST",
               tags: ["web", "data"],
-              cover: "projects.placeholder-project-1.cover",
+              cover: "projects.sheltering-wings.cover",
             }}
           />
           <ProjectCard
             size="featured"
             project={{
-              slug: "placeholder-project-2",
+              slug: "share-food-share-love",
               title: "Featured card with the taller cover",
               nonprofit: "Sample nonprofit",
               year: "2025–26",
               location: "Sample city, ST",
               tags: ["mobile"],
-              cover: "projects.placeholder-project-2.cover",
+              cover: "projects.share-food-share-love.cover",
             }}
           />
         </div>

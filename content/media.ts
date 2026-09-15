@@ -7,15 +7,15 @@ const P = "/placeholders";
 
 export const media = {
   // Projects (key pattern: projects.<slug>.cover, gallery.<name>).
-  // Four ornament variants so a grid of placeholders is not eight identical tiles.
-  "projects.placeholder-project-1.cover": `${P}/cover-globe.svg`,
-  "projects.placeholder-project-2.cover": `${P}/cover-checker.svg`,
-  "projects.placeholder-project-3.cover": `${P}/cover-zigzag.svg`,
-  "projects.placeholder-project-4.cover": `${P}/cover-brackets.svg`,
-  "projects.placeholder-project-5.cover": `${P}/cover-checker.svg`,
-  "projects.placeholder-project-6.cover": `${P}/cover-globe.svg`,
-  "projects.placeholder-project-7.cover": `${P}/cover-brackets.svg`,
-  "projects.placeholder-project-8.cover": `${P}/cover-zigzag.svg`,
+  // Covers are the nonprofit logos for now; the gallery is still placeholder screenshots.
+  "projects.sheltering-wings.cover": "/images/projects/sheltering-wings/cover.jpg",
+  "projects.share-food-share-love.cover": "/images/projects/share-food-share-love/cover.jpg",
+  "projects.midtown-family-services.cover": "/images/projects/midtown-family-services/cover.jpg",
+  "projects.mill-creek-urban-farm.cover": "/images/projects/mill-creek-urban-farm/cover.jpg",
+  "projects.sleep-pod.cover": "/images/projects/sleep-pod/cover.jpg",
+  "projects.pratigya.cover": "/images/projects/pratigya/cover.jpg",
+  "projects.vpwa.cover": "/images/projects/vpwa/cover.jpg",
+  "projects.we-the-world-botswana.cover": "/images/projects/we-the-world-botswana/cover.jpg",
   "gallery.placeholder-1": `${P}/gallery-1.svg`,
   "gallery.placeholder-2": `${P}/gallery-2.svg`,
   "gallery.placeholder-3": `${P}/gallery-3.svg`,
