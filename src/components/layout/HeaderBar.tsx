@@ -21,7 +21,7 @@ export function HeaderBar({ children }: { children: ReactNode }) {
   return (
     <header
       data-at-top={atTop || undefined}
-      className="sticky top-0 z-50 h-(--header-h) glass transition-[background-color,backdrop-filter,-webkit-backdrop-filter] duration-500 ease-out [--glass-alpha:50%] [--glass-edge:0] data-at-top:[--glass-alpha:0%] data-at-top:[--glass-blur:0px]"
+      className="sticky top-0 z-50 h-(--header-h) glass transition-[background-color,backdrop-filter,-webkit-backdrop-filter] duration-700 ease-smooth [--glass-alpha:50%] [--glass-edge:0] [view-transition-name:site-header] data-at-top:[--glass-alpha:0%] data-at-top:[--glass-blur:0px]"
     >
       {children}
     </header>

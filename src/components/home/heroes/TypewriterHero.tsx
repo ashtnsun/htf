@@ -107,7 +107,7 @@ export function TypewriterHero() {
               type="button"
               onClick={() => setTyped(0)}
               className={cn(
-                "mt-8 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-muted transition-colors duration-200 hover:text-green",
+                "mt-8 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-muted transition-colors hover:text-green",
                 !done && "invisible",
               )}
             >

@@ -6,10 +6,10 @@ import { useSearchParams } from "next/navigation";
 import type { ExecMember } from "@/lib/content/schemas";
 import { LinkedinIcon } from "@/components/icons/Social";
 import { ChipButton } from "@/components/ui/Chip";
+import { DURATION, EASE_GLIDE } from "@/lib/motion";
 import { Media } from "@/components/ui/Media";
 import { isTodo } from "@/lib/utils";
 
-const EASE = [0.16, 1, 0.3, 1] as const;
 const PHOTO_SIZES =
   "(min-width: 1400px) 18vw, (min-width: 1280px) 22vw, (min-width: 1024px) 30vw, (min-width: 640px) 45vw, 100vw";
 
@@ -85,10 +85,10 @@ export function ExecBoardView({ members, years, year, onSelect }: BoardViewProps
             <motion.li
               key={member.slug}
               layout={!reduce}
-              initial={reduce ? false : { opacity: 0, y: 12 }}
+              initial={reduce ? false : { opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               exit={reduce ? undefined : { opacity: 0, scale: 0.98 }}
-              transition={{ duration: 0.35, ease: EASE }}
+              transition={{ duration: DURATION.base, ease: EASE_GLIDE }}
             >
               <ExecCard member={member} />
             </motion.li>
@@ -106,8 +106,7 @@ export function ExecBoardView({ members, years, year, onSelect }: BoardViewProps
  */
 function ExecCard({ member }: { member: ExecMember }) {
   const linkedin = member.linkedin && !isTodo(member.linkedin) ? member.linkedin : null;
-  const cell =
-    "flex size-11 shrink-0 items-center justify-center border transition-colors duration-200";
+  const cell = "flex size-11 shrink-0 items-center justify-center border transition-colors";
   return (
     <article className="flex h-full flex-col border border-line bg-surface">
       <div className="relative aspect-[4/5] overflow-hidden border-b border-line bg-surface-2">

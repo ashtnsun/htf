@@ -12,7 +12,7 @@ export type AwardPhotoSlide = { src: string; alt: string };
 const ROTATE_MS = 7000;
 
 const control =
-  "glass flex size-11 items-center justify-center border border-line-strong text-text transition-colors duration-200 hover:border-green hover:text-green [--glass-alpha:70%]";
+  "glass flex size-11 items-center justify-center border border-line-strong text-text transition-colors hover:border-green hover:text-green [--glass-alpha:70%]";
 
 /**
  * Photo carousel for the awards block: one 3:2 photo at a time, crossfading to the next every
@@ -71,7 +71,7 @@ export function AwardCarousel({ photos }: { photos: AwardPhotoSlide[] }) {
           key={photo.src}
           aria-hidden={i !== index || undefined}
           className={cn(
-            "absolute inset-0 transition-opacity duration-700 ease-out",
+            "absolute inset-0 transition-opacity duration-1000 ease-smooth",
             i === index ? "opacity-100" : "opacity-0",
           )}
         >

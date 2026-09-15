@@ -94,10 +94,7 @@ export function AtlasHero({ pins }: HeroProps) {
                   strokeOpacity={active === pin.id ? 1 : 0.45}
                   strokeWidth={active === pin.id ? 2 : 1.25}
                   vectorEffect="non-scaling-stroke"
-                  className={cn(
-                    "transition-[stroke-opacity,stroke-width] duration-200",
-                    !reduce && "anim-draw",
-                  )}
+                  className={cn("transition-[stroke-opacity,stroke-width]", !reduce && "anim-draw")}
                   style={{ animationDelay: `${0.4 + i * 0.14}s` }}
                 />
               ))}
@@ -138,7 +135,7 @@ export function AtlasHero({ pins }: HeroProps) {
                   )}
                   <span
                     className={cn(
-                      "absolute inset-0 border transition-colors duration-200",
+                      "absolute inset-0 border transition-colors",
                       isActive ? "border-green" : "border-transparent",
                     )}
                   />

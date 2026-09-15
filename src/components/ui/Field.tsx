@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 
 const controlClass = cn(
   "w-full border border-line-strong bg-surface px-4 text-base text-text",
-  "transition-colors duration-200 placeholder:text-muted/70 hover:border-green/60",
+  "transition-colors placeholder:text-muted/70 hover:border-green/60",
   "focus-visible:border-mint focus-visible:outline-offset-0",
   "disabled:opacity-60 aria-[invalid=true]:border-cyan",
 );
@@ -195,7 +195,7 @@ type ChoiceOption = { value: string; label: string };
 /** 44px chip drawn next to an sr-only radio or checkbox (the year-filter look). */
 function chipClass(error: string | undefined) {
   return cn(
-    "inline-flex min-h-11 cursor-pointer items-center border px-4 text-sm font-medium transition-colors duration-200",
+    "inline-flex min-h-11 cursor-pointer items-center border px-4 text-sm font-medium transition-colors",
     "border-line-strong text-muted hover:border-green hover:text-text",
     "peer-checked:border-green peer-checked:bg-green peer-checked:text-bg",
     "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-mint",
@@ -356,7 +356,7 @@ export function CheckboxField({
         <span
           aria-hidden="true"
           className={cn(
-            "mt-0.5 flex size-5 shrink-0 items-center justify-center border transition-colors duration-200",
+            "mt-0.5 flex size-5 shrink-0 items-center justify-center border transition-colors",
             "border-line-strong bg-surface text-transparent group-hover:border-green",
             "peer-checked:border-green peer-checked:bg-green peer-checked:text-bg",
             "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-mint",

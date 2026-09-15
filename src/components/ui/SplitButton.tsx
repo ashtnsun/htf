@@ -83,7 +83,7 @@ export function SplitButton({
 
   const base = cn(
     "group inline-flex items-stretch overflow-hidden font-medium whitespace-nowrap",
-    "transition-[border-color,opacity] duration-200",
+    "transition-[border-color,opacity]",
     "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-mint",
     size === "md" && "text-sm",
     size === "lg" && "text-base",
@@ -103,11 +103,11 @@ export function SplitButton({
     /* header: the long arbitrary variant is "the header is clear and this button is neither
        hovered nor focused"; spelled out in each class so Tailwind's scanner finds it */
     variant === "header" &&
-      "text-bg transition-colors duration-500 [[data-at-top]_.group:not(:hover):not(:focus-visible)_&]:text-text",
+      "text-bg transition-colors duration-600 [[data-at-top]_.group:not(:hover):not(:focus-visible)_&]:text-text",
   );
 
   const arrow = cn(
-    "flex items-center justify-center transition-colors duration-200",
+    "flex items-center justify-center transition-colors",
     size === "md" && "w-11",
     size === "lg" && "w-14",
     size === "bar" && "w-14 lg:w-16",
@@ -116,14 +116,13 @@ export function SplitButton({
     variant === "secondary" &&
       "border-l border-line-strong bg-surface-2 text-text group-hover:border-green group-hover:bg-green group-hover:text-bg",
     variant === "header" &&
-      "border-l border-black text-bg duration-500 [[data-at-top]_.group:not(:hover):not(:focus-visible)_&]:border-transparent [[data-at-top]_.group:not(:hover):not(:focus-visible)_&]:text-text",
+      "border-l border-black text-bg duration-600 [[data-at-top]_.group:not(:hover):not(:focus-visible)_&]:border-transparent [[data-at-top]_.group:not(:hover):not(:focus-visible)_&]:text-text",
   );
 
   /* Two copies of the label stacked in one clipped line box: the first rolls up and out, the
      second (hidden from assistive tech) rises from below into its place. */
   const roll = "relative block overflow-hidden";
-  const rollMotion =
-    "transition-transform duration-500 ease-out-expo motion-reduce:transition-none";
+  const rollMotion = "transition-transform duration-600 ease-glide motion-reduce:transition-none";
   const rollOut = cn("block", rollMotion, "group-hover:-translate-y-full");
   const rollIn = cn(
     "absolute inset-0 block translate-y-full",
@@ -132,7 +131,7 @@ export function SplitButton({
   );
 
   const icon = cn(
-    "size-[1.1em] transition-transform duration-300 ease-out-expo",
+    "size-[1.1em] transition-transform duration-500 ease-glide",
     pending
       ? "animate-spin"
       : iconName
@@ -149,7 +148,7 @@ export function SplitButton({
       {variant === "header" ? (
         <span
           aria-hidden="true"
-          className="absolute inset-0 -z-10 origin-right bg-green transition-transform duration-500 ease-out-expo [[data-at-top]_.group:not(:hover):not(:focus-visible)_&]:scale-x-0"
+          className="absolute inset-0 -z-10 origin-right bg-green transition-transform duration-600 ease-glide [[data-at-top]_.group:not(:hover):not(:focus-visible)_&]:scale-x-0"
         />
       ) : null}
       <span className={label}>

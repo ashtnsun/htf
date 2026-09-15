@@ -39,14 +39,14 @@ export function PartnersMap({ locations }: { locations: PartnerLocation[] }) {
                   onFocus={() => setActiveId(location.id)}
                   onMouseEnter={() => setActiveId(location.id)}
                   className={cn(
-                    "flex min-h-14 w-full items-center gap-3 py-3 text-left transition-colors duration-200",
+                    "flex min-h-14 w-full items-center gap-3 py-3 text-left transition-colors",
                     isActive ? "text-green" : "text-text hover:text-green",
                   )}
                 >
                   <span
                     aria-hidden="true"
                     className={cn(
-                      "size-2 shrink-0 border transition-colors duration-200",
+                      "size-2 shrink-0 border transition-colors",
                       isActive ? "border-green bg-green" : "border-line-strong",
                     )}
                   />

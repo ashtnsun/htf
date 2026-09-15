@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { DURATION, EASE_GLIDE } from "@/lib/motion";
 import {
   FolderKanban,
   GraduationCap,
@@ -119,7 +120,7 @@ export function NavDrawer({ cta }: NavDrawerProps) {
   const links = [...site.nav, { label: "Contact", href: "/contact" }];
   // `copy` marks the address: it goes to the clipboard instead of opening a mail client.
   const socialClass =
-    "flex size-11 items-center justify-center border border-line-strong text-text transition-colors duration-200 hover:border-green hover:text-green";
+    "flex size-11 items-center justify-center border border-line-strong text-text transition-colors hover:border-green hover:text-green";
   const socials: {
     label: string;
     href: string;
@@ -137,9 +138,7 @@ export function NavDrawer({ cta }: NavDrawerProps) {
     },
   ].filter((s) => !s.todo && !isTodo(s.href || s.copy));
 
-  const transition = reduce
-    ? { duration: 0 }
-    : { duration: 0.45, ease: [0.16, 1, 0.3, 1] as const };
+  const transition = reduce ? { duration: 0 } : { duration: DURATION.panel, ease: EASE_GLIDE };
 
   return (
     <>
@@ -150,7 +149,7 @@ export function NavDrawer({ cta }: NavDrawerProps) {
         aria-controls="site-drawer"
         aria-label="Open menu"
         onClick={() => setOpen(true)}
-        className="flex w-14 items-center justify-center border-r border-line text-text transition-colors duration-200 hover:bg-surface-2 hover:text-green focus-visible:outline-offset-[-3px] lg:hidden"
+        className="flex w-14 items-center justify-center border-r border-line text-text transition-colors hover:bg-surface-2 hover:text-green focus-visible:outline-offset-[-3px] lg:hidden"
       >
         <Menu className="size-5" aria-hidden="true" />
       </button>
@@ -161,7 +160,7 @@ export function NavDrawer({ cta }: NavDrawerProps) {
         ? createPortal(
             <AnimatePresence>
               {open ? (
-                <div className="fixed inset-0 z-[60] lg:hidden">
+                <div className="fixed inset-0 z-[60] [view-transition-name:nav-drawer] lg:hidden">
                   <motion.button
                     type="button"
                     aria-label="Close menu"
@@ -215,7 +214,7 @@ export function NavDrawer({ cta }: NavDrawerProps) {
                                   onClick={close}
                                   aria-current={active ? "page" : undefined}
                                   className={cn(
-                                    "hover-corners flex min-h-16 items-center gap-3 px-4 py-4 text-sm font-medium transition-colors duration-200 focus-visible:outline-offset-[-3px]",
+                                    "hover-corners flex min-h-16 items-center gap-3 px-4 py-4 text-sm font-medium transition-colors focus-visible:outline-offset-[-3px]",
                                     active
                                       ? "bg-surface-2 text-green"
                                       : "text-text hover:bg-surface-2",

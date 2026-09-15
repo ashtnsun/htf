@@ -10,7 +10,7 @@ type ChipStyleProps = {
 };
 
 const base =
-  "inline-flex items-center justify-center border font-medium whitespace-nowrap transition-colors duration-200";
+  "inline-flex items-center justify-center border font-medium whitespace-nowrap transition-colors";
 
 const sizeClass = {
   sm: "min-h-7 px-2.5 text-eyebrow uppercase",

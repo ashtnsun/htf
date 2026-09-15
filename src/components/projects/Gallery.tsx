@@ -15,7 +15,7 @@ type GalleryProps = {
 };
 
 const iconButton =
-  "glass flex size-11 items-center justify-center border border-line-strong text-text transition-colors duration-200 hover:border-green hover:text-green disabled:opacity-40 [--glass-alpha:70%]";
+  "glass flex size-11 items-center justify-center border border-line-strong text-text transition-colors hover:border-green hover:text-green disabled:opacity-40 [--glass-alpha:70%]";
 
 /**
  * Screenshot grid with a lightbox. The lightbox is a native modal <dialog>: the browser
@@ -85,7 +85,7 @@ export function Gallery({ images, label, className }: GalleryProps) {
               onClick={() => setIndex(i)}
               aria-haspopup="dialog"
               aria-label={`Enlarge: ${image.alt}`}
-              className="group hover-corners relative block aspect-[16/10] w-full overflow-hidden border border-line bg-surface transition-colors duration-200 hover:border-line-strong focus-visible:outline-offset-2"
+              className="group hover-corners relative block aspect-[16/10] w-full overflow-hidden border border-line bg-surface transition-colors hover:border-line-strong focus-visible:outline-offset-2"
             >
               <Media
                 src={image.src}
@@ -96,7 +96,7 @@ export function Gallery({ images, label, className }: GalleryProps) {
               />
               <span
                 aria-hidden="true"
-                className="absolute right-3 bottom-3 flex size-9 items-center justify-center border border-line-strong glass text-text opacity-0 transition-opacity duration-300 [--glass-alpha:70%] group-hover:opacity-100 group-focus-visible:opacity-100"
+                className="absolute right-3 bottom-3 flex size-9 items-center justify-center border border-line-strong glass text-text opacity-0 transition-opacity duration-500 [--glass-alpha:70%] group-hover:opacity-100 group-focus-visible:opacity-100"
               >
                 <Maximize2 className="size-4" />
               </span>

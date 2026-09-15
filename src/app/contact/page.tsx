@@ -32,7 +32,7 @@ type Channel = {
  * email. A TODO address renders as visible TODO text rather than a broken link.
  */
 const tileClass =
-  "group hover-corners flex h-full min-h-56 w-full flex-col justify-between p-6 transition-colors duration-200 hover:bg-surface-2 focus-visible:outline-offset-[-3px] md:p-8";
+  "group hover-corners flex h-full min-h-56 w-full flex-col justify-between p-6 transition-colors hover:bg-surface-2 focus-visible:outline-offset-[-3px] md:p-8";
 
 export default function ContactPage() {
   const email = isTodo(site.socials.email) ? null : site.socials.email;
@@ -80,17 +80,17 @@ export default function ContactPage() {
                     {channel.label}
                   </p>
                   <p className="mt-2 flex items-start justify-between gap-4">
-                    <span className="min-w-0 text-body-lg font-medium text-text transition-colors duration-200 group-hover:text-green">
+                    <span className="min-w-0 text-body-lg font-medium text-text transition-colors group-hover:text-green">
                       {channel.value}
                     </span>
                     {channel.copy ? (
                       <Copy
-                        className="mt-1 size-5 shrink-0 text-muted transition-colors duration-200 group-hover:text-green"
+                        className="mt-1 size-5 shrink-0 text-muted transition-colors group-hover:text-green"
                         aria-hidden="true"
                       />
                     ) : channel.href ? (
                       <ArrowUpRight
-                        className="mt-1 size-5 shrink-0 text-muted transition-transform duration-300 ease-out-expo group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                        className="mt-1 size-5 shrink-0 text-muted transition-transform duration-500 ease-glide group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                         aria-hidden="true"
                       />
                     ) : null}

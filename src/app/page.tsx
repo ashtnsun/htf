@@ -21,7 +21,7 @@ import {
 
 export const metadata: Metadata = { alternates: { canonical: "/" } };
 
-const linkClass = "font-medium text-green transition-colors duration-200 hover:text-text";
+const linkClass = "font-medium text-green transition-colors hover:text-text";
 
 /**
  * Home (order from the 2026-09-06 audit): hero → what we do → how it works (scroll-driven

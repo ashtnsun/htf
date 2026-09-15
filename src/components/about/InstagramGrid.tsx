@@ -58,7 +58,7 @@ export function InstagramGrid({ posts }: { posts: InstagramTile[] }) {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`${post.alt} (opens Instagram)`}
-                      className={`${tile} hover-corners transition-[border-color] duration-200 hover:border-line-strong`}
+                      className={`${tile} hover-corners transition-[border-color] hover:border-line-strong`}
                     >
                       {image}
                     </a>

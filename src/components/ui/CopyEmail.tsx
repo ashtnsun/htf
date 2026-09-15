@@ -145,7 +145,7 @@ export function CopyEmailInline({ email, children = email, className }: InlinePr
         className={cn(
           // inline-block plus the padding/negative-margin pair grows the hit area to the 24px
           // axe asks for without changing the line box the address sits in
-          "-my-0.5 inline-block py-0.5 align-baseline font-medium text-green transition-colors duration-200 hover:text-text",
+          "-my-0.5 inline-block py-0.5 align-baseline font-medium text-green transition-colors hover:text-text",
           className,
         )}
       >

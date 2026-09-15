@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { DURATION, EASE_IN_OUT, EASE_SMOOTH } from "@/lib/motion";
 import { Plus } from "lucide-react";
 import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
@@ -50,7 +51,7 @@ export function Accordion({ items, defaultOpen, className }: AccordionProps) {
         const headerId = `${baseId}-${item.id}-h`;
         const panelId = `${baseId}-${item.id}-p`;
         return (
-          <div key={item.id} className={cn("transition-colors duration-300", open && "bg-surface")}>
+          <div key={item.id} className={cn("transition-colors duration-500", open && "bg-surface")}>
             <h3 className="m-0">
               <button
                 ref={(el) => {
@@ -64,7 +65,7 @@ export function Accordion({ items, defaultOpen, className }: AccordionProps) {
                 onKeyDown={(e) => onKeyDown(e, index)}
                 className={cn(
                   "flex w-full items-center justify-between gap-6 px-5 py-5 text-left text-base font-medium md:px-6 md:text-body-lg",
-                  "transition-colors duration-200 hover:text-text focus-visible:outline-offset-[-3px]",
+                  "transition-colors hover:text-text focus-visible:outline-offset-[-3px]",
                   open ? "text-green" : "text-muted",
                 )}
               >
@@ -72,7 +73,7 @@ export function Accordion({ items, defaultOpen, className }: AccordionProps) {
                 <Plus
                   aria-hidden="true"
                   className={cn(
-                    "size-5 shrink-0 transition-transform duration-300 ease-out-expo",
+                    "size-5 shrink-0 transition-transform duration-500 ease-in-out-soft",
                     open ? "rotate-45 text-green" : "text-muted",
                   )}
                 />
@@ -88,7 +89,10 @@ export function Accordion({ items, defaultOpen, className }: AccordionProps) {
                   initial={reduce ? false : { height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={reduce ? undefined : { height: 0, opacity: 0 }}
-                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{
+                    height: { duration: DURATION.base, ease: EASE_IN_OUT },
+                    opacity: { duration: 0.4, ease: EASE_SMOOTH },
+                  }}
                   className="overflow-hidden"
                 >
                   <div className="px-5 pb-6 text-muted md:px-6 md:pr-16">{item.content}</div>

@@ -110,7 +110,7 @@ export function SectionNav({ items, label, className }: SectionNavProps) {
                   href={item.href}
                   aria-current={active ? "location" : undefined}
                   className={cn(
-                    "inline-flex items-center px-4 text-sm font-medium whitespace-nowrap transition-colors duration-200 first:pl-0",
+                    "inline-flex items-center px-4 text-sm font-medium whitespace-nowrap transition-colors first:pl-0",
                     active ? "text-green" : "text-muted hover:text-text",
                   )}
                 >

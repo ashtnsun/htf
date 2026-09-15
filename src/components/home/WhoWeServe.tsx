@@ -82,7 +82,7 @@ export function WhoWeServe({
                 className="group flex h-full flex-col px-(--gutter) py-8 text-text md:row-span-4 md:grid md:grid-rows-subgrid md:p-8"
               >
                 <Eyebrow tone="green">{panel.eyebrow}</Eyebrow>
-                <h3 className="mt-4 max-w-md text-h3 transition-colors duration-200 group-hover:text-green md:mt-5">
+                <h3 className="mt-4 max-w-md text-h3 transition-colors group-hover:text-green md:mt-5">
                   {panel.title}
                 </h3>
                 <p className="mt-3 max-w-md text-muted">{panel.copy}</p>

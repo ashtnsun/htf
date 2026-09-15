@@ -199,7 +199,7 @@ export function PartnerGlobe({ pins, activeId, glow = true, className }: Partner
         spin={INITIAL_SPIN}
         animate={false}
         className={cn(
-          "absolute inset-0 transition-opacity duration-700 ease-out-quart",
+          "absolute inset-0 transition-opacity duration-1000 ease-smooth",
           ready && "opacity-0",
         )}
       />
@@ -223,7 +223,7 @@ export function PartnerGlobe({ pins, activeId, glow = true, className }: Partner
         <div
           ref={(el) => label.attach(el)}
           className={cn(
-            "pointer-events-none absolute top-0 left-0 z-10 border border-line-strong bg-bg px-2.5 py-1.5 text-[13px] leading-none font-medium whitespace-nowrap text-text transition-opacity duration-200",
+            "pointer-events-none absolute top-0 left-0 z-10 border border-line-strong bg-bg px-2.5 py-1.5 text-[13px] leading-none font-medium whitespace-nowrap text-text transition-opacity",
             "after:absolute after:top-full after:left-1/2 after:h-2.5 after:w-px after:bg-green",
             hover?.on ? "opacity-100" : "opacity-0",
           )}

@@ -116,13 +116,13 @@ export function ProcessScroll({ steps }: ProcessScrollProps) {
                 <span
                   aria-hidden="true"
                   className={cn(
-                    "absolute top-0.5 -left-[calc(2rem+5px)] size-2.5 border transition-colors duration-300 lg:-left-[calc(3rem+5px)]",
+                    "absolute top-0.5 -left-[calc(2rem+5px)] size-2.5 border transition-colors duration-500 lg:-left-[calc(3rem+5px)]",
                     isActive ? "border-green bg-green" : "border-line-strong bg-bg",
                   )}
                 />
                 <p
                   className={cn(
-                    "text-eyebrow font-medium uppercase transition-colors duration-300",
+                    "text-eyebrow font-medium uppercase transition-colors duration-500",
                     isActive ? "text-green" : "text-muted",
                   )}
                 >
@@ -130,7 +130,7 @@ export function ProcessScroll({ steps }: ProcessScrollProps) {
                 </p>
                 <h3
                   className={cn(
-                    "mt-4 text-h3 transition-colors duration-300",
+                    "mt-4 text-h3 transition-colors duration-500",
                     isActive ? "text-text" : "text-muted",
                   )}
                 >

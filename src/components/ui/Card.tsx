@@ -43,7 +43,7 @@ export function Card({
   const classes = cn(
     "relative block overflow-hidden border border-line text-text",
     glass ? "glass" : "bg-surface",
-    "transition-[border-color,background-color] duration-200",
+    "transition-[border-color,background-color]",
     hover && "hover-corners hover:border-line-strong hover:bg-surface-2",
     hover && glass && "hover:bg-surface/80",
     paddingClass[padding],

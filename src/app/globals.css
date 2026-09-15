@@ -98,9 +98,17 @@
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  /* The motion language (src/lib/motion.ts mirrors these for Framer): movement glides and
+     settles, colour and opacity fade evenly, size changes ease both ends. */
+  --ease-glide: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-smooth: cubic-bezier(0.33, 0, 0.2, 1);
+  --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
+  /* Any `transition-*` utility without its own duration: 300ms, evenly eased. */
+  --default-transition-duration: 300ms;
+  --default-transition-timing-function: var(--ease-smooth);
 
   /* Lightbox / dialog entrance. Reduced motion shortens it to ~0 via the rule below. */
-  --animate-fade-in: fade-in 0.25s var(--ease-out-quart) both;
+  --animate-fade-in: fade-in 0.4s var(--ease-smooth) both;
   @keyframes fade-in {
     from {
       opacity: 0;
@@ -327,8 +335,8 @@
       right bottom;
     background-repeat: no-repeat;
     transition:
-      opacity 200ms var(--ease-out-quart),
-      --corner-size 400ms var(--ease-out-expo);
+      opacity 300ms var(--ease-smooth),
+      --corner-size 600ms var(--ease-glide);
   }
   &:hover::after,
   &:focus-visible::after,
@@ -568,7 +576,7 @@
     text-decoration: underline;
     text-decoration-color: var(--green);
     text-underline-offset: 4px;
-    transition: color 200ms;
+    transition: color 300ms var(--ease-smooth);
   }
   & a:hover {
     color: var(--green);
@@ -1021,6 +1029,54 @@
       animation-delay: 0s !important;
       transition-delay: 0s !important;
     }
+  }
+}
+
+/* ------------------------------------------------------------------
+   Page transitions (app/template.tsx, React <ViewTransition>). The old page leaves fast so it
+   never competes with the new one, which fades in a beat later; the fade stays short because
+   each hero's own entrance (Reveal) paces the arrival. The header is its own layer and does not
+   animate (the old copy is hidden, so the two never double up), and the open nav drawer keeps
+   closing above the pages. Clicks pass through while it runs.
+------------------------------------------------------------------- */
+::view-transition {
+  pointer-events: none;
+}
+::view-transition-old(.page-exit) {
+  animation: page-exit 240ms var(--ease-smooth) both;
+}
+::view-transition-new(.page-enter) {
+  animation: page-enter 450ms var(--ease-smooth) 80ms both;
+}
+@keyframes page-exit {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes page-enter {
+  from {
+    opacity: 0;
+  }
+}
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(site-header) {
+  display: none;
+}
+::view-transition-new(site-header) {
+  animation: none;
+}
+::view-transition-group(nav-drawer) {
+  animation: none;
+  z-index: 110;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }
 

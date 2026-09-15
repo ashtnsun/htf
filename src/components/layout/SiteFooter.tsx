@@ -83,7 +83,7 @@ export function SiteFooter() {
                   {col.links.map((link) => {
                     const external = link.external || /^https?:\/\//.test(link.href);
                     const className =
-                      "inline-flex items-center gap-2 text-sm text-text transition-colors duration-200 hover:text-green";
+                      "inline-flex items-center gap-2 text-sm text-text transition-colors hover:text-green";
                     if (link.copy) {
                       return (
                         <li key={link.label}>
@@ -128,7 +128,7 @@ export function SiteFooter() {
             </p>
             <a
               href="#main"
-              className="inline-flex items-center gap-2 self-start transition-colors duration-200 hover:text-green sm:self-auto"
+              className="inline-flex items-center gap-2 self-start transition-colors hover:text-green sm:self-auto"
             >
               Back to top
               <ArrowUp className="size-3.5" aria-hidden="true" />

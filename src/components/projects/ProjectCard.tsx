@@ -109,7 +109,7 @@ export function ProjectCard({
           sizes={sizes}
           className={cn(
             "object-cover brightness-90",
-            !inactive && "transition-[filter] duration-300 group-hover:brightness-100",
+            !inactive && "transition-[filter] duration-500 group-hover:brightness-100",
           )}
         />
         <div
@@ -130,7 +130,7 @@ export function ProjectCard({
         <Heading
           className={cn(
             "text-h3 font-medium text-text",
-            !inactive && "transition-colors duration-300 group-hover:text-green",
+            !inactive && "transition-colors duration-500 group-hover:text-green",
           )}
         >
           {!inactive
@@ -150,14 +150,13 @@ export function ProjectCard({
             "flex size-11 shrink-0 items-center justify-center self-end border",
             inactive
               ? "border-line bg-surface text-muted opacity-50"
-              : "border-line-strong bg-surface-2 text-text transition-colors duration-200 group-hover:border-green group-hover:bg-green group-hover:text-bg",
+              : "border-line-strong bg-surface-2 text-text transition-colors group-hover:border-green group-hover:bg-green group-hover:text-bg",
           )}
         >
           <ArrowRight
             className={cn(
               "size-5",
-              !inactive &&
-                "transition-transform duration-300 ease-out-expo group-hover:translate-x-1",
+              !inactive && "transition-transform duration-500 ease-glide group-hover:translate-x-1",
             )}
           />
         </span>

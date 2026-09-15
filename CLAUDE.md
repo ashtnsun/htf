@@ -105,6 +105,7 @@ src/lib/config/     options.ts (HERO_VARIANTS / DEFAULT_HERO, INVOLVED_VARIANTS 
                     SiteConfig), store.ts (localStorage store + useSiteConfig; the server and the
                     first paint always see the defaults)
 src/lib/geo.ts      sphere maths shared by both globes
+src/lib/motion.ts   easing curves and durations for Framer (mirrors `--ease-*` in globals.css)
 scripts/            validate-content, gen-placeholders, gen-logo-paths.py, gen-world-dots,
                     measure-apply-form (the /apply frame heights, against a production build),
                     media-check (the media/ intake report and import), screenshots,
@@ -223,7 +224,13 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   bar is green text; nothing else). Nothing translates, lifts or scales
   on hover; the one exception is an arrow glyph nudging inside a `SplitButton` (whose label
   also rolls within its clipped cell) or a project card's arrow cell, while the button or
-  card itself stays put. Mint is the focus ring only, never a hover colour. Transitions: 200ms colours.
+  card itself stays put. Mint is the focus ring only, never a hover colour. Transitions (since 2026-09-15, "nothing
+  instant"): a bare `transition-colors` is 300ms `ease-smooth` (the theme default; do not add
+  `duration-200`), hover movement and state changes 500-600ms `ease-glide`, crossfades 1000ms,
+  size changes `ease-in-out-soft`; Framer reads the same curves from `src/lib/motion.ts`
+  (`EASE_GLIDE`, `EASE_SMOOTH`, `EASE_IN_OUT`, `DURATION`). Route changes crossfade through
+  `app/template.tsx` (React `<ViewTransition>`, `page-exit` / `page-enter` in globals.css; the
+  header and the nav drawer carry their own `view-transition-name`).
 - Motion: Framer Motion via `Reveal`/`RevealGroup`; check `useReducedMotionSafe`
   (`components/motion`) in any client animation and render the final state when it is set.
   Never branch on Framer's raw `useReducedMotion` during the first render: the server rendered

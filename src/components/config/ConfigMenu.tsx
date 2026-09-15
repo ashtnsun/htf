@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { DURATION, EASE_GLIDE } from "@/lib/motion";
 import { X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -53,7 +54,7 @@ function hasPageHero(pathname: string): boolean {
   return ["/projects", "/about", "/students", "/nonprofits", "/contact"].includes(pathname);
 }
 
-const linkClass = "font-medium text-green transition-colors duration-200 hover:text-text";
+const linkClass = "font-medium text-green transition-colors hover:text-text";
 
 /**
  * The site configuration panel: Shift + M opens and closes it on every page. It is a
@@ -106,7 +107,7 @@ export function ConfigMenu() {
     };
   }, [open]);
 
-  const transition = reduce ? { duration: 0 } : { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const };
+  const transition = reduce ? { duration: 0 } : { duration: DURATION.panel, ease: EASE_GLIDE };
 
   if (!isClient) return null;
 
@@ -240,7 +241,7 @@ export function ConfigMenu() {
               type="button"
               onClick={resetSiteConfig}
               disabled={isDefaultConfig(config)}
-              className="min-h-11 text-sm font-medium text-muted transition-colors duration-200 hover:text-green disabled:pointer-events-none disabled:opacity-40"
+              className="min-h-11 text-sm font-medium text-muted transition-colors hover:text-green disabled:pointer-events-none disabled:opacity-40"
             >
               Reset to defaults
             </button>
@@ -302,7 +303,7 @@ function VariantPicker<Id extends string>({
             <label
               key={variant.id}
               className={cn(
-                "hover-corners flex cursor-pointer gap-3 border-b border-line px-4 py-3 transition-colors duration-200 hover:bg-surface-2",
+                "hover-corners flex cursor-pointer gap-3 border-b border-line px-4 py-3 transition-colors hover:bg-surface-2",
                 "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-[-2px] has-[:focus-visible]:outline-mint",
                 checked && "bg-surface-2",
               )}

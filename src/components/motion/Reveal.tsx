@@ -3,13 +3,19 @@
 import { motion, type Variants } from "framer-motion";
 import type { ReactNode } from "react";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
+import { DURATION, EASE_GLIDE, EASE_SMOOTH } from "@/lib/motion";
 
-const EASE = [0.16, 1, 0.3, 1] as const;
-const HIDDEN = { opacity: 0, y: 28 };
+const HIDDEN = { opacity: 0, y: 24 };
+/** The rise glides and settles; the fade runs a touch shorter and evenly, so nothing pops. */
+const SHOW_TRANSITION = {
+  duration: DURATION.reveal,
+  ease: EASE_GLIDE,
+  opacity: { duration: 0.9, ease: EASE_SMOOTH },
+};
 
 export const revealVariants: Variants = {
   hidden: HIDDEN,
-  show: { opacity: 1, y: 0, transition: { duration: 0.8, ease: EASE } },
+  show: { opacity: 1, y: 0, transition: SHOW_TRANSITION },
 };
 
 type RevealGroupProps = {
@@ -29,7 +35,7 @@ type RevealGroupProps = {
 export function RevealGroup({
   children,
   mode = "view",
-  stagger = 0.1,
+  stagger = 0.12,
   delay = 0,
   className,
 }: RevealGroupProps) {
@@ -78,7 +84,15 @@ export function Reveal({ children, className, standalone = false, delay = 0 }: R
         viewport={{ once: true, margin: "0px 0px -10% 0px" }}
         variants={{
           hidden: HIDDEN,
-          show: { opacity: 1, y: 0, transition: { duration: 0.8, ease: EASE, delay } },
+          show: {
+            opacity: 1,
+            y: 0,
+            transition: {
+              ...SHOW_TRANSITION,
+              delay,
+              opacity: { ...SHOW_TRANSITION.opacity, delay },
+            },
+          },
         }}
       >
         {children}

@@ -25,7 +25,7 @@ const SECTIONS = [
   { href: "#faq", label: "FAQ" },
 ] as const;
 
-const linkClass = "font-medium text-green transition-colors duration-200 hover:text-text";
+const linkClass = "font-medium text-green transition-colors hover:text-text";
 
 export default function StudentsPage() {
   const roles = getRoles();

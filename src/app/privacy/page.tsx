@@ -55,7 +55,7 @@ export default function PrivacyPage() {
                 )}
                 <Link
                   href="/contact"
-                  className="font-medium text-green transition-colors duration-200 hover:text-text"
+                  className="font-medium text-green transition-colors hover:text-text"
                 >
                   contact page
                 </Link>

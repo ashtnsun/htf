@@ -113,7 +113,7 @@ export function TestimonialMarquee({
               aria-pressed={paused}
               aria-label="Pause the testimonials"
               onClick={() => setPaused((p) => !p)}
-              className="flex size-11 shrink-0 items-center justify-center border border-line-strong glass text-text transition-colors duration-200 hover:border-green hover:text-green"
+              className="flex size-11 shrink-0 items-center justify-center border border-line-strong glass text-text transition-colors hover:border-green hover:text-green"
             >
               {paused ? (
                 <Play className="size-4" aria-hidden="true" />

@@ -72,7 +72,7 @@ export function TeamGrid({ members, variant = "grid", className }: TeamGridProps
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`${member.name} on LinkedIn`}
-                className="flex size-11 shrink-0 items-center justify-center border border-line-strong text-muted transition-colors duration-200 hover:border-green hover:text-green"
+                className="flex size-11 shrink-0 items-center justify-center border border-line-strong text-muted transition-colors hover:border-green hover:text-green"
               >
                 <LinkedinIcon className="size-4" />
               </a>

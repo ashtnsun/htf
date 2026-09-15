@@ -4,8 +4,8 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
 import { ProjectCard, type ProjectCardData } from "@/components/projects/ProjectCard";
 import { ChipButton } from "@/components/ui/Chip";
+import { DURATION, EASE_GLIDE } from "@/lib/motion";
 
-const EASE = [0.16, 1, 0.3, 1] as const;
 const CARD_SIZES = "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw";
 
 type ExplorerData = {
@@ -79,10 +79,10 @@ export function ProjectsExplorerView({ projects, years, year, onSelect }: Explor
               <motion.li
                 key={project.slug}
                 layout={!reduce}
-                initial={reduce ? false : { opacity: 0, y: 12 }}
+                initial={reduce ? false : { opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={reduce ? undefined : { opacity: 0, scale: 0.98 }}
-                transition={{ duration: 0.35, ease: EASE }}
+                transition={{ duration: DURATION.base, ease: EASE_GLIDE }}
                 // spans the card's five rows so titles, locations and tags line up across a row
                 className="row-span-5 grid grid-rows-subgrid gap-0"
               >

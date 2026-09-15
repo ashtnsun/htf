@@ -3,26 +3,29 @@
 import { motion, type Variants } from "framer-motion";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
 import type { RecruitmentStep } from "@/lib/content/schemas";
+import { DURATION, EASE_GLIDE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
-
-const EASE = [0.16, 1, 0.3, 1] as const;
 
 /** Each cell is one child of the section's RevealGroup, so the group's stagger sweeps across the row. */
 const cell: Variants = { hidden: {}, show: {} };
 /** The cell's piece of the rail grows from its left edge, as if drawn across the track. */
 const rail: Variants = {
   hidden: { scaleX: 0 },
-  show: { scaleX: 1, transition: { duration: 0.7, ease: EASE } },
+  show: { scaleX: 1, transition: { duration: 0.9, ease: EASE_GLIDE } },
 };
 /** The node pops onto the rail as the line reaches it. */
 const node: Variants = {
   hidden: { scale: 0, opacity: 0 },
-  show: { scale: 1, opacity: 1, transition: { duration: 0.5, ease: EASE, delay: 0.15 } },
+  show: { scale: 1, opacity: 1, transition: { duration: 0.7, ease: EASE_GLIDE, delay: 0.2 } },
 };
 /** The text rises after the node, like Reveal but shorter. */
 const text: Variants = {
   hidden: { opacity: 0, y: 14 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE, delay: 0.2 } },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: DURATION.reveal, ease: EASE_GLIDE, delay: 0.3 },
+  },
 };
 
 type StepState = "done" | "current" | "upcoming";

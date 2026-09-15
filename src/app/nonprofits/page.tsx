@@ -36,7 +36,7 @@ const SECTIONS = [
   { href: "#start", label: "Start a project" },
 ] as const;
 
-const linkClass = "font-medium text-green transition-colors duration-200 hover:text-text";
+const linkClass = "font-medium text-green transition-colors hover:text-text";
 
 /**
  * Nonprofits: hero (no CTA in the banner since the 2026-09-09 review; the section bar and
