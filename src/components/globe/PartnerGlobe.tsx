@@ -16,10 +16,15 @@ import { cn } from "@/lib/utils";
 import { LabelAnchor } from "./LabelAnchor";
 import { SpinController } from "./SpinController";
 
-const PartnerGlobeScene = dynamic(
-  () => import("./PartnerGlobeScene").then((m) => m.PartnerGlobeScene),
-  { ssr: false },
-);
+const loadScene = () => import("./PartnerGlobeScene");
+const PartnerGlobeScene = dynamic(() => loadScene().then((m) => m.PartnerGlobeScene), {
+  ssr: false,
+});
+
+/** How far ahead of the viewport the scene may be set up, during a pause in scrolling. */
+const NEAR_MARGIN = "100% 0px";
+/** Milliseconds without a scroll event that count as a pause. */
+const SCROLL_IDLE_MS = 150;
 
 /** Degrees: longitude −45° (the Atlantic, between the U.S. and Europe/Africa) starts in front. */
 const INITIAL_SPIN = 45;
@@ -71,6 +76,7 @@ export function PartnerGlobe({ pins, activeId, glow = true, className }: Partner
   const webgl = useSyncExternalStore(noSubscribe, getWebglSupport, () => false);
   const rootRef = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
+  const [armed, setArmed] = useState(false);
   const [pageVisible, setPageVisible] = useState(true);
   const [ready, setReady] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -83,12 +89,56 @@ export function PartnerGlobe({ pins, activeId, glow = true, className }: Partner
     const el = rootRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
-      (entries) => setInView(entries.some((e) => e.isIntersecting)),
+      (entries) => {
+        const visible = entries.some((e) => e.isIntersecting);
+        setInView(visible);
+        // Reached without a pause (a fling straight down): set up now, as before.
+        if (visible) setArmed(true);
+      },
       { rootMargin: "240px 0px" },
     );
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
+
+  // Scroll stalls (2026-09-15): parsing three.js took ~90ms and setting up the WebGL scene
+  // ~150ms, both mid-scroll as the globe came near. The code now loads once the page is idle
+  // after load, and the scene is set up during the first scroll pause within a viewport of
+  // the globe. Once set up it stays mounted (frames stop off screen), so scrolling back past
+  // it never pays the setup again.
+  useEffect(() => {
+    if (!webgl) return;
+    const idle = window.requestIdleCallback
+      ? window.requestIdleCallback(() => void loadScene(), { timeout: 4000 })
+      : window.setTimeout(() => void loadScene(), 2000);
+    return () =>
+      window.cancelIdleCallback ? window.cancelIdleCallback(idle) : window.clearTimeout(idle);
+  }, [webgl]);
+
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || !webgl || armed) return;
+    let near = false;
+    let timer = 0;
+    const waitForPause = () => {
+      window.clearTimeout(timer);
+      if (near) timer = window.setTimeout(() => setArmed(true), SCROLL_IDLE_MS);
+    };
+    const observer = new IntersectionObserver(
+      (entries) => {
+        near = entries.some((e) => e.isIntersecting);
+        waitForPause();
+      },
+      { rootMargin: NEAR_MARGIN },
+    );
+    observer.observe(el);
+    window.addEventListener("scroll", waitForPause, { passive: true });
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("scroll", waitForPause);
+      window.clearTimeout(timer);
+    };
+  }, [webgl, armed]);
 
   useEffect(() => {
     const onVisibility = () => setPageVisible(document.visibilityState === "visible");
@@ -121,7 +171,7 @@ export function PartnerGlobe({ pins, activeId, glow = true, className }: Partner
     setHover((prev) => (pin ? { pin, on: true } : prev ? { ...prev, on: false } : null));
   }
 
-  const showScene = webgl && inView;
+  const showScene = webgl && armed;
   // Under reduced motion the scene renders on demand only, except while a drag needs frames.
   const running = inView && pageVisible && (!reduceMotion || dragging);
 

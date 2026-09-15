@@ -49,7 +49,6 @@ export function ContactCta({
     <Section
       id={id}
       aria-labelledby={titleId}
-      grid
       clip
       padding="lg"
       className={cn("border-t border-line", className)}

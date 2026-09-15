@@ -51,7 +51,7 @@ export class StepStore {
 ------------------------------------------------------------------------------------------- */
 
 const BUCKETS = 12;
-const DISSOLVE_MS = 600;
+const DISSOLVE_MS = 420;
 const INK: Record<Ink, string> = {
   green: "var(--green)",
   white: "var(--text)",

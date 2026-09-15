@@ -10,7 +10,7 @@ type ScopeProps = { build: ScopeItem[]; avoid: ScopeItem[] };
 /** "What we build and what we don't": the scope guardrails from content/nonprofits.ts. */
 export function Scope({ build, avoid }: ScopeProps) {
   return (
-    <Section id="scope" aria-labelledby="scope-title" grid className="border-t border-line">
+    <Section id="scope" aria-labelledby="scope-title" className="border-t border-line">
       <RevealGroup>
         <Reveal>
           <Eyebrow>Scope</Eyebrow>

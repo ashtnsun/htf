@@ -11,7 +11,7 @@ import { Partners } from "@/components/nonprofits/Partners";
 import { Scope } from "@/components/nonprofits/Scope";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Headline } from "@/components/ui/Headline";
-import { CopyEmailButton, CopyEmailInline } from "@/components/ui/CopyEmail";
+import { CopyEmailButton } from "@/components/ui/CopyEmail";
 import { Section } from "@/components/ui/Section";
 import {
   getFaq,
@@ -79,8 +79,8 @@ export default function NonprofitsPage() {
         }
       />
 
-      <Section id="start" aria-labelledby="start-title" grid className="border-t border-line">
-        <div className="grid gap-14 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-20">
+      <Section id="start" aria-labelledby="start-title" className="border-t border-line">
+        <div className="grid gap-14 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:items-center lg:gap-20">
           <Reveal standalone>
             <Eyebrow>Start a project</Eyebrow>
             <Headline
@@ -98,9 +98,6 @@ export default function NonprofitsPage() {
               <CopyEmailButton email={email} size="lg">
                 Copy our email
               </CopyEmailButton>
-              <p className="mt-5 text-sm text-muted">
-                <CopyEmailInline email={email} /> — write to us from your own email app.
-              </p>
             </div>
           </Reveal>
 
