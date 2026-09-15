@@ -9,9 +9,9 @@ type HeroShellProps = ComponentPropsWithRef<"section"> & {
 };
 
 /**
- * The frame every hero variant shares: a section labelled by the h1 (`#hero-title`), at least
- * the viewport minus the header tall, clipped, optionally with the grid and the bottom glow
- * from the original hero. Variants put their own composition inside.
+ * The frame every hero variant shares: a section labelled by the h1 (`#hero-title`), pulled up
+ * under the glass header so it shows through, a full viewport tall, clipped, optionally with
+ * the grid and the bottom glow from the original hero. Variants put their own composition inside.
  */
 export function HeroShell({
   grid = true,
@@ -24,7 +24,7 @@ export function HeroShell({
     <section
       aria-labelledby="hero-title"
       className={cn(
-        "relative flex min-h-[calc(100svh-var(--header-h))] flex-col overflow-hidden",
+        "relative -mt-(--header-h) flex min-h-svh flex-col overflow-hidden pt-(--header-h)",
         grid && "grid-overlay [--grid-cols:8] [--grid-row:9rem]",
         className,
       )}

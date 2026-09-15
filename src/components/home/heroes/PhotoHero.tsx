@@ -1,7 +1,5 @@
 "use client";
 
-import { useReducedMotion } from "framer-motion";
-import { useEffect, useRef } from "react";
 import { hero } from "@content/hero";
 import { HeroShell } from "@/components/home/heroes/HeroShell";
 import { Reveal, RevealGroup } from "@/components/motion/Reveal";
@@ -9,59 +7,35 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Headline } from "@/components/ui/Headline";
 import { Media } from "@/components/ui/Media";
 
-/** How much slower than the page the photo scrolls (the image has 25% of headroom). */
-const PARALLAX = 0.2;
-
 /**
  * "Photo", the hero the site ships with since 2026-09-10 (Ashton's pick; it is in the
  * bundle, the other variants are lazy chunks): the full organization photo (content/media.ts
- * `org.group-photo`, the placeholder until the real one lands) fills the hero, darkened toward the bottom where the statement
- * sits. No button: the header bar carries the season CTA (2026-09-09 review). The photo
- * scrolls a little slower than the page. No parallax under prefers-reduced-motion.
+ * `org.hero-photo`, the club on the Lawson steps; /about uses `org.group-photo`) fills the
+ * hero, darkened toward the bottom where the statement sits. No button: the header bar carries
+ * the season CTA (2026-09-09 review). The photo stays put while the page scrolls: the parallax
+ * was dropped on 2026-09-15 (it read as a shift, and the 125% tall layer it needed scaled the
+ * photo past its own resolution).
  */
 export function PhotoHero() {
-  const reduce = useReducedMotion() ?? false;
-  const ref = useRef<HTMLElement>(null);
-  const imageRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (reduce) return;
-    const section = ref.current;
-    const image = imageRef.current;
-    if (!section || !image) return;
-    let frame = 0;
-    const update = () => {
-      frame = 0;
-      const scrolled = Math.min(window.scrollY, section.offsetHeight);
-      image.style.transform = `translate3d(0, ${(scrolled * PARALLAX).toFixed(1)}px, 0)`;
-    };
-    const onScroll = () => {
-      if (!frame) frame = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      cancelAnimationFrame(frame);
-    };
-  }, [reduce]);
-
   return (
-    <HeroShell ref={ref} grid={false}>
-      {/* the photo, with headroom below for the parallax; it bleeds a few pixels past the clip
-          on the top and sides so an image's own edge (the placeholder's outline) never shows */}
+    <HeroShell grid={false}>
+      {/* the photo exactly covers the hero; the group on the steps sits in the lower half of
+          the picture, so a crop keeps that part in view */}
       <div aria-hidden="true" className="absolute inset-0 overflow-hidden bg-surface">
-        <div ref={imageRef} className="absolute -inset-x-1 -top-1 h-[125%] will-change-transform">
-          <Media
-            src="org.group-photo"
-            alt=""
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover"
-          />
-        </div>
+        <Media
+          src="org.hero-photo"
+          alt=""
+          fill
+          priority
+          quality={90}
+          // on a tall screen the photo is cropped at the sides, so it is drawn wider than the
+          // viewport: ask for that width or phones get a blurry upscale
+          sizes="(orientation: portrait) 150vh, 100vw"
+          className="object-cover object-[50%_75%]"
+        />
         <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(11,11,11,0.42)_0%,rgba(11,11,11,0.18)_35%,rgba(11,11,11,0.94)_100%)]" />
+        {/* the header is clear over the top of the photo: darken that band so its links read */}
+        <div className="absolute inset-x-0 top-0 h-48 bg-[linear-gradient(to_bottom,rgba(11,11,11,0.85)_0%,rgba(11,11,11,0.6)_40%,transparent_100%)]" />
       </div>
 
       <RevealGroup

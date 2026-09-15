@@ -9,7 +9,7 @@ import { useSiteConfig } from "@/lib/config/store";
 
 /** Keeps the page from jumping while a non-default variant's code loads. */
 function Loading() {
-  return <section aria-hidden="true" className="min-h-[calc(100svh-var(--header-h))]" />;
+  return <section aria-hidden="true" className="-mt-(--header-h) min-h-svh" />;
 }
 
 const lazy = (load: () => Promise<ComponentType<HeroProps>>) => dynamic(load, { loading: Loading });
