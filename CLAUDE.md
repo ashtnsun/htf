@@ -58,10 +58,12 @@ src/components/
                     StatTile (+ CountUp), TestimonialCard, Chip, Field, Media, DottedMap,
                     CopyEmail (every email control: copies the address, never a mailto link)
   layout/           SiteHeader, NavDrawer, NavLinks, SiteFooter, PageHero (a client switch over
-                    pageHeroes/*: twelve inner-page heroes (Globe, Frame, Radar, Corridor, Trace,
+                    pageHeroes/*: thirteen inner-page heroes (Globe, Frame, Radar, Corridor, Trace,
                     Dither, Dino, and since Session 15z Editorial (a short title block), Pixels
                     (the page's icon in pixelIcons.ts), Viewfinder, Cameo (a process dinosaur per
-                    page) and Dock (the copy docks into the section bar via --subnav-inset))
+                    page), Dock (the copy docks into the section bar via --subnav-inset) and
+                    Final (the Pixels grid, no picture; the hero dissolves into the grid on
+                    scroll, drawn on one canvas from the scroll position))
                     chosen in the Shift + M menu; the per-page ones read usePageKey (the
                     pathname); GlobeHero is the default and in the bundle, the rest lazy
                     chunks (OverlapLines, the client measure that keeps a staggered headline's
@@ -70,7 +72,8 @@ src/components/
                     /privacy and the 404 use FrameHero directly, with its `back` and `ghost`),
                     SectionNav (the
                     sticky section bar under the hero on About / Students / Nonprofits; sets
-                    --subnav-h so anchors land below it), FaqSection, ContactCta (+ involved/: the
+                    --subnav-h so anchors land below it; clear and borderless in place, glass
+                    once `data-stuck`, the neighbouring borders hidden by a rule in globals.css), FaqSection, ContactCta (+ involved/: the
                     Get involved graphic, a client switch over four variants chosen in the Shift + M
                     menu; GraphicFrame is the shared floating square, GlobeGraphic the default and
                     in the bundle (the partner globe; a hovered pin names its state in the US or

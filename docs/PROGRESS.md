@@ -85,6 +85,37 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 15z2 — 2026-09-15 (the Final hero, a clear section bar)
+
+Ashton asked for a variant called Final: the Pixels hero without the picture, with a scroll
+interaction that actually works (Dock's looked buggy; Dock left as it is), and for the section
+bar to lose its borders while it sits in place on the page.
+
+**Built:**
+
+- **Final** (`pageHeroes/FinalHero.tsx`, lazy): the Pixels square grid (12 / 16 / 20px) and glow,
+  headline not staggered, no picture. On scroll the hero dissolves into its own grid: every
+  cell gets a moment from its row (top to bottom) plus a hashed jitter, a dithered front of
+  green cells (45% of cells light, two alphas) runs ahead, and each passed cell is filled with
+  --bg. Drawn on one canvas between the copy (z-10) and the grid's hairlines (z-30, so cleared
+  cells keep their lines), straight from the hero's position under the header (no timers, no
+  state in React), so it scrubs both ways and stops with the scroll. The front runs at about
+  twice the scroll, so it is always in the visible part of the hero; the hero is gone at about
+  65% of its height scrolled. First paint and reduced motion: canvas empty, hero untouched.
+- **Section bar** (`layout/SectionNav.tsx`): `data-stuck` from the same rAF measure as the
+  current link; in place it is clear (glass alpha and blur 0), stuck it eases into the header's
+  glass over 700ms, as the header does. An unlayered rule at the end of globals.css hides the
+  hero's bottom border and the next section's top border while the bar is not stuck (they fade
+  back when it sticks).
+
+**Checked:** typecheck, lint, build clean. axe with Final on the five inner routes at 1440 and
+390, at the top and scrolled: 0 violations (one contrast hit on /students' perk cards was a
+Reveal mid-fade; 0 once settled). Frames in `docs/screenshots/session-15z2/` (`about-final-0/80/160/260-*`:
+the dissolve at those scroll offsets; `students-editorial-0` / `-stuck`: the bar in place and stuck).
+
+**Next session starts with:** Ashton's pick among the inner-page heroes (Final is the new
+candidate), then the Behold feed URL and the project write-ups.
+
 ## Session 15z — 2026-09-15 (five more inner-page heroes)
 
 Ashton did not like the inner-page heroes and asked for ideas, then for five of them as
