@@ -180,7 +180,7 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   text or a brand colour). The default Tailwind palette is disabled; only these (plus
   white/black) exist.
 - Lime is defined but unused since audit 3 (2026-09-07): every primary `SplitButton` arrow
-  cell is green with a 1px black divider (the header bar CTA's weight, on every primary since 2026-09-15). Never a text or brand colour.
+  cell is green with a 1.5px black divider (the header bar CTA's weight, on every primary since 2026-09-15). Never a text or brand colour.
 - Type: `text-display-xl/lg` (96/80), `text-display` (64), `text-h2` (48), `text-h3` (32),
   `text-body` / `text-body-lg` (16/18), `text-eyebrow` (12, uppercase, tracked),
   `text-display-fluid` for heroes. Families: `font-display`, `font-body` (both Poppins now;
@@ -214,7 +214,7 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
 - Every list renders `li` as the direct child of `ul`/`ol` (put `Reveal` inside the `li`,
   or around the whole list when the cards share rows through `grid-rows-subgrid`, which
   needs the direct grid → `li` → children chain).
-- Every CTA is a `SplitButton` (primary: green label, green arrow cell, 1px black divider;
+- Every CTA is a `SplitButton` (primary: green label, green arrow cell, 1.5px black divider;
   secondary: outlined, white arrow that turns black on the green hover fill; on hover the
   label rolls up into a copy and the arrow glyph nudges, since 2026-09-08; `presentational`
   renders a span for a button inside a card that is itself the link);

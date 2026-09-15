@@ -111,10 +111,10 @@ export function SplitButton({
     size === "lg" && "w-14",
     size === "bar" && "w-14 lg:w-16",
     variant === "primary" && "border-black bg-green text-bg",
-    variant === "primary" && "border-l",
+    variant === "primary" && "border-l-[1.5px]",
     variant === "secondary" &&
       "border-l border-line-strong bg-surface-2 text-text group-hover:border-green group-hover:bg-green group-hover:text-bg",
-    variant === "header" && "border-l border-transparent text-text",
+    variant === "header" && "border-l-[1.5px] border-transparent text-text",
   );
 
   /* Two copies of the label stacked in one clipped line box: the first rolls up and out, the
