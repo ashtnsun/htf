@@ -234,6 +234,21 @@
 }
 
 /* Fluid display size for hero headlines: ~44px on phones up to 96px at desktop. */
+/* Section headings step down on phones and tablets, so they sit clearly below the page's h1. */
+@layer utilities {
+  @media (width < 48rem) {
+    .text-display {
+      font-size: 2.5rem;
+    }
+    .text-h2 {
+      font-size: 2rem;
+    }
+    .text-h3 {
+      font-size: 1.5rem;
+    }
+  }
+}
+
 @utility text-display-fluid {
   font-size: clamp(2.75rem, 1.2rem + 6.4vw, 6rem);
   line-height: 0.95;
@@ -1093,6 +1108,13 @@
 ::view-transition-group(nav-drawer) {
   animation: none;
   z-index: 110;
+}
+/* only the live drawer: a frozen copy of the open drawer would sit over its closing slide */
+::view-transition-old(nav-drawer) {
+  display: none;
+}
+::view-transition-new(nav-drawer) {
+  animation: none;
 }
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(*),

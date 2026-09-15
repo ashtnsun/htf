@@ -70,7 +70,7 @@ export function WhatWeDo({ services }: { services: Service[] }) {
                     strokeWidth={1.5}
                   />
                   {photo ? (
-                    <div className="relative mt-6 aspect-[16/10] max-w-sm overflow-hidden border border-line bg-surface md:row-start-2 md:mt-8">
+                    <div className="relative mt-6 aspect-[16/10] overflow-hidden border border-line bg-surface md:row-start-2 md:mt-8">
                       <Media
                         src={photo.src}
                         alt={photo.alt}

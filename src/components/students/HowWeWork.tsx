@@ -28,7 +28,7 @@ export function HowWeWork({ steps }: HowWeWorkProps) {
             lines={["One nonprofit, one team,", "*one school year.*"]}
             className="mt-5"
           />
-          <div className="relative mt-10 aspect-[4/3] max-w-sm overflow-hidden border border-line bg-surface">
+          <div className="relative mt-10 aspect-[4/3] overflow-hidden border border-line bg-surface">
             <Media
               src="life.students"
               alt="Eight Hack the Future members in business attire making heart shapes with their hands on the steps of the Lawson Computer Science Building"
