@@ -115,10 +115,16 @@ export type Project = Omit<ProjectFrontmatter, "gallery"> & {
   gallery: ProjectImage[];
 };
 
+/**
+ * The MDX loaders read from disk, which nothing in `next dev` watches, so they only memoise in
+ * production; in development every request re-reads the files and an edit shows on reload.
+ */
+const CACHE_FILES = process.env.NODE_ENV === "production";
+
 let projectsCache: Project[] | null = null;
 
 export function getAllProjects(): Project[] {
-  if (projectsCache) return projectsCache;
+  if (CACHE_FILES && projectsCache) return projectsCache;
   const files = fs.existsSync(PROJECTS_DIR)
     ? fs.readdirSync(PROJECTS_DIR).filter((f) => f.endsWith(".mdx"))
     : [];
@@ -226,7 +232,7 @@ export type PrivacyPolicy = PrivacyFrontmatter & {
 let privacyCache: PrivacyPolicy | null = null;
 
 export function getPrivacyPolicy(): PrivacyPolicy {
-  if (privacyCache) return privacyCache;
+  if (CACHE_FILES && privacyCache) return privacyCache;
   const rel = "content/privacy.mdx";
   const raw = fs.readFileSync(path.join(CONTENT_DIR, "privacy.mdx"), "utf8");
   const { data, content } = matter(raw);
