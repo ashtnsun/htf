@@ -109,6 +109,14 @@ then the logo flying from the centre into the header logo as the page renders in
   it; leaving the page mid-intro clears the attribute. CSS lives in the "Home intro" block at the
   end of globals.css (unlayered, so it wins over the header's transition utility).
 
+- Smoother hand-off (Ashton: the page appearing felt instant): the first version ended the intro
+  950ms into the flight, cutting the page fade short. Now "reveal" (1.1s flight) is followed by
+  "landed" (the header logo takes over) and a 700ms settle before the attribute goes. The page
+  comes up from `scale(1.06)` + `blur(12px)` to rest (1.3–1.6s, gentle easing) while the black
+  thins over 1.1s and the header fades in as the mark arrives; `main` is `overflow-x: clip`
+  during the intro so the scale never widens the page. Reveal frames at 1440 and 390 in
+  `docs/screenshots/session-15y/home-intro-reveal-*.png`.
+
 **Decisions:** once per tab session rather than every visit (a returning visitor clicking Home
 would otherwise wait ~4s each time); the home page stays static.
 
