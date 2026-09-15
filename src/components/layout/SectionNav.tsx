@@ -100,7 +100,7 @@ export function SectionNav({ items, label, className }: SectionNavProps) {
       <div className="container-max flex h-14 items-center container-x">
         <ul
           ref={listRef}
-          className="-mx-(--gutter) scrollbar-none flex h-full flex-1 items-stretch gap-2 overflow-x-auto px-(--gutter)"
+          className="-mx-(--gutter) flex h-full flex-1 items-stretch gap-2 overflow-x-auto px-(--gutter)"
         >
           {items.map((item) => {
             const active = item.href.slice(1) === current;

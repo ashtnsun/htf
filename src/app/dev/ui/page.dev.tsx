@@ -401,6 +401,12 @@ export default function UiKitPage() {
         <div className="grid gap-8 sm:grid-cols-2">
           <DottedMap />
           <DottedMap tone="text" className="opacity-40" />
+          <DottedMap
+            tone="text"
+            dotsClassName="opacity-20"
+            partners
+            partnersClassName="opacity-50"
+          />
         </div>
       </Block>
 

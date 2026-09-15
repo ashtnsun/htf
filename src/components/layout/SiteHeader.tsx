@@ -1,19 +1,21 @@
 import Link from "next/link";
 import { getPrimaryCta, site } from "@content/site";
 import { Logo } from "@/components/brand/Logo";
+import { HeaderBar } from "@/components/layout/HeaderBar";
 import { NavDrawer } from "@/components/layout/NavDrawer";
 import { NavLinks } from "@/components/layout/NavLinks";
 import { SplitButton } from "@/components/ui/SplitButton";
 
 /**
  * Slim top bar: burger cell (mobile only) · logo · the links centred in the bar on desktop ·
- * primary CTA as a full-height split button on the right. Sticky, lightly frosted glass so
- * the page shows through and the CTA is always reachable.
+ * primary CTA on the right. Sticky so the CTA is always reachable. Clear at the top of the page
+ * (the home hero runs up under it), where the CTA is a borderless cell with a white label; once
+ * the page scrolls the bar eases into the glass and the CTA's green sweeps in (variant "header").
  */
 export function SiteHeader() {
   const cta = getPrimaryCta();
   return (
-    <header className="sticky top-0 z-50 h-(--header-h) glass [--glass-alpha:50%] [--glass-edge:0]">
+    <HeaderBar>
       <div className="flex h-full items-stretch lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
         <div className="flex items-stretch">
           <NavDrawer cta={cta} />
@@ -31,11 +33,11 @@ export function SiteHeader() {
         </nav>
 
         <div className="ml-auto flex lg:ml-0 lg:justify-self-end">
-          <SplitButton href={cta.href} size="bar" className="h-full">
+          <SplitButton href={cta.href} variant="header" size="bar" className="h-full">
             {cta.label}
           </SplitButton>
         </div>
       </div>
-    </header>
+    </HeaderBar>
   );
 }

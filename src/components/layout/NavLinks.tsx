@@ -6,8 +6,8 @@ import type { NavLink } from "@content/site";
 import { cn } from "@/lib/utils";
 
 /**
- * Desktop nav links with aria-current on the active section. The green underline marks the
- * current page only; hover just brightens the label (no underline, 2026-09-07 audit).
+ * Desktop nav links with aria-current on the active section. The current page's label is white
+ * (no underline or green since 2026-09-13); hover brightens the others to the same white.
  */
 export function NavLinks({ links }: { links: readonly NavLink[] }) {
   const pathname = usePathname();
@@ -22,9 +22,8 @@ export function NavLinks({ links }: { links: readonly NavLink[] }) {
               href={link.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "relative inline-flex h-10 items-center px-3.5 text-sm font-medium whitespace-nowrap transition-colors duration-200",
-                "after:absolute after:inset-x-3.5 after:bottom-1.5 after:h-0.5 after:bg-green after:opacity-0 after:transition-opacity after:duration-200",
-                active ? "text-text after:opacity-100" : "text-muted hover:text-text",
+                "inline-flex h-10 items-center px-3.5 text-sm font-medium whitespace-nowrap transition-colors duration-200",
+                active ? "text-text" : "text-muted hover:text-text",
               )}
             >
               {link.label}

@@ -10,8 +10,12 @@ type SplitButtonProps = {
   /**
    * primary = green label + green arrow cell with a black divider (the header bar's
    * treatment, on every primary button since the 2026-09-07 audit 3). secondary = outlined.
+   * header = the site header's CTA (with size "bar"): a primary button while the header is
+   * glass; while it is clear at the top of the page (`data-at-top`, layout/HeaderBar) a
+   * borderless cell with a white label and a white arrow, and the green sweeps in from
+   * the right edge when the glass arrives or on hover.
    */
-  variant?: "primary" | "secondary";
+  variant?: "primary" | "secondary" | "header";
   /** md = normal button. lg = hero. bar = fills the header bar. */
   size?: "md" | "lg" | "bar";
   /** Opens in a new tab and shows a diagonal arrow. Inferred for http(s) hrefs. */
@@ -85,6 +89,7 @@ export function SplitButton({
     size === "lg" && "text-base",
     size === "bar" && "h-full text-base",
     variant === "secondary" && "border border-line-strong hover:border-green",
+    variant === "header" && "relative isolate",
     (disabled || pending) && "pointer-events-none opacity-60",
   );
 
@@ -95,6 +100,10 @@ export function SplitButton({
     size === "bar" && "px-6 lg:px-10",
     variant === "primary" && "bg-green text-bg",
     variant === "secondary" && "bg-transparent text-text",
+    /* header: the long arbitrary variant is "the header is clear and this button is neither
+       hovered nor focused"; spelled out in each class so Tailwind's scanner finds it */
+    variant === "header" &&
+      "text-bg transition-colors duration-500 [[data-at-top]_.group:not(:hover):not(:focus-visible)_&]:text-text",
   );
 
   const arrow = cn(
@@ -106,6 +115,8 @@ export function SplitButton({
     variant === "primary" && (size === "bar" ? "border-l" : "border-l-2"),
     variant === "secondary" &&
       "border-l border-line-strong bg-surface-2 text-text group-hover:border-green group-hover:bg-green group-hover:text-bg",
+    variant === "header" &&
+      "border-l border-black text-bg duration-500 [[data-at-top]_.group:not(:hover):not(:focus-visible)_&]:border-transparent [[data-at-top]_.group:not(:hover):not(:focus-visible)_&]:text-text",
   );
 
   /* Two copies of the label stacked in one clipped line box: the first rolls up and out, the
@@ -135,6 +146,12 @@ export function SplitButton({
 
   const content = (
     <>
+      {variant === "header" ? (
+        <span
+          aria-hidden="true"
+          className="absolute inset-0 -z-10 origin-right bg-green transition-transform duration-500 ease-out-expo [[data-at-top]_.group:not(:hover):not(:focus-visible)_&]:scale-x-0"
+        />
+      ) : null}
       <span className={label}>
         <span className={roll}>
           <span className={rollOut}>{children}</span>
