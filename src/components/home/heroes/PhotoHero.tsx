@@ -41,7 +41,7 @@ export function PhotoHero() {
       <RevealGroup
         mode="mount"
         stagger={0.12}
-        className="relative container-max flex w-full flex-1 flex-col container-x pt-8 pb-16 md:pt-10 md:pb-20 lg:frame-marks lg:mt-6 lg:border-x lg:border-line"
+        className="relative container-max flex w-full flex-1 flex-col container-x pt-8 pb-16 md:pt-10 md:pb-20 lg:mt-6"
       >
         <Reveal>
           <Eyebrow>{hero.eyebrow}</Eyebrow>

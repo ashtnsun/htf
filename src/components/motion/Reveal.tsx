@@ -3,15 +3,20 @@
 import { motion, type Variants } from "framer-motion";
 import type { ReactNode } from "react";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
-import { DURATION, EASE_GLIDE, EASE_SMOOTH } from "@/lib/motion";
+import { EASE_GLIDE, EASE_SMOOTH } from "@/lib/motion";
 
-const HIDDEN = { opacity: 0, y: 24 };
-/** The rise glides and settles; the fade runs a touch shorter and evenly, so nothing pops. */
+const HIDDEN = { opacity: 0, y: 12 };
+/**
+ * A short rise and an even fade that starts as the element enters the screen: a long, late
+ * reveal on a phone reads as flicker, since most of a narrow page is revealing at any time.
+ */
 const SHOW_TRANSITION = {
-  duration: DURATION.reveal,
+  duration: 0.7,
   ease: EASE_GLIDE,
-  opacity: { duration: 0.9, ease: EASE_SMOOTH },
+  opacity: { duration: 0.5, ease: EASE_SMOOTH },
 };
+/** Starts a reveal just before its top edge is on screen rather than 10% into it. */
+const VIEWPORT = { once: true, margin: "0px 0px 40px 0px" };
 
 export const revealVariants: Variants = {
   hidden: HIDDEN,
@@ -35,7 +40,7 @@ type RevealGroupProps = {
 export function RevealGroup({
   children,
   mode = "view",
-  stagger = 0.12,
+  stagger = 0.06,
   delay = 0,
   className,
 }: RevealGroupProps) {
@@ -43,7 +48,7 @@ export function RevealGroup({
   if (reduce) return <div className={className}>{children}</div>;
   const viewProps =
     mode === "view"
-      ? { whileInView: "show", viewport: { once: true, margin: "0px 0px -10% 0px" } }
+      ? { whileInView: "show", viewport: VIEWPORT }
       : { animate: "show" };
   return (
     <motion.div
@@ -81,7 +86,7 @@ export function Reveal({ children, className, standalone = false, delay = 0 }: R
         className={className}
         initial="hidden"
         whileInView="show"
-        viewport={{ once: true, margin: "0px 0px -10% 0px" }}
+        viewport={VIEWPORT}
         variants={{
           hidden: HIDDEN,
           show: {
