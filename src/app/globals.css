@@ -1172,3 +1172,19 @@ html[data-intro]:not([data-intro="play"]) body > header {
     display: none !important;
   }
 }
+
+/* ------------------------------------------------------------------
+   The section bar (layout/SectionNav) is clear while it sits in place on the page: no hairline
+   under the hero above it and none on the section below. Once it sticks (data-stuck) the
+   borders come back with the glass. Unlayered, so it wins over the `border-*` utilities.
+------------------------------------------------------------------- */
+:has(+ [data-section-nav]),
+[data-section-nav] + * {
+  transition: border-color 500ms var(--ease-smooth);
+}
+:has(+ [data-section-nav]:not([data-stuck])) {
+  border-bottom-color: transparent;
+}
+[data-section-nav]:not([data-stuck]) + * {
+  border-top-color: transparent;
+}

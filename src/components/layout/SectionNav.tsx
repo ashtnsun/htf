@@ -17,9 +17,11 @@ type SectionNavProps = {
 const BAR_HEIGHT = 56;
 
 /**
- * In-page navigation for the long inner pages (About, Students, Nonprofits): a glass bar on
- * the header's surface (same alpha, no hairlines) that sits right under the hero and sticks
- * beneath the site header while the page scrolls.
+ * In-page navigation for the long inner pages (About, Students, Nonprofits): a bar that sits
+ * right under the hero and sticks beneath the site header while the page scrolls. In place on
+ * the page it is clear, with no fill and no hairlines on either side (globals.css hides the
+ * hero's bottom border and the next section's top border while the bar is not `data-stuck`);
+ * once it sticks it eases into the header's glass (same alpha, no hairlines), as the header does.
  * It lists the page's sections as anchor links (nothing else: the page name is the
  * landmark's label only), colours the one on screen green (text only, no underline: the
  * 2026-09-09 review) and scrolls the row so the current link stays visible on phones.
@@ -34,6 +36,8 @@ const BAR_HEIGHT = 56;
  */
 export function SectionNav({ items, label, className }: SectionNavProps) {
   const [current, setCurrent] = useState<string | null>(null);
+  const [stuck, setStuck] = useState(false);
+  const navRef = useRef<HTMLElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
@@ -66,6 +70,8 @@ export function SectionNav({ items, label, className }: SectionNavProps) {
       }
       if (atEnd) next = ids[ids.length - 1] ?? next;
       setCurrent(next);
+      const nav = navRef.current;
+      setStuck(nav ? nav.getBoundingClientRect().top <= headerH + 0.5 : false);
     }
 
     function schedule() {
@@ -95,10 +101,12 @@ export function SectionNav({ items, label, className }: SectionNavProps) {
 
   return (
     <nav
+      ref={navRef}
       data-section-nav=""
+      data-stuck={stuck || undefined}
       aria-label={`${label} sections`}
       className={cn(
-        "sticky top-(--header-h) z-40 glass [--glass-alpha:50%] [--glass-edge:0]",
+        "sticky top-(--header-h) z-40 glass transition-[background-color,backdrop-filter,-webkit-backdrop-filter] duration-700 ease-smooth [--glass-alpha:0%] [--glass-blur:0px] [--glass-edge:0] data-stuck:[--glass-alpha:50%] data-stuck:[--glass-blur:20px]",
         className,
       )}
     >
