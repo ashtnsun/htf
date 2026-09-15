@@ -58,6 +58,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 15r: seven inner-page hero variants in the Shift + M menu (Frame stays the default; Globe, Radar, Corridor, Trace, Dither, Dino), all the shipped hero with one graphic added; Ashton picks the one that ships
 - [x] Session 15s: the Instagram grid on /about can run off the live account (a Behold JSON feed fetched server-side into the site's own tiles), falling back to the curated posts
 - [x] Session 15t: the real 2026–27 exec board on /about (nine members, names, roles and LinkedIn links, each with the photo they sent); the placeholder 2025–26 board removed
+- [x] Session 15v: the real 2025–26 exec board on /about (ten members with photos and LinkedIn links), so the year chips are back
 - [x] Session 15n: the /apply frame is back-proof — two heights instead of five, after checking that nothing cross-origin can say which section the form is showing
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
@@ -80,6 +81,37 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
+
+## Session 15v — 2026-09-15 (the 2025–26 exec board)
+
+Ashton sent last year's board — ten names, roles and LinkedIn URLs — and staged a photo per
+person in `media/about/exec/2025-26/`.
+
+**Built:** ten `2025–26` entries in `content/exec.ts`, in Ashton's order: Tanay Gondil
+(President), Mahika Parakh (Vice President), Lalitha Chandolu (Secretary), Devansh Khandelwal
+(Treasurer), Ryan Erickson (Technical Director), Vipula Shirse (Design Director), Seth Parent
+and Arushi Ravula (Marketing), Emily Li (External Outreach), Youngjun Yoo (Internal Outreach).
+Names capitalised as proper nouns (Ashton typed some lower case). Arushi and Emily now have a
+card on both boards, as the Session 15t slug scheme intended. With a second board the year
+chips render again (2026–27 default, `?board=2025–26` for last year); no code change needed.
+
+**Decisions:** **Seth has no LinkedIn**, so `linkedin` is optional in `execMemberSchema`: left
+out, the card has no link cell (a TODO value still renders the dashed placeholder, which would
+wrongly say the link is coming). The photos were PNGs of mixed shapes; all ten were saved as
+quality-90 JPEGs under their slugs, and five were cropped to a 4:5 window first because the
+card's centre crop failed them: Devansh's face sat at the right edge of a landscape frame,
+Vipula's head touched the top, and Tanay, Arushi and Youngjun were full-length shots with small
+faces (cropped to about waist up; Youngjun's keeps his "Boiler Made" sign). The untouched
+originals are in `media/_inbox/exec-2025-26-originals/` (git-ignored), so a different crop does
+not need a fresh copy from Ashton.
+
+**Open for Ashton:** the photos are candid snapshots like 2026–27's, so the board does not
+look uniform. Arushi's is the softest (480×600 after the crop); a better file under the same
+name fixes it with `pnpm media:check --import --force`.
+
+**Verified:** `pnpm validate:content` (exec: 19), typecheck, lint and `pnpm build` clean;
+`pnpm a11y` 0 violations; /about?board=2025–26 at 1440 and 390 in Playwright (both chips, ten
+cards, nine LinkedIn links, no console errors), shots in `docs/screenshots/session-15v/`.
 
 ## Session 15t — 2026-09-10 (the real exec board)
 
