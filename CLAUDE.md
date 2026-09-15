@@ -219,8 +219,8 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
 - Hover states are one language everywhere: text links turn green (inline links in body copy
   are already green, medium weight, no underline, and turn white); interactive surfaces get
   `hover-corners` + `border-line-strong` + `bg-surface-2`; arrow cells fill green; nav links
-  brighten (the green underline marks the current page only in the header; in the section
-  bar the current section is green text, nothing else). Nothing translates, lifts or scales
+  brighten (the current page in the header is white text; the current section in the section
+  bar is green text; nothing else). Nothing translates, lifts or scales
   on hover; the one exception is an arrow glyph nudging inside a `SplitButton` (whose label
   also rolls within its clipped cell) or a project card's arrow cell, while the button or
   card itself stays put. Mint is the focus ring only, never a hover colour. Transitions: 200ms colours.

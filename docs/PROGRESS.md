@@ -58,8 +58,9 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 15r: seven inner-page hero variants in the Shift + M menu (Frame stays the default; Globe, Radar, Corridor, Trace, Dither, Dino), all the shipped hero with one graphic added; Ashton picks the one that ships
 - [x] Session 15s: the Instagram grid on /about can run off the live account (a Behold JSON feed fetched server-side into the site's own tiles), falling back to the curated posts
 - [x] Session 15t: the real 2026–27 exec board on /about (nine members, names, roles and LinkedIn links, each with the photo they sent); the placeholder 2025–26 board removed
-- [x] Session 15w: the eight 2025–26 projects named for their nonprofits (slugs, cities, map pins, who-they-are copy from the club's posts), logo covers; titles, what was built, team, stack and screenshots still TODO
 - [x] Session 15v: the real 2025–26 exec board on /about (ten members with photos and LinkedIn links), so the year chips are back
+- [x] Session 15w: the eight 2025–26 projects named for their nonprofits (slugs, cities, map pins, who-they-are copy from the club's posts), logo covers; titles, what was built, team, stack and screenshots still TODO
+- [x] Session 15x: real photos across home and Students (hero, awards carousel that rotates, What we do panels, How we work, What you'll get), project cards aligned and ordered by title length, Instagram grid off /about until the feed is linked, home tab title is the name alone
 - [x] Session 15n: the /apply frame is back-proof — two heights instead of five, after checking that nothing cross-origin can say which section the form is showing
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
@@ -82,6 +83,55 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
+
+## Session 15x — 2026-09-15 (photos, the awards carousel, project card alignment)
+
+Ashton staged real photos and asked for them across the site, then a run of small changes.
+
+**Built:**
+
+- Home hero: `media/home/hero.png` → `public/images/home/hero.jpg` on its own key
+  (`org.hero-photo`; /about keeps `org.group-photo`). The parallax is gone (it read as a shift
+  and its 125% layer upscaled the photo), the photo is served at quality 90
+  (`images.qualities: [75, 90]` in next.config) and its `sizes` asks for the cropped width on
+  portrait screens.
+- Awards carousel: the three Student Life photos (`awards.student-life-2025.1–3`, alt text in
+  `content/awards.ts`) crossfade every 7s; it holds on hover, focus and off screen, has a pause
+  button (WCAG 2.2.2), a manual step restarts the timer, the counter is a live region only
+  while stopped, and nothing rotates under reduced motion.
+- What we do: a small photo in each service panel between the icon and the title, keyed by
+  service id (a team presenting Share Food Share Love, the atrium social, puzzle night), on the
+  panels' subgrid.
+- Students: How we work shows members on the Lawson steps (`life.students`), What you'll get
+  the team at its table, both small; the team-structure diagram came off and is kept in
+  `students/TeamDiagram.tsx` (not rendered; the comment says how to restore it).
+- /about: the Instagram grid and its section-bar link are off until Ashton links the Behold
+  feed (restore steps in the comment above `AboutPage`); the feed is not fetched meanwhile.
+- /projects: the heading reads "[Work in Progress!]". Cards sit on a five-row subgrid (cover,
+  year, title, location, tags) spanned by each grid item, so titles, locations and tags share
+  lines across a row. A new optional `order` in project frontmatter, set once by hand, groups
+  the cards by how many lines the title takes at 1440 (one-line titles first); nothing
+  recomputes it. `nonprofitLines` breaks a card title by hand ("Sheltering" / "Wings").
+- Photos: every imported photo had a 1–2px white edge (the export tool's); trimmed on import,
+  and on six exec photos already in public (Lalitha, Devansh, Ryan, Emily 2025, Vipula, plus
+  Khang re-cropped wider from the original in git history). Intake copies updated to match.
+- The home tab and share title are "Hack the Future" alone.
+
+**Decisions:** white edges come with Ashton's exports; trim them on import. The dev image
+optimizer caches by URL, so replacing a file in place keeps serving the old one until
+`.next/dev/cache/images` is cleared. The subgrid alignment only applies to inactive cards (a
+linked card wraps its content in an extra element).
+
+**Verified:** prettier, typecheck, lint, content validation and `pnpm build` clean; `pnpm a11y`
+on every route 0 violations except the known heading-order jump inside Google's form iframe on
+/apply; screenshots of every route at 1440 and 390 in `docs/screenshots/session-15x/`.
+
+**TODOs:** the domain is live on Vercel (www.htfpurdue.org primary): set
+`NEXT_PUBLIC_SITE_URL` to match the primary domain; the unused `life.kickoff` and
+`life.team-selfie` photos are kept for later.
+
+**Next session starts with:** the Behold feed URL for the Instagram grid, then the project
+write-ups (titles, what was built, team, stack, screenshots).
 
 ## Session 15w — 2026-09-15 (the 2025–26 nonprofits)
 
@@ -164,6 +214,34 @@ name fixes it with `pnpm media:check --import --force`.
 **Verified:** `pnpm validate:content` (exec: 19), typecheck, lint and `pnpm build` clean;
 `pnpm a11y` 0 violations; /about?board=2025–26 at 1440 and 390 in Playwright (both chips, ten
 cards, nine LinkedIn links, no console errors), shots in `docs/screenshots/session-15v/`.
+
+## Session 15u — 2026-09-11 (thin glass over the Impact map)
+
+Ashton asked for the Impact band's stat tiles and testimonial cards to be see-through, the
+dotted map behind them blurred.
+
+**Built:** a `glass-thin` utility worn with `glass` (32% tint, 3px blur; `glass` now reads
+`--glass-blur`, 20px by default) on `StatTile` and `TestimonialCard` (so the nonprofits
+page's testimonial cards change too). 5px of blur melted the dots into haze; 2–3px keeps the
+continents readable through the card.
+
+**Decisions:** the marquee's end fade was a mask on the whole band, and in Chrome a mask on an
+ancestor stops a descendant's `backdrop-filter` from seeing anything outside it — the cards
+showed the map sharp, not blurred. Ashton chose to keep the fade with synced per-card masks
+over a hard edge or no blur: `TestimonialMarquee` measures the band, one copy of the list and
+each card's offset, then sets `data-card-fade`, and each card slides the band's gradient back
+across itself, driven by `--marquee-p` (a registered number animated on the track alongside
+the transform, so the two keep the same start time through pauses; checked over four
+pause/resume cycles). Browsers without `@property` keep the band mask and unblurred cards. The
+band also pauses while off screen now (`data-offscreen`), since the progress animation runs on
+the main thread. `DottedMap` paints its colour as a flat gradient: axe cannot see masks and
+scored the thin cards against a solid green sheet (3.45:1); on screen the brightest pixel
+behind their text gives 7.2:1 for green and 6.5:1 for muted (stat tiles 7.7 / 7.0).
+
+**Verified:** typecheck, lint and `pnpm build` clean; `pnpm a11y` 0 violations; home at 1440
+and 390 in the browser. Not committed: `globals.css`, `DottedMap.tsx` and
+`TestimonialMarquee.tsx` also carry another session's uncommitted work (the partner-country
+map, the marquee clipped to the container), which these changes build on.
 
 ## Session 15t — 2026-09-10 (the real exec board)
 
