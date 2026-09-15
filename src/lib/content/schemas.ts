@@ -47,8 +47,19 @@ export const projectFrontmatterSchema = z.object({
    * `nonprofit` in full. Leave it out when the full name fits.
    */
   nonprofitShort: z.string().min(1).optional(),
+  /**
+   * The card title broken into lines by hand (e.g. ["Sheltering", "Wings"]), when the natural
+   * wrap is not the one wanted. The card only; the project page keeps `nonprofit` on one line.
+   */
+  nonprofitLines: z.array(z.string().min(1)).min(2).optional(),
   /** Academic cycle, e.g. "2025–26". */
   year: cycleYearSchema,
+  /**
+   * Place within its cycle on /projects (lower first); projects without one follow, by title.
+   * Set once by hand on 2026-09-15 so the cards share rows by how many lines the title takes
+   * at desktop width (one-line titles first); nothing recomputes it.
+   */
+  order: z.number().int().optional(),
   location: z.string().min(1),
   tags: z.array(projectTagSchema).min(1),
   summary: z.string().min(10).max(240),
@@ -120,10 +131,11 @@ export const testimonialSchema = z.object({
   id: slugSchema,
   /** Short green line above the quote, e.g. "Impressive showcase!". */
   headline: z.string().min(1).optional(),
-  quote: z.string().min(1),
-  name: z.string().min(1),
+  /** Quote, name and title may be "" while a card waits for its real testimonial (blank card). */
+  quote: z.string(),
+  name: z.string(),
   /** Role and organization, e.g. "Executive Director, Example Nonprofit". */
-  title: z.string().min(1),
+  title: z.string(),
   avatar: mediaRefSchema.optional(),
   kind: z.enum(["student", "nonprofit"]),
   /** Hidden until a real quote is approved. */

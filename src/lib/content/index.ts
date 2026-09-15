@@ -151,7 +151,12 @@ export function getAllProjects(): Project[] {
     } satisfies Project;
   });
   assertUnique(projects, (p) => p.slug, "content/projects");
-  projects.sort((a, b) => b.year.localeCompare(a.year) || a.title.localeCompare(b.title));
+  projects.sort(
+    (a, b) =>
+      b.year.localeCompare(a.year) ||
+      (a.order ?? Infinity) - (b.order ?? Infinity) ||
+      a.title.localeCompare(b.title),
+  );
   projectsCache = projects;
   return projects;
 }

@@ -83,8 +83,11 @@ export function ProjectsExplorerView({ projects, years, year, onSelect }: Explor
                 animate={{ opacity: 1, y: 0 }}
                 exit={reduce ? undefined : { opacity: 0, scale: 0.98 }}
                 transition={{ duration: 0.35, ease: EASE }}
+                // spans the card's five rows so titles, locations and tags line up across a row
+                className="row-span-5 grid grid-rows-subgrid gap-0"
               >
-                <ProjectCard project={project} headingLevel="h2" sizes={CARD_SIZES} />
+                {/* Temporary: work in progress, the cards do not link to their pages yet. */}
+                <ProjectCard project={project} headingLevel="h3" sizes={CARD_SIZES} inactive />
               </motion.li>
             ))}
           </AnimatePresence>

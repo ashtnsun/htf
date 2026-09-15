@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { WhoWeServe } from "@/components/home/WhoWeServe";
 import { ContactCta } from "@/components/layout/ContactCta";
 import { PageHero } from "@/components/layout/PageHero";
 import { toProjectCardData } from "@/components/projects/ProjectCard";
 import { ProjectsExplorer, ProjectsExplorerView } from "@/components/projects/ProjectsExplorer";
+import { Headline } from "@/components/ui/Headline";
 import { Section } from "@/components/ui/Section";
 import { getProjects, getProjectYears } from "@/lib/content";
 
@@ -30,7 +30,9 @@ export default function ProjectsPage() {
     <>
       <PageHero eyebrow="Projects" lines={["Software we built", "*with nonprofits.*"]} />
 
-      <Section id="all-projects" aria-label="All projects" className="border-t border-line">
+      <Section id="all-projects" aria-labelledby="projects-wip" className="border-t border-line">
+        {/* Temporary: the project pages are not linked from the cards while this is up. */}
+        <Headline id="projects-wip" lines={["[Work in *Progress!*]"]} className="mb-10" />
         {hasDrafts ? (
           <p className="mb-8 inline-block border border-dashed border-line-strong px-3 py-2 text-xs text-muted">
             Preview: draft projects are shown in development only
@@ -41,7 +43,6 @@ export default function ProjectsPage() {
         </Suspense>
       </Section>
 
-      <WhoWeServe />
       <ContactCta />
     </>
   );

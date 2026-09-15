@@ -7,7 +7,15 @@ import { cn } from "@/lib/utils";
 
 export type ProjectCardData = Pick<
   ProjectFrontmatter,
-  "slug" | "title" | "nonprofit" | "nonprofitShort" | "year" | "location" | "tags" | "cover"
+  | "slug"
+  | "title"
+  | "nonprofit"
+  | "nonprofitShort"
+  | "nonprofitLines"
+  | "year"
+  | "location"
+  | "tags"
+  | "cover"
 > & {
   /** Unpublished projects only render in development; the card marks them as drafts. */
   published?: boolean;
@@ -21,6 +29,11 @@ type ProjectCardProps = {
   headingLevel?: "h2" | "h3";
   /** next/image `sizes` hint for the cover. */
   sizes?: string;
+  /**
+   * Temporary "work in progress" state for /projects: the card is not a link, the nonprofit
+   * name is the title (no separate nonprofit label) and the arrow cell is greyed out.
+   */
+  inactive?: boolean;
   className?: string;
 };
 
@@ -34,9 +47,21 @@ export const TAG_LABEL: Record<ProjectTag, string> = {
 
 /** Serialisable subset of a project for cards (keeps MDX bodies out of client payloads). */
 export function toProjectCardData(project: ProjectCardData): ProjectCardData {
-  const { slug, title, nonprofit, nonprofitShort, year, location, tags, cover, published } =
+  const { slug, title, nonprofit, nonprofitShort, nonprofitLines, year, location, tags, cover } =
     project;
-  return { slug, title, nonprofit, nonprofitShort, year, location, tags, cover, published };
+  const { published } = project;
+  return {
+    slug,
+    title,
+    nonprofit,
+    nonprofitShort,
+    nonprofitLines,
+    year,
+    location,
+    tags,
+    cover,
+    published,
+  };
 }
 
 /**
@@ -52,14 +77,24 @@ export function ProjectCard({
   size = "default",
   headingLevel: Heading = "h3",
   sizes = "(min-width: 768px) 50vw, 100vw",
+  inactive = false,
   className,
 }: ProjectCardProps) {
+  const nonprofitName = project.nonprofitShort ?? project.nonprofit;
   return (
     <Card
-      href={`/projects/${project.slug}`}
+      href={inactive ? undefined : `/projects/${project.slug}`}
       padding="none"
       interactive={false}
-      className={cn("group flex flex-col hover:border-green", className)}
+      // Five rows (cover, year, title, location, tags) on a subgrid, so in a grid whose items
+      // span five rows on a subgrid (ProjectsExplorer) every card's title, location and tags
+      // start on the same line whatever the title's length. Outside such a grid the subgrid
+      // falls back to plain stacked rows.
+      className={cn(
+        "group row-span-5 grid grid-rows-subgrid gap-0",
+        inactive ? "h-full" : "hover:border-green",
+        className,
+      )}
     >
       <div
         className={cn(
@@ -72,7 +107,10 @@ export function ProjectCard({
           alt=""
           fill
           sizes={sizes}
-          className="object-cover brightness-90 transition-[filter] duration-300 group-hover:brightness-100"
+          className={cn(
+            "object-cover brightness-90",
+            !inactive && "transition-[filter] duration-300 group-hover:brightness-100",
+          )}
         />
         <div
           aria-hidden="true"
@@ -84,31 +122,57 @@ export function ProjectCard({
           </span>
         ) : null}
       </div>
-      <div className="flex flex-1 flex-col p-6 md:p-7">
-        <p className="flex items-baseline justify-between gap-4 text-eyebrow font-medium text-muted uppercase">
-          <span className="truncate">{project.nonprofitShort ?? project.nonprofit}</span>
-          <span className="shrink-0">{project.year}</span>
-        </p>
-        <div className="mt-4 flex items-end justify-between gap-6">
-          <Heading className="text-h3 font-medium text-text transition-colors duration-300 group-hover:text-green">
-            {project.title}
-          </Heading>
-          <span
-            aria-hidden="true"
-            className="flex size-11 shrink-0 items-center justify-center border border-line-strong bg-surface-2 text-text transition-colors duration-200 group-hover:border-green group-hover:bg-green group-hover:text-bg"
-          >
-            <ArrowRight className="size-5 transition-transform duration-300 ease-out-expo group-hover:translate-x-1" />
-          </span>
-        </div>
-        <p className="mt-3 text-sm text-muted">{project.location}</p>
-        <ul aria-label="Tags" className="mt-4 flex flex-wrap gap-2">
-          {project.tags.map((tag) => (
-            <li key={tag}>
-              <Chip>{TAG_LABEL[tag]}</Chip>
-            </li>
-          ))}
-        </ul>
+      <p className="flex items-baseline justify-between gap-4 px-6 pt-6 text-eyebrow font-medium text-muted uppercase md:px-7 md:pt-7">
+        {inactive ? null : <span className="truncate">{nonprofitName}</span>}
+        <span className="shrink-0">{project.year}</span>
+      </p>
+      <div className="mt-4 flex items-start justify-between gap-6 px-6 md:px-7">
+        <Heading
+          className={cn(
+            "text-h3 font-medium text-text",
+            !inactive && "transition-colors duration-300 group-hover:text-green",
+          )}
+        >
+          {!inactive
+            ? project.title
+            : project.nonprofitLines && !project.nonprofitShort
+              ? project.nonprofitLines.map((line) => (
+                  // the trailing space keeps the words apart in the heading's text
+                  <span key={line} className="block">
+                    {line}{" "}
+                  </span>
+                ))
+              : nonprofitName}
+        </Heading>
+        <span
+          aria-hidden="true"
+          className={cn(
+            "flex size-11 shrink-0 items-center justify-center self-end border",
+            inactive
+              ? "border-line bg-surface text-muted opacity-50"
+              : "border-line-strong bg-surface-2 text-text transition-colors duration-200 group-hover:border-green group-hover:bg-green group-hover:text-bg",
+          )}
+        >
+          <ArrowRight
+            className={cn(
+              "size-5",
+              !inactive &&
+                "transition-transform duration-300 ease-out-expo group-hover:translate-x-1",
+            )}
+          />
+        </span>
       </div>
+      <p className="mt-3 px-6 text-sm text-muted md:px-7">{project.location}</p>
+      <ul
+        aria-label="Tags"
+        className="mt-4 flex flex-wrap content-start gap-2 px-6 pb-6 md:px-7 md:pb-7"
+      >
+        {project.tags.map((tag) => (
+          <li key={tag}>
+            <Chip>{TAG_LABEL[tag]}</Chip>
+          </li>
+        ))}
+      </ul>
     </Card>
   );
 }
