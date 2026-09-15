@@ -18,10 +18,10 @@ export const metadata: Metadata = {
 };
 
 const SECTIONS = [
-  { href: "#roles", label: "Roles" },
-  { href: "#timeline", label: "Timeline" },
   { href: "#how-we-work", label: "How we work" },
   { href: "#what-you-get", label: "What you’ll get" },
+  { href: "#timeline", label: "Timeline" },
+  { href: "#roles", label: "Roles" },
   { href: "#faq", label: "FAQ" },
 ] as const;
 
@@ -30,7 +30,7 @@ const linkClass = "font-medium text-green transition-colors duration-200 hover:t
 export default function StudentsPage() {
   const roles = getRoles();
   const timeline = getRecruitmentTimeline();
-  const { teamStructure, howWeWork, perks } = getStudentsPage();
+  const { howWeWork, perks } = getStudentsPage();
   const faq = getFaq("students");
 
   return (
@@ -38,10 +38,10 @@ export default function StudentsPage() {
       <PageHero eyebrow="Student involvement" lines={["Join us to", "*make an impact.*"]} />
       <SectionNav items={SECTIONS} label="Students" />
 
-      <RoleRows roles={roles} />
-      <RecruitmentTimeline steps={timeline} />
-      <HowWeWork seats={teamStructure} steps={howWeWork} />
+      <HowWeWork steps={howWeWork} />
       <Perks perks={perks} />
+      <RecruitmentTimeline steps={timeline} />
+      <RoleRows roles={roles} />
       <FaqSection
         items={faq}
         lines={["Before you", "*apply.*"]}

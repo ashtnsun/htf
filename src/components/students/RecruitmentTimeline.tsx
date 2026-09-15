@@ -36,7 +36,6 @@ export function RecruitmentTimeline({ steps }: { steps: RecruitmentStep[] }) {
     <Section
       id="timeline"
       aria-labelledby="timeline-title"
-      grid
       className="overflow-x-clip border-t border-line"
     >
       <RevealGroup stagger={0.12}>

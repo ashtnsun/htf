@@ -1,19 +1,21 @@
-import type { HowWeWorkStep, TeamSeat } from "@/lib/content/schemas";
+import type { HowWeWorkStep } from "@/lib/content/schemas";
 import { Reveal } from "@/components/motion/Reveal";
 import { Card } from "@/components/ui/Card";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Headline } from "@/components/ui/Headline";
+import { Media } from "@/components/ui/Media";
 import { Section } from "@/components/ui/Section";
-import { cn } from "@/lib/utils";
-import { ROLE_ICONS } from "./roleIcons";
 
 type HowWeWorkProps = {
-  seats: TeamSeat[];
   steps: HowWeWorkStep[];
 };
 
-/** Team structure (1 lead + 5 developers + 1–2 designers) beside the four beats of a project year. */
-export function HowWeWork({ seats, steps }: HowWeWorkProps) {
+/**
+ * The heading and a photo of members on the Lawson steps (2026-09-15), beside the four beats of a
+ * project year. The team-structure diagram that sat under the heading is parked in
+ * ./TeamDiagram (removed 2026-09-15).
+ */
+export function HowWeWork({ steps }: HowWeWorkProps) {
   return (
     <Section id="how-we-work" aria-labelledby="how-title" className="border-t border-line">
       <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-16">
@@ -26,7 +28,15 @@ export function HowWeWork({ seats, steps }: HowWeWorkProps) {
             lines={["One nonprofit, one team,", "*one school year.*"]}
             className="mt-5"
           />
-          <TeamDiagram seats={seats} />
+          <div className="relative mt-10 aspect-[4/3] max-w-sm overflow-hidden border border-line bg-surface">
+            <Media
+              src="life.students"
+              alt="Eight Hack the Future members in business attire making heart shapes with their hands on the steps of the Lawson Computer Science Building"
+              fill
+              sizes="384px"
+              className="object-cover"
+            />
+          </div>
         </Reveal>
 
         <ol className="grid gap-4">
@@ -48,44 +58,5 @@ export function HowWeWork({ seats, steps }: HowWeWorkProps) {
         </ol>
       </div>
     </Section>
-  );
-}
-
-/**
- * One square per seat: filled green lead, surface developers, mint-outlined designers. The
- * captions came off in the 2026-09-10 copy pass, so each seat carries its count and label for
- * assistive tech instead (`content/students.ts`).
- */
-function TeamDiagram({ seats }: { seats: TeamSeat[] }) {
-  return (
-    <ul aria-label="Team structure" className="mt-10 flex flex-wrap gap-x-6 gap-y-5">
-      {seats.map((seat) => {
-        const Icon = ROLE_ICONS[seat.icon];
-        const min = seat.minCount ?? seat.count;
-        return (
-          <li key={seat.id}>
-            <span className="sr-only">
-              {seat.countLabel ?? seat.count} {seat.label}
-            </span>
-            <div className="flex gap-2" aria-hidden="true">
-              {Array.from({ length: seat.count }, (_, i) => (
-                <span
-                  key={i}
-                  className={cn(
-                    "flex size-11 items-center justify-center border",
-                    seat.icon === "lead" && "border-green bg-green text-bg",
-                    seat.icon === "code" && "border-line-strong bg-surface-2 text-text",
-                    seat.icon === "design" && "border-mint/70 text-mint",
-                    i >= min && "border-dashed opacity-60",
-                  )}
-                >
-                  <Icon className="size-5" strokeWidth={1.75} />
-                </span>
-              ))}
-            </div>
-          </li>
-        );
-      })}
-    </ul>
   );
 }
