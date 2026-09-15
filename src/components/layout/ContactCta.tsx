@@ -26,8 +26,7 @@ type ContactCtaProps = {
  * per-page variants — "Work with us", "Questions?", "Ready?" — are gone): eyebrow, display
  * headline, copy,
  * the season CTA (Apply Now / Contact Us from content/site.ts) and the floating Get involved
- * graphic (layout/involved: the partner globe by default since 2026-09-09, Terminal, Chat and
- * Badge in the Shift + M menu; every one a recognizable object, since audit 4 of 2026-09-07).
+ * graphic (layout/involved: the partner globe since 2026-09-09).
  */
 export function ContactCta({
   id = "get-involved",

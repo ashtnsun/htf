@@ -1,7 +1,6 @@
 /**
- * Home hero copy, shared by every hero variant (src/components/home/heroes). Which variant
- * renders is a site configuration choice (Shift + M, src/lib/config/options.ts); the words
- * stay the same across all of them.
+ * Home hero copy, shared by every hero variant (src/components/home/heroes; Photo
+ * ships).
  */
 export const hero = {
   eyebrow: "Nonprofit Student Org",

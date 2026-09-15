@@ -454,7 +454,7 @@ export default function UiKitPage() {
         </div>
       </Block>
 
-      <Block title="Get involved graphics (layout/involved; the Shift + M menu picks one, Globe is the default)">
+      <Block title="Get involved graphics (layout/involved; Globe ships)">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
           {INVOLVED_GRAPHICS.map(([name, Graphic]) => (
             <div key={name}>

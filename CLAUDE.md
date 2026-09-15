@@ -63,10 +63,9 @@ src/components/
                     (the page's icon in pixelIcons.ts), Viewfinder, Cameo (a process dinosaur per
                     page), Dock (the copy docks into the section bar via --subnav-inset) and
                     Final (the Pixels grid and the Globe hero's globe, no scroll effect;
-                    the default))
-                    chosen in the Shift + M menu; the per-page ones read usePageKey (the
-                    pathname); FinalHero (with the Globe hero's globe) is the default and in the bundle, the rest lazy
-                    chunks (OverlapLines, the client measure that keeps a staggered headline's
+                    the one that ships)); PageHero renders FinalHero, the rest are unreachable
+                    since the Shift + M menu was removed (2026-09-15); the per-page ones read
+                    usePageKey (the pathname) (OverlapLines, the client measure that keeps a staggered headline's
                     lines overlapping, is the Globe hero's); PageHeroShell holds the shared section, the framed column
                     (PageHeroContent: eyebrow, the one h1, blurb, actions) and the bottom glow;
                     /privacy and the 404 use FrameHero directly, with its `back` and `ghost`),
@@ -74,14 +73,12 @@ src/components/
                     sticky section bar under the hero on About / Students / Nonprofits; sets
                     --subnav-h so anchors land below it; clear and borderless in place, glass
                     once `data-stuck`, the neighbouring borders hidden by a rule in globals.css), FaqSection, ContactCta (+ involved/: the
-                    Get involved graphic, a client switch over four variants chosen in the Shift + M
-                    menu; GraphicFrame is the shared floating square, GlobeGraphic the default and
-                    in the bundle (the partner globe; a hovered pin names its state in the US or
-                    its country elsewhere; three.js loads on demand), Terminal / Chat / Badge
-                    lazy chunks), SeasonNote, OnThisPage (/privacy only)
-  home/             Hero (client switch over heroes/*: six variants (Globe, Atlas, Typewriter,
-                    Cells, Wordmark, Photo) chosen in the Shift + M menu, PhotoHero the default and
-                    in the bundle, the rest lazy chunks;
+                    Get involved graphic, InvolvedGraphic renders GlobeGraphic (the partner globe; a
+                    hovered pin names its state in the US or its country elsewhere; three.js
+                    loads on demand); GraphicFrame is the shared floating square; Terminal /
+                    Chat / Badge show only on /dev/ui), SeasonNote, OnThisPage (/privacy only)
+  home/             Hero (renders heroes/PhotoHero; Globe, Atlas, Typewriter, Cells and
+                    Wordmark remain in heroes/ but are unreachable since the menu went;
                     HeroShell is the shared frame), Globe (SVG, takes pins), WhatWeDo, Process (+ ProcessScroll,
                     ProcessScene: the footer T-rex as detective, team lead, builder and party
                     host in pixel art that dissolves cell by cell with scroll, the sprites in
@@ -98,25 +95,17 @@ src/components/
                     with a `label`), PartnerGlobeScene (three.js / R3F, loaded on demand; hover a
                     labelled pin to hold the globe), SpinController, LabelAnchor (places the
                     label from the frame loop), landDots
-  config/           ConfigMenu (Shift + M: the non-modal site configuration panel; one
-                    VariantPicker per setting: the home hero, the inner page hero, the Get
-                    involved graphic)
   motion/           Reveal / RevealGroup (fade-and-rise, reduced-motion aware),
                     useReducedMotionSafe (false until hydration, so the static branch never
                     mismatches the server's animated markup)
   icons/            Instagram / LinkedIn (lucide 1.x has no brand icons)
 src/lib/content/    schemas.ts (Zod) + index.ts (loaders; throw on invalid content),
                     behold.ts (the live Instagram feed; never throws, falls back)
-src/lib/config/     options.ts (HERO_VARIANTS / DEFAULT_HERO, INVOLVED_VARIANTS / DEFAULT_INVOLVED,
-                    SiteConfig), store.ts (localStorage store + useSiteConfig; the server and the
-                    first paint always see the defaults)
 src/lib/geo.ts      sphere maths shared by both globes
 src/lib/motion.ts   easing curves and durations for Framer (mirrors `--ease-*` in globals.css)
 scripts/            validate-content, gen-placeholders, gen-logo-paths.py, gen-world-dots,
                     measure-apply-form (the /apply frame heights, against a production build),
-                    media-check (the media/ intake report and import), screenshots,
-                    shot-page-heroes (one shot per inner-page hero variant, the choice seeded
-                    into localStorage; `--reduced` for the reduced-motion pass), a11y
+                    media-check (the media/ intake report and import), screenshots, a11y
 docs/               PLAN.md, PROGRESS.md, DEPLOY.md, prompts/, screenshots/session-N/
 media/              media intake, git-ignored except the READMEs: real photos are staged here
                     (one folder per slot area, a README in each with the crop and the minimum
@@ -157,11 +146,8 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   shape change falls back to `content/instagram.ts` so an outage cannot fail the build or blank
   the section. Images come only from `sizes.*` on `behold.pictures` (permanent); Instagram's own
   `mediaUrl` expires and is never used.
-- The home hero, the inner page hero and the Get involved graphic are per-browser choices
-  (Shift + M, `src/lib/config`), never a build-time or server-side switch: visitors always get
-  `DEFAULT_HERO` / `DEFAULT_PAGE_HERO` / `DEFAULT_INVOLVED` from `src/lib/config/options.ts`,
-  and the pages stay
-  static. Every hero variant renders the copy in `content/hero.ts`, one `h1` (`#hero-title`)
+- The Shift + M configuration menu is gone (2026-09-15): `home/Hero`, `layout/PageHero` and
+  `layout/involved/InvolvedGraphic` render Photo, Final and Globe directly. Every hero variant renders the copy in `content/hero.ts`, one `h1` (`#hero-title`)
   and a finished picture under reduced motion; every inner-page hero variant renders the
   eyebrow, blurb and one `h1` (`#page-title`) its page passes in, and is finished under reduced
   motion; every Get involved variant is a recognizable
