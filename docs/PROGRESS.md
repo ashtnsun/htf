@@ -105,11 +105,19 @@ the new slugs. The posts and their zip moved to `media/_inbox/projects-2025-26-p
 **Covers:** 2400×1350 JPEGs, the logo centred on `--surface` (#141414), the way the posts put
 it on black, and inside the middle square so the 4:3 and featured 4:5 crops keep it. Logos
 from the official sites (Sheltering Wings, Midtown, Mill Creek's boxed badge, Sleep Pod's
-white version, Pratigya with its dark box keyed out, VPWA's on a white box). **We The World
-Botswana has no logo online** (only the parent WE, The World network's), and Share Food Share
-Love's site only serves a 109 px one, so both are cut from Ashton's posts. Sheltering Wings
-(242 px), Sleep Pod (298 px) and the two post cuts (150–170 px) are small sources scaled up
-about 3×, soft on the detail page on a retina screen; fine at card size.
+white version, Pratigya with its dark box keyed out, VPWA's on a white box). Share Food Share
+Love's site only serves a 109 px logo, so it is cut from Ashton's post. **We The World
+Botswana** was first cut from the post too (a white box reading "Botswana"); on Ashton's word
+it is now the "WE" mark he sent, its white background removed (edge pixels un-mixed from white,
+so no halo on the dark cover). Sheltering Wings (242 px), Sleep Pod (298 px) and the post cut
+(170 px) are small sources scaled up about 3×, soft on the detail page on a retina screen;
+fine at card size.
+
+**VPWA's short name:** on Ashton's word the card's label reads "VPWA" and the project page
+spells out Volunteer Partnerships for West Africa. That is a new optional frontmatter field,
+`nonprofitShort`, read only by `ProjectCard` (the page eyebrow, the share image and the page
+title keep `nonprofit`). A running dev server keeps serving the old label until it restarts:
+`getAllProjects()` caches the MDX in memory and nothing watches `content/projects/`.
 
 **Decisions:** nothing in the posts says what the teams built, so **titles stay
 `[TODO: project title]`** (all eight cards show it), as do What we built, Final result, team,
