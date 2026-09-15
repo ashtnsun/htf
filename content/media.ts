@@ -20,9 +20,21 @@ export const media = {
   "gallery.placeholder-2": `${P}/gallery-2.svg`,
   "gallery.placeholder-3": `${P}/gallery-3.svg`,
 
-  // Organization and awards (home page "What we do" photo, Impact awards carousel)
-  "org.group-photo": `${P}/org-photo.svg`,
-  "awards.student-life-2025": `${P}/award-photo.svg`,
+  // Organization and awards (home hero, About mission photo, Impact awards carousel)
+  "org.hero-photo": "/images/home/hero.jpg",
+  "org.group-photo": "/images/home/group-photo.jpg",
+  "awards.student-life-2025.1": "/images/awards/student-life-innovative-program-2025/1.jpg",
+  "awards.student-life-2025.2": "/images/awards/student-life-innovative-program-2025/2.jpg",
+  "awards.student-life-2025.3": "/images/awards/student-life-innovative-program-2025/3.jpg",
+
+  // Home "What we do" panels, then club life (also /students How we work and What you'll get)
+  "home.what-we-do.free-software": "/images/home/what-we-do-free-software.jpg",
+  "life.students": "/images/life/students.jpg",
+  "life.kickoff": "/images/life/kickoff.jpg",
+  "life.team-table": "/images/life/team-table.jpg",
+  "life.social-atrium": "/images/life/social-atrium.jpg",
+  "life.puzzle-night": "/images/life/puzzle-night.jpg",
+  "life.team-selfie": "/images/life/team-selfie.jpg",
 
   // Instagram grid on /about (key pattern: instagram.<post id>); four ornament variants.
   "instagram.post-1": `${P}/instagram-globe.svg`,
