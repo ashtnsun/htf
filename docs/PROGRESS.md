@@ -117,6 +117,11 @@ then the logo flying from the centre into the header logo as the page renders in
   during the intro so the scale never widens the page. Reveal frames at 1440 and 390 in
   `docs/screenshots/session-15y/home-intro-reveal-*.png`.
 
+- No pause before the flight (Ashton: it held too long once filled): the 300ms hold is gone and
+  the mark leaves 450ms before the draw-and-fill animations end (`LEAVE_EARLY_MS`; the fill's
+  ease-out tail is invisible), timed from the animations' remaining time rather than awaited.
+  The flight now starts ~2.35s after navigation with the last glyph at 93% fill (was ~2.8s+).
+
 **Decisions:** once per tab session rather than every visit (a returning visitor clicking Home
 would otherwise wait ~4s each time); the home page stays static.
 

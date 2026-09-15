@@ -7,8 +7,11 @@ import { cn } from "@/lib/utils";
 /* Same view box as brand/Logo.tsx, so the mark lands on the header logo at one scale. */
 const VIEW_TOP = -720;
 const VIEW_HEIGHT = 740;
-/** Pause on the finished mark before it leaves for the header. */
-const HOLD_MS = 300;
+/**
+ * How long before the draw-and-fill animations end the mark leaves for the header. The fill eases
+ * out, so its last ~half second changes nothing visible; waiting it out read as a pause.
+ */
+const LEAVE_EARLY_MS = 450;
 /** Matches the transform transition on `.intro-mark` in globals.css. */
 const FLIGHT_MS = 1100;
 /** The page keeps settling after the mark lands: the longest reveal transition in globals.css. */
@@ -17,8 +20,8 @@ const SETTLE_MS = 700;
 /**
  * The home page's arrival: a black screen, the <HTF/> wordmark drawing and filling in the centre
  * (the Wordmark hero's animation), then the mark flying into the header logo while the page
- * settles in underneath ("reveal"), the header logo taking over as it lands ("landed"). Whether it plays is decided before first paint by the inline script in
- * the root layout (`home/intro-script.ts`), which sets `data-intro="play"` on <html>: once per tab
+ * settles in underneath ("reveal"), the header logo taking over as it lands ("landed"). Whether
+ * it plays is decided before first paint by the inline script in the root layout (`home/intro-script.ts`), which sets `data-intro="play"` on <html>: once per tab
  * session, on `/` only, never under reduced motion or automation (`?intro` forces it). Without
  * that attribute this renders nothing visible. Any key, click, wheel or touch skips to the end.
  * Decoration only: hidden from assistive tech, and the page is in the DOM throughout.
@@ -69,10 +72,16 @@ export function HomeIntro() {
     }
 
     skipEvents.forEach((type) => window.addEventListener(type, finish, { passive: true }));
-    // The CSS draw started at first paint, not at hydration: wait for it to actually finish.
-    Promise.all(mark.getAnimations({ subtree: true }).map((a) => a.finished)).then(() => {
-      if (!stopped) timers.push(window.setTimeout(fly, HOLD_MS));
-    }, finish);
+    // The CSS draw started at first paint, not at hydration: time the flight off what is left of
+    // it, leaving as soon as the fill looks complete.
+    const remaining = Math.max(
+      0,
+      ...mark.getAnimations({ subtree: true }).map((a) => {
+        const { endTime, localTime } = a.effect?.getComputedTiming() ?? {};
+        return Number(endTime ?? 0) - Number(localTime ?? 0);
+      }),
+    );
+    timers.push(window.setTimeout(fly, Math.max(0, remaining - LEAVE_EARLY_MS)));
 
     return () => {
       stop();
