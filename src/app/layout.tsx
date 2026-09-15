@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import { site } from "@content/site";
 import { ConfigMenu } from "@/components/config/ConfigMenu";
+import { INTRO_SCRIPT } from "@/components/home/intro-script";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import "./globals.css";
@@ -40,8 +41,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     // data-scroll-behavior lets Next suspend the CSS smooth scrolling while it scrolls a route
     // transition (e.g. to #application-form after a form step), so the jump is instant.
-    <html lang="en" className={`${poppins.variable} h-full`} data-scroll-behavior="smooth">
+    <html
+      lang="en"
+      className={`${poppins.variable} h-full`}
+      data-scroll-behavior="smooth"
+      // The intro script below sets data-intro on <html> before hydration.
+      suppressHydrationWarning
+    >
       <body className="flex min-h-full flex-col bg-bg font-body text-text">
+        {/* Before first paint: whether the home intro plays (components/home/HomeIntro). */}
+        <script dangerouslySetInnerHTML={{ __html: INTRO_SCRIPT }} />
         {/* Without JavaScript the reveal wrappers keep their hidden initial state; show them. */}
         <noscript>
           <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>

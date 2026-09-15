@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getPrimaryCta } from "@content/site";
 import { Hero } from "@/components/home/Hero";
+import { HomeIntro } from "@/components/home/HomeIntro";
 import { ImpactBand } from "@/components/home/ImpactBand";
 import { Process } from "@/components/home/Process";
 import { WhatWeDo } from "@/components/home/WhatWeDo";
@@ -36,6 +37,7 @@ export default function HomePage() {
   );
   return (
     <>
+      <HomeIntro />
       <Hero cta={getPrimaryCta()} pins={pins} />
       <WhatWeDo services={getServices()} />
       <Process steps={getProcess()} />

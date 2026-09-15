@@ -23,7 +23,8 @@ export function SiteHeader() {
             href="/"
             className="flex items-center px-4 focus-visible:outline-offset-[-3px] sm:px-5 lg:px-6"
           >
-            <Logo height={20} title="" />
+            {/* intro-logo: where the home intro's wordmark lands (home/HomeIntro). */}
+            <Logo height={20} title="" className="intro-logo" />
             <span className="sr-only">{site.name} home</span>
           </Link>
         </div>
