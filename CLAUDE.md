@@ -62,8 +62,8 @@ src/components/
                     Dither, Dino, and since Session 15z Editorial (a short title block), Pixels
                     (the page's icon in pixelIcons.ts), Viewfinder, Cameo (a process dinosaur per
                     page), Dock (the copy docks into the section bar via --subnav-inset) and
-                    Final (the Pixels grid, no picture; the hero dissolves into the grid on
-                    scroll, drawn on one canvas from the scroll position))
+                    Final (the Pixels grid and the Globe hero's globe, no scroll effect;
+                    the default))
                     chosen in the Shift + M menu; the per-page ones read usePageKey (the
                     pathname); FinalHero (with the Globe hero's globe) is the default and in the bundle, the rest lazy
                     chunks (OverlapLines, the client measure that keeps a staggered headline's

@@ -156,8 +156,7 @@ export const PAGE_HERO_VARIANTS = [
   {
     id: "final",
     name: "Final",
-    blurb:
-      "The Pixels grid and glow with the wireframe globe on the right. Scroll, and the hero dissolves into its own grid behind a dithered green front, a cell at a time. The hero as it ships.",
+    blurb: "The Pixels grid and glow with the wireframe globe on the right. The hero as it ships.",
   },
 ] as const;
 
