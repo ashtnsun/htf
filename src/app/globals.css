@@ -143,6 +143,14 @@
   [id] {
     scroll-margin-top: calc(var(--header-h) + var(--subnav-h, 0px) + 1.5rem);
   }
+  /* No visible scrollbars anywhere (the page, the drawer, the section bar, the marquee's
+     fallback row): everything still scrolls by wheel, touch and keyboard (2026-09-13). */
+  * {
+    scrollbar-width: none;
+  }
+  ::-webkit-scrollbar {
+    display: none;
+  }
   ::selection {
     background: var(--green);
     color: var(--bg);
@@ -268,17 +276,17 @@
    descendants, so portal overlays out of it. */
 @utility glass {
   background-color: color-mix(in srgb, var(--surface) var(--glass-alpha, 64%), transparent);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
-  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(var(--glass-blur, 20px)) saturate(1.4);
+  backdrop-filter: blur(var(--glass-blur, 20px)) saturate(1.4);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, var(--glass-edge, 0.05));
 }
 
-/* A scrolling row without a visible scrollbar (the section bar's links on phones). */
-@utility scrollbar-none {
-  scrollbar-width: none;
-  &::-webkit-scrollbar {
-    display: none;
-  }
+/* Thin glass, worn with `glass`, for the tiles that float over the Impact band's dotted map
+   (the stat tiles and the testimonial cards): a lighter tint and a short blur, so the dots
+   behind stay readable as soft dots instead of melting into the surface (2026-09-10). */
+@utility glass-thin {
+  --glass-alpha: 32%;
+  --glass-blur: 3px;
 }
 
 /* The one hover language for interactive surfaces: green viewfinder brackets lock onto the
@@ -410,31 +418,62 @@
 }
 
 /* Testimonial band: the track holds two copies of the list and slides by one copy, and the
-   cards fade out over --marquee-fade at both ends. Pauses on focus inside and when the pause
-   button sets data-paused (no hover pause). */
+   cards fade out over --marquee-fade at both ends. Pauses on focus inside, when the pause
+   button sets data-paused (no hover pause) and while the band is off screen.
+
+   The fade starts as a mask on the whole band. A mask on an ancestor stops a card's
+   backdrop-filter from reaching the map behind the band, so once TestimonialMarquee has
+   measured the track (data-card-fade) every card carries the fade itself: the same
+   gradient, sized to the band (--marquee-w) and slid back across the card as the track
+   moves. --marquee-p, the track's progress through one loop, runs as a second animation on
+   the track itself, so it keeps time with the slide through pauses; --marquee-half is one
+   copy's width and --card-x each card's place in the track (2026-09-11). */
+@property --marquee-p {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
 @utility marquee {
   overflow: hidden;
   --marquee-fade: clamp(4rem, 12vw, 14rem);
-  mask-image: linear-gradient(
+  --marquee-mask: linear-gradient(
     to right,
     transparent,
     #000 var(--marquee-fade),
     #000 calc(100% - var(--marquee-fade)),
     transparent
   );
+  mask-image: var(--marquee-mask);
   &:focus-within .marquee-track,
-  &[data-paused="true"] .marquee-track {
+  &[data-paused="true"] .marquee-track,
+  &[data-offscreen] .marquee-track {
     animation-play-state: paused;
+  }
+  &[data-card-fade] {
+    mask-image: none;
+  }
+  &[data-card-fade] .marquee-track > ul > li {
+    mask-image: var(--marquee-mask);
+    mask-size: var(--marquee-w) 100%;
+    mask-repeat: no-repeat;
+    mask-position: calc(var(--marquee-p) * var(--marquee-half) - var(--card-x)) 0;
   }
 }
 @utility marquee-track {
   display: flex;
   width: max-content;
-  animation: marquee var(--marquee-duration, 60s) linear infinite;
+  animation:
+    marquee var(--marquee-duration, 60s) linear infinite,
+    marquee-progress var(--marquee-duration, 60s) linear infinite;
 }
 @keyframes marquee {
   to {
     transform: translateX(-50%);
+  }
+}
+@keyframes marquee-progress {
+  to {
+    --marquee-p: 1;
   }
 }
 

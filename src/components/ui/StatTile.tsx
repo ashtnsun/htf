@@ -10,12 +10,18 @@ type StatTileProps = {
 };
 
 /**
- * Big number + label for the impact row: a frosted-glass tile whose number counts up the
- * first time it scrolls into view. Renders as a definition pair for screen readers.
+ * Big number + label for the impact row: a thin-glass tile (the dotted map shows through,
+ * softly blurred) whose number counts up the first time it scrolls into view. Renders as a
+ * definition pair for screen readers.
  */
 export function StatTile({ value, label, index = 0, className }: StatTileProps) {
   return (
-    <div className={cn("flex flex-col gap-3 border border-line glass p-6 md:p-8", className)}>
+    <div
+      className={cn(
+        "flex flex-col gap-3 border border-line glass p-6 glass-thin md:p-8",
+        className,
+      )}
+    >
       <dt className="order-2 text-sm text-muted">{label}</dt>
       <dd className="order-1 font-display text-h2 font-medium text-green md:text-display">
         <CountUp value={value} delay={index * 140} />

@@ -2,18 +2,10 @@ import type { StatInput } from "@/lib/content/schemas";
 
 /**
  * Impact stats: exactly three tiles on the home page (the numbers count up when the section
- * first scrolls into view). Values come from the 2025–26 Instagram graphics; the section
- * renders only stats marked `published: true`. TODO(ashton): confirm before publishing, and
- * pick the third tile: "4 U.S. states: IN, IL, CA, PA" and "Student members" were the other
- * candidates from the earlier five-stat list.
+ * first scrolls into view). Values confirmed by Ashton on 2026-09-10.
  */
 export const stats: StatInput[] = [
-  { id: "nonprofit-pool", value: "500+", label: "Nonprofit pool", published: false },
-  { id: "nonprofits-2025-26", value: "8", label: "Nonprofits in 2025–26", published: false },
-  {
-    id: "countries",
-    value: "4",
-    label: "Countries: UK, India, Ghana, Botswana",
-    published: false,
-  },
+  { id: "applicant-pool", value: "700+", label: "Applicant pool", published: true },
+  { id: "nonprofits-helped", value: "20+", label: "Nonprofits helped", published: true },
+  { id: "countries", value: "5+", label: "Countries", published: true },
 ];

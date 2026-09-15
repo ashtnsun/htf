@@ -21,8 +21,8 @@ type TestimonialCardProps = {
 const WIDE_QUOTE = 90;
 
 /**
- * Quote card: green headline, the quote, then avatar + name (green) + role. Frosted glass so
- * the dotted map behind the band shows through.
+ * Quote card: green headline, the quote, then avatar + name (green) + role. Thin glass so
+ * the dotted map behind the band shows through, softly blurred.
  */
 export function TestimonialCard({
   testimonial: t,
@@ -39,20 +39,21 @@ export function TestimonialCard({
       glass
       aria-hidden={ariaHidden}
       className={cn(
-        "h-full",
+        "h-full glass-thin",
         layout === "band" && "shrink-0",
         layout === "band" && (wide ? "w-[min(34rem,84vw)]" : "w-[min(22rem,80vw)]"),
         className,
       )}
     >
-      <figure className="flex h-full flex-col">
+      {/* A blank card (no quote yet) keeps its size and the avatar, and shows no text. */}
+      <figure className={cn("flex h-full flex-col", !t.quote && "min-h-52")}>
         {t.headline ? (
           <p className="text-sm font-medium text-green">{t.headline}</p>
-        ) : (
+        ) : t.quote ? (
           <Quote aria-hidden="true" className="size-5 text-green" strokeWidth={1.75} />
-        )}
+        ) : null}
         <blockquote className="mt-4 flex-1 text-body-lg text-text">
-          <p>“{t.quote}”</p>
+          {t.quote ? <p>“{t.quote}”</p> : null}
         </blockquote>
         <figcaption className="mt-8 flex items-center gap-4">
           {t.avatar ? (
@@ -64,10 +65,12 @@ export function TestimonialCard({
               className="size-12 shrink-0 rounded-full border border-line object-cover"
             />
           ) : null}
-          <div>
-            <p className="text-sm font-medium text-green">{t.name}</p>
-            <p className="text-xs text-muted">{t.title}</p>
-          </div>
+          {t.name || t.title ? (
+            <div>
+              {t.name ? <p className="text-sm font-medium text-green">{t.name}</p> : null}
+              {t.title ? <p className="text-xs text-muted">{t.title}</p> : null}
+            </div>
+          ) : null}
         </figcaption>
       </figure>
     </Card>

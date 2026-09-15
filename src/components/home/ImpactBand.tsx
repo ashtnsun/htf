@@ -16,7 +16,8 @@ type ImpactBandProps = {
 /**
  * Impact: the dotted world map as the backdrop of the whole band (it replaced the ghosted
  * headline in the 2026-09-07 audit; since audit 3 it starts below the band's top edge and
- * fades out before its own edges, so nothing looks cut off), three glass stat tiles whose numbers count up on first
+ * fades out before its own edges, so nothing looks cut off, and the countries a project has
+ * run in are tinted a dim green), three glass stat tiles whose numbers count up on first
  * view, the full-width testimonial marquee, then the awards record and photo. The eyebrow is
  * the section heading. Each block hides itself until it has content (loaders hide
  * unpublished items in production and show them in development).
@@ -33,9 +34,15 @@ export function ImpactBand({ stats, testimonials, awards }: ImpactBandProps) {
       clip
       className="border-t border-line"
     >
+      {/* will-change gives the map its own GPU layer, drawn ahead of the viewport: without it
+          Chrome drew the ~2000px masked box in the frame it came into range, a 150-220ms
+          scroll stall halfway through Process (measured 2026-09-15). */}
       <DottedMap
         tone="text"
-        className="absolute top-24 left-1/2 w-[min(140%,120rem)] -translate-x-1/2 [mask-image:radial-gradient(60%_58%_at_50%_55%,#000_20%,transparent_100%)] opacity-20 md:top-32"
+        partners
+        className="absolute top-24 left-1/2 w-[min(140%,120rem)] -translate-x-1/2 [mask-image:radial-gradient(60%_58%_at_50%_55%,#000_20%,transparent_100%)] will-change-transform md:top-32"
+        dotsClassName="opacity-20"
+        partnersClassName="opacity-50"
       />
       <div className="relative container-max container-x">
         <RevealGroup>
