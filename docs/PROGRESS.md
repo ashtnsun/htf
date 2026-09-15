@@ -133,6 +133,33 @@ routes, automation and reduced motion all leave no attribute.
 **TODOs:** the hero photo is hidden for the first ~3s on a first visit, which will push real-user
 LCP later than Lighthouse reports (Lighthouse skips the intro).
 
+**Site-wide transition pass** (Ashton: smoother, cleaner, not as instant):
+
+- Motion tokens: `--ease-glide` (movement), `--ease-smooth` (colour, opacity),
+  `--ease-in-out-soft` (size) in globals.css, mirrored for Framer in `src/lib/motion.ts`. The
+  Tailwind default transition is now 300ms `ease-smooth`, and every explicit `duration-200`
+  came off (43 places), so hovers fade instead of snapping.
+- Hover movement and state: SplitButton roll and fill 600ms, arrow nudges and the accordion
+  chevron 500ms, process step colours, project card filter and title 500ms, `hover-corners`
+  300ms fade with a 600ms bracket glide, header glass 700ms, award carousel and globe crossfades
+  1000ms, dialog `fade-in` 0.4s.
+- Framer: `Reveal` rises 24px over 1.1s (glide) with a 0.9s even fade, stagger 0.12; accordion
+  height 0.55s eased both ends; exec board and project filtering 0.55s; nav drawer and config
+  panel 0.6s; the recruitment timeline a little slower.
+- Page transitions: `app/template.tsx` wraps each page in React's `<ViewTransition>`; the old
+  page fades out in 240ms and the new one fades in over 450ms (80ms later), while the header and
+  the nav drawer stay on their own layers. Reduced motion and browsers without the API swap
+  instantly.
+- Fixed on the way: `CountUp` branched on Framer's raw `useReducedMotion`, so under reduced
+  motion the home page failed hydration and was re-rendered on the client (which also logged
+  "Encountered a script tag" for the intro script); it uses `useReducedMotionSafe` now.
+
+**Verified (pass):** typecheck, lint and `pnpm build` clean; `pnpm a11y` on all eight routes 0
+violations except the known heading-order jump inside Google's form iframe on /apply; a
+Home → About navigation starts one view transition with the header steady; drawer navigation
+closes the drawer; no console errors on home, /students or /projects with or without reduced
+motion; screenshots of every route in `docs/screenshots/session-15y/transitions/`.
+
 **Next session starts with:** the Behold feed URL for the Instagram grid, then the project
 write-ups (titles, what was built, team, stack, screenshots).
 
