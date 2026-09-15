@@ -153,6 +153,12 @@ export const PAGE_HERO_VARIANTS = [
     blurb:
       "Scroll, and the copy shrinks away and docks as the page's name at the left of the sticky section bar.",
   },
+  {
+    id: "final",
+    name: "Final",
+    blurb:
+      "The Pixels grid and glow with no picture. Scroll, and the hero dissolves into its own grid behind a dithered green front, a cell at a time, in both directions.",
+  },
 ] as const;
 
 export type PageHeroVariantId = (typeof PAGE_HERO_VARIANTS)[number]["id"];

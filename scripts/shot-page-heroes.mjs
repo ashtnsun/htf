@@ -30,6 +30,7 @@ const DEFAULT_VARIANTS = [
   "viewfinder",
   "cameo",
   "dock",
+  "final",
 ];
 /** `--only a,b` shoots just those variants. */
 const VARIANTS = value("only", "") ? value("only", "").split(",") : DEFAULT_VARIANTS;

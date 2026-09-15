@@ -38,6 +38,7 @@ const VARIANTS: Record<PageHeroVariantId, ComponentType<PageHeroProps>> = {
   ),
   cameo: lazy(() => import("@/components/layout/pageHeroes/CameoHero").then((m) => m.CameoHero)),
   dock: lazy(() => import("@/components/layout/pageHeroes/DockHero").then((m) => m.DockHero)),
+  final: lazy(() => import("@/components/layout/pageHeroes/FinalHero").then((m) => m.FinalHero)),
 };
 
 /**
