@@ -8,7 +8,7 @@ import { Section } from "@/components/ui/Section";
 /** Mission statement beside the organization photo. */
 export function Mission({ mission }: { mission: AboutPage["mission"] }) {
   return (
-    <Section id="mission" aria-labelledby="mission-title" grid className="border-t border-line">
+    <Section id="mission" aria-labelledby="mission-title" className="border-t border-line">
       <RevealGroup>
         <div className="grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-16">
           <Reveal>
@@ -27,7 +27,7 @@ export function Mission({ mission }: { mission: AboutPage["mission"] }) {
               <div className="relative aspect-[4/3] overflow-hidden">
                 <Media
                   src="org.group-photo"
-                  alt="Placeholder for the full organization photo"
+                  alt="Hack the Future members in business attire on the steps of the Lawson Computer Science Building"
                   fill
                   sizes="(min-width: 1024px) 45vw, 100vw"
                   className="object-cover"

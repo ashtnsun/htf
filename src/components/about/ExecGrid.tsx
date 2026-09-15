@@ -21,7 +21,7 @@ export function ExecGrid({ members, years }: ExecGridProps) {
   const [newest] = years;
   if (members.length === 0 || !newest) return null;
   return (
-    <Section id="exec" aria-labelledby="exec-title" grid className="border-t border-line">
+    <Section id="exec" aria-labelledby="exec-title" className="border-t border-line">
       <RevealGroup>
         <Reveal className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>
@@ -34,7 +34,7 @@ export function ExecGrid({ members, years }: ExecGridProps) {
               className="mt-5"
             />
           </div>
-          <p className="max-w-sm text-muted">
+          <p className="max-w-lg text-muted">
             The exec board runs recruitment, events, workshops, nonprofit sourcing, and the project
             cycle. We hold board member recruitment at the end of each school year. Feel free to
             reach out to any of us!

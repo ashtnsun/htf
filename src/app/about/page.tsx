@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { ExecGrid } from "@/components/about/ExecGrid";
-import { InstagramGrid } from "@/components/about/InstagramGrid";
 import { Mission } from "@/components/about/Mission";
 import { Awards } from "@/components/home/Awards";
 import { WhoWeServe } from "@/components/home/WhoWeServe";
@@ -9,7 +8,7 @@ import { PageHero } from "@/components/layout/PageHero";
 import { SectionNav } from "@/components/layout/SectionNav";
 import { Reveal } from "@/components/motion/Reveal";
 import { Section } from "@/components/ui/Section";
-import { getAboutPage, getAwards, getExec, getExecYears, getInstagramTiles } from "@/lib/content";
+import { getAboutPage, getAwards, getExec, getExecYears } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "About",
@@ -22,15 +21,20 @@ const SECTIONS = [
   { href: "#mission", label: "Mission" },
   { href: "#exec", label: "Exec board" },
   { href: "#awards", label: "Awards" },
-  { href: "#instagram", label: "Instagram" },
 ] as const;
 
-export default async function AboutPage() {
+/**
+ * The Instagram grid is off the page since 2026-09-15 until the Behold feed is linked. To bring
+ * it back: import `InstagramGrid` from "@/components/about/InstagramGrid" and
+ * `getInstagramTiles` from "@/lib/content", make this function async, render
+ * `<InstagramGrid posts={await getInstagramTiles()} />` after the awards, and add
+ * `{ href: "#instagram", label: "Instagram" }` to SECTIONS.
+ */
+export default function AboutPage() {
   const about = getAboutPage();
   const exec = getExec();
   const execYears = getExecYears();
   const awards = getAwards();
-  const posts = await getInstagramTiles();
 
   return (
     <>
@@ -46,7 +50,6 @@ export default async function AboutPage() {
           </Reveal>
         </Section>
       ) : null}
-      <InstagramGrid posts={posts} />
       <WhoWeServe />
       <ContactCta />
     </>
