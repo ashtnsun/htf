@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, type Variants } from "framer-motion";
-import type { ReactNode } from "react";
+import { useLayoutEffect, type ReactNode } from "react";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
 import { EASE_GLIDE, EASE_SMOOTH } from "@/lib/motion";
 
@@ -15,6 +15,35 @@ const SHOW_TRANSITION = {
   ease: EASE_GLIDE,
   opacity: { duration: 0.5, ease: EASE_SMOOTH },
 };
+/**
+ * The page transition's timing (`page-exit` / `page-enter` in globals.css): the old page is gone
+ * after PAGE_EXIT_MS and the new one has faded in by PAGE_ENTER_END_MS. A reveal that starts
+ * inside that window waits for the new page to begin showing, so on a navigation the page's
+ * frame (header, backgrounds, pictures) fades in first and the copy follows in its stagger,
+ * instead of some copy animating behind the fade and the rest after it.
+ */
+const PAGE_EXIT_MS = 200;
+const PAGE_ENTER_END_MS = 520;
+const clock = { navigatedAt: Number.NEGATIVE_INFINITY, templateMounts: 0 };
+
+/** Seconds a reveal starting now should wait for the entering page (0 outside a navigation). */
+function pageEnterDelay() {
+  const since = performance.now() - clock.navigatedAt;
+  return since < PAGE_ENTER_END_MS ? Math.max(0, PAGE_EXIT_MS - since) / 1000 : 0;
+}
+
+/**
+ * Rendered by app/template.tsx, which remounts on every route change: every mount after the
+ * first page load marks a navigation (the first load has no page transition to wait for).
+ */
+export function PageEnterClock() {
+  useLayoutEffect(() => {
+    clock.templateMounts += 1;
+    if (clock.templateMounts > 1) clock.navigatedAt = performance.now();
+  }, []);
+  return null;
+}
+
 /** Starts a reveal just before its top edge is on screen rather than 10% into it. */
 const VIEWPORT = { once: true, margin: "0px 0px 40px 0px" };
 
@@ -22,6 +51,16 @@ export const revealVariants: Variants = {
   hidden: HIDDEN,
   show: { opacity: 1, y: 0, transition: SHOW_TRANSITION },
 };
+
+/** Resolved when the reveal starts (not at render), so the page-enter wait is current. */
+function groupVariants(stagger: number, delay: number): Variants {
+  return {
+    hidden: {},
+    show: () => ({
+      transition: { staggerChildren: stagger, delayChildren: delay + pageEnterDelay() },
+    }),
+  };
+}
 
 type RevealGroupProps = {
   children: ReactNode;
@@ -56,7 +95,7 @@ export function RevealGroup({
       className={className}
       initial="hidden"
       {...viewProps}
-      transition={{ staggerChildren: stagger, delayChildren: delay }}
+      variants={groupVariants(stagger, delay)}
     >
       {children}
     </motion.div>
@@ -89,14 +128,17 @@ export function Reveal({ children, className, standalone = false, delay = 0 }: R
         viewport={VIEWPORT}
         variants={{
           hidden: HIDDEN,
-          show: {
-            opacity: 1,
-            y: 0,
-            transition: {
-              ...SHOW_TRANSITION,
-              delay,
-              opacity: { ...SHOW_TRANSITION.opacity, delay },
-            },
+          show: () => {
+            const wait = delay + pageEnterDelay();
+            return {
+              opacity: 1,
+              y: 0,
+              transition: {
+                ...SHOW_TRANSITION,
+                delay: wait,
+                opacity: { ...SHOW_TRANSITION.opacity, delay: wait },
+              },
+            };
           },
         }}
       >

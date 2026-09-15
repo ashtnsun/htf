@@ -53,7 +53,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: INTRO_SCRIPT }} />
         {/* Without JavaScript the reveal wrappers keep their hidden initial state; show them. */}
         <noscript>
-          <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>
+          <style>{`[data-reveal]{opacity:1!important;transform:none!important}img[data-media]{opacity:1!important}`}</style>
         </noscript>
         <a href="#main" className="skip-link">
           Skip to content

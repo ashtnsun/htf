@@ -65,7 +65,6 @@ export default function ContactPage() {
         eyebrow="Contact"
         lines={["Let’s talk."]}
         stagger={false}
-        blurb="Questions about joining, a nonprofit project you would like to pitch, or anything else: email us, or find us on LinkedIn and Instagram."
       />
 
       <Section aria-label="Ways to reach us" className="border-t border-line">

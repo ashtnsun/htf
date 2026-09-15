@@ -1079,11 +1079,28 @@
 ::view-transition {
   pointer-events: none;
 }
+/* pictures (ui/Media) fade in when they have loaded, not the moment the bytes arrive */
+@layer base {
+  /* in base, so a picture's own transition utility (a hover filter) still wins */
+  img[data-media] {
+    transition: opacity 500ms var(--ease-smooth);
+  }
+}
+img[data-media]:not([data-loaded]) {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  img[data-media] {
+    transition: none;
+  }
+}
+
+/* the old page fades out first, then the new one fades in: a clean hand-off, never a double image */
 ::view-transition-old(.page-exit) {
-  animation: page-exit 160ms var(--ease-smooth) both;
+  animation: page-exit 200ms var(--ease-smooth) both;
 }
 ::view-transition-new(.page-enter) {
-  animation: page-enter 280ms var(--ease-smooth) 40ms both;
+  animation: page-enter 320ms var(--ease-smooth) 200ms both;
 }
 @keyframes page-exit {
   to {

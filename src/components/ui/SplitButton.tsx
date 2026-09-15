@@ -111,7 +111,7 @@ export function SplitButton({
     size === "lg" && "w-14",
     size === "bar" && "w-14 lg:w-16",
     variant === "primary" && "border-black bg-green text-bg",
-    variant === "primary" && (size === "bar" ? "border-l" : "border-l-2"),
+    variant === "primary" && "border-l",
     variant === "secondary" &&
       "border-l border-line-strong bg-surface-2 text-text group-hover:border-green group-hover:bg-green group-hover:text-bg",
     variant === "header" && "border-l border-transparent text-text",
