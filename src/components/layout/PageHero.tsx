@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
-import { GlobeHero } from "@/components/layout/pageHeroes/GlobeHero";
+import { FinalHero } from "@/components/layout/pageHeroes/FinalHero";
 import type { PageHeroProps } from "@/components/layout/pageHeroes/types";
 import { DEFAULT_PAGE_HERO, type PageHeroVariantId } from "@/lib/config/options";
 import { useSiteConfig } from "@/lib/config/store";
@@ -20,7 +20,7 @@ const lazy = (load: () => Promise<ComponentType<PageHeroProps>>) =>
  * separate chunks fetched only when chosen in the Shift + M menu.
  */
 const VARIANTS: Record<PageHeroVariantId, ComponentType<PageHeroProps>> = {
-  globe: GlobeHero,
+  globe: lazy(() => import("@/components/layout/pageHeroes/GlobeHero").then((m) => m.GlobeHero)),
   frame: lazy(() => import("@/components/layout/pageHeroes/FrameHero").then((m) => m.FrameHero)),
   radar: lazy(() => import("@/components/layout/pageHeroes/RadarHero").then((m) => m.RadarHero)),
   corridor: lazy(() =>
@@ -38,7 +38,7 @@ const VARIANTS: Record<PageHeroVariantId, ComponentType<PageHeroProps>> = {
   ),
   cameo: lazy(() => import("@/components/layout/pageHeroes/CameoHero").then((m) => m.CameoHero)),
   dock: lazy(() => import("@/components/layout/pageHeroes/DockHero").then((m) => m.DockHero)),
-  final: lazy(() => import("@/components/layout/pageHeroes/FinalHero").then((m) => m.FinalHero)),
+  final: FinalHero,
 };
 
 /**

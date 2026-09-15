@@ -92,7 +92,7 @@ export const PAGE_HERO_VARIANTS = [
     id: "globe",
     name: "Globe",
     blurb:
-      "The wireframe globe on the right, two thirds of the hero tall and turning slowly behind the headline. The hero as it ships.",
+      "The wireframe globe on the right, two thirds of the hero tall and turning slowly behind the headline.",
   },
   {
     id: "radar",
@@ -157,13 +157,13 @@ export const PAGE_HERO_VARIANTS = [
     id: "final",
     name: "Final",
     blurb:
-      "The Pixels grid and glow with no picture. Scroll, and the hero dissolves into its own grid behind a dithered green front, a cell at a time, in both directions.",
+      "The Pixels grid and glow with the wireframe globe on the right. Scroll, and the hero dissolves into its own grid behind a dithered green front, a cell at a time. The hero as it ships.",
   },
 ] as const;
 
 export type PageHeroVariantId = (typeof PAGE_HERO_VARIANTS)[number]["id"];
 
-export const DEFAULT_PAGE_HERO: PageHeroVariantId = "globe";
+export const DEFAULT_PAGE_HERO: PageHeroVariantId = "final";
 
 export type SiteConfig = {
   hero: HeroVariantId;

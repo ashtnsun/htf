@@ -65,7 +65,7 @@ src/components/
                     Final (the Pixels grid, no picture; the hero dissolves into the grid on
                     scroll, drawn on one canvas from the scroll position))
                     chosen in the Shift + M menu; the per-page ones read usePageKey (the
-                    pathname); GlobeHero is the default and in the bundle, the rest lazy
+                    pathname); FinalHero (with the Globe hero's globe) is the default and in the bundle, the rest lazy
                     chunks (OverlapLines, the client measure that keeps a staggered headline's
                     lines overlapping, is the Globe hero's); PageHeroShell holds the shared section, the framed column
                     (PageHeroContent: eyebrow, the one h1, blurb, actions) and the bottom glow;

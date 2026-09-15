@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Globe } from "@/components/home/Globe";
 import {
   PageHeroContent,
   PageHeroGlow,
@@ -97,7 +98,8 @@ class Dissolve {
 }
 
 /**
- * "Final": the Pixels hero's fine square grid and glow around the copy, with no picture. As the
+ * "Final", the shipped inner-page hero: the Pixels hero's fine square grid and glow around the
+ * copy, with the Globe hero's wireframe globe on the right. As the
  * page scrolls the hero dissolves into its own grid, a cell at a time: a dithered front of green
  * cells runs down the hero ahead of the scroll and every cell it passes goes back to the empty
  * square, copy and glow included, until only the grid is left. It is drawn on one canvas between
@@ -158,6 +160,14 @@ export function FinalHero(props: PageHeroProps) {
   return (
     <PageHeroSection ref={ref} className="[--px:12px] md:[--px:16px] min-[90rem]:[--px:20px]">
       <PageHeroGlow className="h-[45%] opacity-60" />
+      {/* the Globe hero's wireframe globe, centred on the right edge of the content container */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <div className="container-max flex h-full items-center justify-end container-x">
+          <div className="-mr-[22%] aspect-square h-1/2 opacity-70 md:mr-0 md:h-2/3">
+            <Globe className="size-full" />
+          </div>
+        </div>
+      </div>
       <PageHeroContent {...props} stagger={false} className="z-10" />
       <canvas
         ref={canvasRef}
