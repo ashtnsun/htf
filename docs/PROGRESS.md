@@ -61,6 +61,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 15v: the real 2025–26 exec board on /about (ten members with photos and LinkedIn links), so the year chips are back
 - [x] Session 15w: the eight 2025–26 projects named for their nonprofits (slugs, cities, map pins, who-they-are copy from the club's posts), logo covers; titles, what was built, team, stack and screenshots still TODO
 - [x] Session 15x: real photos across home and Students (hero, awards carousel that rotates, What we do panels, How we work, What you'll get), project cards aligned and ordered by title length, Instagram grid off /about until the feed is linked, home tab title is the name alone
+- [x] Session 15y: home intro — black screen, the wordmark draws in the centre and flies into the header logo while the page fades in (once per tab session)
 - [x] Session 15n: the /apply frame is back-proof — two heights instead of five, after checking that nothing cross-origin can say which section the form is showing
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
@@ -83,6 +84,44 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
+
+## Session 15y — 2026-09-15 (the home intro)
+
+Ashton asked for an intro on the home page: a black screen, the Wordmark hero's logo animation,
+then the logo flying from the centre into the header logo as the page renders in.
+
+**Built:**
+
+- `home/HomeIntro` (client, rendered first on `/`): a fixed black overlay with the <HTF/> mark
+  drawing and filling (the Wordmark hero's `anim-wordmark`, slightly quicker: ~2.5s). It waits
+  for the CSS animations to finish (`getAnimations().finished`, since they start at first paint,
+  not hydration), holds 300ms, then moves the mark onto the header logo with one FLIP transform
+  (translate + scale, 900ms in-out) while the overlay goes clear and the header and every home
+  section fade up; the strokes fade so the landed mark matches the filled header logo, which is
+  hidden (`.intro-logo`) until the mark lands and the attribute is removed. ~3.8s in all.
+- `home/intro-script.ts`: an inline script at the top of `<body>` (root layout) sets
+  `data-intro="play"` on `<html>` before first paint, so there is no flash of the page. It plays
+  only on `/`, once per tab session (`sessionStorage` `htf:intro`), never under reduced motion,
+  never under automation (`navigator.webdriver`, so screenshots, a11y and Lighthouse see the
+  page), and `/?intro` forces it. Without JavaScript nothing changes. `<html>` has
+  `suppressHydrationWarning` for the attribute.
+- Any key, click, wheel or touch ends it at once; a reload restored to a scrolled position skips
+  it; leaving the page mid-intro clears the attribute. CSS lives in the "Home intro" block at the
+  end of globals.css (unlayered, so it wins over the header's transition utility).
+
+**Decisions:** once per tab session rather than every visit (a returning visitor clicking Home
+would otherwise wait ~4s each time); the home page stays static.
+
+**Verified:** typecheck, lint and `pnpm build` clean; `pnpm a11y` on home 0 violations; frames
+at 1.2 / 2.4 / 3.35 / 3.7 / 4.4s on desktop and phone in `docs/screenshots/session-15y/` (the
+mark lands on the header logo in both; no console errors or hydration warnings); skip, other
+routes, automation and reduced motion all leave no attribute.
+
+**TODOs:** the hero photo is hidden for the first ~3s on a first visit, which will push real-user
+LCP later than Lighthouse reports (Lighthouse skips the intro).
+
+**Next session starts with:** the Behold feed URL for the Instagram grid, then the project
+write-ups (titles, what was built, team, stack, screenshots).
 
 ## Session 15x — 2026-09-15 (photos, the awards carousel, project card alignment)
 
