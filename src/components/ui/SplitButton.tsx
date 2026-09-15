@@ -13,7 +13,9 @@ type SplitButtonProps = {
    * header = the site header's CTA (with size "bar"): a primary button while the header is
    * glass; while it is clear at the top of the page (`data-at-top`, layout/HeaderBar) a
    * borderless cell with a white label and a white arrow, and the green sweeps in from
-   * the right edge when the glass arrives or on hover.
+   * the right edge when the glass arrives or on hover. The green layer carries its own dark
+   * copy of the label and arrow and one clip reveals both, so the text is always the right
+   * colour for the background under it, at every point of the sweep.
    */
   variant?: "primary" | "secondary" | "header";
   /** md = normal button. lg = hero. bar = fills the header bar. */
@@ -89,7 +91,7 @@ export function SplitButton({
     size === "lg" && "text-base",
     size === "bar" && "h-full text-base",
     variant === "secondary" && "border border-line-strong hover:border-green",
-    variant === "header" && "relative isolate",
+    variant === "header" && "relative",
     (disabled || pending) && "pointer-events-none opacity-60",
   );
 
@@ -100,10 +102,7 @@ export function SplitButton({
     size === "bar" && "px-6 lg:px-10",
     variant === "primary" && "bg-green text-bg",
     variant === "secondary" && "bg-transparent text-text",
-    /* header: the long arbitrary variant is "the header is clear and this button is neither
-       hovered nor focused"; spelled out in each class so Tailwind's scanner finds it */
-    variant === "header" &&
-      "text-bg transition-colors duration-600 [[data-at-top]_.group:not(:hover):not(:focus-visible)_&]:text-text",
+    variant === "header" && "text-text",
   );
 
   const arrow = cn(
@@ -115,8 +114,7 @@ export function SplitButton({
     variant === "primary" && (size === "bar" ? "border-l" : "border-l-2"),
     variant === "secondary" &&
       "border-l border-line-strong bg-surface-2 text-text group-hover:border-green group-hover:bg-green group-hover:text-bg",
-    variant === "header" &&
-      "border-l border-black text-bg duration-600 [[data-at-top]_.group:not(:hover):not(:focus-visible)_&]:border-transparent [[data-at-top]_.group:not(:hover):not(:focus-visible)_&]:text-text",
+    variant === "header" && "border-l border-transparent text-text",
   );
 
   /* Two copies of the label stacked in one clipped line box: the first rolls up and out, the
@@ -145,12 +143,6 @@ export function SplitButton({
 
   const content = (
     <>
-      {variant === "header" ? (
-        <span
-          aria-hidden="true"
-          className="absolute inset-0 -z-10 origin-right bg-green transition-transform duration-600 ease-glide [[data-at-top]_.group:not(:hover):not(:focus-visible)_&]:scale-x-0"
-        />
-      ) : null}
       <span className={label}>
         <span className={roll}>
           <span className={rollOut}>{children}</span>
@@ -162,6 +154,26 @@ export function SplitButton({
       <span className={arrow} aria-hidden="true">
         <Icon className={icon} strokeWidth={2} />
       </span>
+      {variant === "header" ? (
+        /* The green state, drawn over the clear one: the same label and arrow in the dark
+           colour on green, revealed from the right edge by a clip. The long arbitrary variant is
+           "the header is clear and this button is neither hovered nor focused"; spelled out so
+           Tailwind's scanner finds it. */
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 flex items-stretch bg-green text-bg transition-[clip-path] duration-600 ease-glide [clip-path:inset(0)] [[data-at-top]_.group:not(:hover):not(:focus-visible)_&]:[clip-path:inset(0_0_0_100%)]"
+        >
+          <span className={cn(label, "text-bg")}>
+            <span className={roll}>
+              <span className={rollOut}>{children}</span>
+              <span className={rollIn}>{children}</span>
+            </span>
+          </span>
+          <span className={cn(arrow, "border-black text-bg")}>
+            <Icon className={icon} strokeWidth={2} />
+          </span>
+        </span>
+      ) : null}
     </>
   );
 

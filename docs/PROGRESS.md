@@ -154,6 +154,12 @@ LCP later than Lighthouse reports (Lighthouse skips the intro).
   motion the home page failed hydration and was re-rendered on the client (which also logged
   "Encountered a script tag" for the intro script); it uses `useReducedMotionSafe` now.
 
+- Header CTA sweep (Ashton: the label changed colour too early or too late for the green): the
+  label and arrow faded their colour evenly while the green swept in from the right, so they
+  could never line up. The green state is now a layer over the clear one with its own dark copy
+  of the label and arrow, revealed by one `clip-path` transition (600ms `ease-glide`); every
+  pixel of text matches the background under it, on hover and when the glass arrives.
+
 **Verified (pass):** typecheck, lint and `pnpm build` clean; `pnpm a11y` on all eight routes 0
 violations except the known heading-order jump inside Google's form iframe on /apply; a
 Home → About navigation starts one view transition with the header steady; drawer navigation
