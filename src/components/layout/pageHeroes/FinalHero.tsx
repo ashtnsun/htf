@@ -1,4 +1,4 @@
-import { Globe } from "@/components/home/Globe";
+import { HeroObject } from "@/components/layout/pageHeroes/HeroObject";
 import {
   PageHeroContent,
   PageHeroGlow,
@@ -8,8 +8,9 @@ import type { PageHeroProps } from "@/components/layout/pageHeroes/types";
 
 /**
  * "Final", the shipped inner-page hero: the Pixels hero's fine square grid and glow around the
- * copy, with the Globe hero's wireframe globe on the right, centred in the hero on the content
- * container's right edge. The globe turns slowly and stands still under reduced motion.
+ * copy, with the page's own wireframe object on the right (pageHeroes/HeroObject: a briefcase,
+ * a rocket, a heart, a paper aeroplane, and the globe itself on About), centred in the hero on
+ * the content container's right edge. It turns slowly and stands still under reduced motion.
  * Decoration only.
  */
 export function FinalHero(props: PageHeroProps) {
@@ -27,11 +28,11 @@ export function FinalHero(props: PageHeroProps) {
           backgroundPosition: "0 -1px",
         }}
       />
-      {/* the Globe hero's wireframe globe, fully in frame, its right side on the content container's right edge */}
+      {/* the page's wireframe object, fully in frame, its right side on the content container's right edge */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div className="container-max flex h-full items-center justify-end container-x">
           <div className="aspect-square w-1/2 max-w-full opacity-70 md:h-2/3 md:w-auto">
-            <Globe className="size-full" />
+            <HeroObject className="size-full" />
           </div>
         </div>
       </div>
