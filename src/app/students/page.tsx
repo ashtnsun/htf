@@ -5,6 +5,7 @@ import { FaqSection } from "@/components/layout/FaqSection";
 import { PageHero } from "@/components/layout/PageHero";
 import { HowWeWork } from "@/components/students/HowWeWork";
 import { Perks } from "@/components/students/Perks";
+import { WhereWeLand } from "@/components/students/WhereWeLand";
 import { RecruitmentTimeline } from "@/components/students/RecruitmentTimeline";
 import { RoleRows } from "@/components/students/RoleRows";
 import { getFaq, getRecruitmentTimeline, getRoles, getStudentsPage } from "@/lib/content";
@@ -30,6 +31,7 @@ export default function StudentsPage() {
 
       <HowWeWork steps={howWeWork} />
       <Perks perks={perks} />
+      <WhereWeLand />
       <RecruitmentTimeline steps={timeline} />
       <RoleRows roles={roles} />
       <FaqSection
