@@ -63,6 +63,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 15x: real photos across home and Students (hero, awards carousel that rotates, What we do panels, How we work, What you'll get), project cards aligned and ordered by title length, Instagram grid off /about until the feed is linked, home tab title is the name alone
 - [x] Session 15y: home intro — black screen, the wordmark draws in the centre and flies into the header logo while the page fades in (once per tab session)
 - [x] Session 15n: the /apply frame is back-proof — two heights instead of five, after checking that nothing cross-origin can say which section the form is showing
+- [x] Session 15z4: page transitions reworked — one continuous hand-off (the old page lifts away as the new one rises in, the footer and background on the same clock, about a second end to end) and a green navigation line along the top edge while a page is still on its way
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
 
@@ -84,6 +85,67 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
+
+## Session 15z4 — 2026-09-15 (page transitions reworked)
+
+Ashton: "the current transition is so bad as just an instant fade, it needs to be smooth and
+the site feel cohesive, not like the site's refreshing every time, instantly switching."
+
+**What was wrong.** Two things, one of them hidden. The visible one: a 200ms fade to black
+and a 320ms fade back, which reads as a blink. The hidden one, found by dumping the animations
+running mid-transition: React's `<ViewTransition>` hides the root snapshot by default (it sets
+`view-transition-name: none` on `<html>` and zeroes the `::view-transition-group(root)`), and
+only names the page sections that are on screen. So navigating from the footer, or from
+anywhere scrolled past the hero, cut instantly: the footer and the page background swapped
+in one frame and only whatever section happened to be in view faded. That is the "refreshing
+every time" feel.
+
+**Built:**
+
+- **The hand-off** (`globals.css`, page transitions block; `app/template.tsx`): the old page
+  lifts away (450ms, up 1.5rem, eased both ends) while the new page rises in from 2rem below
+  (900ms glide) and fades in over 620ms from 80ms in. They overlap, so there is never an
+  empty frame; the new page is arriving before the old one has gone. About a second end to
+  end, the crossfade token. The timing lives in `--page-exit-ms`, `--page-enter-delay`,
+  `--page-enter-fade-ms` and `--page-enter-rise-ms` on `:root`.
+- **The root opts back in** (`app/layout.tsx`): `<html style={{ viewTransitionName: "root" }}>`
+  is the switch React checks before hiding the root group. With it the footer, the page
+  background and whatever the old page had scrolled out of view fade on the page's clock
+  (`::view-transition-old(root)` / `new(root)`, no movement), so the whole viewport under the
+  header moves as one. The header and the drawer keep their own names and stay live.
+- **Reveals in step** (`motion/Reveal.tsx`): the new page's copy waits 180ms (was 200 for a
+  520ms window; a 260ms first try left the hero empty for a beat, which read as a load), so
+  the frame leads by a hair and the copy staggers in while the frame is still settling.
+- **The navigation line** (`layout/NavigationProgress.tsx`, in the root layout): a 2px green
+  hairline along the top edge that grows while a page is still on its way and completes as it
+  arrives. A document-level click listener catches every internal link (header, drawer,
+  footer, cards, buttons), the pathname change ends it, a 12s cap covers a navigation that
+  never lands. It waits 180ms before showing, so a prefetched navigation (every route in
+  production) never flashes it; on the dev server, where nothing is prefetched, it is what
+  keeps the wait from reading as a dead click. Its own `view-transition-name` keeps it live
+  above the hand-off.
+- **Reduced motion**: a short, still crossfade (250ms out, 350ms in from 150ms) instead of
+  the instant cut; the line shows without growing.
+
+**Checked:** typecheck, lint, build clean; axe on home, about, students, projects, contact at
+1440 and 390 plus the open drawer against the production build: 0 violations. The frames in
+`docs/screenshots/session-15z4/` were captured with the document's animations slowed 10x
+through CDP (`Animation.setPlaybackRate`) and a screenshot every ~100ms of transition time
+(the JS side runs at real speed, so the labels are approximate): `about-to-students-1440-sheet`
+(from a screen down, the old sections lift), `home-to-projects-1440-sheet` (from the top, the
+photo hero hands off), `nonprofits-to-students-390-sheet` (from the footer on a phone: the
+case that used to cut), `reduced-about-to-students-1440-sheet`, and `nav-progress-sheet` (the
+line at 100 / 400 / 800 / 1300 / 1700 / 2100 / 2600ms with the route fetch held for 1.6s).
+
+**Notes for Ashton:** judge it on a production build (`pnpm build && pnpm start`); on
+`pnpm dev` nothing is prefetched and the route compiles on first visit, so the wait before the
+hand-off is the dev server, not the transition (the line now shows during it). The two
+frames per second in the sheets cannot show the easing; the timing tokens are the knobs.
+`CLAUDE.md` still describes the transition as a crossfade through `app/template.tsx`, which
+holds; the other session was editing that file this evening, so the detail is here.
+
+**Next session starts with:** Ashton's look at the hand-off in the browser, then the open
+items from Session 15z2.
 
 ## Session 15z2 — 2026-09-15 (the Final hero, a clear section bar)
 
