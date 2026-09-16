@@ -22,8 +22,12 @@ const TAU = Math.PI * 2;
 const SIN_TILT = Math.sin(GLOBE_TILT * DEG);
 const COS_TILT = Math.cos(GLOBE_TILT * DEG);
 
-/** Radius every model is normalised to. The globe's own radius is 100 in the same viewBox. */
-export const WIRE_RADIUS = 94;
+/**
+ * Radius every model is normalised to, against the globe's own 100 in the same viewBox. It is
+ * measured on the box the model sweeps over a whole turn (see normalize), and a model only fills
+ * that box at its widest moment, so matching the globe on screen means overshooting its radius.
+ */
+export const WIRE_RADIUS = 105;
 
 /** Repeat the first point so a polyline closes on itself. */
 export function closed(points: Polyline): Polyline {
@@ -56,10 +60,14 @@ export function atAngle(outline: readonly Vec2[], angle: number): Polyline {
   return outline.map(([r, y]): Vec3 => [r * cos, y, r * sin]);
 }
 
-/** Turn a [radius, height] profile into a solid of revolution, drawn as the globe is drawn. */
+/**
+ * Turn a [radius, height] profile into a solid of revolution, drawn as the globe is drawn. The
+ * defaults are deliberately dense: the globe reads the way it does because two dozen curves
+ * overlap all over its face, and a sparser object beside it looks faint and unfinished.
+ */
 export function lathe(
   profile: readonly Vec2[],
-  { meridians = 12, ringEvery = 2, ringSteps = 36 } = {},
+  { meridians = 20, ringEvery = 1, ringSteps = 44 } = {},
 ): Polyline[] {
   const out: Polyline[] = [];
   for (let i = 0; i < meridians; i += 1) out.push(atAngle(profile, (i / meridians) * TAU));
@@ -68,6 +76,87 @@ export function lathe(
     if (radius > 1e-3) out.push(ring(radius, y, ringSteps));
   });
   return out;
+}
+
+/**
+ * A cross section (points in x and z) stacked at a set of heights: a loop at every height and an
+ * upright at every point of the section. It is the globe's rings and meridians on a shape that
+ * has no axis of revolution — a box gets the same all-over mesh a sphere does.
+ */
+export function stack(section: readonly Vec2[], heights: readonly number[]): Polyline[] {
+  const loops = heights.map((y) => closed(section.map(([x, z]): Vec3 => [x, y, z])));
+  const lowest = Math.min(...heights);
+  const highest = Math.max(...heights);
+  const uprights = section.map(([x, z]): Polyline => [
+    [x, lowest, z],
+    [x, highest, z],
+  ]);
+  return [...loops, ...uprights];
+}
+
+/** `count` points evenly along a segment, ends included. */
+export function lerpPoints(from: Vec3, to: Vec3, count: number): Vec3[] {
+  return Array.from({ length: count }, (_, i): Vec3 => {
+    const t = count === 1 ? 0 : i / (count - 1);
+    return [
+      from[0] + (to[0] - from[0]) * t,
+      from[1] + (to[1] - from[1]) * t,
+      from[2] + (to[2] - from[2]) * t,
+    ];
+  });
+}
+
+/**
+ * A flat triangle drawn as a mesh rather than an outline: a fan of lines from `apex` across the
+ * opposite edge, and the lines joining its two sides at equal parameters. What keeps a folded
+ * paper surface as busy as the globe's face.
+ */
+export function triangleMesh(apex: Vec3, b: Vec3, c: Vec3, steps = 7): Polyline[] {
+  const alongB = lerpPoints(apex, b, steps);
+  const alongC = lerpPoints(apex, c, steps);
+  const acrossFar = lerpPoints(b, c, steps);
+  const fan = acrossFar.map((point): Polyline => [apex, point]);
+  const spans = alongB.map((point, i): Polyline => [point, alongC[i]!]);
+  return [...fan, ...spans];
+}
+
+/**
+ * A closed outline puffed into a rounded solid: sections scaled by cos θ at z = depth·sin θ, with
+ * rails running front to back through the outline. Sections and rails play the part rings and
+ * meridians play on the globe, and a shape with no axis of revolution keeps its silhouette — a
+ * heart stays a heart, where revolving the same curve turns its two lobes into one ring. The
+ * outline is centred on its bounding box first, so the sections nest about the middle of the
+ * shape rather than drifting toward whatever point the curve happens to call the origin.
+ */
+export function puff(
+  outline: readonly Vec2[],
+  depth: number,
+  { sections = 9, rails = 24, spread = 70 } = {},
+): Polyline[] {
+  const xs = outline.map(([x]) => x);
+  const ys = outline.map(([, y]) => y);
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+  const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+  const centred = outline.map(([x, y]): Vec2 => [x - cx, y - cy]);
+
+  const limit = spread * DEG;
+  const angles = (count: number) =>
+    Array.from({ length: count }, (_, i) => -limit + ((2 * limit) / (count - 1)) * i);
+  const at = ([x, y]: Vec2, theta: number): Vec3 => [
+    x * Math.cos(theta),
+    y * Math.cos(theta),
+    depth * Math.sin(theta),
+  ];
+
+  const shells = angles(sections).map((theta) => closed(centred.map((point) => at(point, theta))));
+  const railAngles = angles(15);
+  const step = Math.max(1, Math.round(centred.length / rails));
+  const meridians: Polyline[] = [];
+  for (let i = 0; i < centred.length; i += step) {
+    const point = centred[i]!;
+    meridians.push(railAngles.map((theta) => at(point, theta)));
+  }
+  return [...shells, ...meridians];
 }
 
 /**
@@ -104,15 +193,6 @@ export function spinY(polylines: readonly Polyline[], degrees: number): Polyline
   return polylines.map((line) =>
     line.map(([x, y, z]): Vec3 => [x * cos + z * sin, y, z * cos - x * sin]),
   );
-}
-
-/**
- * Scale a model along the axes. A solid of revolution squashed front to back (the heart) keeps
- * every ring and meridian it was lathed with, so it still turns in the globe's language while
- * being wider than it is deep.
- */
-export function scaleAxes(polylines: readonly Polyline[], [sx, sy, sz]: Vec3): Polyline[] {
-  return polylines.map((line) => line.map(([x, y, z]): Vec3 => [x * sx, y * sy, z * sz]));
 }
 
 /**

@@ -117,6 +117,23 @@ geometrically correct… all around the same size… make sure they are aligned.
   so the markup is identical on the server and under reduced motion. `FinalHero` now renders
   `HeroObject` in the slot the globe had.
 
+**Ashton's first look, same session:** "they all look smaller than the globe, less bright, and
+have a lot less lines… the briefcase barely has lines, it should mimic how the globe has excess
+lines all around forming the shape", and the heart and rocket shapes were wrong. All three
+complaints had one root: the objects copied the globe's _construction_ but not its _density_.
+The globe reads bright and finished because two dozen curves cross all over its face; an
+outline with a dozen lines beside it looks faint and unfinished, and a sparse mesh also reads
+smaller because the eye measures the mass, not the bounding box. Fixed by meshing everything to
+the globe's weight — `stack()` (a loop at every height, an upright at every point of the cross
+section) turns the briefcase from 12 edges into ~35 lines; the rocket lathes 20 meridians with
+a ring at every profile sample; `puff()` gives the heart 9 sections and 24 rails; `triangleMesh()`
+covers each of the aeroplane's folds with a fan and spans. `WIRE_RADIUS` went 94 → 105, since a
+model only fills its swept box at its widest moment and matching the globe on screen means
+overshooting its radius. The heart went back to the loft (its silhouette stays a heart from
+every angle, checked at both 16° and 88°), the rocket got a longer pointed nose, a slimmer body
+and four ribbed fins, and the aeroplane got more dihedral, a deeper keel and a pose where the
+wings' V reads instead of collapsing into a flat wedge.
+
 **Two things worth keeping:** sizing is measured on what the viewer sees, not on the model —
 `normalize` fits each object by the box it _sweeps over a full turn_ (closed form: a point at
 distance ρ from the axis sweeps x over ±ρ and y over ±ρ·sin tilt − y·cos tilt). Sized by a
