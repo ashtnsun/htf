@@ -23,6 +23,8 @@ const MAX_PAINTED = 4000;
 const STORAGE_PREFIX = "htf:hero-pixels:";
 /** Light every cell along the pointer's path, so a fast sweep does not leave gaps. */
 const SAMPLE_FRACTION = 0.4;
+/** How long a right press in the hero still counts as its own when the menu event lands. */
+const RIGHT_PRESS_GRACE_MS = 600;
 
 type Cell = `${number},${number}`;
 
@@ -47,6 +49,13 @@ export function PixelField({ className }: { className?: string }) {
     let height = 0;
     /** What the held button is doing: the left one paints, the right one rubs out. */
     let stroke: "paint" | "erase" | null = null;
+    /**
+     * When a right press started in the hero. Chrome raises `contextmenu` on release, against
+     * whatever sits under the cursor by then, so rubbing out along the hero's edge and running
+     * off it would open the menu even though the gesture began here. The press is remembered
+     * for a moment so that event can be caught wherever it lands.
+     */
+    let rightPressAt = 0;
     let last: { x: number; y: number } | null = null;
     let frame = 0;
     let saveTimer = 0;
@@ -170,8 +179,10 @@ export function PixelField({ className }: { className?: string }) {
       const point = fromPointer(event);
       if (!point) return;
       if (event.button === 0) stroke = "paint";
-      else if (event.button === 2) stroke = "erase";
-      else return;
+      else if (event.button === 2) {
+        stroke = "erase";
+        rightPressAt = performance.now();
+      } else return;
       last = point;
       trace(point.x, point.y);
       save();
@@ -183,8 +194,19 @@ export function PixelField({ className }: { className?: string }) {
       save();
     };
 
-    /** The right button is the rubber here, so the hero never opens the browser's menu. */
-    const onContextMenu = (event: MouseEvent) => event.preventDefault();
+    /**
+     * The right button is the rubber here, so the browser's menu never opens over the hero, nor
+     * at the end of a rub that ran off it. Listening on the document, in the capture phase,
+     * because the event lands outside the section in that second case; the remembered press
+     * ages out, so at worst one right click elsewhere is swallowed just after rubbing.
+     */
+    const onContextMenu = (event: MouseEvent) => {
+      const target = event.target;
+      const inHero = target instanceof Node && section.contains(target);
+      if (!inHero && performance.now() - rightPressAt > RIGHT_PRESS_GRACE_MS) return;
+      rightPressAt = 0;
+      event.preventDefault();
+    };
 
     const onLeave = () => {
       stroke = null;
@@ -207,7 +229,7 @@ export function PixelField({ className }: { className?: string }) {
     section.addEventListener("pointermove", onMove);
     section.addEventListener("pointerdown", onDown);
     section.addEventListener("pointerleave", onLeave);
-    section.addEventListener("contextmenu", onContextMenu);
+    document.addEventListener("contextmenu", onContextMenu, true);
     window.addEventListener("pointerup", onUp);
 
     return () => {
@@ -215,7 +237,7 @@ export function PixelField({ className }: { className?: string }) {
       section.removeEventListener("pointermove", onMove);
       section.removeEventListener("pointerdown", onDown);
       section.removeEventListener("pointerleave", onLeave);
-      section.removeEventListener("contextmenu", onContextMenu);
+      document.removeEventListener("contextmenu", onContextMenu, true);
       window.removeEventListener("pointerup", onUp);
       if (frame) cancelAnimationFrame(frame);
       window.clearTimeout(saveTimer);

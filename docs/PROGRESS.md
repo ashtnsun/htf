@@ -135,6 +135,17 @@ Checked by driving real pointer events: a painted block of 40 cells came back as
 right-drag through it, the `contextmenu` event returns cancelled, `user-select` computes to
 `none` on the h1, and the column's border is 0px.
 
+**The context menu, second try:** Ashton still got Chrome's menu. The listener was on the hero
+section, and a synthetic `contextmenu` there was cancelled, so the first version looked right —
+but Chrome raises `contextmenu` on **release**, against whatever is under the cursor by then.
+Rubbing out along the hero's bottom edge and running off it therefore fired the event on a
+section below, where nothing was listening. It now listens on the document in the capture phase
+and cancels either when the event lands inside the hero or when a right press began there within
+600ms, so a right click anywhere else still opens the menu normally. Proved with real mouse
+input (`page.mouse.down({button:'right'})`, not synthetic events, which never reproduced it):
+prevented for a click in the hero and for a drag released 120px below it, not prevented for a
+click elsewhere a second later.
+
 **Notes for Ashton:** there is still no clear-everything control — clearing means clearing the
 site's localStorage, or rubbing it out by hand. Say the word and it can be a keypress or an
 automatic decay. The home page is untouched (its hero is the photo, with no grid to paint).
