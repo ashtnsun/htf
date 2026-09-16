@@ -62,17 +62,24 @@ src/components/
                     Dither, Dino, and since Session 15z Editorial (a short title block), Pixels
                     (the page's icon in pixelIcons.ts), Viewfinder, Cameo (a process dinosaur per
                     page), Dock (the copy docks into the section bar via --subnav-inset) and
-                    Final (the Pixels grid and the Globe hero's globe, no scroll effect;
-                    the one that ships)); PageHero renders FinalHero, the rest are unreachable
+                    Final (the Pixels grid, no graphic drawn in it and no scroll effect; the one
+                    that ships)); PixelField makes that grid playable (the cells behind the
+                    pointer light and fade, holding the left button paints cells kept per page in
+                    localStorage, the right button rubs them out and never opens the browser
+                    menu; the hero is `select-none`); HeroObject / Wireframe / heroObjects.ts (the turning
+                    briefcase, rocket, heart, paper aeroplane and globe the hero carried until
+                    2026-09-15) are unreferenced but kept; PageHero renders FinalHero, the rest are unreachable
                     since the Shift + M menu was removed (2026-09-15); the per-page ones read
                     usePageKey (the pathname) (OverlapLines, the client measure that keeps a staggered headline's
-                    lines overlapping, is the Globe hero's); PageHeroShell holds the shared section, the framed column
-                    (PageHeroContent: eyebrow, the one h1, blurb, actions) and the bottom glow;
+                    lines overlapping, is the Globe hero's); PageHeroShell holds the shared section, the page column
+                    (PageHeroContent: eyebrow, the one h1, blurb, actions — no rails or corner
+                    crosshairs since 2026-09-15, so nothing crosses the grid) and the bottom glow;
                     /privacy and the 404 use FrameHero directly, with its `back` and `ghost`),
                     SectionNav (the
-                    sticky section bar under the hero on About / Students / Nonprofits; sets
-                    --subnav-h so anchors land below it; clear and borderless in place, glass
-                    once `data-stuck`, the neighbouring borders hidden by a rule in globals.css), FaqSection, ContactCta (+ involved/: the
+                    sticky section bar that used to sit under the hero on About / Students /
+                    Nonprofits; off all three since 2026-09-15, so no page renders it and those
+                    pages run hero → sections like the rest — it survives for /dev/ui and the
+                    Dock hero), FaqSection, ContactCta (+ involved/: the
                     Get involved graphic, InvolvedGraphic renders GlobeGraphic (the partner globe; a
                     hovered pin names its state in the US or its country elsewhere; three.js
                     loads on demand); GraphicFrame is the shared floating square; Terminal /
@@ -102,6 +109,10 @@ src/components/
 src/lib/content/    schemas.ts (Zod) + index.ts (loaders; throw on invalid content),
                     behold.ts (the live Instagram feed; never throws, falls back)
 src/lib/geo.ts      sphere maths shared by both globes
+src/lib/wireframe.ts  builders (lathe, stack, puff, triangleMesh, extrudeZ, spinY) and the
+                    projection for the inner-page hero objects; normalize() fits each model to
+                    the globe's frame by the box it sweeps on screen. Kept, not rendered: the
+                    hero drew these until 2026-09-15
 src/lib/motion.ts   easing curves and durations for Framer (mirrors `--ease-*` in globals.css)
 scripts/            validate-content, gen-placeholders, gen-logo-paths.py, gen-world-dots,
                     measure-apply-form (the /apply frame heights, against a production build),
@@ -231,6 +242,19 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   and looping effects (count-up, process graphics, testimonial marquee, dinosaur) must have a
   static or paused fallback under reduced motion and, for the marquee, a pause control.
 - Images: `<Media>` (next/image) with `sizes`; SVG placeholders render unoptimized.
+- The inner-page hero draws no object (2026-09-15): the grid is the graphic and `PixelField` is
+  the only thing in it. It is one canvas, never a few thousand elements, it listens on the hero
+  section rather than on itself so the copy keeps every pointer event, it ignores `pointerType:
+"touch"` (painting would fight the page's own scrolling), and it lights the cell without a
+  fade under reduced motion. Anything painted is decoration in localStorage, never content.
+  The hero is the one place on the site that takes the right button (it rubs pixels out) and
+  suppresses the browser's menu, and the one place with `select-none`; keep both inside it.
+  Should an object come back: `src/lib/wireframe.ts` builds one the way `home/Globe` is drawn —
+  green outlines at one stroke weight, no fills, no depth fading, turning about the vertical
+  axis at 4°/s from `GLOBE_TILT` — out of rings and profiles (`lathe`, `atAngle`, `extrudeZ`,
+  `stack`, `puff`, `triangleMesh`), never from a flat picture, since a shape with no depth
+  vanishes edge-on twice a turn. Mesh it as densely as the globe (a sparse object reads faint
+  and smaller beside it), finish with `normalize`, and set the pose with `spinY`.
 - Pixel art: every dinosaur drawing reads `brand/dino-pixels` and stays on its cell grid:
   solid cells, no outlines, details carved as empty cells (the eye), dinosaurs green and
   props white, motion by whole cells (`steps()` timing), nothing scaled, rotated or
