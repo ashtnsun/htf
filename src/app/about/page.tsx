@@ -5,7 +5,6 @@ import { Awards } from "@/components/home/Awards";
 import { WhoWeServe } from "@/components/home/WhoWeServe";
 import { ContactCta } from "@/components/layout/ContactCta";
 import { PageHero } from "@/components/layout/PageHero";
-import { SectionNav } from "@/components/layout/SectionNav";
 import { Reveal } from "@/components/motion/Reveal";
 import { Section } from "@/components/ui/Section";
 import { getAboutPage, getAwards, getExec, getExecYears } from "@/lib/content";
@@ -17,18 +16,11 @@ export const metadata: Metadata = {
   alternates: { canonical: "/about" },
 };
 
-const SECTIONS = [
-  { href: "#mission", label: "Mission" },
-  { href: "#exec", label: "Exec board" },
-  { href: "#awards", label: "Awards" },
-] as const;
-
 /**
  * The Instagram grid is off the page since 2026-09-15 until the Behold feed is linked. To bring
  * it back: import `InstagramGrid` from "@/components/about/InstagramGrid" and
- * `getInstagramTiles` from "@/lib/content", make this function async, render
- * `<InstagramGrid posts={await getInstagramTiles()} />` after the awards, and add
- * `{ href: "#instagram", label: "Instagram" }` to SECTIONS.
+ * `getInstagramTiles` from "@/lib/content", make this function async, and render
+ * `<InstagramGrid posts={await getInstagramTiles()} />` after the awards.
  */
 export default function AboutPage() {
   const about = getAboutPage();
@@ -39,7 +31,6 @@ export default function AboutPage() {
   return (
     <>
       <PageHero eyebrow="About" lines={["Students building", "*for good.*"]} />
-      <SectionNav items={SECTIONS} label="About" />
 
       <Mission mission={about.mission} />
       <ExecGrid members={exec} years={execYears} />

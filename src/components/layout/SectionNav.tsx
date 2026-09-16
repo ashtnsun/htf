@@ -17,6 +17,10 @@ type SectionNavProps = {
 const BAR_HEIGHT = 56;
 
 /**
+ * No page renders this since 2026-09-15: the bars came off About, Students and Nonprofits, which
+ * now run hero → sections like every other page. It stays here (and on /dev/ui) because the Dock
+ * page hero docks into it, and the rest of this comment is how it behaved on a page.
+ *
  * In-page navigation for the long inner pages (About, Students, Nonprofits): a bar that sits
  * right under the hero and sticks beneath the site header while the page scrolls. In place on
  * the page it is clear, with no fill and no hairlines on either side (globals.css hides the

@@ -3,7 +3,6 @@ import Link from "next/link";
 import { site } from "@content/site";
 import { FaqSection } from "@/components/layout/FaqSection";
 import { PageHero } from "@/components/layout/PageHero";
-import { SectionNav } from "@/components/layout/SectionNav";
 import { Reveal } from "@/components/motion/Reveal";
 import { HowItWorks } from "@/components/nonprofits/HowItWorks";
 import { NonprofitTestimonials } from "@/components/nonprofits/NonprofitTestimonials";
@@ -28,19 +27,11 @@ export const metadata: Metadata = {
   alternates: { canonical: "/nonprofits" },
 };
 
-const SECTIONS = [
-  { href: "#how-it-works", label: "How it works" },
-  { href: "#scope", label: "What we build" },
-  { href: "#partners", label: "Partners" },
-  { href: "#faq", label: "FAQ" },
-  { href: "#start", label: "Start a project" },
-] as const;
-
 const linkClass = "font-medium text-green transition-colors hover:text-text";
 
 /**
- * Nonprofits: hero (no CTA in the banner since the 2026-09-09 review; the section bar and
- * the closing section carry the way in), how it works, scope, the partner globe, quotes,
+ * Nonprofits: hero (no CTA in the banner since the 2026-09-09 review; the closing section
+ * carries the way in), how it works, scope, the partner globe, quotes,
  * the FAQ, and "Start a project", which since that review is an email address rather than
  * an intake form: a nonprofit writes to the club and everything else happens on a call.
  */
@@ -55,7 +46,6 @@ export default function NonprofitsPage() {
   return (
     <>
       <PageHero eyebrow="For nonprofits" lines={["Bring us a problem.", "*We build the tool.*"]} />
-      <SectionNav items={SECTIONS} label="Nonprofits" />
 
       <HowItWorks steps={steps} />
       <Scope build={page.scope.build} avoid={page.scope.avoid} />

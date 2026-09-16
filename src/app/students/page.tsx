@@ -3,7 +3,6 @@ import Link from "next/link";
 import { ContactCta } from "@/components/layout/ContactCta";
 import { FaqSection } from "@/components/layout/FaqSection";
 import { PageHero } from "@/components/layout/PageHero";
-import { SectionNav } from "@/components/layout/SectionNav";
 import { HowWeWork } from "@/components/students/HowWeWork";
 import { Perks } from "@/components/students/Perks";
 import { RecruitmentTimeline } from "@/components/students/RecruitmentTimeline";
@@ -17,14 +16,6 @@ export const metadata: Metadata = {
   alternates: { canonical: "/students" },
 };
 
-const SECTIONS = [
-  { href: "#how-we-work", label: "How we work" },
-  { href: "#what-you-get", label: "What you’ll get" },
-  { href: "#timeline", label: "Timeline" },
-  { href: "#roles", label: "Roles" },
-  { href: "#faq", label: "FAQ" },
-] as const;
-
 const linkClass = "font-medium text-green transition-colors hover:text-text";
 
 export default function StudentsPage() {
@@ -36,7 +27,6 @@ export default function StudentsPage() {
   return (
     <>
       <PageHero eyebrow="Student involvement" lines={["Join us to", "*make an impact.*"]} />
-      <SectionNav items={SECTIONS} label="Students" />
 
       <HowWeWork steps={howWeWork} />
       <Perks perks={perks} />

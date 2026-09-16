@@ -535,7 +535,7 @@ export default function UiKitPage() {
         </p>
       </Block>
 
-      <Block title="SectionNav (the sticky section bar under the hero on About, Students, Nonprofits)">
+      <Block title="SectionNav (the sticky section bar; off every page since 2026-09-15)">
         <SectionNav
           label="About"
           className="static"
