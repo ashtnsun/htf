@@ -125,9 +125,19 @@ green one frame after a move, a held drag stores 25 cells under `htf:hero-pixels
 the stroke is still there after a reload. `docs/screenshots/session-15z5/hero-projects-1440.png`
 is the clean hero, `pixel-field-trail-1440.png` shows a fading trail beside a painted stroke.
 
-**Notes for Ashton:** there is no clear button — clearing means clearing the site's localStorage.
-Say the word and it can be a keypress, a double-click on the hero, or an automatic decay. The
-home page is untouched (its hero is the photo, with no grid to paint).
+**Ashton's notes on it, same session:** the hero's frame rails and their corner crosshairs had to
+go ("remove these extra gridlines with the + on the heroes"), the right button should rub the
+painting out, and the copy must not be selectable or draggable. So `pageHeroFrameClass` lost
+`lg:frame-marks lg:border-x lg:border-line` — the hero is a bare column now and nothing crosses
+the grid behind it, on the page heroes and on /privacy and the 404 with it — the right button
+erases and the hero swallows the browser's context menu, and `PageHeroSection` is `select-none`.
+Checked by driving real pointer events: a painted block of 40 cells came back as 35 after a
+right-drag through it, the `contextmenu` event returns cancelled, `user-select` computes to
+`none` on the h1, and the column's border is 0px.
+
+**Notes for Ashton:** there is still no clear-everything control — clearing means clearing the
+site's localStorage, or rubbing it out by hand. Say the word and it can be a keypress or an
+automatic decay. The home page is untouched (its hero is the photo, with no grid to paint).
 
 **Next session starts with:** Ashton's hands on the hero in a browser.
 

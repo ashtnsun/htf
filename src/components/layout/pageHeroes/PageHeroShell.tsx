@@ -19,7 +19,9 @@ export function PageHeroSection({
   return (
     <section
       aria-labelledby="page-title"
-      className={cn("relative overflow-hidden", className)}
+      // select-none: the hero is a surface you paint on (pageHeroes/PixelField), so a drag
+      // across it must never start selecting the copy
+      className={cn("relative overflow-hidden select-none", className)}
       {...rest}
     >
       {children}
@@ -27,9 +29,12 @@ export function PageHeroSection({
   );
 }
 
-/** The framed page column used inside the shells (rails and crosshairs on lg+). */
+/**
+ * The page column used inside the shells. It had rails and corner crosshairs on lg+ until
+ * 2026-09-15; the hero is a bare column now, so nothing crosses the grid behind it.
+ */
 export const pageHeroFrameClass =
-  "relative container-max container-x pt-14 pb-20 md:pt-20 md:pb-28 lg:frame-marks lg:mt-6 lg:border-x lg:border-line";
+  "relative container-max container-x pt-14 pb-20 md:pt-20 md:pb-28 lg:mt-6";
 
 type PageHeroContentProps = PageHeroProps & {
   /** Rendered above the eyebrow (the "back to the index" link on detail pages). */

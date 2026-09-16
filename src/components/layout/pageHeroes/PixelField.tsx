@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils";
 
 /**
  * The hero's grid, made playable: the cells behind the pointer light up and fade out behind it,
- * and holding the button down paints cells that stay, kept per page in localStorage.
+ * holding the button down paints cells that stay, and holding the right button rubs them out.
+ * The painting is kept per page in localStorage.
  *
  * One canvas rather than a few thousand elements, lined up with the CSS grid the hero already
  * draws (`--px` is the cell, offset a pixel up like the background). It listens on its parent
@@ -44,7 +45,8 @@ export function PixelField({ className }: { className?: string }) {
     let green = "#03C652";
     let width = 0;
     let height = 0;
-    let painting = false;
+    /** What the held button is doing: the left one paints, the right one rubs out. */
+    let stroke: "paint" | "erase" | null = null;
     let last: { x: number; y: number } | null = null;
     let frame = 0;
     let saveTimer = 0;
@@ -124,7 +126,7 @@ export function PixelField({ className }: { className?: string }) {
       frame = requestAnimationFrame(tick);
     };
 
-    /** Light (or paint) every cell between the last point and this one. */
+    /** Light, paint or rub out every cell between the last point and this one. */
     const trace = (x: number, y: number) => {
       const from = last ?? { x, y };
       const distance = Math.hypot(x - from.x, y - from.y);
@@ -132,12 +134,15 @@ export function PixelField({ className }: { className?: string }) {
       for (let i = 1; i <= steps; i += 1) {
         const t = i / steps;
         const key = cellAt(from.x + (x - from.x) * t, from.y + (y - from.y) * t);
-        if (painting) {
+        if (stroke === "paint") {
           painted.add(key);
           if (painted.size > MAX_PAINTED) {
             const oldest = painted.values().next();
             if (!oldest.done) painted.delete(oldest.value);
           }
+          lit.delete(key);
+        } else if (stroke === "erase") {
+          painted.delete(key);
           lit.delete(key);
         } else {
           if (reduce) lit.clear();
@@ -163,23 +168,26 @@ export function PixelField({ className }: { className?: string }) {
 
     const onDown = (event: PointerEvent) => {
       const point = fromPointer(event);
-      if (!point || event.button !== 0) return;
-      painting = true;
+      if (!point) return;
+      if (event.button === 0) stroke = "paint";
+      else if (event.button === 2) stroke = "erase";
+      else return;
       last = point;
-      // only when the press lands on the hero itself, so selecting the copy still works
-      if (event.target === section || event.target === canvas) event.preventDefault();
       trace(point.x, point.y);
       save();
     };
 
     const onUp = () => {
-      if (!painting) return;
-      painting = false;
+      if (!stroke) return;
+      stroke = null;
       save();
     };
 
+    /** The right button is the rubber here, so the hero never opens the browser's menu. */
+    const onContextMenu = (event: MouseEvent) => event.preventDefault();
+
     const onLeave = () => {
-      painting = false;
+      stroke = null;
       last = null;
       if (reduce) {
         lit.clear();
@@ -199,6 +207,7 @@ export function PixelField({ className }: { className?: string }) {
     section.addEventListener("pointermove", onMove);
     section.addEventListener("pointerdown", onDown);
     section.addEventListener("pointerleave", onLeave);
+    section.addEventListener("contextmenu", onContextMenu);
     window.addEventListener("pointerup", onUp);
 
     return () => {
@@ -206,6 +215,7 @@ export function PixelField({ className }: { className?: string }) {
       section.removeEventListener("pointermove", onMove);
       section.removeEventListener("pointerdown", onDown);
       section.removeEventListener("pointerleave", onLeave);
+      section.removeEventListener("contextmenu", onContextMenu);
       window.removeEventListener("pointerup", onUp);
       if (frame) cancelAnimationFrame(frame);
       window.clearTimeout(saveTimer);
