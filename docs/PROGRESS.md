@@ -63,6 +63,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 15x: real photos across home and Students (hero, awards carousel that rotates, What we do panels, How we work, What you'll get), project cards aligned and ordered by title length, Instagram grid off /about until the feed is linked, home tab title is the name alone
 - [x] Session 15y: home intro — black screen, the wordmark draws in the centre and flies into the header logo while the page fades in (once per tab session)
 - [x] Session 15n: the /apply frame is back-proof — two heights instead of five, after checking that nothing cross-origin can say which section the form is showing
+- [x] Session 15z6: the inner-page hero grid made playable (cells light and fade behind the pointer, holding the button paints cells kept per page in localStorage); no object drawn in the hero any more
 - [x] Session 15z5: one turning object per inner-page hero (briefcase on Projects, the globe kept on About, rocket on Students, heart on Nonprofits, paper aeroplane on Contact), all built and projected in the globe's language through `src/lib/wireframe.ts`
 - [x] Session 15z4: page transitions reworked — one continuous hand-off (the old page lifts away as the new one rises in, the footer and background on the same clock, about a second end to end) and a green navigation line along the top edge while a page is still on its way
 
@@ -87,7 +88,50 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
-## Session 15z5 — 2026-09-15 (one object per inner-page hero)
+## Session 15z6 — 2026-09-15 (the hero grid, made playable)
+
+Ashton, after seeing the meshed objects: "undo, keep them stored but I dont want any of the 3d
+schematics anymore. Instead I just want a simple interaction on the hero, hovering around on the
+hero will light up the pixels behind the cursor and fade. Clicking/holding down mouse while
+moving the cursor around should paint the pixel, these 'painted' pixels should be locally
+stored."
+
+**Built:** `pageHeroes/PixelField.tsx`, and `FinalHero` now draws the grid, the glow, the copy
+and nothing else. The grid it already had is the graphic; the field makes it playable. Cells
+light at 0.8 and fade out over 700ms behind the pointer, holding the button paints cells that
+stay at 0.55, and the painting is kept per page under `htf:hero-pixels:<pathname>` (a debounced
+write, the oldest of 4000 cells falling off the end, every access in a try / catch so a blocked
+or corrupt store just means an empty canvas).
+
+**Decisions worth keeping:**
+
+- One canvas, not a few thousand elements, aligned to the CSS grid by reading `--px` off the
+  section (and the same 1px offset the background uses), redrawn on a rAF loop that only runs
+  while something is fading.
+- It listens on the **parent section, not on itself**, and the canvas is `pointer-events-none`:
+  the whole hero paints, including over the copy, while every link, button and text selection
+  in the hero keeps its events. A press that lands on the hero itself calls `preventDefault` so
+  a drag does not select; a press on the copy does not, so selecting the headline still works.
+- `pointerType: "touch"` is ignored outright — painting with a finger would fight the page's own
+  scrolling.
+- Reduced motion lights the cell under the pointer and clears it on leave, with no trail and no
+  fade (and no rAF loop left running).
+- The objects are kept, not deleted: `HeroObject`, `Wireframe`, `heroObjects.ts` and
+  `src/lib/wireframe.ts` stay unreferenced, the way the other hero variants do.
+
+**Checked:** typecheck, lint, build clean; `pnpm a11y` 0 violations (the canvas is `aria-hidden`
+decoration). Driven with real pointer events in Playwright: the hover trail paints the canvas
+green one frame after a move, a held drag stores 25 cells under `htf:hero-pixels:/projects`, and
+the stroke is still there after a reload. `docs/screenshots/session-15z5/hero-projects-1440.png`
+is the clean hero, `pixel-field-trail-1440.png` shows a fading trail beside a painted stroke.
+
+**Notes for Ashton:** there is no clear button — clearing means clearing the site's localStorage.
+Say the word and it can be a keypress, a double-click on the hero, or an automatic decay. The
+home page is untouched (its hero is the photo, with no grid to paint).
+
+**Next session starts with:** Ashton's hands on the hero in a browser.
+
+## Session 15z5 — 2026-09-15 (one object per inner-page hero, later taken out)
 
 Ashton: "For the inner page heroes, I want each different page that uses that inner page hero
 to have a different item spinning… same style as the globe, with the outline/schematic kind of
@@ -153,7 +197,8 @@ match by construction — if one still looks small next to the globe, the knob i
 depth goes edge-on and vanishes twice a turn, which is why the aeroplane has a keel and is
 nearly as broad as it is long.
 
-**Next session starts with:** Ashton's look at the four objects in the browser.
+**How it ended:** Ashton dropped the objects the same evening — see Session 15z6. The code is
+kept and unreferenced, so bringing one back is a line in `FinalHero`.
 
 ## Session 15z4 — 2026-09-15 (page transitions reworked)
 
