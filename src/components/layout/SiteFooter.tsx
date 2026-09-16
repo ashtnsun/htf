@@ -122,13 +122,14 @@ export function SiteFooter() {
         </div>
 
         <div className="border-t border-line">
-          <div className="container-max flex flex-col gap-4 container-x py-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
-            <p>
+          <div className="container-max grid gap-4 container-x py-6 text-xs text-muted sm:grid-cols-3 sm:items-center">
+            <p>Designed &amp; built by Vipula &amp; Ashton :)</p>
+            <p className="sm:text-center">
               © {year} {site.legalName}. All rights reserved.
             </p>
             <a
               href="#main"
-              className="inline-flex items-center gap-2 self-start transition-colors hover:text-green sm:self-auto"
+              className="inline-flex items-center gap-2 justify-self-start transition-colors hover:text-green sm:justify-self-end"
             >
               Back to top
               <ArrowUp className="size-3.5" aria-hidden="true" />
