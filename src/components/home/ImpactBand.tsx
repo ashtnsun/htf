@@ -34,17 +34,20 @@ export function ImpactBand({ stats, testimonials, awards }: ImpactBandProps) {
       clip
       className="border-t border-line"
     >
-      {/* will-change gives the map its own GPU layer, drawn ahead of the viewport: without it
-          Chrome drew the ~2000px masked box in the frame it came into range, a 150-220ms
-          scroll stall halfway through Process (measured 2026-09-15). */}
-      <DottedMap
-        tone="text"
-        partners
-        className="absolute top-24 left-1/2 w-[min(140%,120rem)] -translate-x-1/2 [mask-image:radial-gradient(60%_58%_at_50%_55%,#000_20%,transparent_100%)] will-change-transform md:top-32"
-        dotsClassName="opacity-20"
-        partnersClassName="opacity-50"
-      />
       <div className="relative container-max container-x">
+        {/* The map sits behind the stat tiles only, centred on them and faded out before the
+            marquee. will-change gives it its own GPU layer, drawn ahead of the viewport: without
+            it Chrome drew the masked box in the frame it came into range, a 150-220ms scroll
+            stall halfway through Process (measured 2026-09-15). */}
+        {stats.length > 0 ? (
+          <DottedMap
+            tone="text"
+            partners
+            className="absolute top-[calc(50%+1.5rem)] left-1/2 w-[min(100vw,72rem)] -translate-x-1/2 -translate-y-1/2 [mask-image:radial-gradient(50%_50%_at_50%_50%,#000_30%,transparent_100%)] will-change-transform"
+            dotsClassName="opacity-20"
+            partnersClassName="opacity-50"
+          />
+        ) : null}
         <RevealGroup>
           <Reveal>
             <Eyebrow as="h2" id="impact-title">
@@ -54,7 +57,7 @@ export function ImpactBand({ stats, testimonials, awards }: ImpactBandProps) {
 
           {stats.length > 0 ? (
             <Reveal>
-              <dl className="mt-10 grid gap-4 sm:grid-cols-3">
+              <dl className="relative mt-10 grid gap-4 sm:grid-cols-3">
                 {stats.map((s, i) => (
                   <StatTile key={s.id} value={s.value} label={s.label} index={i} />
                 ))}
@@ -67,7 +70,7 @@ export function ImpactBand({ stats, testimonials, awards }: ImpactBandProps) {
       {testimonials.length > 0 ? <TestimonialMarquee testimonials={testimonials} /> : null}
 
       {awards.length > 0 ? (
-        <div className="relative container-max mt-20 container-x md:mt-28">
+        <div className="relative container-max mt-28 container-x md:mt-40">
           <Awards awards={awards} />
         </div>
       ) : null}
