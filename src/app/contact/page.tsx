@@ -61,11 +61,7 @@ export default function ContactPage() {
 
   return (
     <>
-      <PageHero
-        eyebrow="Contact"
-        lines={["Let’s talk."]}
-        stagger={false}
-      />
+      <PageHero eyebrow="Contact" lines={["Let’s talk."]} stagger={false} />
 
       <Section aria-label="Ways to reach us" className="border-t border-line">
         <Reveal standalone>

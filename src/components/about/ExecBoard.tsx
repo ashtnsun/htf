@@ -129,7 +129,9 @@ function ExecCard({ member }: { member: ExecMember }) {
       </div>
       <div className="flex flex-1 flex-col items-start gap-3 p-4 sm:flex-row sm:items-center sm:gap-4 sm:p-5">
         <div className="min-w-0 flex-1">
-          <h3 className="text-body font-medium text-balance text-text sm:text-body-lg">{member.name}</h3>
+          <h3 className="text-body font-medium text-balance text-text sm:text-body-lg">
+            {member.name}
+          </h3>
           <p className="mt-0.5 text-sm text-muted">{member.role}</p>
         </div>
         {linkedin ? (

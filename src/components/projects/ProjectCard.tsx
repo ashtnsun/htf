@@ -122,7 +122,7 @@ export function ProjectCard({
           </span>
         ) : null}
       </div>
-      <p className="flex items-baseline justify-between gap-4 px-4 pt-4 text-eyebrow sm:px-6 sm:pt-6 font-medium text-muted uppercase md:px-7 md:pt-7">
+      <p className="flex items-baseline justify-between gap-4 px-4 pt-4 text-eyebrow font-medium text-muted uppercase sm:px-6 sm:pt-6 md:px-7 md:pt-7">
         {inactive ? null : <span className="truncate">{nonprofitName}</span>}
         <span className="shrink-0">{project.year}</span>
       </p>
