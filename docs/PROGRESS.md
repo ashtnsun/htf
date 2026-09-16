@@ -616,7 +616,7 @@ per person in `media/about/exec/2026-27/`.
 **Built:** `content/exec.ts` is the real board in the order Ashton gave it: Arav Shah
 (President), Emily Li (Vice President), Arushi Ravula (Secretary), Jason Gottesman
 (Treasurer), Ben Connelly (Technical Director), Ashton Sun (Design Director), Khang Nguyen
-(Marketing), Shreeya Sarurkar (External Outreach), Nakul Naik (Internal Outreach). Every card
+(Marketing), Shreeya Sarurkar (External Outreach), Nakul Iyer (Internal Outreach; "Naik" until 2026-09-16). Every card
 carries a real LinkedIn link — no TODO cells left on the section — and every card has a
 photo: the staged files were renamed to their slugs, imported with `pnpm media:check --import`
 into `public/images/exec/`, and the nine `exec.*` keys in `content/media.ts` now point at them

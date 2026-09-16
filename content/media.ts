@@ -53,7 +53,7 @@ export const media = {
   "exec.ashton-sun-2026": "/images/exec/ashton-sun-2026.jpg",
   "exec.khang-nguyen-2026": "/images/exec/khang-nguyen-2026.jpg",
   "exec.shreeya-sarurkar-2026": "/images/exec/shreeya-sarurkar-2026.jpg",
-  "exec.nakul-naik-2026": "/images/exec/nakul-naik-2026.jpg",
+  "exec.nakul-iyer-2026": "/images/exec/nakul-iyer-2026.jpg",
   "exec.tanay-gondil-2025": "/images/exec/tanay-gondil-2025.jpg",
   "exec.mahika-parakh-2025": "/images/exec/mahika-parakh-2025.jpg",
   "exec.lalitha-chandolu-2025": "/images/exec/lalitha-chandolu-2025.jpg",

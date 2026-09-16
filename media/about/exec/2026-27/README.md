@@ -10,7 +10,7 @@ Waiting on (slugs from `content/exec.ts`, in the order the cards show):
 - `ashton-sun-2026.jpg` — Ashton Sun, Design Director
 - `khang-nguyen-2026.jpg` — Khang Nguyen, Marketing
 - `shreeya-sarurkar-2026.jpg` — Shreeya Sarurkar, External Outreach
-- `nakul-naik-2026.jpg` — Nakul Naik, Internal Outreach
+- `nakul-iyer-2026.jpg` — Nakul Iyer, Internal Outreach
 
 The file name must match the slug in `content/exec.ts`; `pnpm media:check` matches on it and
 `--import` copies the file into `public/images/exec/`.

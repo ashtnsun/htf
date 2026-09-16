@@ -73,12 +73,12 @@ export const exec: ExecMemberInput[] = [
     photo: "exec.shreeya-sarurkar-2026",
   },
   {
-    slug: "nakul-naik-2026",
-    name: "Nakul Naik",
+    slug: "nakul-iyer-2026",
+    name: "Nakul Iyer",
     role: "Internal Outreach",
     year: "2026–27",
-    linkedin: "https://www.linkedin.com/in/nakul-naik-072735184/",
-    photo: "exec.nakul-naik-2026",
+    linkedin: "https://www.linkedin.com/in/iyernakul/",
+    photo: "exec.nakul-iyer-2026",
   },
 
   // 2025–26 board
