@@ -1095,21 +1095,56 @@ img[data-media]:not([data-loaded]) {
   }
 }
 
-/* the old page fades out first, then the new one fades in: a clean hand-off, never a double image */
+/* The hand-off (since 2026-09-15, "one continuous page"): the old page lifts away, easing
+   both ends, while the new page rises in from a little below with the site's glide and fades
+   in over the same beat. The two overlap, so there is never an empty frame and nothing reads
+   as a reload: the new page is already arriving before the old one has gone. The footer and
+   the page background (the root snapshot) fade on the same clock, so the whole viewport under
+   the header moves as one. Timing: about a second end to end (the crossfade token). */
+:root {
+  --page-exit-ms: 450ms;
+  --page-enter-delay: 80ms;
+  --page-enter-fade-ms: 620ms;
+  --page-enter-rise-ms: 900ms;
+}
 ::view-transition-old(.page-exit) {
-  animation: page-exit 200ms var(--ease-smooth) both;
+  animation:
+    page-fade-out var(--page-exit-ms) var(--ease-smooth) both,
+    page-lift var(--page-exit-ms) var(--ease-in-out-soft) both;
 }
 ::view-transition-new(.page-enter) {
-  animation: page-enter 320ms var(--ease-smooth) 200ms both;
+  animation:
+    page-fade-in var(--page-enter-fade-ms) var(--ease-smooth) var(--page-enter-delay) both,
+    page-rise var(--page-enter-rise-ms) var(--ease-glide) both;
 }
-@keyframes page-exit {
+/* the root snapshot holds the footer, the page background and whatever the old page had
+   scrolled out of view (React only lifts the sections on screen): it fades on the page's
+   clock but does not move. <html> names itself `root` in app/layout.tsx, or React would hide
+   this group and the footer would cut. */
+::view-transition-old(root) {
+  animation: page-fade-out var(--page-exit-ms) var(--ease-smooth) both;
+}
+::view-transition-new(root) {
+  animation: page-fade-in var(--page-enter-fade-ms) var(--ease-smooth) var(--page-enter-delay) both;
+}
+@keyframes page-fade-out {
   to {
     opacity: 0;
   }
 }
-@keyframes page-enter {
+@keyframes page-fade-in {
   from {
     opacity: 0;
+  }
+}
+@keyframes page-lift {
+  to {
+    translate: 0 -1.5rem;
+  }
+}
+@keyframes page-rise {
+  from {
+    translate: 0 2rem;
   }
 }
 ::view-transition-group(site-header) {
@@ -1133,11 +1168,96 @@ img[data-media]:not([data-loaded]) {
 ::view-transition-new(nav-drawer) {
   animation: none;
 }
+/* the navigation line (layout/NavigationProgress) stays live above the hand-off */
+::view-transition-group(nav-progress) {
+  animation: none;
+  z-index: 120;
+}
+::view-transition-old(nav-progress) {
+  display: none;
+}
+::view-transition-new(nav-progress) {
+  animation: none;
+}
+/* reduced motion keeps a short, still crossfade (no lift or rise): a cut would read as a reload */
 @media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
-    animation: none !important;
+  ::view-transition-old(.page-exit),
+  ::view-transition-old(root) {
+    animation: page-fade-out 250ms var(--ease-smooth) both;
+  }
+  ::view-transition-new(.page-enter),
+  ::view-transition-new(root) {
+    animation: page-fade-in 350ms var(--ease-smooth) 150ms both;
+  }
+}
+
+/* ------------------------------------------------------------------
+   The navigation line (layout/NavigationProgress): a hairline in green along the top edge that
+   grows while a page is still on its way (a route that was not prefetched, a slow connection)
+   and completes as the new page arrives. It waits 180ms before showing, so an instant
+   navigation never flashes it; in production almost every route is prefetched and it stays
+   unseen. Unlayered so it wins over the utilities on the element.
+------------------------------------------------------------------- */
+.nav-progress {
+  position: fixed;
+  inset: 0 auto auto 0;
+  z-index: 70;
+  height: 2px;
+  width: 100%;
+  background: var(--green);
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  pointer-events: none;
+  view-transition-name: nav-progress;
+}
+.nav-progress[data-state="pending"] {
+  animation:
+    nav-progress-show 300ms var(--ease-smooth) 180ms both,
+    nav-progress-grow 4s var(--ease-glide) 180ms both;
+}
+.nav-progress[data-state="done"] {
+  opacity: 1;
+  transform: scaleX(1);
+  animation: nav-progress-finish 600ms var(--ease-smooth) both;
+}
+@keyframes nav-progress-show {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes nav-progress-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(0.85);
+  }
+}
+@keyframes nav-progress-finish {
+  0% {
+    opacity: 1;
+    transform: scaleX(0.85);
+  }
+  35% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-progress[data-state="pending"] {
+    animation: nav-progress-show 300ms var(--ease-smooth) 180ms both;
+    transform: scaleX(1);
+  }
+  .nav-progress[data-state="done"] {
+    animation: nav-progress-show 300ms var(--ease-smooth) both reverse;
   }
 }
 

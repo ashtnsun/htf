@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import { site } from "@content/site";
 import { INTRO_SCRIPT } from "@/components/home/intro-script";
+import { NavigationProgress } from "@/components/layout/NavigationProgress";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import "./globals.css";
@@ -44,6 +45,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${poppins.variable} h-full`}
       data-scroll-behavior="smooth"
+      // The page transition (app/template.tsx): React hides the root snapshot unless <html>
+      // names it itself, and then only the page's sections in view animate while the footer,
+      // the page background and anything scrolled past cut instantly. With the name here the
+      // whole viewport under the header crossfades on the page's clock (globals.css).
+      style={{ viewTransitionName: "root" }}
       // The intro script below sets data-intro on <html> before hydration.
       suppressHydrationWarning
     >
@@ -57,6 +63,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <a href="#main" className="skip-link">
           Skip to content
         </a>
+        {/* the green hairline along the top edge while a page is still on its way */}
+        <NavigationProgress />
         <SiteHeader />
         <main id="main" className="flex-1">
           {children}

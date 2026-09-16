@@ -16,20 +16,21 @@ const SHOW_TRANSITION = {
   opacity: { duration: 0.5, ease: EASE_SMOOTH },
 };
 /**
- * The page transition's timing (`page-exit` / `page-enter` in globals.css): the old page is gone
- * after PAGE_EXIT_MS and the new one has faded in by PAGE_ENTER_END_MS. A reveal that starts
- * inside that window waits for the new page to begin showing, so on a navigation the page's
- * frame (header, backgrounds, pictures) fades in first and the copy follows in its stagger,
- * instead of some copy animating behind the fade and the rest after it.
+ * The page transition's timing (`--page-*` and `page-rise` in globals.css): the new page starts
+ * showing at 80ms and has settled by about a second. A reveal that starts inside that window
+ * waits a beat (PAGE_ENTER_WAIT_MS), so on a navigation the page's frame (header, backgrounds,
+ * pictures) leads by a hair and the copy follows in its stagger while the frame is still
+ * settling, one arrival, instead of some copy animating behind the fade and the rest after it.
+ * (A longer wait left the hero empty for a moment, which read as a load.)
  */
-const PAGE_EXIT_MS = 200;
-const PAGE_ENTER_END_MS = 520;
+const PAGE_ENTER_WAIT_MS = 180;
+const PAGE_ENTER_END_MS = 1000;
 const clock = { navigatedAt: Number.NEGATIVE_INFINITY, templateMounts: 0 };
 
 /** Seconds a reveal starting now should wait for the entering page (0 outside a navigation). */
 function pageEnterDelay() {
   const since = performance.now() - clock.navigatedAt;
-  return since < PAGE_ENTER_END_MS ? Math.max(0, PAGE_EXIT_MS - since) / 1000 : 0;
+  return since < PAGE_ENTER_END_MS ? Math.max(0, PAGE_ENTER_WAIT_MS - since) / 1000 : 0;
 }
 
 /**
@@ -86,9 +87,7 @@ export function RevealGroup({
   const reduce = useReducedMotionSafe();
   if (reduce) return <div className={className}>{children}</div>;
   const viewProps =
-    mode === "view"
-      ? { whileInView: "show", viewport: VIEWPORT }
-      : { animate: "show" };
+    mode === "view" ? { whileInView: "show", viewport: VIEWPORT } : { animate: "show" };
   return (
     <motion.div
       data-reveal=""
