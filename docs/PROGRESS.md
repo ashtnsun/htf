@@ -63,6 +63,7 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 - [x] Session 15x: real photos across home and Students (hero, awards carousel that rotates, What we do panels, How we work, What you'll get), project cards aligned and ordered by title length, Instagram grid off /about until the feed is linked, home tab title is the name alone
 - [x] Session 15y: home intro — black screen, the wordmark draws in the centre and flies into the header logo while the page fades in (once per tab session)
 - [x] Session 15n: the /apply frame is back-proof — two heights instead of five, after checking that nothing cross-origin can say which section the form is showing
+- [x] Session 15z5: one turning object per inner-page hero (briefcase on Projects, the globe kept on About, rocket on Students, heart on Nonprofits, paper aeroplane on Contact), all built and projected in the globe's language through `src/lib/wireframe.ts`
 - [x] Session 15z4: page transitions reworked — one continuous hand-off (the old page lifts away as the new one rises in, the footer and background on the same clock, about a second end to end) and a green navigation line along the top edge while a page is still on its way
 
 ### Phase 3 — Depth (Session 6, pulled ahead of the portal)
@@ -85,6 +86,57 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 ### Phase 4 — Later
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
+
+## Session 15z5 — 2026-09-15 (one object per inner-page hero)
+
+Ashton: "For the inner page heroes, I want each different page that uses that inner page hero
+to have a different item spinning… same style as the globe, with the outline/schematic kind of
+look, and they should all rotate like the current globe." Picked from the proposed list:
+briefcase on Projects, the globe kept on About, rocket on Students, heart on Nonprofits, paper
+aeroplane on Contact — "they don't need to be symmetrical but should rotate evenly… look
+geometrically correct… all around the same size… make sure they are aligned."
+
+**Built:**
+
+- **`src/lib/wireframe.ts`** — the geometry the objects share, so they are one family rather
+  than five drawings: builders (`lathe`, `ring`, `atAngle`, `extrudeZ`, `scaleAxes`, `spinY`),
+  `normalize`, and the projection, which is the globe's own (rotate about the vertical axis,
+  then project orthographically from `GLOBE_TILT` above the equator — the same maths as
+  `projectOrthographic` in `lib/geo`, verified against it point for point).
+- **`pageHeroes/heroObjects.ts`** — the four models. Briefcase: a box with a lid seam, two
+  clasps and an arched strap given a thickness. Rocket: an ogive nose, body and flared nozzle
+  lathed from one profile, three swept fins, and a porthole drawn on the body so it sits on the
+  surface. Heart: the right half of the classic heart curve taken as a profile and revolved,
+  then squashed front to back — revolving keeps a heart silhouette at every angle, where the
+  first attempt (the outline lofted front to back) read as a tangle of nested hearts in three
+  quarter view. Paper aeroplane: a dart with real fold geometry, wings raised off the centre
+  fold, a keel below it and creases lying in the wing planes.
+- **`pageHeroes/Wireframe.tsx` + `HeroObject.tsx`** — `HeroObject` picks the model from
+  `usePageKey` (About falls through to `home/Globe`); `Wireframe` rewrites each polyline's
+  `points` per frame at the globe's 4°/s, the way the globe rewrites its meridian transforms,
+  so the markup is identical on the server and under reduced motion. `FinalHero` now renders
+  `HeroObject` in the slot the globe had.
+
+**Two things worth keeping:** sizing is measured on what the viewer sees, not on the model —
+`normalize` fits each object by the box it _sweeps over a full turn_ (closed form: a point at
+distance ρ from the axis sweeps x over ±ρ and y over ±ρ·sin tilt − y·cos tilt). Sized by a
+plain bounding sphere, the aeroplane projected about half the size of the briefcase, because
+most of its length runs away from the viewer. And every model is centred on the spin axis
+before anything else, which is what makes the turn even instead of an orbit.
+
+**Checked:** typecheck, lint, build clean; `pnpm a11y` 0 violations (the objects are
+`aria-hidden` decoration inside the existing hero). Confirmed in Playwright that the points
+actually advance frame to frame. Heroes at 1440 in `docs/screenshots/session-15z5/`, plus the
+home and drawer captures from `pnpm screenshots`.
+
+**Notes for Ashton:** the starting pose of each object (`spinY` in `heroObjects.ts`) is what a
+reduced-motion visitor sees for good, so it is set to a three-quarter view per object. Sizes
+match by construction — if one still looks small next to the globe, the knob is `WIRE_RADIUS`
+(94, against the globe's 100). Flat objects are the one shape to avoid here: a picture with no
+depth goes edge-on and vanishes twice a turn, which is why the aeroplane has a keel and is
+nearly as broad as it is long.
+
+**Next session starts with:** Ashton's look at the four objects in the browser.
 
 ## Session 15z4 — 2026-09-15 (page transitions reworked)
 
