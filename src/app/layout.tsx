@@ -4,6 +4,7 @@ import { Poppins } from "next/font/google";
 import { site } from "@content/site";
 import { INTRO_SCRIPT } from "@/components/home/intro-script";
 import { NavigationProgress } from "@/components/layout/NavigationProgress";
+import { SiteChrome } from "@/components/layout/SiteChrome";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import "./globals.css";
@@ -65,11 +66,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </a>
         {/* the green hairline along the top edge while a page is still on its way */}
         <NavigationProgress />
-        <SiteHeader />
+        <SiteChrome>
+          <SiteHeader />
+        </SiteChrome>
         <main id="main" className="flex-1">
           {children}
         </main>
-        <SiteFooter />
+        <SiteChrome>
+          <SiteFooter />
+        </SiteChrome>
         {/* Vercel Web Analytics: cookieless page views. Rendered only on Vercel builds (the
             script 404s elsewhere) and active once enabled on the Vercel project. */}
         {process.env.VERCEL ? <Analytics /> : null}

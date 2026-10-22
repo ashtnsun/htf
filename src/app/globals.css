@@ -361,6 +361,12 @@
   }
 }
 
+/* Portfolio Night's grid: the card is the link, the brackets frame only its screenshot. */
+.group:is(:hover, :focus-visible) > .hover-corners[data-corners]::after {
+  opacity: 1;
+  --corner-size: 1.25rem;
+}
+
 /* The viewfinder brackets, drawn permanently instead of on hover: for one framed object that
    is not interactive and cannot be styled from here (the Google Form on /apply). Decoration
    only — everything interactive keeps `hover-corners`. */
