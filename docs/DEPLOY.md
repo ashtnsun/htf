@@ -97,3 +97,23 @@ intake forms are finished but parked under `parked/` (2026-09-09), with their en
 variables, the restore steps and the go-live checklist in `parked/README.md`. The database
 definition stays in `supabase/` (migrations, seeds, the sign-in email template). Nothing in
 this section is needed for the site as deployed.
+
+## 7. Portfolio Night (Supabase)
+
+`/portfolio` (reference grid, community grid, goals board) and `/portfoliohost` (the host's
+page) are the one part of the site with a database. Everything else deploys without it.
+
+1. Create a Supabase project (free tier). In the SQL editor, run
+   `supabase/migrations/20261022000000_portfolio_night.sql` (or `supabase link` +
+   `supabase db push`, which also applies the parked portal's migrations; harmless, unused).
+   It creates `portfolios`, `goals`, the public `portfolio-shots` bucket, and adds `goals` to
+   the Realtime publication.
+2. In Vercel → Settings → Environment Variables (Production and Preview): `SUPABASE_URL`,
+   `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (Project Settings → API) and
+   `PORTFOLIO_HOST_PASSWORD`. Optional: `MICROLINK_API_KEY`. Redeploy: `SUPABASE_URL` is read at
+   build time too (next.config.ts allows the screenshots from that host).
+3. Sign in on `/portfoliohost`, add the reference portfolios, check each screenshot
+   (Recapture if a site was mid-animation), then open `/portfolio/goals` in two browsers and
+   check a note placed in one appears in the other.
+4. After the event: remove anything from either grid on `/portfoliohost`; clear the board with
+   `delete from public.goals;` in the SQL editor.

@@ -88,6 +88,68 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 16 — 2026-10-22 (Portfolio Night)
+
+Ashton asked for `/portfolio`, a resource and an engagement tool for a portfolio-building
+night: very minimal, a simple side menu, no elevated surfaces (references: a white catalogue
+with a left menu, and a dark screenshot library). Three parts: reference portfolios that only
+Ashton picks (through a host page, `/portfoliohost`), community portfolios anyone adds, and a
+FigJam-style goals board where anyone places a sticky note and edits only their own. Picked
+from the questions asked: Supabase (already in the repo, gives Realtime), one host password,
+standalone dark frame, screenshots from Microlink stored in our own bucket.
+
+**Built:**
+
+- **Database** (`supabase/migrations/20261022000000_portfolio_night.sql`): `portfolios` (kind
+  reference / community, url, title, screenshot_url; unique per kind and url), `goals` (x, y,
+  colour, text up to 160, `owner_hash`), the public `portfolio-shots` bucket, `goals` in the
+  Realtime publication. Every write goes through a server action with the service role
+  (`src/lib/portfolio/db.ts`); anon can only read goals (for Realtime).
+- **Who is asking, without accounts** (`src/lib/portfolio/session.ts`): the host signs in with
+  `PORTFOLIO_HOST_PASSWORD` (a hash of it in an httpOnly cookie, 30 days); a note's author gets
+  a random token in an httpOnly cookie on their first note and the table keeps its sha256, so
+  the update / delete queries are scoped to `owner_hash` server-side. The host can remove any
+  note.
+- **Screenshots** (`src/lib/portfolio/capture.ts`): Microlink once per link (1280×800 JPEG,
+  1.5 s settle, plus the page title, used when no name is given), uploaded to the bucket; the
+  grid never calls Microlink. Host can Recapture.
+- **Frame**: `layout/SiteChrome` drops the site header and footer on `/portfolio*` and
+  `/portfoliohost`; `portfolio/layout.tsx` is the side menu (wordmark, "Portfolio Night", a
+  search kept in `?q=`, Reference / Community / Goals, Back to the site) and the section. On
+  phones the menu stacks above.
+- **Grids** (`PortfolioGrid`): screenshot cards (16:10, hairline, `hover-corners` on the picture
+  through a `.group` rule in globals.css, title turns green), title and address, new tab. The
+  community grid opens with a dashed "Add a portfolio" cell that becomes the form in place.
+- **Goals board** (`GoalsBoard`, `Sticky`): a 2400×1600 dotted board you scroll or drag around,
+  a dock of six token colours at the bottom (pinned to the screen on phones). Drag a sticky on,
+  or press one to drop it on the nearest free spot in view; write (double-click / pencil),
+  move (drag, arrows), recolour and delete from the bar above a selected note. Others' notes are
+  inert. Empty notes are removed on blur. Live through Supabase Realtime (supabase-js loaded
+  on this page only).
+- **Host page**: password form; add reference; both lists with thumbnail, Recapture, Remove.
+
+**Verified:** typecheck, lint, build (the four routes are dynamic, everything else unchanged);
+axe 0 violations on all four routes at 1440 and 390; Playwright end to end against the local
+stack: wrong / right password, three reference adds with screenshots, a bad link keeps its
+text, a community add, search, a note placed in one browser appears in another, a guest
+cannot move the host's note, own notes persist across reloads, the host sees remove on every
+note, phone tap-placement stays in view.
+
+**Decisions:**
+
+- One password, not accounts: one host, one night. Changing the env var signs everyone out.
+- No moderation queue on community links or notes; the host removes after the fact.
+- Sticky colours are the token colours with --bg text (lime, green, cyan, blue, pink, white);
+  pink and blue as fills here are decoration under dark text, never text colours.
+
+**TODO:**
+
+- [ ] Ashton: create the Supabase project, run the migration, set the four env vars on Vercel
+      (`docs/DEPLOY.md` §7), pick the reference portfolios on `/portfoliohost`.
+- [ ] Ashton's look in a browser: the board on the projector, a phone on the board.
+
+**Next session starts with:** Ashton's look at Portfolio Night, then the Supabase project.
+
 ## Session 15z6 — 2026-09-15 (the hero grid, made playable)
 
 Ashton, after seeing the meshed objects: "undo, keep them stored but I dont want any of the 3d
