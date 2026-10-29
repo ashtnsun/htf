@@ -88,6 +88,36 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 16c — 2026-10-29 (the dino editor)
+
+**Built:** `/dino`, a pixel editor for the T-rex. It starts on the footer map (20 × 22).
+Tools: pencil, eraser, fill and picker, with the right button erasing; undo and redo; flip,
+move by a cell, trim and clear; grow or cut any edge by a cell. Colours: a palette whose
+swatches recolour every cell drawn in them, with the brand colours one click away. Export:
+PNG at 1-32×, SVG (merged runs, crisp edges), or "Copy code" (a `{ palette, rows }` constant
+in the codebase's string-map format), which "Load map" reads back. Sixteen variants to start
+from: the classic and mirrored dinos, the waving arm, the four process scenes (detective, team,
+builder, party), new witch hat, mortarboard, crown, shades and mug drawings, the two small
+teammates and mint and cyan palette swaps. Saves go to this browser's localStorage, and the
+previous visit's canvas comes back as "Last draft".
+
+**Decisions made this session**
+
+1. The editor is a tool, not a page of the site: no nav link, not in the sitemap,
+   `robots: noindex`. It keeps the site header and footer.
+2. Variants are code (`src/components/dino/variants.ts`), not content: ask Claude for more
+   and they are added there. The process-scene variants are composed from `home/ProcessSprites`
+   layers, so a hat in the editor is the hat on the home page.
+3. The editor renders on the client only (`next/dynamic`, `ssr: false`), so reading
+   localStorage while its state is set up cannot mismatch a server render.
+4. The canvas takes the keyboard too: the arrow keys move a mint cursor, and Space or Enter
+   applies the tool.
+
+**Verified:** typecheck, lint, build, axe 0 violations on /dino at 1440 and 390. In the
+browser: drawing, right-button erase, undo, resize, copy and import, and PNG and SVG downloads.
+
+**Next session starts with:** Ashton's look at /dino, then the variants to keep or redraw.
+
 ## Session 16b — 2026-10-29 (the 2026-2027 cycle closed)
 
 Ashton: "update the site its now 10/29, so applications are over and final members have

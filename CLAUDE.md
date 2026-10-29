@@ -59,6 +59,11 @@ src/components/
   brand/            Logo (inline SVG wordmark; logo-paths.ts is generated, do not hand-edit),
                     PixelDino (footer), dino-pixels.ts (the 20×22 T-rex map the footer and the
                     process scene share)
+  dino/             the /dino pixel editor (a tool, not in the nav or sitemap, noindex):
+                    sprite.ts (the model: string-map rows + palette, PNG / SVG / code export),
+                    variants.ts (the starting points; new variants are added here, drawn in
+                    T-rex-local cells or composed from home/ProcessSprites layers),
+                    DinoEditor (client only, through DinoEditorLoader)
   ui/               primitives: Eyebrow, Headline, SplitButton, Section, Card, Accordion,
                     StatTile (+ CountUp), TestimonialCard, Chip, Field, Media, DottedMap,
                     CopyEmail (every email control: copies the address, never a mailto link)
@@ -256,8 +261,9 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   section rather than on itself so the copy keeps every pointer event, it ignores `pointerType:
 "touch"` (painting would fight the page's own scrolling), and it lights the cell without a
   fade under reduced motion. Anything painted is decoration in localStorage, never content.
-  The hero is the one place on the site that takes the right button (it rubs pixels out) and
-  suppresses the browser's menu, and the one place with `select-none`; keep both inside it.
+  The hero and the /dino editor's canvas are the only places on the site that take the right
+  button (it rubs pixels out) and suppress the browser's menu, and the only places with
+  `select-none`; keep both inside them.
   Should an object come back: `src/lib/wireframe.ts` builds one the way `home/Globe` is drawn —
   green outlines at one stroke weight, no fills, no depth fading, turning about the vertical
   axis at 4°/s from `GLOBE_TILT` — out of rings and profiles (`lathe`, `atAngle`, `extrudeZ`,
