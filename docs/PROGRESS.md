@@ -152,8 +152,15 @@ held in the jaws, the stem through the mouth (magenta), a long-stemmed rose offe
 from the resting hand (blush, red and white crown), and the rose in the jaws with the mirror
 held out level (coral pink). Drafted with a scratch tsx dump of the sprites and a Pillow sheet.
 
-**Next session starts with:** Ashton's look at the new Aphrodite variants, the second picks
-and Athena on /dino.
+Then four Athena variants after a painting Ashton shared (her in flight: plumed gold helmet,
+spear, lavender sash, barred owl), all in the picks' frame and all with a gold Corinthian helmet
+fitted to the head and a tall white plume swept back: the spear held across the body at the
+resting hand (ivory), a barred owl flying beside her (lavender), the spear with a lavender sash
+streaming back from the neck (silver), and the spear and the owl above clouds (ivory). Her
+first pick (owl perched, bronze shield) stays.
+
+**Next session starts with:** Ashton's look at the new Aphrodite and Athena variants, the
+second picks on /dino.
 
 ## Session 16b — 2026-10-29 (the 2026-2027 cycle closed)
 

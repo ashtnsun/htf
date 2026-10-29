@@ -13,7 +13,7 @@ import type { Variant } from "@/components/dino/variants";
 
 /**
  * The Greek gods in the dinosaur editor: three variants of each (Aphrodite has four, redone, and
- * no picks), every one the footer T-rex in
+ * no picks; Athena four and one pick), every one the footer T-rex in
  * its own colour (one hue family per god) with one or two props that say who it is. Coordinates
  * are T-rex-local (components/dino/compose). Anything held upright stands in column 20 with the
  * arm raised to it; anything held low sits against the resting arm from column 16.
@@ -43,6 +43,11 @@ const PEACOCK = "#22a06b";
 const PEACOCK_EYE = "#1e4fd8";
 const GLASS = "#bfe9ff";
 const LILAC = "#c9a3ff";
+const PLUME_LINE = "#c9c6d6";
+const SASH = "#a9a6e0";
+const SASH_FOLD = "#7f7cc0";
+const SKY_CLOUD = "#e4e1f2";
+const SKY_CLOUD_SHADE = "#b9b5d6";
 const GREY = "#8a939c";
 
 /* ---------------------------------------------------------------- props */
@@ -492,6 +497,101 @@ const ROSE_OFFERED = [
   ),
   ...bloom(22, 9),
 ];
+
+/* ---------------------------------------------------------------- Athena */
+
+/** A gold Corinthian helmet fitted to the head, cheek guard down, a tall white plume swept back. */
+const PLUMED_HELM = [
+  ...fitted([0, 1, 2], GOLD),
+  ...cells(
+    [
+      [10, 3],
+      [11, 3],
+      [10, 4],
+    ],
+    GOLD,
+  ),
+  ...local(["gggg", "gggg"], 13, -2, { g: GOLD }),
+  ...local(
+    [
+      "......wwwww.",
+      "...wwwwwwwww",
+      ".wwwwwwwwwww",
+      "wwwsssss....",
+      "ws..........",
+      "w...........",
+    ],
+    6,
+    -6,
+    { w: WHITE, s: PLUME_LINE },
+  ),
+];
+
+/** The spear held across the body at the resting hand, its head up and forward, a gold butt. */
+const SPEAR_ACROSS = [
+  ...line(12, 18, 22, 1, WOOD),
+  ...cells(
+    [
+      [11, 19],
+      [11, 20],
+      [22, 0],
+    ],
+    GOLD,
+  ),
+  ...local([".s.", ".s.", "sss", "sss", ".s."], 22, -5, { s: SILVER }),
+];
+
+/** The hand closed over the spear (drawn after it). */
+const grip = (color: string) => cells([[16, 11]], color);
+
+/** A barred owl flying, wings raised, a pale face with dark eyes. */
+function flyingOwl(x: number, y: number): Part[] {
+  return local(
+    [
+      "d.........d",
+      "ld.......dl",
+      "dld.....dld",
+      ".ldlbbbldl.",
+      ".dlbfffbld.",
+      "..dfefefd..",
+      "..dbfofbd..",
+      "...bbbbb...",
+      "....blb....",
+      "....y.y....",
+    ],
+    x,
+    y,
+    {
+      d: "#5b5068",
+      l: "#ece8f2",
+      f: "#ece8f2",
+      b: "#8a7f8f",
+      e: "#2a2230",
+      o: "#ff8c42",
+      y: YELLOW,
+    },
+  );
+}
+
+/** A sash streaming back from the neck in one long wave, its fold underneath (drawn first). */
+const SASH_STREAM = Array.from({ length: 12 }, (_, x) => {
+  const cy = 4 + Math.round(2 * Math.sin(x * 0.45));
+  const top = x < 2 ? [] : [{ x, y: cy - 1, color: SASH }];
+  return [...top, { x, y: cy, color: SASH }, { x, y: cy + 1, color: SASH_FOLD }];
+}).flat();
+
+/** Clouds round the feet (drawn first). */
+const SKY_CLOUDS = local(
+  [
+    "..ccc.......ccc.......cc..",
+    ".ccccc..cc.ccccc....ccccc.",
+    "cccccccccccccccccccccccccc",
+    "kkkkkkkkkkkkkkkkkkkkkkkkkk",
+  ],
+  0,
+  18,
+  { c: SKY_CLOUD, k: SKY_CLOUD_SHADE },
+);
 
 /* ---------------------------------------------------------------- the picks */
 
@@ -1040,7 +1140,47 @@ const GODS: God[] = [
       },
     ],
   },
-  { group: "Athena", variants: [] },
+  {
+    group: "Athena",
+    // After a painting of her in flight: plumed gold helmet, spear, lavender sash, barred owl.
+    variants: [
+      {
+        id: "athena-spear",
+        name: "Athena, spear",
+        note: "Ivory, a plumed gold helmet and a spear held across the body",
+        parts: [dino("#efe6d2"), PLUMED_HELM, SPEAR_ACROSS, grip("#efe6d2")],
+        framed: true,
+      },
+      {
+        id: "athena-owl",
+        name: "Athena, owl",
+        note: "Lavender, the plumed helmet and a barred owl flying beside her",
+        parts: [dino("#b8b4e0"), PLUMED_HELM, flyingOwl(15, 11)],
+        framed: true,
+      },
+      {
+        id: "athena-sash",
+        name: "Athena, sash",
+        note: "Silver, the plumed helmet, the spear and a lavender sash streaming back",
+        parts: [SASH_STREAM, dino("#aeb8c4"), PLUMED_HELM, SPEAR_ACROSS, grip("#aeb8c4")],
+        framed: true,
+      },
+      {
+        id: "athena-sky",
+        name: "Athena, sky",
+        note: "Ivory, the plumed helmet, the spear and the owl, above the clouds",
+        parts: [
+          SKY_CLOUDS,
+          dino("#efe6d2"),
+          PLUMED_HELM,
+          flyingOwl(16, 10),
+          SPEAR_ACROSS,
+          grip("#efe6d2"),
+        ],
+        framed: true,
+      },
+    ],
+  },
 ];
 
 /** Each god's picks first (the newest leading), then the earlier variants. */

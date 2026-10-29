@@ -64,7 +64,8 @@ src/components/
                     compose.ts (T-rex-local cells, the arm poses, `local` / `line` / `compose`),
                     variants.ts (the starting points, listed by group), gods.ts (three Greek-god
                     variants per god plus two picks each in one shared frame, and Athena; Aphrodite has
-                    four framed variants with a flower crown instead); new variants
+                    four framed variants with a flower crown instead, Athena four framed ones
+                    with a plumed helmet); new variants
                     are added there, DinoEditor (client only, through DinoEditorLoader)
   ui/               primitives: Eyebrow, Headline, SplitButton, Section, Card, Accordion,
                     StatTile (+ CountUp), TestimonialCard, Chip, Field, Media, DottedMap,
