@@ -133,7 +133,19 @@ bow), Hades (ghost fire, bident), Zeus (halo, thunderbolt, no beard), Poseidon (
 trident), Apollo (a big lyre, no wreath) and Hermes (sky blue, a fitted gold helmet with a
 three-feather wing, winged sandals). Each pick leads its god's group in the gallery.
 
-**Next session starts with:** Ashton's look at the nine picks on /dino.
+Then, from Ashton's notes on those picks: the editor gained a select tool (M: drag a box,
+drag inside it to move the filled cells, arrows nudge, Delete clears, Esc drops; empty cells
+in the box are see-through, so they never erase what they land on; every move is one undo
+step), and a second pick per god (`PICKS_2`) holds things differently instead of every
+dinosaur raising the same long arm: Ares's sword held forward, Aphrodite's big rose held up
+with a flower back on the head, Hera's fan of three peacock feathers (no staff by the crown),
+Artemis's bow held low, Hades in charcoal with the bident across the body, Zeus with a
+pale-yellow halo and an upright pale-yellow bolt, Poseidon in royal blue with the trident held
+level (well away from the crown), Apollo with a radiant sun crown, Hermes in teal with a gold
+helmet that covers the head, a white wing on its side and gold-winged sandals. Athena is new:
+silver, her owl perched on the back, a bronze shield.
+
+**Next session starts with:** Ashton's look at the second picks and Athena on /dino.
 
 ## Session 16b — 2026-10-29 (the 2026-2027 cycle closed)
 

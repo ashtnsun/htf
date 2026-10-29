@@ -63,7 +63,7 @@ src/components/
                     sprite.ts (the model: string-map rows + palette, PNG / SVG / code export),
                     compose.ts (T-rex-local cells, the arm poses, `local` / `line` / `compose`),
                     variants.ts (the starting points, listed by group), gods.ts (three Greek-god
-                    variants per god, each its own colour with one or two props); new variants
+                    variants per god plus two picks each in one shared frame, and Athena); new variants
                     are added there, DinoEditor (client only, through DinoEditorLoader)
   ui/               primitives: Eyebrow, Headline, SplitButton, Section, Card, Accordion,
                     StatTile (+ CountUp), TestimonialCard, Chip, Field, Media, DottedMap,

@@ -620,7 +620,9 @@ const FORKED_ANTLERS = local(
   { a: ANTLER },
 );
 
-const PICKS: Record<string, { name: string; note: string; parts: Part[][] }> = {
+type Pick = { name: string; note: string; parts: Part[][] };
+
+const PICKS: Record<string, Pick | undefined> = {
   Ares: {
     name: "Ares",
     note: "Crimson, a bronze helmet fitted to the head and a spear",
@@ -665,6 +667,184 @@ const PICKS: Record<string, { name: string; note: string; parts: Part[][] }> = {
     name: "Hermes",
     note: "Sky blue, a gold helmet with a big white wing, and winged sandals",
     parts: [dino("#4da3ff"), hermesHelm(GOLD), WINGED_SANDALS],
+  },
+};
+
+/* ---------------------------------------------------------------- the second picks */
+
+/**
+ * A second pick per god, after Ashton's notes on the first: other ways of holding things, so
+ * not every dinosaur raises the same long arm (a sword or trident held forward, a staff across
+ * the body, a bolt hurled down), and the headgear and colours reworked. Same frame as the first.
+ */
+
+/** A hand one cell further forward than the resting arm, for a grip at column 17. */
+const reach = (color: string) => cells([[16, 11]], color);
+
+/** A sword held forward at the resting hand: grip, a three-cell guard, the blade level. */
+const SWORD_FORWARD = [
+  ...cells([[16, 10]], LEATHER),
+  ...line(17, 9, 17, 11, GOLD),
+  ...line(18, 10, 26, 10, SILVER),
+];
+
+/** A big rose: a full bloom with a spiral, sepals, the stem down to the hand and two leaves. */
+const BIG_ROSE = [
+  ...line(21, 6, 21, 14, LEAF),
+  ...local(["ll", ".l"], 22, 9, { l: LEAF }),
+  ...local(["ll", "l."], 19, 12, { l: LEAF }),
+  ...local([".rrrr.", "rrdddr", "rdrrdr", "rdrdrr", "rrddrr", ".rrrr."], 20, 0, {
+    r: RED,
+    d: "#9e1b24",
+  }),
+];
+
+/** A big flower on the head: white petals round a yellow middle. */
+const HEAD_FLOWER = local([".pp.", "pyyp", "pyyp", ".pp."], 12, -3, { p: WHITE, y: YELLOW });
+
+/** Three peacock feathers fanned out from the resting hand. */
+const PEACOCK_HAND_FAN = (
+  [
+    [22, 4],
+    [24, 9],
+    [21, 14],
+  ] as const
+).flatMap(([x, y]) => [...line(16, 11, x, y, PEACOCK), ...peacockEye(x, y)]);
+
+/** A bow held low at the resting hand, the string forward. */
+const BOW_LOWERED = [
+  ...line(19, 7, 19, 20, WHITE),
+  ...cells(
+    [
+      [18, 8],
+      [17, 9],
+      [17, 18],
+      [18, 19],
+    ],
+    WOOD,
+  ),
+  ...line(16, 10, 16, 17, WOOD),
+];
+
+/** The bident held across the body: the shaft rising forward past the jaw, two prongs. */
+const BIDENT_ACROSS = [
+  ...line(15, 15, 23, -1, STEEL),
+  ...line(22, -2, 24, -1, STEEL),
+  ...line(22, -2, 23, -6, STEEL),
+  ...line(24, -1, 26, -5, STEEL),
+];
+
+/** A thunderbolt held upright in front of the chest, gripped at its lower bend. */
+function boltUpright(color: string): Part[] {
+  return bolt(color).map((p) => ({ ...p, x: p.x - 3, y: p.y + 10 }));
+}
+
+/** Poseidon's trident held forward, level, at the resting hand. */
+function tridentForward(metal: string): Part[] {
+  return [
+    ...line(12, 11, 22, 11, metal),
+    ...line(23, 9, 23, 13, metal),
+    ...line(24, 9, 25, 9, metal),
+    ...line(24, 11, 26, 11, metal),
+    ...line(24, 13, 25, 13, metal),
+  ];
+}
+
+/** A radiant sun crown: a gold band and rays fanning up from it. */
+function sunCrown(band: string, rays: string): Part[] {
+  const out: Part[] = [];
+  [165, 140, 115, 90, 65, 40, 15].forEach((deg, i) => {
+    const a = (deg * Math.PI) / 180;
+    const length = i % 2 === 0 ? 4 : 6;
+    for (let r = 2; r <= length; r += 1) {
+      out.push({
+        x: Math.round(15 + Math.cos(a) * r),
+        y: Math.round(-1 - Math.sin(a) * r),
+        color: rays,
+      });
+    }
+  });
+  return [...out, ...line(11, -1, 18, -1, band)];
+}
+
+/** Hermes's helmet: fitted over the head's top rows with a dome, a white wing on its side. */
+function hermesWingedHelm(metal: string): Part[] {
+  return [
+    ...fitted([0, 1, 2], metal),
+    ...line(12, -1, 17, -1, metal),
+    ...local(["w......", "www....", ".wwwww.", "wwwwwww", "..wwww."], 7, -3, { w: WHITE }),
+  ];
+}
+
+/** Small gold wings at both ankles. */
+const GOLD_SANDALS = WINGED_SANDALS.map((p) => ({ ...p, color: GOLD }));
+
+/** Athena's owl, perched on the back behind the head: ear tufts, yellow eyes, a beak. */
+const OWL = local(["b...b", "bbbbb", "bybyb", "bbobb", "bwwwb", ".bbb."], 5, 3, {
+  b: "#8b5a2b",
+  y: YELLOW,
+  o: "#ff8c42",
+  w: "#f0e0c0",
+});
+
+/** A round bronze shield on the arm with a dark boss in the middle. */
+const ATHENA_SHIELD = local(
+  ["..bbb..", ".bdddb.", "bdbbbdb", "bdbcbdb", "bdbbbdb", ".bdddb.", "..bbb.."],
+  14,
+  9,
+  { b: BRONZE, d: "#8a5a22", c: "#8a5a22" },
+);
+
+const PICKS_2: Record<string, Pick | undefined> = {
+  Ares: {
+    name: "Ares 2",
+    note: "Crimson, the fitted helmet and a sword held forward",
+    parts: [dino("#e5383b"), ARES_HELM, SWORD_FORWARD],
+  },
+  Aphrodite: {
+    name: "Aphrodite 2",
+    note: "Rose pink, a big rose held up and a flower on the head",
+    parts: [dino("#ff6fae", "raised"), cells([[20, 8]], "#ff6fae"), HEAD_FLOWER, BIG_ROSE],
+  },
+  Hera: {
+    name: "Hera 2",
+    note: "Royal purple, the polos crown and a fan of three peacock feathers",
+    parts: [dino("#8e5bd8"), POLOS, PEACOCK_HAND_FAN],
+  },
+  Artemis: {
+    name: "Artemis 2",
+    note: "Forest green, forked antlers and the bow held low",
+    parts: [dino("#2f7d5b"), FORKED_ANTLERS, BOW_LOWERED],
+  },
+  Hades: {
+    name: "Hades 2",
+    note: "Charcoal, green ghost fire and the bident held across the body",
+    parts: [dino("#55555f"), reach("#55555f"), flames(GHOST_FLAME, GHOST_CORE), BIDENT_ACROSS],
+  },
+  Zeus: {
+    name: "Zeus 2",
+    note: "Lightning yellow, a pale-yellow halo and a bolt held upright in front",
+    parts: [dino("#ffd60a"), reach("#ffd60a"), halo("#fff3a0"), boltUpright("#fff3a0")],
+  },
+  Poseidon: {
+    name: "Poseidon 2",
+    note: "Royal blue, a gold sea crown and the trident held forward",
+    parts: [tridentForward(GOLD), dino("#1e6bff"), seaCrown(GOLD)],
+  },
+  Apollo: {
+    name: "Apollo 2",
+    note: "Orange, a radiant sun crown and the big lyre",
+    parts: [dino("#ff8c1a"), sunCrown(GOLD, YELLOW), bigLyre("#ffd23f")],
+  },
+  Hermes: {
+    name: "Hermes 2",
+    note: "Teal, a gold helmet with a white wing on its side and gold-winged sandals",
+    parts: [dino("#14c4b0"), hermesWingedHelm(GOLD), GOLD_SANDALS],
+  },
+  Athena: {
+    name: "Athena",
+    note: "Silver, her owl perched on the back and a bronze shield",
+    parts: [dino("#aeb8c4"), OWL, ATHENA_SHIELD],
   },
 };
 
@@ -888,18 +1068,29 @@ const GODS: God[] = [
       },
     ],
   },
+  { group: "Athena", variants: [] },
 ];
 
-/** Each god's pick first, then the earlier variants. */
+/** Each god's picks first (the newest leading), then the earlier variants. */
 export const GOD_VARIANTS: readonly Variant[] = GODS.flatMap((god) => {
-  const pick = PICKS[god.group]!;
+  const slug = god.group.toLowerCase();
+  const picks = [
+    { id: `${slug}-pick-2`, label: "Pick 2", pick: PICKS_2[god.group] },
+    { id: `${slug}-pick`, label: "Pick", pick: PICKS[god.group] },
+  ].flatMap(({ id, label, pick }) =>
+    pick
+      ? [
+          {
+            id,
+            group: god.group,
+            note: `${label}: ${pick.note}`,
+            sprite: composeIn(pick.name, PICK_FRAME, ...pick.parts),
+          },
+        ]
+      : [],
+  );
   return [
-    {
-      id: `${god.group.toLowerCase()}-pick`,
-      group: god.group,
-      note: `Pick: ${pick.note}`,
-      sprite: composeIn(pick.name, PICK_FRAME, ...pick.parts),
-    },
+    ...picks,
     ...god.variants.map((v) => ({
       id: v.id,
       group: god.group,
