@@ -88,6 +88,38 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 16b — 2026-10-29 (the 2026-2027 cycle closed)
+
+Ashton: "update the site its now 10/29, so applications are over and final members have
+already been decided, we already had kickoff meeting".
+
+**Built:**
+
+- `content/site.ts`: `season.isApplicationSeason` is `false`. The Sep 17 deadline had already
+  flipped every CTA to Contact Us and `/apply` to its "closed for now" page; the flag keeps it
+  that way until the next cycle is set up.
+- `content/recruitment.ts`: Interviews and Decisions read "Completed" instead of "TBD", and
+  Decisions is flagged `current`, so the whole track is lit. The deadline step's "Apply before
+  this date!" is now "The last day to apply." The kickoff step stays off (Ashton removed it in
+  Session 15c).
+- `/students` roles column: "Our roles." instead of "Available roles." out of season, and
+  `SeasonNote closed` says "2026-2027 applications are closed. We recruit again at the start of
+  the fall semester." (the FAQ's own wording). Every other `SeasonNote` still says nothing out
+  of season.
+
+**Verified:** typecheck, lint, build; axe 0 violations; screenshots in
+`docs/screenshots/session-16b/`.
+
+**For next fall:** set `isApplicationSeason: true`, the new `applyFormUrl`, `closesAt` and
+`cycleName`, the new recruitment dates, and take `current` off Decisions.
+
+**TODO:**
+
+- [ ] Ashton: the interview and decision dates, if the timeline should show them instead of
+      "Completed".
+
+**Next session starts with:** Ashton's look at Portfolio Night, then the Supabase project.
+
 ## Session 16 — 2026-10-22 (Portfolio Night)
 
 Ashton asked for `/portfolio`, a resource and an engagement tool for a portfolio-building
