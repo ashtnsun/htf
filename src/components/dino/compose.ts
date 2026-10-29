@@ -99,22 +99,40 @@ export function dino(color: string, arm: "rest" | "raised" | "none" = "rest"): P
   return [...body, ...cells(arm === "rest" ? DINO_ARM : ARM_RAISED, color)];
 }
 
-/**
- * Layers the parts in order (later ones cover earlier ones) and crops to the drawing. The
- * palette runs from the most used colour down, so the dinosaur's colour is `#` in the map.
- */
+/** A fixed canvas in T-rex-local cells, inclusive at both ends. */
+export type Frame = { x0: number; y0: number; x1: number; y1: number };
+
+/** The dinosaur's own cells in the given rows, in another colour (a helmet that fits the head). */
+export function fitted(rows: readonly number[], color: string): Part[] {
+  return dinoCells()
+    .filter(({ y }) => rows.includes(y))
+    .map(({ x, y }) => ({ x, y, color }));
+}
+
 export function compose(name: string, ...parts: Part[][]): Sprite {
+  return composeIn(name, null, ...parts);
+}
+
+/**
+ * Layers the parts in order (later ones cover earlier ones) and crops to the drawing, or to
+ * `frame` when one is given, so sprites drawn in the same frame share a size and the dinosaur
+ * sits in the same cells in each. The palette runs from the most used colour down, so the
+ * dinosaur's colour is `#` in the map.
+ */
+export function composeIn(name: string, frame: Frame | null, ...parts: Part[][]): Sprite {
   const placed = new Map<string, Part>();
   for (const part of parts.flat()) {
     const key = `${part.x},${part.y}`;
     if (part.color) placed.set(key, part);
     else placed.delete(key);
   }
-  const all = [...placed.values()];
-  const minX = Math.min(...all.map((p) => p.x));
-  const minY = Math.min(...all.map((p) => p.y));
-  const width = Math.max(...all.map((p) => p.x)) - minX + 1;
-  const height = Math.max(...all.map((p) => p.y)) - minY + 1;
+  const all = [...placed.values()].filter(
+    (p) => !frame || (p.x >= frame.x0 && p.x <= frame.x1 && p.y >= frame.y0 && p.y <= frame.y1),
+  );
+  const minX = frame?.x0 ?? Math.min(...all.map((p) => p.x));
+  const minY = frame?.y0 ?? Math.min(...all.map((p) => p.y));
+  const width = (frame?.x1 ?? Math.max(...all.map((p) => p.x))) - minX + 1;
+  const height = (frame?.y1 ?? Math.max(...all.map((p) => p.y))) - minY + 1;
   const counts = new Map<string, number>();
   for (const p of all) counts.set(p.color!, (counts.get(p.color!) ?? 0) + 1);
   const palette = [...counts.keys()].sort((a, b) => counts.get(b)! - counts.get(a)!);

@@ -1,4 +1,14 @@
-import { cells, compose, dino, line, local, WHITE, type Part } from "@/components/dino/compose";
+import {
+  cells,
+  compose,
+  composeIn,
+  dino,
+  fitted,
+  line,
+  local,
+  WHITE,
+  type Part,
+} from "@/components/dino/compose";
 import type { Variant } from "@/components/dino/variants";
 
 /**
@@ -491,6 +501,173 @@ const LETTER = local(["ooooooo", "o#ooo#o", "oo#r#oo", "ooooooo", "ooooooo"], 16
   r: RED,
 });
 
+/* ---------------------------------------------------------------- the picks */
+
+/**
+ * One chosen variant per god, simpler than the rest and all drawn in the same frame, so the
+ * dinosaur is the same size and in the same cells in each and the exports line up.
+ */
+const PICK_FRAME = { x0: 0, y0: -6, x1: 26, y1: 21 };
+
+/** Ares's helmet fitted to the head (the eye stays carved), a cheek guard and a short crest. */
+const ARES_HELM = [
+  ...fitted([0, 1, 2], BRONZE),
+  ...cells(
+    [
+      [10, 3],
+      [11, 3],
+      [10, 4],
+    ],
+    BRONZE,
+  ),
+  ...local(["..pppp..", ".pppppp.", "pppppppp"], 11, -3, { p: "#9e1b24" }),
+];
+
+/** A shorter spear, its head inside the frame. */
+const SHORT_SPEAR = [
+  ...line(20, -3, 20, 21, WOOD),
+  ...local([".s.", "sss", "sss", ".s."], 19, -6, { s: SILVER }),
+];
+
+/** A rose held up to the snout: a full bloom with a dark spiral, the stem in the hand. */
+const ROSE_HELD = [
+  ...line(20, 6, 20, 13, LEAF),
+  ...local(["ll", ".l"], 21, 9, { l: LEAF }),
+  ...local(["ll", "l."], 18, 11, { l: LEAF }),
+  ...local([".rr.", "rrdr", "rdrr", "rrdr", ".rr."], 20, 1, { r: RED, d: "#9e1b24" }),
+];
+
+/** The polos, the tall crown Hera wears in Greek art, banded with peacock-blue gems. */
+const POLOS = local(["gggggggg", ".gegege.", ".gggggg.", ".gggggg."], 11, -4, {
+  g: GOLD,
+  e: PEACOCK_EYE,
+});
+
+/** A gold sceptre topped with a peacock eye. */
+const PEACOCK_SCEPTRE = [...line(20, -3, 20, 16, GOLD), ...peacockEye(20, -5)];
+
+/** The bident with its prongs inside the frame. */
+const SHORT_BIDENT = [
+  ...line(20, -3, 20, 21, STEEL),
+  ...line(19, -3, 21, -3, STEEL),
+  ...line(19, -6, 19, -4, STEEL),
+  ...line(21, -6, 21, -4, STEEL),
+];
+
+/** A halo: a flat ring floating over the head. */
+function halo(color: string): Part[] {
+  return local([".hhhhhh.", "h......h", ".hhhhhh."], 11, -5, { h: color });
+}
+
+/** The trident with its prongs inside the frame. */
+function shortTrident(metal: string): Part[] {
+  return [
+    ...line(20, -2, 20, 21, metal),
+    ...line(18, -2, 22, -2, metal),
+    ...line(18, -5, 18, -3, metal),
+    ...line(20, -6, 20, -3, metal),
+    ...line(22, -5, 22, -3, metal),
+  ];
+}
+
+/** A big lyre against the arm: horns, the yoke, two strings and the sound box. */
+function bigLyre(frame: string): Part[] {
+  return local(
+    [
+      "g.....g",
+      "g.....g",
+      "ggggggg",
+      "g.s.s.g",
+      "g.s.s.g",
+      "g.s.s.g",
+      ".gs.sg.",
+      ".ggggg.",
+      "..ggg..",
+    ],
+    16,
+    9,
+    { g: frame, s: WHITE },
+  );
+}
+
+/** Hermes's helmet fitted to the head, with a large wing sweeping back from it. */
+function hermesHelm(metal: string): Part[] {
+  return [
+    ...fitted([0, 1], metal),
+    // Three feathers layered up and back, their tips stepping out on the trailing edge.
+    ...local(
+      [
+        ".....ww...",
+        "...wwww...",
+        "wwwwwww...",
+        "..wwwwww..",
+        "wwwwwwwww.",
+        "...wwwwwww",
+        ".wwwwwww..",
+      ],
+      3,
+      -6,
+      { w: WHITE },
+    ),
+  ];
+}
+
+/** Antlers as two forked beams spreading up and out from the head. */
+const FORKED_ANTLERS = local(
+  ["a.a....a.a", "a.a....a.a", ".aa....aa.", "..aa..aa..", "...a..a...", "...a..a..."],
+  10,
+  -6,
+  { a: ANTLER },
+);
+
+const PICKS: Record<string, { name: string; note: string; parts: Part[][] }> = {
+  Ares: {
+    name: "Ares",
+    note: "Crimson, a bronze helmet fitted to the head and a spear",
+    parts: [dino("#e5383b", "raised"), ARES_HELM, SHORT_SPEAR],
+  },
+  Aphrodite: {
+    name: "Aphrodite",
+    note: "Rose pink, holding a red rose to the snout",
+    parts: [dino("#ff6fae", "raised"), ROSE_HELD],
+  },
+  Hera: {
+    name: "Hera",
+    note: "Royal purple, the tall polos crown and a peacock sceptre",
+    parts: [dino("#8e5bd8", "raised"), POLOS, PEACOCK_SCEPTRE],
+  },
+  Artemis: {
+    name: "Artemis",
+    note: "Forest green, antlers and a drawn bow",
+    parts: [dino("#2f7d5b", "raised"), FORKED_ANTLERS, BOW],
+  },
+  Hades: {
+    name: "Hades",
+    note: "Ash grey, green ghost fire and a bident",
+    parts: [dino("#75757f", "raised"), flames(GHOST_FLAME, GHOST_CORE), SHORT_BIDENT],
+  },
+  Zeus: {
+    name: "Zeus",
+    note: "Lightning yellow, a halo and a thunderbolt",
+    parts: [dino("#ffd60a", "raised"), halo(WHITE), bolt("#6fd3ff")],
+  },
+  Poseidon: {
+    name: "Poseidon",
+    note: "Aqua, a gold sea crown and a gold trident",
+    parts: [dino("#17bebb", "raised"), seaCrown(GOLD), shortTrident(GOLD)],
+  },
+  Apollo: {
+    name: "Apollo",
+    note: "Orange and a big gold lyre",
+    parts: [dino("#ff8c1a"), bigLyre("#ffd23f")],
+  },
+  Hermes: {
+    name: "Hermes",
+    note: "Sky blue, a gold helmet with a big white wing, and winged sandals",
+    parts: [dino("#4da3ff"), hermesHelm(GOLD), WINGED_SANDALS],
+  },
+};
+
 /* ---------------------------------------------------------------- the variants */
 
 type God = {
@@ -713,11 +890,21 @@ const GODS: God[] = [
   },
 ];
 
-export const GOD_VARIANTS: readonly Variant[] = GODS.flatMap((god) =>
-  god.variants.map((v) => ({
-    id: v.id,
-    group: god.group,
-    note: v.note,
-    sprite: compose(v.name, ...v.parts),
-  })),
-);
+/** Each god's pick first, then the earlier variants. */
+export const GOD_VARIANTS: readonly Variant[] = GODS.flatMap((god) => {
+  const pick = PICKS[god.group]!;
+  return [
+    {
+      id: `${god.group.toLowerCase()}-pick`,
+      group: god.group,
+      note: `Pick: ${pick.note}`,
+      sprite: composeIn(pick.name, PICK_FRAME, ...pick.parts),
+    },
+    ...god.variants.map((v) => ({
+      id: v.id,
+      group: god.group,
+      note: v.note,
+      sprite: compose(v.name, ...v.parts),
+    })),
+  ];
+});

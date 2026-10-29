@@ -125,7 +125,15 @@ thunderbolt, storm cloud, beard, trident, waves, lyre, laurel, sun, winged helm 
 caduceus, letter). The gallery on /dino lists them under a heading per god. The props break the
 "props white with green accents" rule on purpose: the brief was a different colour for each.
 
-**Next session starts with:** Ashton's look at /dino, then the god variants to keep or redraw.
+Then a pick per god, from Ashton's notes on the first 27: simpler, each in its own colour,
+all composed in one fixed 27 x 28 frame (`PICK_FRAME`, `composeIn`) so the dinosaur is the same
+size and in the same cells in every one. Ares (fitted bronze helmet, spear), Aphrodite (a rose
+held to the snout), Hera (her polos crown and a peacock sceptre), Artemis (forked antlers, drawn
+bow), Hades (ghost fire, bident), Zeus (halo, thunderbolt, no beard), Poseidon (gold sea crown,
+trident), Apollo (a big lyre, no wreath) and Hermes (sky blue, a fitted gold helmet with a
+three-feather wing, winged sandals). Each pick leads its god's group in the gallery.
+
+**Next session starts with:** Ashton's look at the nine picks on /dino.
 
 ## Session 16b — 2026-10-29 (the 2026-2027 cycle closed)
 
