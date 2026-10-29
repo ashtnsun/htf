@@ -1,3 +1,4 @@
+import { isInSeason } from "@content/site";
 import type { Role } from "@/lib/content/schemas";
 import { SeasonNote } from "@/components/layout/SeasonNote";
 import { Reveal } from "@/components/motion/Reveal";
@@ -16,7 +17,8 @@ import { ROLE_ICONS } from "./roleIcons";
  * On large screens the intro sticks beside the rows, top-aligned with the first
  * row at rest; while the rows scroll past it holds a little below the site header and the
  * section bar (`--subnav-h`, set by SectionNav while mounted), so the bars never cover it
- * (the second 2026-09-09 review replaced the viewport-tall centred box).
+ * (the second 2026-09-09 review replaced the viewport-tall centred box). Out of season the
+ * headline is "Our roles." rather than "Available roles." and the note says the cycle is closed.
  */
 export function RoleRows({ roles }: { roles: Role[] }) {
   return (
@@ -31,10 +33,10 @@ export function RoleRows({ roles }: { roles: Role[] }) {
             as="h2"
             id="roles-title"
             size="h2"
-            lines={["Available", "*roles.*"]}
+            lines={isInSeason() ? ["Available", "*roles.*"] : ["Our", "*roles.*"]}
             className="mt-5 md:text-display"
           />
-          <SeasonNote className="mt-6" />
+          <SeasonNote className="mt-6" closed />
         </Reveal>
 
         <ol className="divide-y divide-line border-y border-line">

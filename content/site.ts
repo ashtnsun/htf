@@ -39,7 +39,12 @@ export const site = {
     email: "htfpurdue@gmail.com",
   },
   season: {
-    isApplicationSeason: true,
+    /**
+     * Off since 2026-10-29: the 2026-2027 cycle is over (members chosen, kickoff held). The
+     * deadline had already flipped every CTA to Contact Us; the flag keeps it that way. Turn
+     * it back on with the next cycle's form link, deadline and cycle name.
+     */
+    isApplicationSeason: false,
     /**
      * The Google Form applicants fill in this cycle: the form's "viewform" link (Send →
      * link). /apply embeds it (`getApplyForm` adds `embedded=true`) and links to it for
