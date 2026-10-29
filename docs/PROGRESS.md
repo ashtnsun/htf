@@ -116,7 +116,16 @@ previous visit's canvas comes back as "Last draft".
 **Verified:** typecheck, lint, build, axe 0 violations on /dino at 1440 and 390. In the
 browser: drawing, right-button erase, undo, resize, copy and import, and PNG and SVG downloads.
 
-**Next session starts with:** Ashton's look at /dino, then the variants to keep or redraw.
+**Later the same day, the Greek gods:** 27 premade variants in `components/dino/gods.ts`, three
+each for Ares, Aphrodite, Hera, Artemis, Hades, Zeus, Poseidon, Apollo and Hermes. Every one is
+the footer T-rex in its own colour (one hue family per god; Hermes in HTF green) with one or two
+props (helmets and crests, spear, shield, sword, rose, heart, scallop shell, diadem, peacock
+feather and fan, pomegranate, bow, quiver, antlers, moon, fire hair, bident, skull, crowns,
+thunderbolt, storm cloud, beard, trident, waves, lyre, laurel, sun, winged helm and sandals,
+caduceus, letter). The gallery on /dino lists them under a heading per god. The props break the
+"props white with green accents" rule on purpose: the brief was a different colour for each.
+
+**Next session starts with:** Ashton's look at /dino, then the god variants to keep or redraw.
 
 ## Session 16b — 2026-10-29 (the 2026-2027 cycle closed)
 

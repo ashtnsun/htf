@@ -61,9 +61,10 @@ src/components/
                     process scene share)
   dino/             the /dino pixel editor (a tool, not in the nav or sitemap, noindex):
                     sprite.ts (the model: string-map rows + palette, PNG / SVG / code export),
-                    variants.ts (the starting points; new variants are added here, drawn in
-                    T-rex-local cells or composed from home/ProcessSprites layers),
-                    DinoEditor (client only, through DinoEditorLoader)
+                    compose.ts (T-rex-local cells, the arm poses, `local` / `line` / `compose`),
+                    variants.ts (the starting points, listed by group), gods.ts (three Greek-god
+                    variants per god, each its own colour with one or two props); new variants
+                    are added there, DinoEditor (client only, through DinoEditorLoader)
   ui/               primitives: Eyebrow, Headline, SplitButton, Section, Card, Accordion,
                     StatTile (+ CountUp), TestimonialCard, Chip, Field, Media, DottedMap,
                     CopyEmail (every email control: copies the address, never a mailto link)
