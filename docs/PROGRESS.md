@@ -145,7 +145,15 @@ level (well away from the crown), Apollo with a radiant sun crown, Hermes in tea
 helmet that covers the head, a white wing on its side and gold-winged sandals. Athena is new:
 silver, her owl perched on the back, a bronze shield.
 
-**Next session starts with:** Ashton's look at the second picks and Athena on /dino.
+Then Aphrodite redone from scratch (her two picks and three variants dropped): four
+variants, all in the picks' frame and all wearing a flower crown (a leaf band over the head's
+top row, three flowers standing on it): a hand mirror raised to the face (rose pink), a rose
+held in the jaws, the stem through the mouth (magenta), a long-stemmed rose offered forward
+from the resting hand (blush, red and white crown), and the rose in the jaws with the mirror
+held out level (coral pink). Drafted with a scratch tsx dump of the sprites and a Pillow sheet.
+
+**Next session starts with:** Ashton's look at the new Aphrodite variants, the second picks
+and Athena on /dino.
 
 ## Session 16b — 2026-10-29 (the 2026-2027 cycle closed)
 

@@ -12,7 +12,8 @@ import {
 import type { Variant } from "@/components/dino/variants";
 
 /**
- * The Greek gods in the dinosaur editor: three variants of each, every one the footer T-rex in
+ * The Greek gods in the dinosaur editor: three variants of each (Aphrodite has four, redone, and
+ * no picks), every one the footer T-rex in
  * its own colour (one hue family per god) with one or two props that say who it is. Coordinates
  * are T-rex-local (components/dino/compose). Anything held upright stands in column 20 with the
  * arm raised to it; anything held low sits against the resting arm from column 16.
@@ -40,8 +41,8 @@ const CLOUD = "#b9c2cf";
 const SEA = "#2f80ed";
 const PEACOCK = "#22a06b";
 const PEACOCK_EYE = "#1e4fd8";
-const SHELL = "#ffe3c4";
-const SHELL_RIB = "#e8956b";
+const GLASS = "#bfe9ff";
+const LILAC = "#c9a3ff";
 const GREY = "#8a939c";
 
 /* ---------------------------------------------------------------- props */
@@ -109,60 +110,6 @@ const SWORD = [
     LEATHER,
   ),
 ];
-
-/** A flower tucked on top of the head: petals round a centre. */
-function hairFlower(petal: string, centre: string): Part[] {
-  return local([".p.", "pcp", ".p."], 12, -2, { p: petal, c: centre });
-}
-
-/** A rose held out from the hand: stem, one leaf, the bloom in front of the chin. */
-const ROSE = [
-  ...line(16, 10, 19, 10, LEAF),
-  ...cells([[18, 11]], LEAF),
-  ...local([".rr", "rdr", "rr."], 19, 7, { r: RED, d: "#a4161a" }),
-];
-
-/** A heart held against the arm. */
-function heart(color: string): Part[] {
-  return local([".hh.hh.", "hhhhhhh", "hhhhhhh", ".hhhhh.", "..hhh..", "...h..."], 16, 8, {
-    h: color,
-  });
-}
-
-/** Pearls on the neck. */
-const PEARLS = cells(
-  [
-    [10, 8],
-    [12, 8],
-    [11, 9],
-    [13, 9],
-  ],
-  WHITE,
-);
-
-/** A scallop shell behind the legs, its ribs fanning out from the hinge (drawn first). */
-function scallop(fill: string, rib: string): Part[] {
-  const cx = 8;
-  const cy = 22;
-  const r = 13;
-  const out: Part[] = [];
-  for (let y = cy - r; y <= cy; y += 1) {
-    for (let x = cx - r; x <= cx + r; x += 1) {
-      const dx = x - cx;
-      const dy = cy - y;
-      if (dx * dx + dy * dy > r * r + r) continue;
-      const band = Math.floor(Math.atan2(dy, dx) / (Math.PI / 11));
-      out.push({ x, y, color: band % 2 === 0 ? fill : rib });
-    }
-  }
-  return [
-    ...out,
-    ...cells(
-      [7, 8, 9].map((x) => [x, cy + 1] as const),
-      rib,
-    ),
-  ];
-}
 
 /** A diadem rising to a jewel at the front of the head. */
 function diadem(metal: string, jewel: string): Part[] {
@@ -501,6 +448,51 @@ const LETTER = local(["ooooooo", "o#ooo#o", "oo#r#oo", "ooooooo", "ooooooo"], 16
   r: RED,
 });
 
+/* ---------------------------------------------------------------- Aphrodite */
+
+/** A flower crown: a leaf band over the head's top row and three flowers standing on it. */
+function flowerCrown(a: string, b: string, c: string): Part[] {
+  return [
+    ...local(["l........", "lllllllll"], 10, -1, { l: LEAF }),
+    ...[11, 14, 17].flatMap((x, i) =>
+      local([".p.", "pyp", ".p."], x, -3, { p: [a, b, c][i]!, y: YELLOW }),
+    ),
+  ];
+}
+
+/** A hand mirror: a gold rim round pale glass with a glint, `rows` tall. */
+function mirror(x: number, y: number, rows: 5 | 6): Part[] {
+  const glass = rows === 6 ? ["gsssg", "gwssg", "gsssg", "gsssg"] : ["gsssg", "gwssg", "gsssg"];
+  return local([".ggg.", ...glass, ".ggg."], x, y, { g: GOLD, s: GLASS, w: WHITE });
+}
+
+/** The mirror raised in front of the face, its handle angled down to the raised hand. */
+const MIRROR_RAISED = [...line(20, 8, 22, 6, GOLD), ...mirror(21, 0, 6)];
+
+/** The mirror held out level from the resting hand. */
+const MIRROR_LEVEL = [...line(16, 11, 18, 11, GOLD), ...mirror(19, 9, 5)];
+
+/** A rose bloom with a dark spiral, its top-left cell at (x, y). */
+function bloom(x: number, y: number): Part[] {
+  return local([".rr.", "rddr", "rdrr", ".rr."], x, y, { r: RED, d: "#9e1b24" });
+}
+
+/** A rose in the jaws: the stem through the mouth, a leaf under it, the bloom in front. */
+const ROSE_IN_JAWS = [...line(15, 6, 21, 6, LEAF), ...cells([[19, 7]], LEAF), ...bloom(21, 4)];
+
+/** A long-stemmed rose offered forward from the resting hand. */
+const ROSE_OFFERED = [
+  ...line(16, 11, 22, 11, LEAF),
+  ...cells(
+    [
+      [19, 10],
+      [20, 12],
+    ],
+    LEAF,
+  ),
+  ...bloom(22, 9),
+];
+
 /* ---------------------------------------------------------------- the picks */
 
 /**
@@ -527,14 +519,6 @@ const ARES_HELM = [
 const SHORT_SPEAR = [
   ...line(20, -3, 20, 21, WOOD),
   ...local([".s.", "sss", "sss", ".s."], 19, -6, { s: SILVER }),
-];
-
-/** A rose held up to the snout: a full bloom with a dark spiral, the stem in the hand. */
-const ROSE_HELD = [
-  ...line(20, 6, 20, 13, LEAF),
-  ...local(["ll", ".l"], 21, 9, { l: LEAF }),
-  ...local(["ll", "l."], 18, 11, { l: LEAF }),
-  ...local([".rr.", "rrdr", "rdrr", "rrdr", ".rr."], 20, 1, { r: RED, d: "#9e1b24" }),
 ];
 
 /** The polos, the tall crown Hera wears in Greek art, banded with peacock-blue gems. */
@@ -628,11 +612,6 @@ const PICKS: Record<string, Pick | undefined> = {
     note: "Crimson, a bronze helmet fitted to the head and a spear",
     parts: [dino("#e5383b", "raised"), ARES_HELM, SHORT_SPEAR],
   },
-  Aphrodite: {
-    name: "Aphrodite",
-    note: "Rose pink, holding a red rose to the snout",
-    parts: [dino("#ff6fae", "raised"), ROSE_HELD],
-  },
   Hera: {
     name: "Hera",
     note: "Royal purple, the tall polos crown and a peacock sceptre",
@@ -687,20 +666,6 @@ const SWORD_FORWARD = [
   ...line(17, 9, 17, 11, GOLD),
   ...line(18, 10, 26, 10, SILVER),
 ];
-
-/** A big rose: a full bloom with a spiral, sepals, the stem down to the hand and two leaves. */
-const BIG_ROSE = [
-  ...line(21, 6, 21, 14, LEAF),
-  ...local(["ll", ".l"], 22, 9, { l: LEAF }),
-  ...local(["ll", "l."], 19, 12, { l: LEAF }),
-  ...local([".rrrr.", "rrdddr", "rdrrdr", "rdrdrr", "rrddrr", ".rrrr."], 20, 0, {
-    r: RED,
-    d: "#9e1b24",
-  }),
-];
-
-/** A big flower on the head: white petals round a yellow middle. */
-const HEAD_FLOWER = local([".pp.", "pyyp", "pyyp", ".pp."], 12, -3, { p: WHITE, y: YELLOW });
 
 /** Three peacock feathers fanned out from the resting hand. */
 const PEACOCK_HAND_FAN = (
@@ -801,11 +766,6 @@ const PICKS_2: Record<string, Pick | undefined> = {
     note: "Crimson, the fitted helmet and a sword held forward",
     parts: [dino("#e5383b"), ARES_HELM, SWORD_FORWARD],
   },
-  Aphrodite: {
-    name: "Aphrodite 2",
-    note: "Rose pink, a big rose held up and a flower on the head",
-    parts: [dino("#ff6fae", "raised"), cells([[20, 8]], "#ff6fae"), HEAD_FLOWER, BIG_ROSE],
-  },
   Hera: {
     name: "Hera 2",
     note: "Royal purple, the polos crown and a fan of three peacock feathers",
@@ -852,7 +812,8 @@ const PICKS_2: Record<string, Pick | undefined> = {
 
 type God = {
   group: string;
-  variants: { id: string; name: string; note: string; parts: Part[][] }[];
+  /** `framed` composes in the picks' frame instead of cropping to the drawing. */
+  variants: { id: string; name: string; note: string; parts: Part[][]; framed?: boolean }[];
 };
 
 const GODS: God[] = [
@@ -881,24 +842,35 @@ const GODS: God[] = [
   },
   {
     group: "Aphrodite",
+    // Redone from scratch: a flower crown on each, the mirror and the rose held four ways.
     variants: [
       {
-        id: "aphrodite-rose",
-        name: "Aphrodite, rose",
-        note: "Rose pink, a red rose and a flower in the hair",
-        parts: [dino("#ff6fae"), hairFlower(WHITE, YELLOW), ROSE],
+        id: "aphrodite-mirror",
+        name: "Aphrodite, mirror",
+        note: "Rose pink, a flower crown and a hand mirror raised to the face",
+        parts: [dino("#ff6fae", "raised"), flowerCrown(WHITE, LILAC, WHITE), MIRROR_RAISED],
+        framed: true,
       },
       {
-        id: "aphrodite-heart",
-        name: "Aphrodite, heart",
-        note: "Blush, a red heart and pearls",
-        parts: [dino("#ffb3d1"), PEARLS, heart(RED)],
+        id: "aphrodite-rose-jaws",
+        name: "Aphrodite, rose in the jaws",
+        note: "Magenta, a flower crown and a rose held in the jaws",
+        parts: [dino("#e6268c"), flowerCrown(WHITE, LILAC, WHITE), ROSE_IN_JAWS],
+        framed: true,
       },
       {
-        id: "aphrodite-shell",
-        name: "Aphrodite, shell",
-        note: "Magenta, born from a scallop shell",
-        parts: [scallop(SHELL, SHELL_RIB), dino("#e6268c"), hairFlower(SHELL, RED)],
+        id: "aphrodite-rose-offered",
+        name: "Aphrodite, rose offered",
+        note: "Blush, a crown of red and white flowers and a long-stemmed rose held out",
+        parts: [dino("#ffb3d1"), flowerCrown(RED, WHITE, RED), ROSE_OFFERED],
+        framed: true,
+      },
+      {
+        id: "aphrodite-mirror-rose",
+        name: "Aphrodite, mirror and rose",
+        note: "Coral pink, a flower crown, a rose in the jaws and the mirror held out",
+        parts: [dino("#ff7f9f"), flowerCrown(WHITE, RED, WHITE), ROSE_IN_JAWS, MIRROR_LEVEL],
+        framed: true,
       },
     ],
   },
@@ -1095,7 +1067,7 @@ export const GOD_VARIANTS: readonly Variant[] = GODS.flatMap((god) => {
       id: v.id,
       group: god.group,
       note: v.note,
-      sprite: compose(v.name, ...v.parts),
+      sprite: v.framed ? composeIn(v.name, PICK_FRAME, ...v.parts) : compose(v.name, ...v.parts),
     })),
   ];
 });
