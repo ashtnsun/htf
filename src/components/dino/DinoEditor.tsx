@@ -289,6 +289,8 @@ const TOOLS: { id: Tool; label: string; key: string; icon: typeof Pencil }[] = [
 ];
 
 const EDGES = ["top", "right", "bottom", "left"] as const;
+/** The variant groups in the order they are listed: the starting points, then each god. */
+const GROUPS = [...new Set(VARIANTS.map((v) => v.group))];
 
 export function DinoEditor() {
   const [history, dispatch] = useReducer(reducer, null, () => ({
@@ -648,13 +650,23 @@ export function DinoEditor() {
           <p className="mt-2 text-body text-muted">
             Load one to edit it. Loading is one undo step, so nothing on the canvas is lost.
           </p>
-          <ul className="mt-6 grid grid-cols-2 gap-px border border-line bg-line sm:grid-cols-3 xl:grid-cols-4">
-            {VARIANTS.map((v) => (
-              <li key={v.id} className="bg-bg">
-                <VariantTile sprite={v.sprite} note={v.note} onLoad={() => load(v.sprite)} />
-              </li>
-            ))}
-          </ul>
+          {GROUPS.map((group) => (
+            <div key={group}>
+              <h3 className="mt-8 text-eyebrow font-medium text-muted uppercase">{group}</h3>
+              <ul
+                className={cn(
+                  "mt-4 grid grid-cols-2 gap-px border border-line bg-line sm:grid-cols-3",
+                  group === GROUPS[0] && "xl:grid-cols-4",
+                )}
+              >
+                {VARIANTS.filter((v) => v.group === group).map((v) => (
+                  <li key={v.id} className="bg-bg">
+                    <VariantTile sprite={v.sprite} note={v.note} onLoad={() => load(v.sprite)} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
 
           {saved.length > 0 || lastDraft ? (
             <>

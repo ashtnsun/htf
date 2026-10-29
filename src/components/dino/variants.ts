@@ -1,77 +1,24 @@
 import { DINO_PIXELS } from "@/components/brand/dino-pixels";
-import { LAYERS, TREX_ORIGIN, type Ink } from "@/components/home/ProcessSprites";
+import { compose, GREEN, layer, local, WHITE } from "@/components/dino/compose";
+import { GOD_VARIANTS } from "@/components/dino/gods";
 import { BRAND_COLORS, flipX, fromRows, type Sprite } from "@/components/dino/sprite";
 
 /**
- * The starting points in the dinosaur editor (/dino). The first is the T-rex itself
- * (brand/dino-pixels); the scenes and props reuse the process scene's sprites
+ * The starting points in the dinosaur editor (/dino), listed in groups. The first is the
+ * T-rex itself (brand/dino-pixels); the scenes and props reuse the process scene's sprites
  * (home/ProcessSprites) so a hat here is the hat on the home page; the rest are new drawings
- * on the same grid, following the pixel-art rules (solid cells, details carved, the dinosaur
- * green and props white with green accents). To add a variant, draw it in T-rex-local
- * cells with `local` (the map's own coordinates: the head's top row is row 0, columns 11-18)
- * and append it to VARIANTS; the editor lists it on the next load.
+ * on the same grid (components/dino/compose has the coordinates), and the Greek gods live in
+ * gods.ts. To add a variant, draw it with `local` and `compose` and append it to a list; the
+ * editor shows it on the next load.
  */
-export type Variant = { id: string; note: string; sprite: Sprite };
+export type Variant = { id: string; group: string; note: string; sprite: Sprite };
 
 const hex = (name: string) => BRAND_COLORS.find((c) => c.name === name)!.hex;
-const INK_HEX: Record<Ink, string> = {
-  green: hex("Green"),
-  white: hex("White"),
-  tint: hex("Tint"),
-  pink: hex("Pink"),
-  blue: hex("Blue"),
-};
-const INK_ORDER: readonly Ink[] = ["green", "white", "tint", "pink", "blue"];
-
-/** One placed cell in scene coordinates; a null ink carves the cell out. */
-type Part = { x: number; y: number; ink: Ink | null };
-
-function layer(key: string): Part[] {
-  const found = LAYERS.find((l) => l.key === key);
-  if (!found) throw new Error(`No process-scene layer "${key}"`);
-  return found.cells.map(([x, y, ink]) => ({ x, y, ink: ink ?? "green" }));
-}
-
-const LOCAL_INKS: Record<string, Ink | null> = {
-  "#": "green",
-  o: "white",
-  "+": "tint",
-  p: "pink",
-  b: "blue",
-  x: null,
-};
-
-/** A string map placed with its top-left cell at (ox, oy) in T-rex-local cells. */
-function local(rows: readonly string[], ox: number, oy: number): Part[] {
-  return rows.flatMap((row, y) =>
-    Array.from(row).flatMap((ch, x) =>
-      ch in LOCAL_INKS
-        ? [{ x: TREX_ORIGIN.x + ox + x, y: TREX_ORIGIN.y + oy + y, ink: LOCAL_INKS[ch]! }]
-        : [],
-    ),
-  );
-}
-
-/** Layers the parts in order (later ones cover earlier ones) and crops to the drawing. */
-function compose(name: string, ...parts: Part[][]): Sprite {
-  const placed = new Map<string, Part>();
-  for (const part of parts.flat()) {
-    const key = `${part.x},${part.y}`;
-    if (part.ink) placed.set(key, part);
-    else placed.delete(key);
-  }
-  const all = [...placed.values()];
-  const minX = Math.min(...all.map((p) => p.x));
-  const minY = Math.min(...all.map((p) => p.y));
-  const width = Math.max(...all.map((p) => p.x)) - minX + 1;
-  const height = Math.max(...all.map((p) => p.y)) - minY + 1;
-  const inks = INK_ORDER.filter((ink) => all.some((p) => p.ink === ink));
-  const cells = Array<number>(width * height).fill(0);
-  for (const p of all) cells[(p.y - minY) * width + (p.x - minX)] = inks.indexOf(p.ink!) + 1;
-  return { name, width, height, palette: inks.map((ink) => INK_HEX[ink]), cells };
-}
+/** `#` the dinosaur's green, `o` white, `x` carves a cell out. */
+const INKS = { "#": GREEN, o: WHITE, x: null };
 
 const TREX = [...layer("trex"), ...layer("arm")];
+const GROUP = "Starting points";
 
 /** A pointed hat with its tip bent back and a green band; the brim covers the head's top row. */
 const WITCH_HAT = local(
@@ -89,6 +36,7 @@ const WITCH_HAT = local(
   ],
   7,
   -9,
+  INKS,
 );
 /** A mortarboard seen from the side, its green tassel hanging at the back. */
 const GRAD_CAP = local(
@@ -101,12 +49,13 @@ const GRAD_CAP = local(
   ],
   7,
   -4,
+  INKS,
 );
-const CROWN = local(["o..oo..o", "oo.oo.oo", "oooooooo", "oo#oo#oo", "oooooooo"], 11, -4);
+const CROWN = local(["o..oo..o", "oo.oo.oo", "oooooooo", "oo#oo#oo", "oooooooo"], 11, -4, INKS);
 /** Wraparound shades carved out of the head over the eye, the strap running back, one white glint. */
-const SHADES = local(["xxxxxxx", "..xoxxx", "...xxx."], 10, 2);
+const SHADES = local(["xxxxxxx", "..xoxxx", "...xxx."], 10, 2, INKS);
 /** A mug in the hand (the arm reaches its side), the handle facing out. */
-const MUG = local(["oooo..", "oooooo", "oooo.o", "oooooo", "oooo.."], 16, 8);
+const MUG = local(["oooo..", "oooooo", "oooo.o", "oooooo", "oooo.."], 16, 8, INKS);
 
 const recolor = (sprite: Sprite, name: string, color: string): Sprite => ({
   ...sprite,
@@ -114,9 +63,9 @@ const recolor = (sprite: Sprite, name: string, color: string): Sprite => ({
   palette: [color],
 });
 
-const classic = fromRows("Classic", DINO_PIXELS, { "#": INK_HEX.green });
+const classic = fromRows("Classic", DINO_PIXELS, { "#": GREEN });
 
-export const VARIANTS: readonly Variant[] = [
+const STARTING_POINTS: readonly Omit<Variant, "group">[] = [
   { id: "classic", note: "The footer T-rex, 20 × 22", sprite: classic },
   {
     id: "facing-left",
@@ -184,4 +133,9 @@ export const VARIANTS: readonly Variant[] = [
   },
   { id: "mint", note: "Palette swap: mint", sprite: recolor(classic, "Mint", hex("Mint")) },
   { id: "cyan", note: "Palette swap: cyan", sprite: recolor(classic, "Cyan", hex("Cyan")) },
+];
+
+export const VARIANTS: readonly Variant[] = [
+  ...STARTING_POINTS.map((v) => ({ ...v, group: GROUP })),
+  ...GOD_VARIANTS,
 ];
