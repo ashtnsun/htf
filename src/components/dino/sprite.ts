@@ -188,6 +188,47 @@ export function trim(sprite: Sprite, pad = 0): Sprite {
   });
 }
 
+/** A rectangle of cells (it may reach past the canvas while it is being moved). */
+export type Region = { x: number; y: number; w: number; h: number };
+
+/**
+ * Lifts the filled cells inside `region` and puts them down (dx, dy) cells away. Empty cells
+ * in the region are see-through, so they never erase what they land on; cells moved past an
+ * edge are dropped.
+ */
+export function moveRegion(sprite: Sprite, region: Region, dx: number, dy: number): Sprite {
+  if (dx === 0 && dy === 0) return sprite;
+  const { width, height } = sprite;
+  const cells = sprite.cells.slice();
+  const lifted: [number, number, number][] = [];
+  for (let y = Math.max(0, region.y); y < Math.min(height, region.y + region.h); y += 1) {
+    for (let x = Math.max(0, region.x); x < Math.min(width, region.x + region.w); x += 1) {
+      const v = cells[y * width + x]!;
+      if (v === 0) continue;
+      lifted.push([x, y, v]);
+      cells[y * width + x] = 0;
+    }
+  }
+  for (const [x, y, v] of lifted) {
+    const nx = x + dx;
+    const ny = y + dy;
+    if (nx >= 0 && ny >= 0 && nx < width && ny < height) cells[ny * width + nx] = v;
+  }
+  return { ...sprite, cells };
+}
+
+/** Empties every cell inside `region`. */
+export function clearRegion(sprite: Sprite, region: Region): Sprite {
+  const cells = sprite.cells.map((v, i) => {
+    const x = i % sprite.width;
+    const y = Math.floor(i / sprite.width);
+    const inside =
+      x >= region.x && y >= region.y && x < region.x + region.w && y < region.y + region.h;
+    return inside ? 0 : v;
+  });
+  return { ...sprite, cells };
+}
+
 /** Paints one cell; returns the same sprite when nothing changes (so no undo step is made). */
 export function paint(sprite: Sprite, x: number, y: number, value: number): Sprite {
   const i = y * sprite.width + x;

@@ -18,6 +18,7 @@ import {
   Plus,
   Redo2,
   Save,
+  SquareDashed,
   Trash2,
   Undo2,
 } from "lucide-react";
@@ -33,10 +34,12 @@ import {
 } from "react";
 import {
   BRAND_COLORS,
+  clearRegion,
   INK_CHARS,
   fileSlug,
   fill,
   flipX,
+  moveRegion,
   paint,
   parseCode,
   removeColor,
@@ -47,6 +50,7 @@ import {
   toSvg,
   trim,
   drawSprite,
+  type Region,
   type Sprite,
 } from "@/components/dino/sprite";
 import { VARIANTS } from "@/components/dino/variants";
@@ -66,7 +70,7 @@ import { cn } from "@/lib/utils";
  * colour, Ctrl+Z / Ctrl+Shift+Z undo and redo.
  */
 
-type Tool = "pencil" | "eraser" | "fill" | "picker";
+type Tool = "pencil" | "eraser" | "fill" | "picker" | "select";
 
 type History = {
   sprite: Sprite;
@@ -286,6 +290,7 @@ const TOOLS: { id: Tool; label: string; key: string; icon: typeof Pencil }[] = [
   { id: "eraser", label: "Eraser (E)", key: "e", icon: Eraser },
   { id: "fill", label: "Fill (G)", key: "g", icon: PaintBucket },
   { id: "picker", label: "Pick a colour (I)", key: "i", icon: Pipette },
+  { id: "select", label: "Select and move (M)", key: "m", icon: SquareDashed },
 ];
 
 const EDGES = ["top", "right", "bottom", "left"] as const;
@@ -322,6 +327,13 @@ export function DinoEditor() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const lastCell = useRef<{ x: number; y: number } | null>(null);
   const strokeValue = useRef(0);
+  const [selection, setSelection] = useState<Region | null>(null);
+  /** The select tool's drag: drawing a new selection, or moving the selected cells. */
+  const drag = useRef<
+    | { mode: "select"; start: { x: number; y: number }; moved: boolean }
+    | { mode: "move"; start: { x: number; y: number }; base: Sprite; region: Region }
+    | null
+  >(null);
 
   const activeInk = Math.min(ink, sprite.palette.length);
 
@@ -388,7 +400,20 @@ export function DinoEditor() {
       ctx.lineWidth = 2;
       ctx.strokeRect(cursor.x * cellPx + 1, cursor.y * cellPx + 1, cellPx - 2, cellPx - 2);
     }
-  }, [sprite, cellPx, cursor]);
+    if (selection && tool === "select") {
+      ctx.save();
+      ctx.strokeStyle = "#00eb88";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 4]);
+      ctx.strokeRect(
+        selection.x * cellPx + 1,
+        selection.y * cellPx + 1,
+        selection.w * cellPx - 2,
+        selection.h * cellPx - 2,
+      );
+      ctx.restore();
+    }
+  }, [sprite, cellPx, cursor, selection, tool]);
 
   const apply = (fn: (s: Sprite) => Sprite, key?: string) => dispatch({ type: "apply", fn, key });
 
@@ -410,12 +435,70 @@ export function DinoEditor() {
     else apply((s) => paint(s, x, y, value));
   };
 
-  const cellAt = (event: ReactPointerEvent<HTMLCanvasElement>) => {
+  /** The cell under the pointer; null outside the canvas unless `anywhere` (a move can leave it). */
+  const cellAt = (event: ReactPointerEvent<HTMLCanvasElement>, anywhere = false) => {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = Math.floor((event.clientX - rect.left) / cellPx);
     const y = Math.floor((event.clientY - rect.top) / cellPx);
-    if (x < 0 || y < 0 || x >= sprite.width || y >= sprite.height) return null;
+    if (!anywhere && (x < 0 || y < 0 || x >= sprite.width || y >= sprite.height)) return null;
     return { x, y };
+  };
+
+  const inSelection = (x: number, y: number) =>
+    !!selection &&
+    x >= selection.x &&
+    y >= selection.y &&
+    x < selection.x + selection.w &&
+    y < selection.y + selection.h;
+
+  /** Select tool: drag inside the selection to move its cells, anywhere else to draw a new one. */
+  const startSelectDrag = (cell: { x: number; y: number }) => {
+    if (selection && inSelection(cell.x, cell.y)) {
+      dispatch({ type: "begin" });
+      drag.current = { mode: "move", start: cell, base: sprite, region: selection };
+    } else {
+      setSelection({ x: cell.x, y: cell.y, w: 1, h: 1 });
+      drag.current = { mode: "select", start: cell, moved: false };
+    }
+  };
+
+  const continueSelectDrag = (event: ReactPointerEvent<HTMLCanvasElement>) => {
+    const current = drag.current;
+    const cell = cellAt(event, true);
+    if (!current || !cell) return;
+    if (current.mode === "select") {
+      const x = Math.max(0, Math.min(sprite.width - 1, cell.x));
+      const y = Math.max(0, Math.min(sprite.height - 1, cell.y));
+      if (x !== current.start.x || y !== current.start.y) current.moved = true;
+      setSelection({
+        x: Math.min(x, current.start.x),
+        y: Math.min(y, current.start.y),
+        w: Math.abs(x - current.start.x) + 1,
+        h: Math.abs(y - current.start.y) + 1,
+      });
+    } else {
+      const dx = cell.x - current.start.x;
+      const dy = cell.y - current.start.y;
+      const { base, region } = current;
+      dispatch({ type: "draw", fn: () => moveRegion(base, region, dx, dy) });
+      setSelection({ ...region, x: region.x + dx, y: region.y + dy });
+    }
+  };
+
+  const endSelectDrag = () => {
+    const current = drag.current;
+    if (!current) return;
+    drag.current = null;
+    if (current.mode === "move") dispatch({ type: "end" });
+    else if (!current.moved) setSelection(null);
+  };
+
+  /** Moves the selected cells by whole cells (the arrow keys), one undo step per press. */
+  const nudgeSelection = (dx: number, dy: number) => {
+    if (!selection) return;
+    const region = selection;
+    apply((s) => moveRegion(s, region, dx, dy));
+    setSelection({ ...region, x: region.x + dx, y: region.y + dy });
   };
 
   const onPointerDown = (event: ReactPointerEvent<HTMLCanvasElement>) => {
@@ -423,6 +506,12 @@ export function DinoEditor() {
     const cell = cellAt(event);
     if (!cell) return;
     event.preventDefault();
+    event.currentTarget.focus();
+    if (tool === "select" && event.button === 0) {
+      event.currentTarget.setPointerCapture(event.pointerId);
+      startSelectDrag(cell);
+      return;
+    }
     const erase = event.button === 2 || tool === "eraser";
     strokeValue.current = erase ? 0 : activeInk;
     if (erase || tool === "pencil") {
@@ -436,6 +525,10 @@ export function DinoEditor() {
   };
 
   const onPointerMove = (event: ReactPointerEvent<HTMLCanvasElement>) => {
+    if (drag.current) {
+      continueSelectDrag(event);
+      return;
+    }
     const from = lastCell.current;
     if (!from) return;
     const cell = cellAt(event);
@@ -450,6 +543,7 @@ export function DinoEditor() {
   };
 
   const endStroke = () => {
+    endSelectDrag();
     if (!lastCell.current) return;
     lastCell.current = null;
     dispatch({ type: "end" });
@@ -463,6 +557,19 @@ export function DinoEditor() {
       ArrowRight: [1, 0],
     };
     const move = moves[event.key];
+    if (tool === "select" && selection) {
+      if (move) {
+        event.preventDefault();
+        nudgeSelection(move[0], move[1]);
+      } else if (event.key === "Delete" || event.key === "Backspace") {
+        event.preventDefault();
+        const region = selection;
+        apply((s) => clearRegion(s, region));
+      } else if (event.key === "Escape") {
+        setSelection(null);
+      }
+      return;
+    }
     const at = cursor ?? { x: 0, y: 0 };
     if (move) {
       event.preventDefault();
@@ -504,6 +611,7 @@ export function DinoEditor() {
     apply(() => next);
     setInk(1);
     setCursor(null);
+    setSelection(null);
   };
 
   const saveCurrent = () => {
@@ -622,7 +730,11 @@ export function DinoEditor() {
             ref={canvasRef}
             tabIndex={0}
             role="img"
-            aria-label={`${sprite.name}: ${sprite.width} by ${sprite.height} cells, ${filled} filled. Arrow keys move the cursor, Space applies the ${tool}.`}
+            aria-label={`${sprite.name}: ${sprite.width} by ${sprite.height} cells, ${filled} filled. ${
+              tool === "select"
+                ? "Arrow keys move the selection, Delete clears it, Escape drops it."
+                : `Arrow keys move the cursor, Space applies the ${tool}.`
+            }`}
             className={cn(
               "block touch-none",
               tool === "picker" ? "cursor-copy" : "cursor-crosshair",
@@ -638,8 +750,10 @@ export function DinoEditor() {
           />
         </div>
         <p className="mt-3 text-body text-muted">
-          {sprite.width} × {sprite.height} cells · {filled} filled · left button draws, right button
-          erases
+          {sprite.width} × {sprite.height} cells · {filled} filled ·{" "}
+          {tool === "select"
+            ? "drag to select, drag inside the selection to move it; arrows nudge it, Delete clears it, Esc drops it"
+            : "left button draws, right button erases"}
         </p>
 
         {/* Variants */}
