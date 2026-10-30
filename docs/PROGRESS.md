@@ -274,6 +274,12 @@ not be caught). The zip is written by `dino/zip.ts` (stored, no compression, no 
 Verified: nine favourites zipped, the archive tests clean, Classic 1056 × 1152 (22 × 24 cells),
 Zeus's dinosaur 960 px wide like Classic's.
 
+Then two more Hermes variants holding something: **Hermes, phone** (sky blue, the winged gold
+helmet, a graphite phone with a cyan screen, a new-mail envelope, a red badge and a white wing on
+its back edge) and **Hermes, harpe** (teal, the big-winged helmet, the raised hooked sword he lent
+Perseus, its crescent hook two cells thick so it reads as a blade). `WINGED_PHONE` and `harpe()`
+in `dino/gods.ts`.
+
 **Next session starts with:** Ashton's look at the Artemis leaf headband, Zeus gold headband
 and Athena shield variants on /dino; any pasted "Copy all" export is the starting point.
 

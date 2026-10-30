@@ -14,7 +14,7 @@ import type { Variant } from "@/components/dino/variants";
 
 /**
  * The Greek gods in the dinosaur editor (no Hera since 2026-10-29): three variants of each, more
- * for some (Aphrodite four, redone, and no picks; Athena five and one pick; Zeus and Artemis five,
+ * for some (Aphrodite four, redone, and no picks; Athena five and one pick; Hermes five; Zeus and Artemis five,
  * two from Ashton's saves), every one the footer T-rex in its own colour (one hue family per god) with one or two props that say who it is. Coordinates
  * are T-rex-local (components/dino/compose). Anything held upright stands in column 20 with the
  * arm raised to it; anything held low sits against the resting arm from column 16.
@@ -410,6 +410,48 @@ const LETTER = local(["ooooooo", "o#ooo#o", "oo#r#oo", "ooooooo", "ooooooo"], 16
   "#": GREY,
   r: RED,
 });
+
+/**
+ * The messenger's phone held against the arm: a graphite case, a cyan screen with a new-mail
+ * envelope, a red badge on the corner and a white wing on its back edge.
+ */
+const WINGED_PHONE = [
+  ...local(
+    [
+      "kkkkkkk",
+      "kccccck",
+      "kwwwwwk",
+      "kwgwgwk",
+      "kwwgwwk",
+      "kwwwwwk",
+      "kccccck",
+      "kccccck",
+      "kkkokkk",
+      "kkkkkkk",
+    ],
+    16,
+    8,
+    { k: "#3a3f47", c: "#00e0ff", w: WHITE, g: "#03c652", o: GREY },
+  ),
+  ...local(["rr", "rr"], 22, 7, { r: RED }),
+  ...local(["...w", "..ww", "wwww", "www.", "ww.."], 23, 9, { w: WHITE }),
+];
+
+/** The harpe, the hooked sword Hermes lent Perseus: raised in column 21, the hook curling forward. */
+function harpe(blade: string): Part[] {
+  return [
+    ...line(21, 5, 21, -8, blade),
+    ...local(
+      ["..sss..", ".sssss.", "ss...ss", "s....ss", "s....ss", "s...ss.", "s..ss..", "s.s...."],
+      21,
+      -10,
+      { s: blade },
+    ),
+    ...line(20, 6, 22, 6, GOLD),
+    ...line(21, 7, 21, 9, LEATHER),
+    ...cells([[21, 10]], GOLD),
+  ];
+}
 
 /* ---------------------------------------------------------------- Aphrodite */
 
@@ -1195,6 +1237,24 @@ const GODS: God[] = [
         name: "Hermes, messenger",
         note: "Lime, a winged petasos and a sealed letter",
         parts: [dino("#9be564"), wingedHelm(SILVER), LETTER],
+      },
+      {
+        id: "hermes-phone",
+        name: "Hermes, phone",
+        note: "Sky blue, the winged gold helmet and a winged phone with a new message",
+        parts: [dino("#4da3ff"), hermesWingedHelm(GOLD), WINGED_PHONE, WINGED_SANDALS],
+      },
+      {
+        id: "hermes-harpe",
+        name: "Hermes, harpe",
+        note: "Teal, the big-winged helmet and the harpe, the hooked sword he lent Perseus",
+        parts: [
+          dino("#14c4b0", "raised"),
+          cells([[20, 8]], "#14c4b0"),
+          hermesHelm(GOLD),
+          harpe(SILVER),
+          GOLD_SANDALS,
+        ],
       },
     ],
   },
