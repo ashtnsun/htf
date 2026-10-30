@@ -165,8 +165,17 @@ folds; the robe is the dinosaur's own cells below a diagonal edge) and Artemis w
 crown instead of the antlers (the pick's drawn bow, big lime leaves with dark midribs standing
 on a band).
 
-**Next session starts with:** Ashton's look at the new Aphrodite, Athena, Zeus robe and
-Artemis leaf-crown variants and the second picks on /dino.
+Then Hera removed (both picks, three variants and the peacock, polos and diadem props), and three
+variants built on sprites Ashton saved in the editor, read off a screenshot of the "Saved in
+this browser" list and kept cell for cell: Artemis (the pick in #009e3f) with a leaf headband for
+the antlers (a leather cord above the eye, lime leaves standing along it, two trailing from the
+back); Zeus (hand-edited: the arm straight forward, a longer bolt at the hand, #f5c724) with a
+deep-gold headband and a blue gem for the halo, the gold darkened to `DEEP_GOLD` so it reads on
+the yellow; Athena (hand-edited: the helmet over the top two rows, the sash moved, the same
+forward arm, #c6ced7) with the bronze shield on the arm instead of the spear.
+
+**Next session starts with:** Ashton's look at the Artemis leaf headband, Zeus gold headband
+and Athena shield variants on /dino.
 
 ## Session 16b — 2026-10-29 (the 2026-2027 cycle closed)
 

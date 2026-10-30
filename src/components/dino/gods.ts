@@ -13,9 +13,9 @@ import {
 import type { Variant } from "@/components/dino/variants";
 
 /**
- * The Greek gods in the dinosaur editor: three variants of each, more for some (Aphrodite has four,
- * redone, and no picks; Athena four and one pick; Zeus a robe, Artemis a leaf crown), every one the footer T-rex in
- * its own colour (one hue family per god) with one or two props that say who it is. Coordinates
+ * The Greek gods in the dinosaur editor (no Hera since 2026-10-29): three variants of each, more
+ * for some (Aphrodite four, redone, and no picks; Athena five and one pick; Zeus and Artemis five,
+ * two from Ashton's saves), every one the footer T-rex in its own colour (one hue family per god) with one or two props that say who it is. Coordinates
  * are T-rex-local (components/dino/compose). Anything held upright stands in column 20 with the
  * arm raised to it; anything held low sits against the resting arm from column 16.
  */
@@ -40,8 +40,6 @@ const BONE = "#ede6d6";
 const POMEGRANATE = "#c1121f";
 const CLOUD = "#b9c2cf";
 const SEA = "#2f80ed";
-const PEACOCK = "#22a06b";
-const PEACOCK_EYE = "#1e4fd8";
 const GLASS = "#bfe9ff";
 const LILAC = "#c9a3ff";
 const PLUME_LINE = "#c9c6d6";
@@ -51,6 +49,8 @@ const SKY_CLOUD = "#e4e1f2";
 const SKY_CLOUD_SHADE = "#b9b5d6";
 const ROBE_FOLD = "#c9ced6";
 const GREY = "#8a939c";
+/** Gold dark enough to read on a yellow dinosaur. */
+const DEEP_GOLD = "#c98f1a";
 
 /* ---------------------------------------------------------------- props */
 
@@ -117,50 +117,6 @@ const SWORD = [
     LEATHER,
   ),
 ];
-
-/** A diadem rising to a jewel at the front of the head. */
-function diadem(metal: string, jewel: string): Part[] {
-  return local(["...jj...", "..gggg..", ".gggggg.", "gggggggg"], 11, -3, { g: metal, j: jewel });
-}
-
-/** One peacock eye: a dark centre, a gold ring and green corners. */
-function peacockEye(cx: number, cy: number): Part[] {
-  return [
-    ...cells(
-      [
-        [cx - 1, cy - 1],
-        [cx + 1, cy - 1],
-        [cx - 1, cy + 1],
-        [cx + 1, cy + 1],
-      ],
-      PEACOCK,
-    ),
-    ...cells(
-      [
-        [cx, cy - 1],
-        [cx - 1, cy],
-        [cx + 1, cy],
-        [cx, cy + 1],
-      ],
-      GOLD,
-    ),
-    ...cells([[cx, cy]], PEACOCK_EYE),
-  ];
-}
-
-/** A single peacock feather held up in column 20. */
-const PEACOCK_FEATHER = [...line(20, -3, 20, 8, PEACOCK), ...peacockEye(20, -5)];
-
-/** A peacock's fan behind the tail and back: five feathers from one base (drawn first). */
-const PEACOCK_FAN = (
-  [
-    [-9, 9],
-    [-10, 3],
-    [-7, -2],
-    [-2, -5],
-    [4, -5],
-  ] as const
-).flatMap(([x, y]) => [...line(2, 10, x, y, PEACOCK), ...peacockEye(x, y)]);
 
 /** A pomegranate against the arm, its crown on top. */
 const POMEGRANATE_FRUIT = local([".c.c.", ".rrr.", "rrrrr", "rrrrr", ".rrr."], 16, 8, {
@@ -510,6 +466,83 @@ const LEAF_CROWN = local(
   { l: "#9be564", v: "#5aa832" },
 );
 
+/**
+ * A leaf headband, worn low: a leather cord round the head above the eye, small leaves standing
+ * along it, leaning forward, and two leaves trailing from the knot at the back.
+ */
+const LEAF_HEADBAND = local(
+  [".....l..l..l.", "....l..l..l..", "..ccccccccccc", ".ll..........", "l............"],
+  7,
+  -1,
+  { l: "#9be564", c: LEATHER },
+);
+
+/* ---------------------------------------------------------------- Ashton's saves */
+
+/*
+ * Starting points saved in the editor (2026-10-29): Artemis is the pick in a brighter green
+ * (#009e3f); Zeus and Athena were redrawn by hand, both with the arm held straight forward,
+ * Zeus with a longer bolt at that hand and Athena with the helmet, plume and sash moved.
+ */
+
+/** The arm held straight forward from the shoulder, the hand at (16, 10). */
+const armForward = (color: string) =>
+  cells(
+    [
+      [14, 10],
+      [15, 10],
+      [16, 10],
+    ],
+    color,
+  );
+
+/** Zeus's bolt as saved: held at the forward hand, the top zag over the snout. */
+const SAVED_BOLT = local(
+  [
+    ".....#",
+    "....##",
+    "...##.",
+    "..##..",
+    ".##...",
+    ".#####",
+    "...##.",
+    "..##..",
+    ".##...",
+    "##....",
+    "#.....",
+  ],
+  16,
+  6,
+  { "#": "#6fd3ff" },
+);
+
+/** Athena's plumed helmet and lavender sash as saved, the helmet sitting over the top two rows. */
+const SAVED_ATHENA_HELM = local(
+  [
+    "............wwwww...",
+    ".........wwwwwwwww..",
+    ".......wwwwwwwwwww..",
+    "......wwwppppp......",
+    "......wp.....gggg...",
+    "......w....gggggg...",
+    "..........ggggggggg.",
+    "........ssgggggggggg",
+    ".......ssfg.........",
+    "s.....ssf...........",
+    "fssssssf............",
+    ".fssssf.............",
+    "..ffff..............",
+  ],
+  0,
+  -6,
+  { w: WHITE, p: PLUME_LINE, g: GOLD, s: SASH, f: SASH_FOLD },
+);
+
+/** A band over the head above the eye with a gem set in the middle, the band rising round it. */
+function gemHeadband(metal: string, gem: string): Part[] {
+  return local(["...gggg...", "ggggjjgggg"], 10, 0, { g: metal, j: gem });
+}
+
 /* ---------------------------------------------------------------- Zeus's robe */
 
 /**
@@ -652,15 +685,6 @@ const SHORT_SPEAR = [
   ...local([".s.", "sss", "sss", ".s."], 19, -6, { s: SILVER }),
 ];
 
-/** The polos, the tall crown Hera wears in Greek art, banded with peacock-blue gems. */
-const POLOS = local(["gggggggg", ".gegege.", ".gggggg.", ".gggggg."], 11, -4, {
-  g: GOLD,
-  e: PEACOCK_EYE,
-});
-
-/** A gold sceptre topped with a peacock eye. */
-const PEACOCK_SCEPTRE = [...line(20, -3, 20, 16, GOLD), ...peacockEye(20, -5)];
-
 /** The bident with its prongs inside the frame. */
 const SHORT_BIDENT = [
   ...line(20, -3, 20, 21, STEEL),
@@ -743,11 +767,6 @@ const PICKS: Record<string, Pick | undefined> = {
     note: "Crimson, a bronze helmet fitted to the head and a spear",
     parts: [dino("#e5383b", "raised"), ARES_HELM, SHORT_SPEAR],
   },
-  Hera: {
-    name: "Hera",
-    note: "Royal purple, the tall polos crown and a peacock sceptre",
-    parts: [dino("#8e5bd8", "raised"), POLOS, PEACOCK_SCEPTRE],
-  },
   Artemis: {
     name: "Artemis",
     note: "Forest green, antlers and a drawn bow",
@@ -797,15 +816,6 @@ const SWORD_FORWARD = [
   ...line(17, 9, 17, 11, GOLD),
   ...line(18, 10, 26, 10, SILVER),
 ];
-
-/** Three peacock feathers fanned out from the resting hand. */
-const PEACOCK_HAND_FAN = (
-  [
-    [22, 4],
-    [24, 9],
-    [21, 14],
-  ] as const
-).flatMap(([x, y]) => [...line(16, 11, x, y, PEACOCK), ...peacockEye(x, y)]);
 
 /** A bow held low at the resting hand, the string forward. */
 const BOW_LOWERED = [
@@ -896,11 +906,6 @@ const PICKS_2: Record<string, Pick | undefined> = {
     name: "Ares 2",
     note: "Crimson, the fitted helmet and a sword held forward",
     parts: [dino("#e5383b"), ARES_HELM, SWORD_FORWARD],
-  },
-  Hera: {
-    name: "Hera 2",
-    note: "Royal purple, the polos crown and a fan of three peacock feathers",
-    parts: [dino("#8e5bd8"), POLOS, PEACOCK_HAND_FAN],
   },
   Artemis: {
     name: "Artemis 2",
@@ -1006,29 +1011,6 @@ const GODS: God[] = [
     ],
   },
   {
-    group: "Hera",
-    variants: [
-      {
-        id: "hera-feather",
-        name: "Hera, feather",
-        note: "Royal purple, gold diadem and a peacock feather",
-        parts: [dino("#8e5bd8", "raised"), diadem(GOLD, "#00e0ff"), PEACOCK_FEATHER],
-      },
-      {
-        id: "hera-peacock",
-        name: "Hera, peacock",
-        note: "Plum, a peacock's fan behind and a diadem",
-        parts: [PEACOCK_FAN, dino("#b547c9"), diadem(GOLD, RED)],
-      },
-      {
-        id: "hera-pomegranate",
-        name: "Hera, pomegranate",
-        note: "Lavender, gold diadem and a pomegranate",
-        parts: [dino("#c3a6f5"), diadem(GOLD, PEACOCK_EYE), POMEGRANATE_FRUIT],
-      },
-    ],
-  },
-  {
     group: "Artemis",
     variants: [
       {
@@ -1054,6 +1036,13 @@ const GODS: God[] = [
         name: "Artemis, leaf crown",
         note: "The pick with a crown of leaves instead of the antlers: forest green, a drawn bow",
         parts: [dino("#2f7d5b", "raised"), LEAF_CROWN, BOW],
+        framed: true,
+      },
+      {
+        id: "artemis-leaf-headband",
+        name: "Artemis, leaf headband",
+        note: "Ashton's saved Artemis with a leaf headband for the antlers: a cord with leaves, a drawn bow",
+        parts: [dino("#009e3f", "raised"), LEAF_HEADBAND, BOW],
         framed: true,
       },
     ],
@@ -1118,6 +1107,18 @@ const GODS: God[] = [
           ),
           halo(WHITE),
           bolt("#6fd3ff"),
+        ],
+        framed: true,
+      },
+      {
+        id: "zeus-headband",
+        name: "Zeus, gold headband",
+        note: "Ashton's saved Zeus with a gold headband for the halo, a blue gem in the middle",
+        parts: [
+          dino("#f5c724", "none"),
+          armForward("#f5c724"),
+          gemHeadband(DEEP_GOLD, "#1e6bff"),
+          SAVED_BOLT,
         ],
         framed: true,
       },
@@ -1234,6 +1235,13 @@ const GODS: God[] = [
           SPEAR_ACROSS,
           grip("#efe6d2"),
         ],
+        framed: true,
+      },
+      {
+        id: "athena-shield",
+        name: "Athena, shield",
+        note: "Ashton's saved Athena with a bronze shield on the arm instead of the spear",
+        parts: [dino("#c6ced7", "none"), armForward("#c6ced7"), SAVED_ATHENA_HELM, ATHENA_SHIELD],
         framed: true,
       },
     ],
