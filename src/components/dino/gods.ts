@@ -831,23 +831,6 @@ const APHRODITE_FINAL_ROSE = [
   ...finalBloom(19, 6),
 ];
 
-/** Heart-shaped sunglasses: a hot-pink rim round a dark lens over the eye, a glint top left. */
-const HEART_SHADES = local([".k.k.", "kgllk", ".klk.", "..k.."], 10, 1, {
-  k: "#ff2e88",
-  l: "#3a0d24",
-  g: "#ffd1e6",
-});
-
-/** The same rose clenched in the teeth: the stem along the mouth, a leaf, the bloom past the snout. */
-const ROSE_IN_TEETH = [
-  ...line(15, 6, 19, 6, ROSE_STEM),
-  ...cells([[18, 7]], ROSE_STEM),
-  ...finalBloom(20, 4),
-];
-
-/** A heart floating up and away from the face. */
-const FLOATING_HEART = local([".h.h.", "hhhhh", ".hhh.", "..h.."], 22, -3, { h: "#ff2e88" });
-
 /** A hand mirror: a gold rim round pale glass with a glint, `rows` tall. */
 function mirror(x: number, y: number, rows: 5 | 6): Part[] {
   const glass = rows === 6 ? ["gsssg", "gwssg", "gsssg", "gsssg"] : ["gsssg", "gwssg", "gsssg"];
@@ -967,6 +950,261 @@ const SAVED_ATHENA_HELM = local(
 function gemHeadband(metal: string, gem: string): Part[] {
   return local(["...gggg...", "ggggjjgggg"], 10, 0, { g: metal, j: gem });
 }
+
+/* ---------------------------------------------------------------- Ashton's finals */
+
+/*
+ * Ashton's saved "Ares final" (the newer one, with the dark helmet), "Zeus final" and "Poseidon
+ * final", pasted as they were exported. Each variant draws the map without its old helmet or
+ * crown (`local` skips any character its inks leave out) over the T-rex, so the head under it
+ * is whole, then the new one on top.
+ */
+const ARES_FINAL_MAP = [
+  "....................c.",
+  "...................cce",
+  "...................cce",
+  "....................e.",
+  "....................o.",
+  "............++++....o.",
+  "..........++++++++..o.",
+  ".........++++++++++.o.",
+  "........bbbbbbbbbbb.o.",
+  ".......bb.....aa....o.",
+  ".......b...aaaaaa...o.",
+  "..........aaaaaaadd.o.",
+  ".........dd#########o.",
+  "..........##.#######o.",
+  "..........##########o.",
+  "..........##########o.",
+  "..........##########o.",
+  "..........#####.....o.",
+  "..........########..o.",
+  "#........#####......o.",
+  "#......#######....##o.",
+  "##....############..o.",
+  "###..#########......o.",
+  "##############......o.",
+  "##############......o.",
+  ".############.......o.",
+  "..###########.......o.",
+  "...#########........o.",
+  "....#######.........f.",
+  ".....###.##.........f.",
+  ".....##...#.........f.",
+  ".....#....#.........f.",
+  ".....##...##........f.",
+];
+const ZEUS_FINAL_MAP = [
+  "..............................",
+  "..............................",
+  "..............................",
+  "..............................",
+  "..............................",
+  "..............................",
+  "...............+..............",
+  "............+..+..+...........",
+  "............+..+..+...........",
+  "............+++++aa.......oob.",
+  "...........########......oob..",
+  "..........##########....oob...",
+  "..........##o#######...oob....",
+  "..........##########..ooooob..",
+  "..........##########....oob...",
+  "..........##########...oob....",
+  "..........#####.......ob......",
+  "..........########...ob.......",
+  "#........#####......a.........",
+  "#......#######....##..........",
+  "##....############a...........",
+  "###..#########...o............",
+  "##############..o.............",
+  "##############................",
+  ".############.................",
+  "..###########.................",
+  "...#########..................",
+  "....#######...................",
+  ".....###.##...................",
+  ".....##...#...................",
+  ".....#....#...................",
+  ".....##...##..................",
+];
+const POSEIDON_FINAL_MAP = [
+  "....................o...",
+  "..................o.o.a.",
+  ".................oo.o.aa",
+  "..................o.a.a.",
+  "..................o.a.a.",
+  "..................aaaaa.",
+  "....................o...",
+  "...........+..+..+..o...",
+  "...........+..+..+..o...",
+  "...........bbbbbbb..o...",
+  "...........########.o...",
+  "..........##########o...",
+  "..........##.#######o...",
+  "..........##########o...",
+  "..........##########o...",
+  "..........##########o...",
+  "..........#####.....o...",
+  "..........########..o...",
+  "#........#####....##o...",
+  "#......#######..##..o...",
+  "##....##########....o...",
+  "###..#########......o...",
+  "##############......o...",
+  "##############......o...",
+  ".############.......o...",
+  "..###########.......o...",
+  "...#########........o...",
+  "....#######.........o...",
+  ".....###.##.........o...",
+  ".....##...#.........o...",
+  ".....#....#.........o...",
+  ".....##...##........o...",
+];
+
+/** The Ares final without its helmet and crest: body, the arm to the spear, the spear. */
+const ARES_FINAL_BASE = [
+  dino("#e5383b", "none"),
+  local(ARES_FINAL_MAP, 0, -11, {
+    "#": "#e5383b",
+    o: WOOD,
+    c: "#d8dee6",
+    e: "#9aa4b0",
+    f: "#6d4e31",
+  }),
+];
+/** The Zeus final without its crown: body, the glowing eye, the arm and the bolt. */
+const ZEUS_FINAL_BASE = [
+  dino("#f5c724", "none"),
+  local(ZEUS_FINAL_MAP.slice(0, 10), 0, -10, { o: "#4cc9ff", b: "#1f8fd0" }),
+  local(ZEUS_FINAL_MAP.slice(10), 0, 0, {
+    "#": "#f5c724",
+    o: "#4cc9ff",
+    a: "#9a6a10",
+    b: "#1f8fd0",
+  }),
+];
+/** The Poseidon final without its crown: body, the arm raised to the trident, the trident. */
+const POSEIDON_FINAL_BASE = [
+  dino("#3388ff", "none"),
+  local(POSEIDON_FINAL_MAP, 0, -10, { "#": "#3388ff", o: GOLD, a: "#c9962a" }),
+];
+
+/**
+ * Ares's helmet fitted to the head: a dome over the top two rows with a lit crown, a dark lip at
+ * the front, a guard down the back of the head behind the eye; the crest grows straight out of
+ * the dome. Plain, swept back, or with a gold brow band.
+ */
+const ARES_DOME = local(
+  [
+    "...hhhhhh..",
+    "..ssssssss.",
+    ".ssssssssss",
+    ".sssssssssd",
+    ".ss........",
+    ".ss........",
+    ".dd........",
+  ],
+  9,
+  -2,
+  { s: "#3a3f47", h: "#6b737d", d: "#23272d" },
+);
+const ARES_CREST_INKS = { "+": "#ff3b3b", b: "#a8242a" };
+const ARES_DOME_CREST = local(
+  ["....++++..", "..++++++++", ".+++++++++", "bbbbbbbbb.", "b.........", "b........."],
+  9,
+  -5,
+  ARES_CREST_INKS,
+);
+const ARES_SWEPT_CREST = local(
+  [
+    "......+++++..",
+    "....+++++++++",
+    "..++++++++++.",
+    ".++bbbbbbbb..",
+    "++b..........",
+    "+b...........",
+    "b............",
+  ],
+  6,
+  -5,
+  ARES_CREST_INKS,
+);
+const ARES_GOLD_BROW = local(["gggggggggg"], 10, 1, { g: GOLD });
+
+/**
+ * Crowns for Zeus in the darker golds of his saved one (the bright gold melts into his body), a
+ * band on the head's top row: three blue lightning bolts standing on it, a spire with blue gems
+ * on its points, or a row of points over a band of blue gems.
+ */
+const ZEUS_CROWN_INKS = { o: DEEP_GOLD, d: "#9a6a10", b: "#4cc9ff", B: "#1f8fd0" };
+const ZEUS_BOLT_CROWN = local(
+  [".b...b...b", "bB..bB..bB", ".b...b...b", "b...b...b.", "oooooooooo", "dddddddddd"],
+  10,
+  -5,
+  ZEUS_CROWN_INKS,
+);
+const ZEUS_SPIRE_CROWN = local(
+  ["....b...", "....o...", ".b.ooo.b", ".o.ooo.o", "oooooooo", "ddddbddd"],
+  11,
+  -5,
+  ZEUS_CROWN_INKS,
+);
+const ZEUS_JEWEL_CROWN = local(
+  ["....o...", "..o.o.o.", "o.o.o.o.", "obobbbob", "oooooooo", "dddddddd"],
+  11,
+  -5,
+  ZEUS_CROWN_INKS,
+);
+
+/**
+ * Crowns for Poseidon from the sea rather than points: three curling waves with white foam, a
+ * branch of coral on a gold band, or three shark fins swept back.
+ */
+const POSEIDON_WAVE_CROWN = local(
+  [".ww..ww..ww", "wcc.wcc.wcc", "c.c.c.c.c.c", "bbbbbbbbbbb"],
+  9,
+  -4,
+  { w: WHITE, c: "#53ddf9", b: "#22b9ec" },
+);
+const POSEIDON_CORAL_CROWN = local(
+  ["r...r..r.", "r.r.r.rr.", ".rr.rr.r.", "..r..r.r.", "..rrrrrr.", ".dddddddd"],
+  10,
+  -6,
+  { r: "#ff7a59", d: "#c9962a" },
+);
+const POSEIDON_FIN_CROWN = local(
+  ["c...c...c..", "cn..cn..cn.", "cnn.cnn.cnn", "bbbbbbbbbb."],
+  9,
+  -4,
+  { c: "#53ddf9", n: "#22b9ec", b: "#0b5fa8" },
+);
+
+/**
+ * For Ashton's Aphrodite final: a crown of red roses on a band of leaves, a gold tiara with one
+ * big heart, and the golden apple ("to the fairest") held in the hand in place of the rose.
+ */
+const APHRODITE_ROSE_CROWN = local(
+  ["..rr..rr..rr.", ".rRr.rRr.rRr.", "lrrllrrllrrl.", "llllllllllll."],
+  9,
+  -3,
+  { r: RED, R: "#9e1b24", l: ROSE_STEM },
+);
+const APHRODITE_HEART_TIARA = [
+  ...local([".rr.rr.", "rprrrrr", ".rrrrr.", "..rrr..", "...r..."], 11, -6, {
+    r: RED,
+    p: "#ff9ccb",
+  }),
+  ...local(["oooooooo"], 11, -1, { o: GOLD }),
+];
+const GOLDEN_APPLE = local(["..kl.", ".o.o.", "oeooo", "ooood", ".odd."], 17, 8, {
+  k: "#6d4e31",
+  l: ROSE_STEM,
+  o: GOLD,
+  e: "#fff1b0",
+  d: "#c9962a",
+});
 
 /* ---------------------------------------------------------------- Zeus's robe */
 
@@ -1421,6 +1659,24 @@ const GODS: God[] = [
           aresFinalHelm("#4a525c", "#2e343b", "#ff3b3b", "#a8242a"),
         ],
       },
+      {
+        id: "ares-final2-fitted",
+        name: "Ares, fitted helm",
+        note: "Ashton's Ares, the helmet a dome fitted to the head with a guard behind the eye, the crest growing out of it",
+        parts: [...ARES_FINAL_BASE, ARES_DOME, ARES_DOME_CREST],
+      },
+      {
+        id: "ares-final2-swept",
+        name: "Ares, swept crest",
+        note: "Ashton's Ares in the fitted helm, the crest swept back and trailing down behind",
+        parts: [...ARES_FINAL_BASE, ARES_DOME, ARES_SWEPT_CREST],
+      },
+      {
+        id: "ares-final2-gold",
+        name: "Ares, gold brow",
+        note: "Ashton's Ares in the fitted helm with a gold band across the brow",
+        parts: [...ARES_FINAL_BASE, ARES_DOME, ARES_GOLD_BROW, ARES_DOME_CREST],
+      },
     ],
   },
   {
@@ -1456,28 +1712,36 @@ const GODS: God[] = [
         framed: true,
       },
       {
-        id: "aphrodite-final-shades",
-        name: "Aphrodite, heart shades",
-        note: "Ashton's Aphrodite in heart-shaped sunglasses, hot-pink rims, with the rose",
+        id: "aphrodite-final-roses",
+        name: "Aphrodite, rose crown",
+        note: "Ashton's Aphrodite with a crown of red roses on a band of leaves, and the rose",
         parts: [
           dino("#ff6fae", "none"),
           APHRODITE_FINAL_ROSE,
           APHRODITE_FINAL_ARM("#ff6fae"),
-          APHRODITE_FINAL_CROWN,
-          HEART_SHADES,
+          APHRODITE_ROSE_CROWN,
         ],
       },
       {
-        id: "aphrodite-final-teeth",
-        name: "Aphrodite, rose in teeth",
-        note: "Ashton's Aphrodite in heart shades with the rose clenched in her teeth and a heart floating up",
+        id: "aphrodite-final-heart",
+        name: "Aphrodite, heart tiara",
+        note: "Ashton's Aphrodite with a gold tiara and one big red heart, and the rose",
+        parts: [
+          dino("#ff6fae", "none"),
+          APHRODITE_FINAL_ROSE,
+          APHRODITE_FINAL_ARM("#ff6fae"),
+          APHRODITE_HEART_TIARA,
+        ],
+      },
+      {
+        id: "aphrodite-final-apple",
+        name: "Aphrodite, golden apple",
+        note: "Ashton's Aphrodite holding the golden apple, to the fairest, under her flower crown",
         parts: [
           dino("#ff6fae", "none"),
           APHRODITE_FINAL_ARM("#ff6fae"),
           APHRODITE_FINAL_CROWN,
-          HEART_SHADES,
-          ROSE_IN_TEETH,
-          FLOATING_HEART,
+          GOLDEN_APPLE,
         ],
       },
     ],
@@ -1594,6 +1858,24 @@ const GODS: God[] = [
         ],
         framed: true,
       },
+      {
+        id: "zeus-final-bolts",
+        name: "Zeus, lightning crown",
+        note: "Ashton's Zeus, three blue lightning bolts standing on a dark-gold band",
+        parts: [...ZEUS_FINAL_BASE, ZEUS_BOLT_CROWN],
+      },
+      {
+        id: "zeus-final-spire",
+        name: "Zeus, spire crown",
+        note: "Ashton's Zeus, a dark-gold spire crown with blue gems on its points",
+        parts: [...ZEUS_FINAL_BASE, ZEUS_SPIRE_CROWN],
+      },
+      {
+        id: "zeus-final-jewels",
+        name: "Zeus, jewelled crown",
+        note: "Ashton's Zeus, a row of dark-gold points over a band of blue gems",
+        parts: [...ZEUS_FINAL_BASE, ZEUS_JEWEL_CROWN],
+      },
     ],
   },
   {
@@ -1616,6 +1898,24 @@ const GODS: God[] = [
         name: "Poseidon, elder",
         note: "Seafoam, a long white beard and a silver sea crown",
         parts: [dino("#7fe0d2", "none"), seaCrown(SILVER), beard(WHITE)],
+      },
+      {
+        id: "poseidon-final-waves",
+        name: "Poseidon, wave crown",
+        note: "Ashton's Poseidon, three curling waves with white foam for a crown",
+        parts: [...POSEIDON_FINAL_BASE, POSEIDON_WAVE_CROWN],
+      },
+      {
+        id: "poseidon-final-coral",
+        name: "Poseidon, coral crown",
+        note: "Ashton's Poseidon, a branch of coral on a gold band",
+        parts: [...POSEIDON_FINAL_BASE, POSEIDON_CORAL_CROWN],
+      },
+      {
+        id: "poseidon-final-fins",
+        name: "Poseidon, fin crown",
+        note: "Ashton's Poseidon, three shark fins swept back",
+        parts: [...POSEIDON_FINAL_BASE, POSEIDON_FIN_CROWN],
       },
     ],
   },

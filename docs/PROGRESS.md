@@ -330,12 +330,23 @@ upright or level, the two slants a coil shows in front. **caduceus crossed** (th
 upright, the dark one level: two snakes crossing) and **caduceus spiral** (all upright, one coil
 winding down). `HERMES2_SNAKES_CROSSED` / `_SPIRAL`.
 
-Two cooler Aphrodites on Ashton's saved "Aphrodite final" (`APHRODITE_FINAL_ARM`, `_CROWN`,
-`_ROSE`: the arm reaching to (16, 11), daisies and a lilac flower on grey stems, a long-stemmed
-red rose): **heart shades** (heart-shaped sunglasses over the eye, a hot-pink rim round a dark
-lens with a glint, the rose as saved) and **rose in teeth** (the shades, the same rose clenched
-along the mouth, a heart floating up and away). Rejected at real size: an all-pink heart (it
-melts into the body) and a pearl choker with a pendant (it read as a blob).
+Aphrodite in heart shades and with the rose in her teeth were tried and removed (Ashton: "both
+really bad, no sunglasses"). In their place three on the saved "Aphrodite final"
+(`APHRODITE_FINAL_ARM`, `_CROWN`, `_ROSE`): **rose crown** (red roses on a band of leaves),
+**heart tiara** (one big red heart with a glint on a gold band) and **golden apple** (the apple
+"to the fairest", notched and shaded, in the hand in place of the rose). Rejected at real size:
+three-cell hearts (they read as Y shapes) and a dove (it read as a duck).
+
+Then Ashton's newer saves, pasted as exported into `ARES_FINAL_MAP`, `ZEUS_FINAL_MAP` and
+`POSEIDON_FINAL_MAP` (`*_FINAL_BASE` draws one without its helmet or crown over the T-rex, since
+`local` skips characters its inks leave out). Ares, helmets that fit: **fitted helm**
+(`ARES_DOME`: a dome over the top two rows, a dark lip, a guard down the back of the head behind
+the eye, the crest growing out of it), **swept crest** and **gold brow**. Zeus, crowns in the
+darker golds (bright gold melts into his body): **lightning crown** (three blue bolts on the
+band), **spire crown** (blue gems on its points) and **jewelled crown**. Poseidon, crowns from the
+sea so none read as Zeus's points: **wave crown** (three curls with white foam), **coral crown**
+and **fin crown** (three shark fins swept back). Rejected: a scallop shell (at this size it read
+as a striped bun), a single big wave, a fez-like tall Ares crest and an Ares cheek guard.
 
 **Next session starts with:** Ashton's look at the Artemis leaf headband, Zeus gold headband
 and Athena shield variants on /dino; any pasted "Copy all" export is the starting point.
