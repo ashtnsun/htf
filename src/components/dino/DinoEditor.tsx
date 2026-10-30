@@ -19,6 +19,7 @@ import {
   Redo2,
   Save,
   SquareDashed,
+  Star,
   Trash2,
   Undo2,
 } from "lucide-react";
@@ -64,7 +65,8 @@ import { cn } from "@/lib/utils";
  * colours can be changed (every cell of a colour follows), the canvas grown or cut by whole
  * cells at each edge, and exports as PNG, SVG or a string-map constant ready to paste into the
  * codebase. The variants under it (components/dino/variants) load with one click, as does
- * anything saved in this browser or pasted back in. Rendered on the client only (DinoEditorLoader),
+ * anything saved in this browser or pasted back in; a star on any tile keeps a copy under
+ * Favourites, which exports like Saved. Rendered on the client only (DinoEditorLoader),
  * so reading localStorage while the state is set up never mismatches a server render.
  *
  * Left button draws with the current tool, the right button erases (the browser's menu is
@@ -151,6 +153,8 @@ function reducer(state: History, action: Action): History {
 
 const SAVED_KEY = "htf-dino-saved";
 const DRAFT_KEY = "htf-dino-draft";
+/** Starred sprites, kept as copies so a favourite outlives deleting it from Saved. */
+const FAVOURITES_KEY = "htf-dino-favourites";
 
 function isSprite(value: unknown): value is Sprite {
   if (!value || typeof value !== "object") return false;
@@ -313,9 +317,12 @@ export function DinoEditor() {
   const [ink, setInk] = useState(1);
   const [scale, setScale] = useState(16);
   const [copied, setCopied] = useState(false);
-  const [copiedAll, setCopiedAll] = useState(false);
   const [saved, setSaved] = useState<Sprite[]>(() => {
     const stored = readStored(SAVED_KEY);
+    return Array.isArray(stored) ? stored.filter(isSprite) : [];
+  });
+  const [favourites, setFavourites] = useState<Sprite[]>(() => {
+    const stored = readStored(FAVOURITES_KEY);
     return Array.isArray(stored) ? stored.filter(isSprite) : [];
   });
   const [lastDraft] = useState<Sprite | null>(() => {
@@ -618,10 +625,31 @@ export function DinoEditor() {
     setSelection(null);
   };
 
+  const writeFavourites = (next: Sprite[]) => {
+    setFavourites(next);
+    writeStored(FAVOURITES_KEY, next);
+  };
+
+  const isFavourite = (name: string) => favourites.some((s) => s.name === name);
+
+  const toggleFavourite = (s: Sprite) =>
+    writeFavourites(
+      isFavourite(s.name) ? favourites.filter((f) => f.name !== s.name) : [s, ...favourites],
+    );
+
+  /** A favourite follows its saved sprite: saving or importing the same name updates its copy. */
+  const refreshFavourites = (updated: readonly Sprite[]) => {
+    const byName = new Map(updated.map((s) => [s.name, s]));
+    if (favourites.some((f) => byName.has(f.name))) {
+      writeFavourites(favourites.map((f) => byName.get(f.name) ?? f));
+    }
+  };
+
   const saveCurrent = () => {
     const next = [sprite, ...saved.filter((s) => s.name !== sprite.name)];
     setSaved(next);
     writeStored(SAVED_KEY, next);
+    refreshFavourites([sprite]);
   };
 
   const deleteSaved = (name: string) => {
@@ -640,17 +668,6 @@ export function DinoEditor() {
     }
   };
 
-  /** Every saved sprite as code, to paste somewhere else (or back into Import). */
-  const copyAll = async () => {
-    try {
-      await navigator.clipboard.writeText(toCodeAll(saved));
-      setCopiedAll(true);
-      setTimeout(() => setCopiedAll(false), 1600);
-    } catch {
-      setImportText(toCodeAll(saved));
-    }
-  };
-
   const importSprite = () => {
     // Several maps (from "Copy all") all go to the saved list, replacing any of the same name.
     const many = parseCodeAll(importText);
@@ -659,6 +676,7 @@ export function DinoEditor() {
       const next = [...many, ...saved.filter((s) => !names.has(s.name))];
       setSaved(next);
       writeStored(SAVED_KEY, next);
+      refreshFavourites(many);
       setImportMessage(`Added ${many.length} maps to Saved in this browser.`);
       return;
     }
@@ -781,6 +799,38 @@ export function DinoEditor() {
             : "left button draws, right button erases"}
         </p>
 
+        {/* Favourites */}
+        <section aria-labelledby="dino-favourites" className="mt-12">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 id="dino-favourites" className="font-display text-h3 font-semibold">
+              Favourites
+            </h2>
+            {favourites.length > 0 ? (
+              <ExportButtons
+                sprites={favourites}
+                what="favourite"
+                file="dinos-favourites"
+                onCopyFailed={setImportText}
+              />
+            ) : null}
+          </div>
+          <p className="mt-2 text-body text-muted">
+            {favourites.length > 0
+              ? "Star any dinosaur below to keep it here; export them all from the buttons."
+              : "Star any dinosaur below (a variant or a saved one) to keep it here."}
+          </p>
+          {favourites.length > 0 ? (
+            <ul className="mt-6 grid grid-cols-2 gap-px border border-line bg-line sm:grid-cols-3 xl:grid-cols-4">
+              {favourites.map((s) => (
+                <li key={s.name} className="relative bg-bg">
+                  <VariantTile sprite={s} note="Favourite" onLoad={() => load(s)} />
+                  <FavouriteButton name={s.name} on onToggle={() => toggleFavourite(s)} />
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </section>
+
         {/* Variants */}
         <section aria-labelledby="dino-variants" className="mt-12">
           <h2 id="dino-variants" className="font-display text-h3 font-semibold">
@@ -799,8 +849,13 @@ export function DinoEditor() {
                 )}
               >
                 {VARIANTS.filter((v) => v.group === group).map((v) => (
-                  <li key={v.id} className="bg-bg">
+                  <li key={v.id} className="relative bg-bg">
                     <VariantTile sprite={v.sprite} note={v.note} onLoad={() => load(v.sprite)} />
+                    <FavouriteButton
+                      name={v.sprite.name}
+                      on={isFavourite(v.sprite.name)}
+                      onToggle={() => toggleFavourite(v.sprite)}
+                    />
                   </li>
                 ))}
               </ul>
@@ -814,37 +869,12 @@ export function DinoEditor() {
                   Saved in this browser
                 </h3>
                 {saved.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    <ToolButton
-                      label="Copy every saved dinosaur as code"
-                      icon={copiedAll ? Check : Copy}
-                      onClick={copyAll}
-                    >
-                      {copiedAll ? "Copied" : "Copy all"}
-                    </ToolButton>
-                    <ToolButton
-                      label="Download every saved dinosaur as code"
-                      icon={Download}
-                      onClick={() =>
-                        download(
-                          new Blob([toCodeAll(saved)], { type: "text/plain" }),
-                          "dinos-saved.txt",
-                        )
-                      }
-                    >
-                      Code
-                    </ToolButton>
-                    <ToolButton
-                      label="Download every saved dinosaur side by side on one PNG"
-                      icon={Download}
-                      onClick={async () => {
-                        const blob = await toSheetPngBlob(saved, 8);
-                        if (blob) download(blob, "dinos-saved.png");
-                      }}
-                    >
-                      Sheet
-                    </ToolButton>
-                  </div>
+                  <ExportButtons
+                    sprites={saved}
+                    what="saved"
+                    file="dinos-saved"
+                    onCopyFailed={setImportText}
+                  />
                 ) : null}
               </div>
               <ul className="mt-4 grid grid-cols-2 gap-px border border-line bg-line sm:grid-cols-3 xl:grid-cols-4">
@@ -860,12 +890,17 @@ export function DinoEditor() {
                 {saved.map((s) => (
                   <li key={s.name} className="relative bg-bg">
                     <VariantTile sprite={s} note="Saved" onLoad={() => load(s)} />
+                    <FavouriteButton
+                      name={s.name}
+                      on={isFavourite(s.name)}
+                      onToggle={() => toggleFavourite(s)}
+                    />
                     <button
                       type="button"
                       onClick={() => deleteSaved(s.name)}
                       aria-label={`Delete ${s.name}`}
                       title={`Delete ${s.name}`}
-                      className="absolute top-2 right-2 z-10 inline-flex size-11 items-center justify-center text-muted transition-colors hover:text-green"
+                      className="absolute top-2 right-13 z-10 inline-flex size-11 items-center justify-center text-muted transition-colors hover:text-green"
                     >
                       <Trash2 className="size-4" aria-hidden />
                     </button>
@@ -1091,6 +1126,89 @@ export function DinoEditor() {
         </Panel>
       </div>
     </div>
+  );
+}
+
+/** Copy all, a code download and a PNG sheet of a list of sprites (Saved and Favourites). */
+function ExportButtons({
+  sprites,
+  what,
+  file,
+  onCopyFailed,
+}: {
+  sprites: readonly Sprite[];
+  what: string;
+  file: string;
+  /** Where the code goes when the clipboard is refused (the Import box, to copy by hand). */
+  onCopyFailed: (code: string) => void;
+}) {
+  const [copied, setCopied] = useState(false);
+  const copyAll = async () => {
+    try {
+      await navigator.clipboard.writeText(toCodeAll(sprites));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {
+      onCopyFailed(toCodeAll(sprites));
+    }
+  };
+  return (
+    <div className="flex flex-wrap gap-2">
+      <ToolButton
+        label={`Copy every ${what} dinosaur as code`}
+        icon={copied ? Check : Copy}
+        onClick={copyAll}
+      >
+        {copied ? "Copied" : "Copy all"}
+      </ToolButton>
+      <ToolButton
+        label={`Download every ${what} dinosaur as code`}
+        icon={Download}
+        onClick={() =>
+          download(new Blob([toCodeAll(sprites)], { type: "text/plain" }), `${file}.txt`)
+        }
+      >
+        Code
+      </ToolButton>
+      <ToolButton
+        label={`Download every ${what} dinosaur side by side on one PNG`}
+        icon={Download}
+        onClick={async () => {
+          const blob = await toSheetPngBlob(sprites, 8);
+          if (blob) download(blob, `${file}.png`);
+        }}
+      >
+        Sheet
+      </ToolButton>
+    </div>
+  );
+}
+
+/** The star in a tile's corner: adds the sprite to Favourites or takes it off. */
+function FavouriteButton({
+  name,
+  on,
+  onToggle,
+}: {
+  name: string;
+  on: boolean;
+  onToggle: () => void;
+}) {
+  const label = on ? `Remove ${name} from favourites` : `Add ${name} to favourites`;
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-pressed={on}
+      aria-label={label}
+      title={label}
+      className={cn(
+        "absolute top-2 right-2 z-10 inline-flex size-11 items-center justify-center transition-colors hover:text-green",
+        on ? "text-green" : "text-muted",
+      )}
+    >
+      <Star className={cn("size-4", on && "fill-current")} aria-hidden />
+    </button>
   );
 }
 
