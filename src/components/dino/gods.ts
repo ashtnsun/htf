@@ -333,7 +333,7 @@ const DIAGONAL_HERALD_STAFF = [
 /**
  * Ashton's saved "Hermes2 final": the arm straight forward to (17, 10), and a one-cell caduceus
  * on the diagonal through the hand, its orb up past the snout and its wings square to the staff.
- * The saved snakes are redrawn two ways (`hermes2Snakes`).
+ * The saved snakes are redrawn two ways (`HERMES2_SNAKES_*`).
  */
 const HERMES2_ARM = (color: string) => line(14, 10, 17, 10, color);
 const HERMES2_CADUCEUS = [
@@ -356,25 +356,47 @@ const HERMES2_CADUCEUS = [
 const SNAKE_LIGHT = "#3ddc84";
 const SNAKE_DARK = "#1b8a4c";
 /**
- * The snakes painted onto the staff's own cells, so it stays one cell thick: each cell a snake
- * crossing in front, light and dark in turn down the diagonal (staff cell `k` is (22 - k, 6 + k)),
- * and the two heads one cell each side of the staff under the wings. Wound is four crossings
- * in a row; banded is two pairs with the gold showing between.
+ * The snakes kept close to the staff: each coil is a short stroke across it, one cell out on
+ * each side and one on the staff, with the gold left showing between coils. Across a 45° staff a
+ * stroke is upright or level, and those are the two slants a coil shows in front, so crossed
+ * gives the light snake upright strokes and the dark one level ones (two snakes crossing), and
+ * spiral gives both upright ones (one coil winding down). The top stroke rises under the wing.
  */
-const hermes2Snakes = (light: readonly number[], dark: readonly number[]) => [
+const HERMES2_SNAKES_CROSSED = [
   ...cells(
-    light.map((k) => [22 - k, 6 + k] as const),
+    [
+      [22, 5],
+      [22, 6],
+      [22, 7],
+      [18, 9],
+      [18, 10],
+      [18, 11],
+    ],
+    SNAKE_LIGHT,
+  ),
+  ...line(19, 8, 21, 8, SNAKE_DARK),
+];
+const HERMES2_SNAKES_SPIRAL = [
+  ...cells(
+    [
+      [22, 5],
+      [22, 6],
+      [22, 7],
+      [18, 9],
+      [18, 10],
+    ],
     SNAKE_LIGHT,
   ),
   ...cells(
-    dark.map((k) => [22 - k, 6 + k] as const),
+    [
+      [23, 6],
+      [20, 7],
+      [20, 8],
+      [20, 9],
+    ],
     SNAKE_DARK,
   ),
-  ...cells([[22, 5]], SNAKE_LIGHT),
-  ...cells([[23, 6]], SNAKE_DARK),
 ];
-const HERMES2_SNAKES_WOUND = hermes2Snakes([0, 2], [1, 3]);
-const HERMES2_SNAKES_BANDED = hermes2Snakes([0, 3], [1, 4]);
 
 /** The resting arm stretched forward along row 10 to a staff in column 21. */
 const ARM_TO_STAFF = (color: string) => line(14, 10, 20, 10, color);
@@ -1644,25 +1666,25 @@ const GODS: God[] = [
         ],
       },
       {
-        id: "hermes2-final-wound",
-        name: "Hermes, caduceus wound",
-        note: "Ashton's Hermes2 with the snakes wound on the staff itself, light and dark in turn, heads under the wings",
+        id: "hermes2-final-crossed",
+        name: "Hermes, caduceus crossed",
+        note: "Ashton's Hermes2 with two snakes coiling the staff and crossing, kept close to it",
         parts: [
           dino("#14c4b0", "none"),
           HERMES2_CADUCEUS,
-          HERMES2_SNAKES_WOUND,
+          HERMES2_SNAKES_CROSSED,
           HERMES2_ARM("#14c4b0"),
           HERMES_FINAL,
         ],
       },
       {
-        id: "hermes2-final-banded",
-        name: "Hermes, caduceus banded",
-        note: "Ashton's Hermes2 with the snakes in two bands on the staff itself, gold between, heads under the wings",
+        id: "hermes2-final-spiral",
+        name: "Hermes, caduceus spiral",
+        note: "Ashton's Hermes2 with the snakes in one spiral winding down the staff, kept close to it",
         parts: [
           dino("#14c4b0", "none"),
           HERMES2_CADUCEUS,
-          HERMES2_SNAKES_BANDED,
+          HERMES2_SNAKES_SPIRAL,
           HERMES2_ARM("#14c4b0"),
           HERMES_FINAL,
         ],

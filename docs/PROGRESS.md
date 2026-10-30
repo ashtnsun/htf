@@ -323,9 +323,12 @@ Ashton then saved "Hermes2 final" (the arm straight forward to (17, 10), a one-c
 the diagonal through the hand, an orb at its tip, wings square to it) and liked it except for
 the snakes. Kept exactly (`HERMES2_ARM`, `HERMES2_CADUCEUS`, `HERMES_FINAL`). A first pass
 (snakes crossing as pluses, or as square rings round the staff) was rejected: anything beside
-the staff makes it read too thick. So the snakes are painted on the staff's own cells
-(`hermes2Snakes()`), light and dark in turn, with one-cell heads each side under the wings:
-**caduceus wound** (four crossings in a row) and **caduceus banded** (two pairs, gold between).
+the staff makes it read too thick. Painting them on the staff alone (one cell thick) lost the coiling, so the rule is: off the
+staff sparingly, one cell each side per coil and never a level run of three. Each coil is a
+three-cell stroke across the staff with gold between coils; across a 45° staff a stroke is
+upright or level, the two slants a coil shows in front. **caduceus crossed** (the light snake
+upright, the dark one level: two snakes crossing) and **caduceus spiral** (all upright, one coil
+winding down). `HERMES2_SNAKES_CROSSED` / `_SPIRAL`.
 
 **Next session starts with:** Ashton's look at the Artemis leaf headband, Zeus gold headband
 and Athena shield variants on /dino; any pasted "Copy all" export is the starting point.
