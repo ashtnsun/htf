@@ -321,13 +321,11 @@ shaft's line, a ribbon under it).
 
 Ashton then saved "Hermes2 final" (the arm straight forward to (17, 10), a one-cell caduceus on
 the diagonal through the hand, an orb at its tip, wings square to it) and liked it except for
-the snakes. Kept exactly (`HERMES2_ARM`, `HERMES2_CADUCEUS`, `HERMES_FINAL`), the snakes redrawn
-two ways after laying six candidates side by side at real size: **caduceus woven** (the snakes
-mirrored about the staff, crossing it twice as a plus, over then under, heads flaring out under
-the wings) and **caduceus linked coils** (each snake one square ring round the staff, the gold
-showing through each; on a 45° staff a coil becomes an axis-aligned square). Rejected: square
-loops split between both snakes (they read as a bar across the staff) and a tight coil on the
-staff cells (the heads read as L-shaped blocks).
+the snakes. Kept exactly (`HERMES2_ARM`, `HERMES2_CADUCEUS`, `HERMES_FINAL`). A first pass
+(snakes crossing as pluses, or as square rings round the staff) was rejected: anything beside
+the staff makes it read too thick. So the snakes are painted on the staff's own cells
+(`hermes2Snakes()`), light and dark in turn, with one-cell heads each side under the wings:
+**caduceus wound** (four crossings in a row) and **caduceus banded** (two pairs, gold between).
 
 **Next session starts with:** Ashton's look at the Artemis leaf headband, Zeus gold headband
 and Athena shield variants on /dino; any pasted "Copy all" export is the starting point.
