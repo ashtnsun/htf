@@ -369,6 +369,13 @@ trident on top), **pearl crown** (three pearl-tipped points) and **pearl spire**
 with a pearl). Rejected: zigzag points (they read as checker noise), a bolt without its jog (a
 slash), wave and arch tops (a chain, a checkerboard).
 
+Zeus's still did not land ("sucks still"), so his three became seven bits of headwear, in colours
+that stand off his yellow instead of gold: **olive wreath** (the prize at Olympia), **blue
+headband** (tied at the back), **silver crown** and **storm crown** (Apollo's shape in silver and
+in blue), **spark crown**, **halo** and **lightning pin** (a two-cell zigzag bolt worn on the head,
+the same as the one he holds). Rejected from the ten tried: a thin circlet, a cloud (a cap), a
+band with a bolt emblem (a dot over the eye) and a bandana (the headband again).
+
 **Next session starts with:** Ashton's look at the Artemis leaf headband, Zeus gold headband
 and Athena shield variants on /dino; any pasted "Copy all" export is the starting point.
 

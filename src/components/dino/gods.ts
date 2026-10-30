@@ -1145,23 +1145,30 @@ const simpleCrown = (
   inks: Record<string, string>,
 ) => local([...top, ...band], 10, -(top.length + band.length), inks);
 const ZEUS_BAND = ["oooooooooS", ".ooooooSS."];
-const ZEUS_CROWN_INKS = { o: DEEP_GOLD, S: "#9a6a10", b: "#4cc9ff" };
-const ZEUS_SPIKE_CROWN = simpleCrown(
-  ["....o.....", "...ooo....", "..o.o.o..."],
-  ZEUS_BAND,
-  ZEUS_CROWN_INKS,
-);
-const ZEUS_GEM_CROWN = simpleCrown(
-  ["....o.....", ".o.obo..o.", ".o..o...o."],
-  ZEUS_BAND,
-  ZEUS_CROWN_INKS,
-);
-/** A small blue bolt (with its jog, or it reads as a slash) between two points. */
-const ZEUS_BOLT_CROWN = simpleCrown(
-  ["......b...", ".o..bbb.o.", ".o..b...o.", ".o.b....o."],
-  ZEUS_BAND,
-  ZEUS_CROWN_INKS,
-);
+const APOLLO_POINTS = ["....o.....", ".o..o...o.", ".o.ooo..o."];
+
+/**
+ * Zeus's headwear, in colours that stand off his yellow (gold melts into it): an olive wreath
+ * (the prize at his games in Olympia), a blue headband tied at the back, Apollo's crown in silver
+ * and in storm blue, a crown of blue sparks, a halo, and a lightning bolt worn like a pin.
+ */
+const ZEUS_OLIVE_WREATH = local(["..L..L..L.", ".LlLLlLLl.", "lllllllll."], 9, -2, {
+  l: "#4f8a2b",
+  L: "#8cc152",
+});
+const ZEUS_HEADBAND = [
+  ...local(["bbbbbbbbbb", "b.........", "bb........"], 9, 0, { b: "#1f8fd0" }),
+  ...cells([[8, 1]], "#1f8fd0"),
+];
+const ZEUS_SILVER_CROWN = simpleCrown(APOLLO_POINTS, ZEUS_BAND, { o: "#d8dee6", S: "#9aa4b0" });
+const ZEUS_STORM_CROWN = simpleCrown(APOLLO_POINTS, ZEUS_BAND, { o: "#4cc9ff", S: "#1f8fd0" });
+const ZEUS_SPARK_CROWN = local(["B...B...B.", ".B.B.B.B.B", "BBBBBBBBB."], 10, -3, {
+  B: "#4cc9ff",
+});
+const ZEUS_HALO = local(["..BBBBBB..", ".B......B.", "..BBBBBB.."], 10, -5, { B: "#4cc9ff" });
+const ZEUS_BOLT_PIN = local(["...bb", "..bb.", ".bbbb", "..bb.", ".bb..", "bb..."], 12, -6, {
+  b: "#4cc9ff",
+});
 const POSEIDON_BAND = ["ooooooooS", ".oooooSS."];
 const POSEIDON_CROWN_INKS = { o: GOLD, S: "#c9962a", w: WHITE };
 const POSEIDON_TRIDENT_CROWN = simpleCrown(
@@ -1858,22 +1865,46 @@ const GODS: God[] = [
         framed: true,
       },
       {
-        id: "zeus-final-spike",
-        name: "Zeus, spiked crown",
-        note: "Ashton's Zeus, a simple dark-gold crown with one spike rising from the middle",
-        parts: [...ZEUS_FINAL_BASE, ZEUS_SPIKE_CROWN],
+        id: "zeus-final-olive",
+        name: "Zeus, olive wreath",
+        note: "Ashton's Zeus in an olive wreath, the prize at his games in Olympia",
+        parts: [...ZEUS_FINAL_BASE, ZEUS_OLIVE_WREATH],
       },
       {
-        id: "zeus-final-gem",
-        name: "Zeus, gem crown",
-        note: "Ashton's Zeus, a simple dark-gold crown, a blue gem set in the middle point",
-        parts: [...ZEUS_FINAL_BASE, ZEUS_GEM_CROWN],
+        id: "zeus-final-headband",
+        name: "Zeus, blue headband",
+        note: "Ashton's Zeus in a blue headband tied at the back",
+        parts: [...ZEUS_FINAL_BASE, ZEUS_HEADBAND],
       },
       {
-        id: "zeus-final-bolt",
-        name: "Zeus, lightning crown",
-        note: "Ashton's Zeus, a simple dark-gold crown with a small blue bolt between two points",
-        parts: [...ZEUS_FINAL_BASE, ZEUS_BOLT_CROWN],
+        id: "zeus-final-silver",
+        name: "Zeus, silver crown",
+        note: "Ashton's Zeus in a simple silver crown, Apollo's shape",
+        parts: [...ZEUS_FINAL_BASE, ZEUS_SILVER_CROWN],
+      },
+      {
+        id: "zeus-final-storm",
+        name: "Zeus, storm crown",
+        note: "Ashton's Zeus in a simple crown of storm blue, Apollo's shape",
+        parts: [...ZEUS_FINAL_BASE, ZEUS_STORM_CROWN],
+      },
+      {
+        id: "zeus-final-sparks",
+        name: "Zeus, spark crown",
+        note: "Ashton's Zeus crowned with blue sparks",
+        parts: [...ZEUS_FINAL_BASE, ZEUS_SPARK_CROWN],
+      },
+      {
+        id: "zeus-final-halo",
+        name: "Zeus, halo",
+        note: "Ashton's Zeus under a floating blue halo",
+        parts: [...ZEUS_FINAL_BASE, ZEUS_HALO],
+      },
+      {
+        id: "zeus-final-bolt-pin",
+        name: "Zeus, lightning pin",
+        note: "Ashton's Zeus with a blue lightning bolt worn on his head like a pin",
+        parts: [...ZEUS_FINAL_BASE, ZEUS_BOLT_PIN],
       },
     ],
   },
