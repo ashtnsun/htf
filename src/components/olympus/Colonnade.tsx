@@ -1,9 +1,8 @@
-import { Meander } from "@/components/olympus/Meander";
 import { cn } from "@/lib/utils";
 
 /** A Doric column, 11 × 17 cells: abacus, echinus, a fluted shaft (carved cells), the base. */
 const COLUMN = [
-  "aaaaaaaaaaa",
+  "###########",
   ".#########.",
   "..#######..",
   ...Array.from({ length: 12 }, () => "..##.#.##.."),
@@ -11,13 +10,13 @@ const COLUMN = [
   "###########",
 ];
 const COLUMN_CELLS = COLUMN.flatMap((row, y) =>
-  [...row].flatMap((ch, x) => (ch === "." ? [] : [{ x, y, accent: ch === "a" }])),
+  [...row].flatMap((ch, x) => (ch === "#" ? [{ x, y }] : [])),
 );
 
 /**
- * The solved words, each standing on its own column, the columns on the Greek key. Every column
- * is drawn from the start (dim until its riddle is solved), so nothing moves as words arrive:
- * the word fades in on top and the column lights up. Pixel art on its grid: 4px cells, 5px from sm.
+ * The solved words, each standing on its own column. Every column is drawn from the start (dim
+ * until its riddle is solved), so nothing moves as words arrive: the word fades in on top and
+ * the column lights up. Pixel art on its grid: 4px cells, 5px from sm.
  */
 export function Colonnade({ total, words }: { total: number; words: readonly string[] }) {
   return (
@@ -48,25 +47,14 @@ export function Colonnade({ total, words }: { total: number; words: readonly str
                 aria-hidden="true"
                 focusable="false"
               >
-                {COLUMN_CELLS.map(({ x, y, accent }) => (
-                  <rect
-                    key={`${x}-${y}`}
-                    x={x}
-                    y={y}
-                    width={1}
-                    height={1}
-                    className={cn(
-                      "transition-colors duration-1000 ease-smooth",
-                      accent && word ? "fill-green" : "fill-current",
-                    )}
-                  />
+                {COLUMN_CELLS.map(({ x, y }) => (
+                  <rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} fill="currentColor" />
                 ))}
               </svg>
             </li>
           );
         })}
       </ol>
-      <Meander className="text-green-deep" />
     </section>
   );
 }
