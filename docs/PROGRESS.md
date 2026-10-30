@@ -280,6 +280,13 @@ its back edge) and **Hermes, harpe** (teal, the big-winged helmet, the raised ho
 Perseus, its crescent hook two cells thick so it reads as a blade). `WINGED_PHONE` and `harpe()`
 in `dino/gods.ts`.
 
+Then two Ares variants built on Ashton's saved "Ares final" (the arm reaching forward and up to
+a long spear in column 20, `ARM_TO_SPEAR` and `LONG_SPEAR`) with better helmets: **Ares,
+Corinthian** (crimson, a domed bronze bowl with a dark band and a cheek guard, the face open
+from the eye forward, a tall red horsehair crest whose tail hangs down the neck) and **Ares,
+dread** (deep red, a closed dark-steel helm with a pale crown, a gold band, a dark visor slit and
+the eye glowing amber in it, a bright red crest). `corinthianHelm()` and `dreadHelm()`.
+
 **Next session starts with:** Ashton's look at the Artemis leaf headband, Zeus gold headband
 and Athena shield variants on /dino; any pasted "Copy all" export is the starting point.
 

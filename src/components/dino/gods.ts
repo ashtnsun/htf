@@ -14,7 +14,7 @@ import type { Variant } from "@/components/dino/variants";
 
 /**
  * The Greek gods in the dinosaur editor (no Hera since 2026-10-29): three variants of each, more
- * for some (Aphrodite four, redone, and no picks; Athena five and one pick; Hermes five; Zeus and Artemis five,
+ * for some (Aphrodite four, redone, and no picks; Athena five and one pick; Ares and Hermes five; Zeus and Artemis five,
  * two from Ashton's saves), every one the footer T-rex in its own colour (one hue family per god) with one or two props that say who it is. Coordinates
  * are T-rex-local (components/dino/compose). Anything held upright stands in column 20 with the
  * arm raised to it; anything held low sits against the resting arm from column 16.
@@ -117,6 +117,83 @@ const SWORD = [
     LEATHER,
   ),
 ];
+
+/**
+ * Ashton's saved "Ares final": the arm reaching forward and up to a long spear in column 20,
+ * its steel head shaded on the far side.
+ */
+const ARM_TO_SPEAR = (color: string) =>
+  cells(
+    [
+      [14, 10],
+      [15, 10],
+      [16, 10],
+      [17, 10],
+      [18, 9],
+      [19, 9],
+    ],
+    color,
+  );
+const LONG_SPEAR = [
+  ...line(20, -7, 20, 21, WOOD),
+  ...local([".a.", "aad", "aad", ".d."], 19, -11, { a: SILVER, d: "#9aa4b0" }),
+];
+
+/**
+ * A Corinthian helmet: a domed bronze bowl with a dark band, the back of the head and a cheek
+ * guard covered, the face open from the eye forward, and a tall horsehair crest running front to
+ * back on a stand, its tail hanging down the neck.
+ */
+function corinthianHelm(metal: string, band: string, crest: string, crestLight: string): Part[] {
+  return local(
+    [
+      "......LLLLL....",
+      "....LLcccccLL..",
+      "...Lccccccccc..",
+      "..Lcccccccccc..",
+      ".Lcc..hhhhhh...",
+      ".cc..hhhhhhhh..",
+      ".cc..hhhhhhhh..",
+      "..c.dddddddddd.",
+      "..cchh.........",
+      "...chhh........",
+      "....hhh........",
+      "....hhd........",
+      "....dd.........",
+    ],
+    6,
+    -6,
+    { h: metal, d: band, c: crest, L: crestLight },
+  );
+}
+
+/**
+ * A closed helmet: the whole head in dark steel with a light crown, a gold band, a visor slit
+ * cut through at the eye with the eye glowing in it, and a crest running front to back.
+ */
+function dreadHelm(steel: string, shine: string, trim: string, crest: string, eye: string) {
+  return [
+    ...local(
+      [
+        "......cccc....",
+        "....cccccccc..",
+        "..ccccccccccc.",
+        ".cc..ssssss...",
+        ".c...ssssssss.",
+        ".c..tttttttttt",
+        ".c..hh.vvvvhhh",
+        "..c.hhhhhhhhhh",
+        "....hhhhhhhhhh",
+        "....hhhhhhhhhh",
+        "....hhhhh.....",
+      ],
+      6,
+      -4,
+      { s: shine, t: trim, h: steel, c: crest, v: "#22262c" },
+    ),
+    ...cells([[12, 2]], eye),
+  ];
+}
 
 /** A pomegranate against the arm, its crown on top. */
 const POMEGRANATE_FRUIT = local([".c.c.", ".rrr.", "rrrrr", "rrrrr", ".rrr."], 16, 8, {
@@ -1015,6 +1092,28 @@ const GODS: God[] = [
         name: "Ares, sword",
         note: "Rust, a plain silver helm and a raised sword",
         parts: [dino("#c8553d", "raised"), helmet(SILVER), SWORD],
+      },
+      {
+        id: "ares-corinthian",
+        name: "Ares, Corinthian",
+        note: "Ashton's Ares in a domed Corinthian helm with a tall horsehair crest, and the long spear",
+        parts: [
+          dino("#e5383b", "none"),
+          ARM_TO_SPEAR("#e5383b"),
+          LONG_SPEAR,
+          corinthianHelm(BRONZE, "#a87a2c", "#a8242a", RED),
+        ],
+      },
+      {
+        id: "ares-dread",
+        name: "Ares, dread",
+        note: "Deep red, a closed dark-steel helm with a glowing eye in the visor, and the long spear",
+        parts: [
+          dino("#b3202a", "none"),
+          ARM_TO_SPEAR("#b3202a"),
+          LONG_SPEAR,
+          dreadHelm("#4a525c", "#8a939c", GOLD, "#ff3b3b", "#ffb020"),
+        ],
       },
     ],
   },
