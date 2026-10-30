@@ -312,6 +312,13 @@ column 22 so the wings and snakes stay clear of the snout and the helmet, the ha
 cells to it; gold knob, small wings, green snakes crossing three times) and **small herald's
 staff** (`SMALL_HERALD_STAFF`, column 21: a three-wide open figure eight on wood, one ribbon).
 
+And both pointed like Zeus's saved bolt: the arm straight forward (`armForward`, hand at
+(16, 10)) and the staff on the 45° diagonal up past the snout, two cells to a row like the bolt
+(`diagonalShaft()`: lit side then shaded side; a one-cell diagonal broke into dots at real
+size). **caduceus pointed** (an orb at the tip, white wings square to the shaft, green snakes
+crossing it twice) and **herald's staff pointed** (a gold ring with two horns mirrored about the
+shaft's line, a ribbon under it).
+
 **Next session starts with:** Ashton's look at the Artemis leaf headband, Zeus gold headband
 and Athena shield variants on /dino; any pasted "Copy all" export is the starting point.
 

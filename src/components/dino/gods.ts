@@ -14,7 +14,7 @@ import type { Variant } from "@/components/dino/variants";
 
 /**
  * The Greek gods in the dinosaur editor (no Hera since 2026-10-29): three variants of each, more
- * for some (Aphrodite four, redone, and no picks; Athena five and one pick; Ares five, Hermes eleven; Zeus and Artemis five,
+ * for some (Aphrodite four, redone, and no picks; Athena five and one pick; Ares five, Hermes thirteen; Zeus and Artemis five,
  * two from Ashton's saves), every one the footer T-rex in its own colour (one hue family per god) with one or two props that say who it is. Coordinates
  * are T-rex-local (components/dino/compose). Anything held upright stands in column 20 with the
  * arm raised to it; anything held low sits against the resting arm from column 16.
@@ -252,6 +252,82 @@ const SMALL_HERALD_STAFF = [
   ...local(["ww", ".c"], 22, -2, { w: WHITE, c: PLUME_LINE }),
   ...line(21, -2, 21, 11, WOOD),
   ...cells([[21, 12]], GOLD),
+];
+
+/**
+ * The small staffs pointed like Zeus's saved bolt: gripped in the hand held straight forward at
+ * (16, 10) and laid on the 45° diagonal up and away past the snout. Like the bolt, the shaft is
+ * two cells on each row (the lit side, then the shaded one) so it reads as one solid stroke. The heads are the hand-sized ones turned with it: the
+ * caduceus's orb, its wings spread square to the shaft and the snakes crossing it twice; the
+ * herald's staff's ring with two horns curling back toward the line of the shaft.
+ */
+function diagonalShaft(fromY: number, lit: string, shade: string): Part[] {
+  return Array.from({ length: 12 - fromY }, (_, i) => fromY + i).flatMap((y) => [
+    ...cells([[26 - y, y]], lit),
+    ...cells([[27 - y, y]], shade),
+  ]);
+}
+const DIAGONAL_CADUCEUS = [
+  ...diagonalShaft(2, GOLD, "#c9962a"),
+  ...local(["ao", "oo"], 25, 0, { a: "#fbe7a1", o: GOLD }),
+  ...cells(
+    [
+      [20, 0],
+      [21, 0],
+      [21, 1],
+      [22, 1],
+      [22, 2],
+      [23, 2],
+      [25, 3],
+      [25, 4],
+      [26, 4],
+      [26, 5],
+      [27, 5],
+      [27, 6],
+    ],
+    WHITE,
+  ),
+  ...cells(
+    [
+      [21, 4],
+      [21, 5],
+      [22, 5],
+      [22, 6],
+      [18, 8],
+    ],
+    "#3ddc84",
+  ),
+  ...cells(
+    [
+      [24, 4],
+      [19, 6],
+      [19, 7],
+      [20, 7],
+      [20, 8],
+    ],
+    "#1b8a4c",
+  ),
+];
+const DIAGONAL_HERALD_STAFF = [
+  ...diagonalShaft(4, WOOD, "#8a5a2b"),
+  ...local(["ooo", "o.o", "ooo"], 23, 1, { o: GOLD }),
+  ...cells(
+    [
+      [25, 0],
+      [25, -1],
+      [26, -2],
+    ],
+    GOLD,
+  ),
+  ...cells(
+    [
+      [26, 1],
+      [27, 1],
+      [28, 0],
+    ],
+    "#c9962a",
+  ),
+  ...local(["ww", ".c"], 23, 5, { w: WHITE, c: PLUME_LINE }),
 ];
 
 /** The resting arm stretched forward along row 10 to a staff in column 21. */
@@ -1501,6 +1577,23 @@ const GODS: God[] = [
           dino("#14c4b0", "raised"),
           cells([[20, 8]], "#14c4b0"),
           SMALL_HERALD_STAFF,
+          HERMES_FINAL,
+        ],
+      },
+      {
+        id: "hermes-final-diagonal-caduceus",
+        name: "Hermes, caduceus pointed",
+        note: "Ashton's Hermes pointing the small caduceus up and forward on the diagonal, like Zeus's bolt",
+        parts: [dino("#14c4b0", "none"), DIAGONAL_CADUCEUS, armForward("#14c4b0"), HERMES_FINAL],
+      },
+      {
+        id: "hermes-final-diagonal-herald",
+        name: "Hermes, herald's staff pointed",
+        note: "Ashton's Hermes pointing the small herald's staff up and forward on the diagonal",
+        parts: [
+          dino("#14c4b0", "none"),
+          DIAGONAL_HERALD_STAFF,
+          armForward("#14c4b0"),
           HERMES_FINAL,
         ],
       },
