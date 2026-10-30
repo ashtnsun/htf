@@ -307,6 +307,11 @@ staff** (the older kerykeion: an open gold figure eight on a wooden staff in col
 ribbons tied under it, the arm reaching along row 10). Plus **proclamation**: a scroll hanging
 open from its top roller in the resting hand, a red seal under the bottom roller.
 
+Then both staffs at hand size, held up in the raised grip: **small caduceus** (`SMALL_CADUCEUS`,
+column 22 so the wings and snakes stay clear of the snout and the helmet, the hand reaching two
+cells to it; gold knob, small wings, green snakes crossing three times) and **small herald's
+staff** (`SMALL_HERALD_STAFF`, column 21: a three-wide open figure eight on wood, one ribbon).
+
 **Next session starts with:** Ashton's look at the Artemis leaf headband, Zeus gold headband
 and Athena shield variants on /dino; any pasted "Copy all" export is the starting point.
 

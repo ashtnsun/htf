@@ -14,7 +14,7 @@ import type { Variant } from "@/components/dino/variants";
 
 /**
  * The Greek gods in the dinosaur editor (no Hera since 2026-10-29): three variants of each, more
- * for some (Aphrodite four, redone, and no picks; Athena five and one pick; Ares five, Hermes nine; Zeus and Artemis five,
+ * for some (Aphrodite four, redone, and no picks; Athena five and one pick; Ares five, Hermes eleven; Zeus and Artemis five,
  * two from Ashton's saves), every one the footer T-rex in its own colour (one hue family per god) with one or two props that say who it is. Coordinates
  * are T-rex-local (components/dino/compose). Anything held upright stands in column 20 with the
  * arm raised to it; anything held low sits against the resting arm from column 16.
@@ -230,6 +230,28 @@ const HERALD_STAFF = [
   ...local(["..oww", "..o.wc", "..o..c"], 19, -5, { o: GOLD, w: WHITE, c: PLUME_LINE }),
   ...line(21, -2, 21, 19, WOOD),
   ...line(21, 20, 21, 21, GOLD),
+];
+
+/**
+ * The two staffs cut down to hand size, held up past the raised grip: a short caduceus in column
+ * 22 (gold knob, small wings, the snakes crossing three times) and a short herald's staff
+ * (a small open figure eight on wood, one ribbon).
+ */
+const SMALL_CADUCEUS = [
+  ...local(["..a..", "wwoww", ".wow.", ".goe.", "..g..", ".eog.", "..e..", ".goe."], 20, -2, {
+    a: "#fbe7a1",
+    o: GOLD,
+    w: WHITE,
+    g: "#3ddc84",
+    e: "#1b8a4c",
+  }),
+  ...line(22, 6, 22, 12, GOLD),
+];
+const SMALL_HERALD_STAFF = [
+  ...local(["o.b", "o.b", ".o.", "o.b", ".o."], 20, -7, { o: GOLD, b: "#c9962a" }),
+  ...local(["ww", ".c"], 22, -2, { w: WHITE, c: PLUME_LINE }),
+  ...line(21, -2, 21, 11, WOOD),
+  ...cells([[21, 12]], GOLD),
 ];
 
 /** The resting arm stretched forward along row 10 to a staff in column 21. */
@@ -1453,6 +1475,34 @@ const GODS: God[] = [
         name: "Hermes, herald's staff",
         note: "Ashton's Hermes leaning on the herald's staff, an open gold figure eight with ribbons",
         parts: [dino("#14c4b0", "none"), HERALD_STAFF, ARM_TO_STAFF("#14c4b0"), HERMES_FINAL],
+      },
+      {
+        id: "hermes-final-small-caduceus",
+        name: "Hermes, small caduceus",
+        note: "Ashton's Hermes holding up a hand-sized caduceus with small wings and green snakes",
+        parts: [
+          dino("#14c4b0", "raised"),
+          cells(
+            [
+              [20, 8],
+              [21, 8],
+            ],
+            "#14c4b0",
+          ),
+          SMALL_CADUCEUS,
+          HERMES_FINAL,
+        ],
+      },
+      {
+        id: "hermes-final-small-herald",
+        name: "Hermes, small herald's staff",
+        note: "Ashton's Hermes holding up a hand-sized herald's staff, a small gold figure eight and a ribbon",
+        parts: [
+          dino("#14c4b0", "raised"),
+          cells([[20, 8]], "#14c4b0"),
+          SMALL_HERALD_STAFF,
+          HERMES_FINAL,
+        ],
       },
       {
         id: "hermes-final-scroll",
