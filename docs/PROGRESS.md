@@ -376,6 +376,15 @@ in blue), **spark crown**, **halo** and **lightning pin** (a two-cell zigzag bol
 the same as the one he holds). Rejected from the ten tried: a thin circlet, a cloud (a cap), a
 band with a bolt emblem (a dot over the eye) and a bandana (the headband again).
 
+All rejected: the crown has to be gold. The real problem was the gold itself: flat or dark gold
+melts into his yellow or reads brown. A three-tone gold (`ZEUS_GOLD`: pale #ffd76a on the lit
+left edges and tips, warm #f0a020, deep bronze #a8600c along the bottom where it meets the head)
+stands off him and reads as shiny, picked from five palettes on one crown. Seven different
+shapes in it: **king's crown**, **tower crown** (a wall with blue gems), **spiked crown** (five
+spikes over blue gems), **winged crown** (swept up at both ends), **gem diadem** (low, one big
+blue gem), **simple crown** (Apollo's shape) and **bolt crown** (one gold bolt rising from the
+band).
+
 **Next session starts with:** Ashton's look at the Artemis leaf headband, Zeus gold headband
 and Athena shield variants on /dino; any pasted "Copy all" export is the starting point.
 
