@@ -389,6 +389,15 @@ crown**, **leaf spikes** (leaves leaning on the band), **centre leaf crown** (on
 small) and **gold laurel wreath** (round the brow, leaves above and below the stem). Small
 two-cell leaves read as a checkerboard; the leaves need a point and a midrib.
 
+All of those rejected too ("all horrible, make it actually make sense"). After some thirty misses
+the direction was asked rather than guessed: four options drawn as maps, and Ashton picked "your
+thin crown, refined". So the gold crowns and gold leaves are all gone, and Zeus's finals are his
+saved crown made tidy (`zeusThinCrown()`: thin one-cell spikes, the centre tallest, a one-row band
+fitted to the head with the front end in the darker gold, his own golds), each changing one
+thing: **gem crown** (a blue gem at the foot of the centre spike, the one he picked), **tall
+crown**, **blue-tipped crown**, **gem band crown** and **gem and tips crown**. Lesson: when a
+pasted save already has a style, refine that style before inventing new ones.
+
 **Next session starts with:** Ashton's look at the Artemis leaf headband, Zeus gold headband
 and Athena shield variants on /dino; any pasted "Copy all" export is the starting point.
 
