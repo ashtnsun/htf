@@ -14,7 +14,7 @@ import type { Variant } from "@/components/dino/variants";
 
 /**
  * The Greek gods in the dinosaur editor (no Hera since 2026-10-29): three variants of each, more
- * for some (Aphrodite four, redone, and no picks; Athena five and one pick; Ares five, Hermes thirteen; Zeus and Artemis five,
+ * for some (Aphrodite four, redone, and no picks; Athena five and one pick; Ares five, Hermes fifteen; Zeus and Artemis five,
  * two from Ashton's saves), every one the footer T-rex in its own colour (one hue family per god) with one or two props that say who it is. Coordinates
  * are T-rex-local (components/dino/compose). Anything held upright stands in column 20 with the
  * arm raised to it; anything held low sits against the resting arm from column 16.
@@ -328,6 +328,96 @@ const DIAGONAL_HERALD_STAFF = [
     "#c9962a",
   ),
   ...local(["ww", ".c"], 23, 5, { w: WHITE, c: PLUME_LINE }),
+];
+
+/**
+ * Ashton's saved "Hermes2 final": the arm straight forward to (17, 10), and a one-cell caduceus
+ * on the diagonal through the hand, its orb up past the snout and its wings square to the staff.
+ * The saved snakes are redrawn two ways (`HERMES2_SNAKES_*`).
+ */
+const HERMES2_ARM = (color: string) => line(14, 10, 17, 10, color);
+const HERMES2_CADUCEUS = [
+  ...line(14, 14, 24, 4, GOLD),
+  ...local(["ao", "oo"], 25, 2, { a: "#fbe7a1", o: GOLD }),
+  ...cells(
+    [
+      [21, 3],
+      [22, 3],
+      [22, 4],
+      [23, 4],
+      [24, 5],
+      [25, 5],
+      [25, 6],
+      [26, 6],
+    ],
+    WHITE,
+  ),
+];
+const SNAKE_LIGHT = "#3ddc84";
+const SNAKE_DARK = "#1b8a4c";
+/**
+ * Linked coils: each snake one square ring round the staff (on a 45° staff a coil turns into an
+ * axis-square loop), the staff showing through the middle of each, the light one's head raised
+ * under the wing and the dark one's ring held in the hand.
+ */
+const HERMES2_SNAKES_LINKED = [
+  ...cells(
+    [
+      [22, 5],
+      [22, 6],
+      [22, 7],
+      [22, 8],
+      [21, 8],
+      [20, 8],
+      [20, 7],
+      [20, 6],
+      [21, 6],
+    ],
+    SNAKE_LIGHT,
+  ),
+  ...cells(
+    [
+      [19, 8],
+      [18, 8],
+      [18, 9],
+      [18, 10],
+      [19, 10],
+      [20, 10],
+      [20, 9],
+    ],
+    SNAKE_DARK,
+  ),
+];
+/**
+ * Woven: the snakes mirror each other about the staff and cross it twice, a plus at each
+ * crossing, one over and then the other, the gold showing between; the heads flare out under
+ * the wings, one each side.
+ */
+const HERMES2_SNAKES_WOVEN = [
+  ...cells(
+    [
+      [23, 7],
+      [22, 7],
+      [21, 7],
+      [20, 7],
+      [19, 8],
+      [19, 9],
+      [19, 10],
+    ],
+    SNAKE_DARK,
+  ),
+  ...cells(
+    [
+      [21, 5],
+      [21, 6],
+      [21, 7],
+      [21, 8],
+      [20, 9],
+      [18, 9],
+    ],
+    SNAKE_LIGHT,
+  ),
+  ...cells([[19, 9]], SNAKE_DARK),
 ];
 
 /** The resting arm stretched forward along row 10 to a staff in column 21. */
@@ -1594,6 +1684,30 @@ const GODS: God[] = [
           dino("#14c4b0", "none"),
           DIAGONAL_HERALD_STAFF,
           armForward("#14c4b0"),
+          HERMES_FINAL,
+        ],
+      },
+      {
+        id: "hermes2-final-linked",
+        name: "Hermes, caduceus linked coils",
+        note: "Ashton's Hermes2 with each snake one ring round the staff, the gold showing through",
+        parts: [
+          dino("#14c4b0", "none"),
+          HERMES2_CADUCEUS,
+          HERMES2_SNAKES_LINKED,
+          HERMES2_ARM("#14c4b0"),
+          HERMES_FINAL,
+        ],
+      },
+      {
+        id: "hermes2-final-woven",
+        name: "Hermes, caduceus woven",
+        note: "Ashton's Hermes2 with the snakes mirrored, crossing the staff over and under, heads out",
+        parts: [
+          dino("#14c4b0", "none"),
+          HERMES2_CADUCEUS,
+          HERMES2_SNAKES_WOVEN,
+          HERMES2_ARM("#14c4b0"),
           HERMES_FINAL,
         ],
       },

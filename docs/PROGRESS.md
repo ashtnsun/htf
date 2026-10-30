@@ -319,6 +319,16 @@ size). **caduceus pointed** (an orb at the tip, white wings square to the shaft,
 crossing it twice) and **herald's staff pointed** (a gold ring with two horns mirrored about the
 shaft's line, a ribbon under it).
 
+Ashton then saved "Hermes2 final" (the arm straight forward to (17, 10), a one-cell caduceus on
+the diagonal through the hand, an orb at its tip, wings square to it) and liked it except for
+the snakes. Kept exactly (`HERMES2_ARM`, `HERMES2_CADUCEUS`, `HERMES_FINAL`), the snakes redrawn
+two ways after laying six candidates side by side at real size: **caduceus woven** (the snakes
+mirrored about the staff, crossing it twice as a plus, over then under, heads flaring out under
+the wings) and **caduceus linked coils** (each snake one square ring round the staff, the gold
+showing through each; on a 45° staff a coil becomes an axis-aligned square). Rejected: square
+loops split between both snakes (they read as a bar across the staff) and a tight coil on the
+staff cells (the heads read as L-shaped blocks).
+
 **Next session starts with:** Ashton's look at the Artemis leaf headband, Zeus gold headband
 and Athena shield variants on /dino; any pasted "Copy all" export is the starting point.
 
