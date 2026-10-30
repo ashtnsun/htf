@@ -51,6 +51,7 @@ import {
   toCodeAll,
   toPngBlob,
   toSheetPngBlob,
+  toStickerPngBlob,
   toSvg,
   trim,
   drawSprite,
@@ -58,6 +59,7 @@ import {
   type Sprite,
 } from "@/components/dino/sprite";
 import { VARIANTS } from "@/components/dino/variants";
+import { toZipBlob } from "@/components/dino/zip";
 import { cn } from "@/lib/utils";
 
 /**
@@ -1129,7 +1131,26 @@ export function DinoEditor() {
   );
 }
 
-/** Copy all, a code download and a PNG sheet of a list of sprites (Saved and Favourites). */
+/**
+ * Every sprite as its own sticker PNG (sprite.ts: one scale, so every dinosaur is the same
+ * size), in one zip; names that slug alike get -2, -3.
+ */
+async function toStickerZipBlob(sprites: readonly Sprite[]) {
+  const taken = new Map<string, number>();
+  const files = await Promise.all(
+    sprites.map(async (s) => {
+      const slug = fileSlug(s.name);
+      const n = (taken.get(slug) ?? 0) + 1;
+      taken.set(slug, n);
+      const blob = await toStickerPngBlob(s);
+      const data = new Uint8Array(blob ? await blob.arrayBuffer() : []);
+      return { name: `${n > 1 ? `${slug}-${n}` : slug}.png`, data };
+    }),
+  );
+  return toZipBlob(files.filter((f) => f.data.length > 0));
+}
+
+/** Copy all, a code download, a PNG sheet and a zip of sticker PNGs (Saved and Favourites). */
 function ExportButtons({
   sprites,
   what,
@@ -1179,6 +1200,13 @@ function ExportButtons({
         }}
       >
         Sheet
+      </ToolButton>
+      <ToolButton
+        label={`Download every ${what} dinosaur as its own sticker PNG, in one zip (every dinosaur the same size)`}
+        icon={Download}
+        onClick={async () => download(await toStickerZipBlob(sprites), `${file}.zip`)}
+      >
+        PNGs (zip)
       </ToolButton>
     </div>
   );

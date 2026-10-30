@@ -265,6 +265,15 @@ single map still loads onto the canvas. `toCodeAll`, `parseCodeAll`, `toSheetPng
 `dino/sprite.ts`. Verified in the browser: copy, both downloads, and a cleared list restored cell
 for cell from the paste (Windows clipboard CRLFs included); axe 0 violations on /dino.
 
+Then (2026-10-30) sticker export: **PNGs (zip)** beside Favourites and Saved downloads every
+sprite as its own transparent PNG in one zip, for printing stickers. Every file is cropped to
+its drawing plus one empty cell and drawn at the same 48 px a cell (`STICKER_SCALE` in
+`dino/sprite.ts`), so the T-rex, drawn from the one 20 × 22 map in every variant, is 960 × 1056
+px in each file and only the props change a sticker's size (a hand-drawn bigger dinosaur would
+not be caught). The zip is written by `dino/zip.ts` (stored, no compression, no dependency).
+Verified: nine favourites zipped, the archive tests clean, Classic 1056 × 1152 (22 × 24 cells),
+Zeus's dinosaur 960 px wide like Classic's.
+
 **Next session starts with:** Ashton's look at the Artemis leaf headband, Zeus gold headband
 and Athena shield variants on /dino; any pasted "Copy all" export is the starting point.
 

@@ -334,6 +334,19 @@ export function toPngBlob(sprite: Sprite, scale: number): Promise<Blob | null> {
 }
 
 /**
+ * Sticker size: every sprite is cropped to its drawing, given the same empty margin and drawn
+ * at the same pixels per cell. Every variant draws the T-rex from the one 20 × 22 map, so the
+ * dinosaur comes out the same size in every file (960 × 1056 px, 3.2 × 3.5 in at 300 dpi) and
+ * only the props make one sticker bigger than another.
+ */
+export const STICKER_SCALE = 48;
+const STICKER_PAD = 1;
+
+export function toStickerPngBlob(sprite: Sprite): Promise<Blob | null> {
+  return toPngBlob(trim(sprite, STICKER_PAD), STICKER_SCALE);
+}
+
+/**
  * Sprites side by side on one PNG, two cells apart, standing on the same bottom edge, on the
  * site's dark background (a contact sheet to look at, so white props stay visible).
  */
