@@ -88,6 +88,53 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 16d — 2026-10-29 (the merch studio)
+
+Ashton asked for `/merch`: a tool for realistic mockups of a club zip-up, a washed black oversized
+hoodie with cybersigilism in the brand green (to a degree) on the sleeves, probably connected
+across the back, and the HTF dino or logo somewhere very subtle. References: green glowing
+filigree with beaded chains, a lilac thorned vine with symmetric spines, black spiked sigils
+with crescents and four-point sparkles, and (sent mid-session) an outlined green piece with
+sword crosses, a spiked sun, stacked spines and hanging bead chains.
+
+**Built:**
+
+- `/merch` (`src/app/merch/page.tsx`): a tool like /dino, not in the nav or sitemap, noindex;
+  client only through `MerchStudioLoader`.
+- `components/merch/sigil.ts`: a seeded cybersigil generator. Everything is a filled outline
+  (tapered strokes ending in points) so it prints as one ink: thorned vines with forked thorns
+  and curls, crescent blades, concave four-point sparkles, bead chains (slung and hanging),
+  and a symmetric spine whose stations are lozenges, lenses, upturned barbs, crossbars,
+  hooked crescents, sword crosses and a spiked sun. The sleeve piece runs down the sleeve from
+  the armhole seam; the back piece is a garland from each sleeve's seam that dips under the
+  hood to the centre line (left half, mirrored), with an optional spine hanging from it. The
+  two meet at the seam at the same width, so the piece reads as one line, cuff to cuff.
+- `components/merch/garment.ts` + `HoodieMockup.tsx`: the zip-up as a ghost-mannequin product
+  shot in pure SVG (dropped shoulders, wide sleeves bloused over ribbed cuffs, boxy body over a
+  hem rib, the hood on the back; from the front the hood's inside, its edge bands, eyelets,
+  drawcords, zipper with teeth, slider and pull, kangaroo pocket openings). Realism comes from
+  filters: the print is warped by the fabric and worn by a distress mask, then finished per
+  technique (flat screen print, puff with a specular highlight and a cast shadow, embroidery
+  with thread texture, soft discharge); folds, edge shading, cast shadows, seams and
+  topstitching, then a mottled wash, darker blotches, grain and a top light over everything.
+- `components/merch/MerchStudio.tsx`: views (both, front, back, a close-up of the shoulder where
+  sleeve meets back), five looks (Toxic, Tonal + green, Bone + green, Ghost, Stitched), seed and
+  "New", density, thorns, weight, solid or outline line, motif toggles, mirrored or independent
+  sleeves, back piece (sleeves only, garland, garland + spine), sleeve span, technique, two inks
+  (vines and blades / ornaments and sparkles; brand green, mint, deep green, washed green, bone,
+  ash grey, tonal black), distress, wash, zipper finish, drawcords, studio or light backdrop.
+  HTF marks, each optional: the pixel dino on the left chest (on by default, tonal), a dino
+  zipper pull, the dino at the centre of the back piece, an `<HTF/>` woven cuff tag and an
+  `<HTF/>` hem tab (on by default), tonal or in the ornament ink. Exports: the mockup as a 2×
+  PNG (both views side by side when both are shown), the flat artwork as SVG (left sleeve,
+  back, right sleeve), the settings as JSON to the clipboard; designs save in this browser.
+
+Verified: typecheck, lint, build; every look and view screenshotted; PNG and SVG downloads;
+axe 0 violations on /merch; no overflow at 390 px.
+
+**Next session starts with:** Ashton's look at /merch; a pasted "Settings" JSON is the
+starting point for any design he wants refined.
+
 ## Session 16c — 2026-10-29 (the dino editor)
 
 **Built:** `/dino`, a pixel editor for the T-rex. It starts on the footer map (20 × 22).
