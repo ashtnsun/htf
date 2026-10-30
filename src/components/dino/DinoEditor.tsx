@@ -42,11 +42,14 @@ import {
   moveRegion,
   paint,
   parseCode,
+  parseCodeAll,
   removeColor,
   resize,
   shift,
   toCode,
+  toCodeAll,
   toPngBlob,
+  toSheetPngBlob,
   toSvg,
   trim,
   drawSprite,
@@ -310,6 +313,7 @@ export function DinoEditor() {
   const [ink, setInk] = useState(1);
   const [scale, setScale] = useState(16);
   const [copied, setCopied] = useState(false);
+  const [copiedAll, setCopiedAll] = useState(false);
   const [saved, setSaved] = useState<Sprite[]>(() => {
     const stored = readStored(SAVED_KEY);
     return Array.isArray(stored) ? stored.filter(isSprite) : [];
@@ -319,7 +323,7 @@ export function DinoEditor() {
     return isSprite(stored) ? stored : null;
   });
   const [importText, setImportText] = useState("");
-  const [importError, setImportError] = useState<string | null>(null);
+  const [importMessage, setImportMessage] = useState<string | null>(null);
   const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null);
   const [cellPx, setCellPx] = useState(20);
 
@@ -636,15 +640,36 @@ export function DinoEditor() {
     }
   };
 
+  /** Every saved sprite as code, to paste somewhere else (or back into Import). */
+  const copyAll = async () => {
+    try {
+      await navigator.clipboard.writeText(toCodeAll(saved));
+      setCopiedAll(true);
+      setTimeout(() => setCopiedAll(false), 1600);
+    } catch {
+      setImportText(toCodeAll(saved));
+    }
+  };
+
   const importSprite = () => {
+    // Several maps (from "Copy all") all go to the saved list, replacing any of the same name.
+    const many = parseCodeAll(importText);
+    if (many.length > 1) {
+      const names = new Set(many.map((s) => s.name));
+      const next = [...many, ...saved.filter((s) => !names.has(s.name))];
+      setSaved(next);
+      writeStored(SAVED_KEY, next);
+      setImportMessage(`Added ${many.length} maps to Saved in this browser.`);
+      return;
+    }
     // "Copy code" heads the map with "// <name>: <w> × <h> cells".
     const named = /^\s*\/\/\s*(.+?):\s*\d+\s*×/m.exec(importText)?.[1];
     const parsed = parseCode(importText, named ?? "Imported");
     if (!parsed) {
-      setImportError('No string map found: paste rows like "..##.." in quotes.');
+      setImportMessage('No string map found: paste rows like "..##.." in quotes.');
       return;
     }
-    setImportError(null);
+    setImportMessage(null);
     load(parsed);
   };
 
@@ -784,9 +809,44 @@ export function DinoEditor() {
 
           {saved.length > 0 || lastDraft ? (
             <>
-              <h3 className="mt-10 text-eyebrow font-medium text-muted uppercase">
-                Saved in this browser
-              </h3>
+              <div className="mt-10 flex flex-wrap items-center justify-between gap-3">
+                <h3 className="text-eyebrow font-medium text-muted uppercase">
+                  Saved in this browser
+                </h3>
+                {saved.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    <ToolButton
+                      label="Copy every saved dinosaur as code"
+                      icon={copiedAll ? Check : Copy}
+                      onClick={copyAll}
+                    >
+                      {copiedAll ? "Copied" : "Copy all"}
+                    </ToolButton>
+                    <ToolButton
+                      label="Download every saved dinosaur as code"
+                      icon={Download}
+                      onClick={() =>
+                        download(
+                          new Blob([toCodeAll(saved)], { type: "text/plain" }),
+                          "dinos-saved.txt",
+                        )
+                      }
+                    >
+                      Code
+                    </ToolButton>
+                    <ToolButton
+                      label="Download every saved dinosaur side by side on one PNG"
+                      icon={Download}
+                      onClick={async () => {
+                        const blob = await toSheetPngBlob(saved, 8);
+                        if (blob) download(blob, "dinos-saved.png");
+                      }}
+                    >
+                      Sheet
+                    </ToolButton>
+                  </div>
+                ) : null}
+              </div>
               <ul className="mt-4 grid grid-cols-2 gap-px border border-line bg-line sm:grid-cols-3 xl:grid-cols-4">
                 {lastDraft ? (
                   <li className="bg-bg">
@@ -1015,13 +1075,16 @@ export function DinoEditor() {
             placeholder={'"..##..",\n".####.",'}
             className="w-full border border-line bg-bg p-3 font-mono text-[0.8125rem] leading-snug text-text"
           />
-          {importError ? (
-            <p role="alert" className="mt-2 text-body text-muted">
-              {importError}
+          {importMessage ? (
+            <p role="status" className="mt-2 text-body text-muted">
+              {importMessage}
             </p>
           ) : null}
           <div className="mt-3">
-            <ToolButton label="Load the pasted map onto the canvas" onClick={importSprite}>
+            <ToolButton
+              label="Load the pasted map onto the canvas, or add several pasted maps to the saved list"
+              onClick={importSprite}
+            >
               Load map
             </ToolButton>
           </div>

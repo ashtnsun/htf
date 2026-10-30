@@ -115,6 +115,21 @@ export function parseCode(text: string, name: string): Sprite | null {
   return fromRows(name, rows, inks);
 }
 
+/** Several sprites in one paste: their toCode blocks, a blank line between. */
+export function toCodeAll(sprites: readonly Sprite[]): string {
+  return `${sprites.map(toCode).join("\n\n")}\n`;
+}
+
+/** Reads what toCodeAll writes: one sprite per "// <name>: <w> × <h> cells" header. */
+export function parseCodeAll(text: string): Sprite[] {
+  const headers = [...text.matchAll(/^\s*\/\/\s*(.+?):\s*\d+\s*×.*$/gm)];
+  return headers.flatMap((header, i) => {
+    const body = text.slice(header.index + header[0].length, headers[i + 1]?.index);
+    const sprite = parseCode(body, header[1]!);
+    return sprite ? [sprite] : [];
+  });
+}
+
 /** Grows (positive) or shrinks (negative) each edge by whole cells; the drawing stays put. */
 export function resize(
   sprite: Sprite,
@@ -315,6 +330,27 @@ export function toPngBlob(sprite: Sprite, scale: number): Promise<Blob | null> {
   const ctx = canvas.getContext("2d");
   if (!ctx) return Promise.resolve(null);
   drawSprite(ctx, sprite, scale);
+  return new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+}
+
+/**
+ * Sprites side by side on one PNG, two cells apart, standing on the same bottom edge, on the
+ * site's dark background (a contact sheet to look at, so white props stay visible).
+ */
+export function toSheetPngBlob(sprites: readonly Sprite[], scale: number): Promise<Blob | null> {
+  const gap = 2 * scale;
+  const canvas = document.createElement("canvas");
+  canvas.width = sprites.reduce((w, s) => w + s.width * scale + gap, gap);
+  canvas.height = Math.max(...sprites.map((s) => s.height)) * scale + 2 * gap;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return Promise.resolve(null);
+  ctx.fillStyle = "#0b0b0b";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  let x = gap;
+  for (const s of sprites) {
+    drawSprite(ctx, s, scale, x, canvas.height - gap - s.height * scale);
+    x += s.width * scale + gap;
+  }
   return new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
 }
 

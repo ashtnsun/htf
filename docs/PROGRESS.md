@@ -174,8 +174,17 @@ deep-gold headband and a blue gem for the halo, the gold darkened to `DEEP_GOLD`
 the yellow; Athena (hand-edited: the helmet over the top two rows, the sash moved, the same
 forward arm, #c6ced7) with the bronze shield on the arm instead of the spear.
 
+Then bulk export on /dino, so saves can be handed to Claude without reading them off a
+screenshot: beside "Saved in this browser", **Copy all** (every saved sprite as code, the
+"Copy code" blocks one after another), **Code** (the same as `dinos-saved.txt`) and **Sheet**
+(all of them side by side on one PNG, 8 px a cell, on the site's dark background). Import takes
+the bulk paste back: several maps go to the saved list (replacing any of the same name), a
+single map still loads onto the canvas. `toCodeAll`, `parseCodeAll`, `toSheetPngBlob` in
+`dino/sprite.ts`. Verified in the browser: copy, both downloads, and a cleared list restored cell
+for cell from the paste (Windows clipboard CRLFs included); axe 0 violations on /dino.
+
 **Next session starts with:** Ashton's look at the Artemis leaf headband, Zeus gold headband
-and Athena shield variants on /dino.
+and Athena shield variants on /dino; any pasted "Copy all" export is the starting point.
 
 ## Session 16b — 2026-10-29 (the 2026-2027 cycle closed)
 
