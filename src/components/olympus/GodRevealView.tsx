@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
+import { Meander } from "@/components/olympus/Meander";
 import type { GodReveal } from "@/components/olympus/shared";
 import { EASE_GLIDE } from "@/lib/motion";
 
@@ -31,7 +32,7 @@ export function GodRevealView({ reveal }: { reveal: GodReveal }) {
     <section
       aria-labelledby="god-name"
       data-olympus
-      className="mt-10 flex flex-col items-center text-center"
+      className="flex flex-col items-center text-center"
     >
       {reduce ? null : (
         <div
@@ -44,7 +45,7 @@ export function GodRevealView({ reveal }: { reveal: GodReveal }) {
         {[...reveal.word].map((letter, i) => (
           <li
             key={i}
-            className="flex size-10 items-center justify-center bg-green font-display text-xl font-medium text-bg"
+            className="flex size-10 items-center justify-center bg-green font-olympus text-xl font-semibold text-bg"
           >
             {letter}
           </li>
@@ -85,16 +86,21 @@ export function GodRevealView({ reveal }: { reveal: GodReveal }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1.1, ease: EASE_GLIDE, delay: START + SPREAD + 0.2 }}
       >
-        <p className="text-eyebrow font-medium text-muted uppercase">Children of</p>
+        <p className="font-olympus text-sm font-semibold tracking-[0.15em] text-muted">
+          Children of
+        </p>
         <h2
           id="god-name"
-          className="mt-3 font-display text-[min(13vw,5rem)] leading-none font-medium uppercase"
+          className="mt-3 font-olympus text-[min(12vw,5rem)] leading-none font-semibold"
         >
           {reveal.god}
         </h2>
         <p className="mt-5 text-body-lg text-muted">
           Led by <span className="font-medium text-text">{reveal.exec}</span>
         </p>
+        <div className="mx-auto mt-8 w-36" style={{ color }}>
+          <Meander />
+        </div>
       </motion.div>
     </section>
   );

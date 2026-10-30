@@ -1,7 +1,19 @@
 import type { Metadata } from "next";
+import { Cinzel, Cormorant_Garamond } from "next/font/google";
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
 import { Meander } from "@/components/olympus/Meander";
+
+/** Roman inscription capitals for the numerals, the headings and the gods' names. */
+const cinzel = Cinzel({ subsets: ["latin"], variable: "--font-cinzel", display: "swap" });
+/** A classical book serif for the riddles, the Oracle's voice. */
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-cormorant",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Olympus",
@@ -15,7 +27,9 @@ export const metadata: Metadata = {
  */
 export default function OlympusLayout({ children }: LayoutProps<"/olympus">) {
   return (
-    <div className="flex min-h-dvh flex-col overflow-x-clip">
+    <div
+      className={`${cinzel.variable} ${cormorant.variable} relative flex min-h-dvh flex-col overflow-x-clip`}
+    >
       <div className="container-max flex h-16 items-center container-x">
         <Link href="/" className="transition-opacity hover:opacity-80">
           <Logo height={20} />

@@ -16,17 +16,17 @@ export default async function FamilyPage({ params }: PageProps<"/olympus/[family
   const riddles = FAMILIES[n - 1]!.riddles.map((r) => r.riddle);
   return (
     <>
-      <Link
-        href="/olympus"
-        className="inline-flex min-h-11 items-center gap-2 self-start text-sm text-muted transition-colors hover:text-green"
-      >
-        <ArrowLeft className="size-4" aria-hidden="true" />
-        Families
-      </Link>
-      <h1 className="mt-6 flex flex-col">
-        <span className="text-eyebrow font-medium text-muted uppercase">Family </span>
-        <span className="font-display text-display leading-none font-medium">{roman(n)}</span>
-      </h1>
+      {/* top left, just under the Greek key (the layout's 4rem bar and 12px band) */}
+      <div className="absolute inset-x-0 top-19 container-max flex justify-start container-x">
+        <Link
+          href="/olympus"
+          className="inline-flex min-h-11 items-center gap-2 text-sm text-muted transition-colors hover:text-green"
+        >
+          <ArrowLeft className="size-4" aria-hidden="true" />
+          Families
+        </Link>
+      </div>
+      <h1 className="sr-only">Family {roman(n)}</h1>
       <TrialLoader family={n} riddles={riddles} />
     </>
   );

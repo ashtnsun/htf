@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, useTransition, type FormEvent } from "reac
 import { checkRiddle, checkWord } from "@/app/olympus/actions";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
 import { GodRevealView } from "@/components/olympus/GodRevealView";
+import { Meander } from "@/components/olympus/Meander";
 import { roman, type GodReveal } from "@/components/olympus/shared";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { TextField } from "@/components/ui/Field";
@@ -14,7 +15,7 @@ import { cn } from "@/lib/utils";
 
 type Progress = { solved: string[]; reveal: GodReveal | null };
 
-const OFFLINE = "Couldn't check that. Try again in a moment.";
+const OFFLINE = "The Oracle is silent. Try again in a moment.";
 
 /** Per tab: a refresh keeps a family's place, a new tab (or another phone) starts over. */
 function load(family: number): Progress {
@@ -65,26 +66,10 @@ export function Trial({ family, riddles }: { family: number; riddles: string[] }
   } as const;
 
   return (
-    <div className="mt-10">
-      <div
-        role="img"
-        aria-label={`${index} of ${riddles.length} riddles solved`}
-        className="flex gap-1.5"
-      >
-        {riddles.map((_, i) => (
-          <span
-            key={i}
-            className={cn(
-              "h-1 flex-1 transition-colors duration-600",
-              i < index ? "bg-green" : "bg-line-strong",
-            )}
-          />
-        ))}
-      </div>
-
+    <div className="flex flex-col items-center text-center">
       <AnimatePresence mode="wait" initial={false}>
         {index < riddles.length ? (
-          <motion.div key={index} className="mt-10" {...step}>
+          <motion.div key={index} className="flex w-full flex-col items-center" {...step}>
             <RiddleStep
               family={family}
               index={index}
@@ -94,7 +79,7 @@ export function Trial({ family, riddles }: { family: number; riddles: string[] }
             />
           </motion.div>
         ) : (
-          <motion.div key="word" className="mt-10" {...step}>
+          <motion.div key="word" className="flex w-full flex-col items-center" {...step}>
             <Unscramble
               family={family}
               letters={solved.map((word) => word[0]!.toUpperCase())}
@@ -105,11 +90,12 @@ export function Trial({ family, riddles }: { family: number; riddles: string[] }
       </AnimatePresence>
 
       {solved.length > 0 ? (
-        <section aria-labelledby="solved" className="mt-14 border-t border-line pt-8">
+        <section aria-labelledby="solved" className="mt-16 flex w-full flex-col items-center">
+          <Meander className="mb-8 w-36 text-green-deep" />
           <Eyebrow as="h2" id="solved" tone="muted">
-            Solved
+            Revealed
           </Eyebrow>
-          <ol className="mt-5 flex flex-col gap-3">
+          <ol className="mt-5 flex flex-col items-start gap-3">
             {solved.map((word, i) => (
               <motion.li
                 key={i}
@@ -118,7 +104,7 @@ export function Trial({ family, riddles }: { family: number; riddles: string[] }
                 animate={{ opacity: 1 }}
                 transition={{ duration: DURATION.reveal, ease: EASE_GLIDE }}
               >
-                <span className="flex size-10 shrink-0 items-center justify-center bg-green font-display text-xl font-medium text-bg">
+                <span className="flex size-10 shrink-0 items-center justify-center bg-green font-olympus text-xl font-semibold text-bg">
                   {word[0]!.toUpperCase()}
                 </span>
                 <span className="text-body-lg tracking-[0.12em] text-muted uppercase">{word}</span>
@@ -157,7 +143,7 @@ function RiddleStep({
       try {
         const answer = await checkRiddle(family, index, guess);
         if (answer) return onSolved(answer);
-        setError("Not quite. Try again.");
+        setError("The Oracle denies your answer.");
       } catch {
         setError(OFFLINE);
       }
@@ -167,13 +153,17 @@ function RiddleStep({
 
   return (
     <>
-      <Eyebrow tone="green">
-        Riddle {roman(index + 1)} of {roman(total)}
-      </Eyebrow>
-      <p className="mt-5 font-display text-xl leading-snug font-medium text-balance md:text-2xl">
+      <p className="mb-6 font-olympus text-sm font-semibold tracking-[0.15em] text-green">
+        {roman(index + 1)} of {roman(total)}
+      </p>
+      <p className="font-oracle text-[1.625rem] leading-snug font-medium text-balance md:text-[2rem]">
         {riddle}
       </p>
-      <form ref={formRef} onSubmit={submit} className="mt-8 flex flex-col gap-4">
+      <form
+        ref={formRef}
+        onSubmit={submit}
+        className="mt-8 flex w-full flex-col items-center gap-4"
+      >
         <TextField
           id="answer"
           label="Your answer"
@@ -188,9 +178,10 @@ function RiddleStep({
           autoCorrect="off"
           spellCheck={false}
           enterKeyHint="go"
+          className="w-full [&_input]:text-center [&_p]:justify-center"
         />
-        <SplitButton type="submit" pending={pending} className="self-start">
-          Check
+        <SplitButton type="submit" pending={pending}>
+          Ask the Oracle
         </SplitButton>
       </form>
     </>
@@ -232,7 +223,7 @@ function Unscramble({
       try {
         const reveal = await checkWord(family, word);
         if (reveal) return onSolved(reveal);
-        setError("Not the word. Try again.");
+        setError("The Oracle denies your word.");
       } catch {
         setError(OFFLINE);
       }
@@ -260,15 +251,15 @@ function Unscramble({
   });
 
   const tile =
-    "flex size-14 items-center justify-center border font-display text-h3 font-medium transition-colors";
+    "flex size-14 items-center justify-center border font-olympus text-h3 font-semibold transition-colors";
 
   return (
     <>
-      <Eyebrow tone="green">Final clue</Eyebrow>
-      <h2 className="mt-5 font-display text-h3">Unscramble the letters.</h2>
-      <p className="mt-3 text-body-lg text-muted">The word points to your god.</p>
+      <Eyebrow tone="green">The final prophecy</Eyebrow>
+      <h2 className="mt-5 font-olympus text-h3 font-semibold">Unscramble the letters.</h2>
+      <p className="mt-3 text-body-lg text-muted">One word, the sign of your god.</p>
 
-      <ol ref={wordRef} aria-label="Your word" className="mt-10 flex gap-2">
+      <ol ref={wordRef} aria-label="Your word" className="mt-10 flex justify-center gap-2">
         {placed.map((i, slot) => (
           <li key={slot}>
             {i === null ? (
@@ -287,7 +278,7 @@ function Unscramble({
         ))}
       </ol>
 
-      <ul aria-label="Letters" className="mt-4 flex gap-2">
+      <ul aria-label="Letters" className="mt-4 flex justify-center gap-2">
         {letters.map((letter, i) => (
           <li key={i}>
             <button

@@ -1359,6 +1359,13 @@ html[data-intro]:not([data-intro="play"]) body > header {
    god's glow comes up behind the dinosaur as its cells switch on (`anim-pixel-on`). Under
    reduced motion the flash is not drawn and every cell is on at once.
 ------------------------------------------------------------------- */
+/* Cinzel, the inscription capitals the family reveal sets its numerals and names in, and
+   Cormorant Garamond for the riddles. Inline,
+   because next/font defines both variables on the olympus layout, not on :root. */
+@theme inline {
+  --font-olympus: var(--font-cinzel), serif;
+  --font-oracle: var(--font-cormorant), serif;
+}
 @keyframes olympus-flash {
   from {
     opacity: 0.85;

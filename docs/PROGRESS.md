@@ -120,6 +120,13 @@ artemis-leaf-headband (one-line swaps in content/olympus.ts).
 1440 and 390; Families IV and VI played through end to end in Playwright at 390, 360 and 1440
 (wrong answers, alternates, a wrong word, the reveal, a reload on the reveal), no horizontal scroll.
 
+**Ashton's first pass, same day:** Cinzel (Roman inscription capitals, next/font on the olympus
+layout, `font-olympus` through `@theme inline`) for the numerals, headings, letter tiles and the
+god's name; Cormorant Garamond (`font-oracle`) for the riddles. No family heading or progress bar
+(the h1 is sr-only); the counter reads "I of IV"; everything centred; "Families" top left under the
+Greek key; the Oracle's voice ("Ask the Oracle", "The Oracle denies your answer.", "The final
+prophecy"); the Greek key as the divider above Revealed and, in the god's colour, under the reveal.
+
 **Next session starts with:** Ashton's run through /olympus on a phone, and the final sprite per god.
 
 ## Session 16d — 2026-10-29 (the merch studio)
