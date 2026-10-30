@@ -1,3 +1,10 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { Shuffle } from "lucide-react";
+import { useState } from "react";
+import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
+import { EASE_IN_OUT } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 /** A Doric column, 11 × 17 cells: abacus, echinus, a fluted shaft (carved cells), the base. */
@@ -13,22 +20,51 @@ const COLUMN_CELLS = COLUMN.flatMap((row, y) =>
   [...row].flatMap((ch, x) => (ch === "#" ? [{ x, y }] : [])),
 );
 
+/** A new order of 0…n-1, never the one it was given (when there is another). */
+function shuffled(order: readonly number[]) {
+  if (order.length < 2) return [...order];
+  for (;;) {
+    const next = [...order];
+    for (let i = next.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [next[i], next[j]] = [next[j]!, next[i]!];
+    }
+    if (next.some((v, i) => v !== order[i])) return next;
+  }
+}
+
 /**
  * The solved words, each standing on its own column. Every column is drawn from the start (dim
  * until its riddle is solved), so nothing moves as words arrive: the word fades in on top and
- * the column lights up. Pixel art on its grid: 4px cells, 5px from sm.
+ * the column lights up. With `scramble` (the final word) a button shuffles the columns, each
+ * sliding to its new place. Pixel art on its grid: 4px cells, 5px from sm.
  */
-export function Colonnade({ total, words }: { total: number; words: readonly string[] }) {
+export function Colonnade({
+  total,
+  words,
+  scramble = false,
+}: {
+  total: number;
+  words: readonly string[];
+  scramble?: boolean;
+}) {
+  const reduce = useReducedMotionSafe();
+  const [order, setOrder] = useState(() => Array.from({ length: total }, (_, i) => i));
   return (
-    <section aria-label="Solved" className="w-full">
+    <section aria-label="Solved" className="flex w-full flex-col items-center">
       <ol
-        className="grid items-end"
+        className="grid w-full items-end"
         style={{ gridTemplateColumns: `repeat(${total}, minmax(0, 1fr))` }}
       >
-        {Array.from({ length: total }, (_, i) => {
+        {order.map((i) => {
           const word = words[i];
           return (
-            <li key={i} className="flex flex-col items-center">
+            <motion.li
+              key={i}
+              layout={!reduce}
+              transition={{ layout: { duration: 0.8, ease: EASE_IN_OUT } }}
+              className="flex flex-col items-center"
+            >
               <span
                 className={cn(
                   "mb-2 h-5 font-olympus text-[clamp(0.6rem,2.6vw,0.9rem)] leading-5 font-semibold tracking-wide whitespace-nowrap uppercase transition-opacity duration-1000 ease-smooth",
@@ -51,10 +87,24 @@ export function Colonnade({ total, words }: { total: number; words: readonly str
                   <rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} fill="currentColor" />
                 ))}
               </svg>
-            </li>
+            </motion.li>
           );
         })}
       </ol>
+      {scramble ? (
+        <button
+          type="button"
+          onClick={(event) => {
+            setOrder(shuffled(order));
+            // After a tap, Enter belongs to the final word again, not to this button.
+            if (event.detail > 0) event.currentTarget.blur();
+          }}
+          className="mt-6 inline-flex min-h-11 items-center gap-2 text-sm text-muted transition-colors hover:text-green"
+        >
+          <Shuffle className="size-4" aria-hidden="true" />
+          Scramble
+        </button>
+      ) : null}
     </section>
   );
 }

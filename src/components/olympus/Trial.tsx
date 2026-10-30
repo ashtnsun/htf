@@ -90,7 +90,7 @@ export function Trial({ family, riddles }: { family: number; riddles: string[] }
         )}
       </AnimatePresence>
       <div className="mt-auto w-full pt-16">
-        <Colonnade total={riddles.length} words={solved} />
+        <Colonnade total={riddles.length} words={solved} scramble={index === riddles.length} />
       </div>
     </div>
   );

@@ -144,6 +144,9 @@ the page with `mt-auto`, so the riddles' heights never move it (the LayoutGroup 
 "Group IV" sits far right in the logo bar (the page's h1); the answer label is sr-only and the
 button sits further from the field.
 
+On the final word a quiet "Scramble" text control under the columns shuffles them (each slides to
+its new place, `layout`; never the same order twice in a row); a tap blurs it so Enter still asks.
+
 **Next session starts with:** Ashton's run through /olympus on a phone, and the final sprite per god.
 
 ## Session 16d — 2026-10-29 (the merch studio)
