@@ -1191,6 +1191,35 @@ const ZEUS_BOLT_CROWN = zeusCrown([
   "hooooooooS",
   ".SSSSSSSS.",
 ]);
+/**
+ * Gold leaves for Zeus, in the same three-tone gold: pointed leaves with a dark midrib standing on
+ * a band (three, or five smaller), leaves leaning on their band, one tall centre leaf with two
+ * small ones, and a laurel wreath worn round the brow, leaves above and below its stem. All
+ * eleven wide (x9 to 19), the width of the head.
+ */
+const zeusLeaves = (rows: readonly string[]) => local(rows, 9, -rows.length, ZEUS_GOLD);
+const ZEUS_LEAF_CROWN = zeusLeaves([".h...h...h.", "hoh.hoh.hoh", "oSo.oSo.oSo", "SSSSSSSSSSS"]);
+const ZEUS_FIVE_LEAF_CROWN = zeusLeaves([
+  ".h.h.h.h.h.",
+  "hohohohohoh",
+  "oSoSoSoSoSo",
+  "SSSSSSSSSSS",
+]);
+const ZEUS_LEAF_SPIKES = zeusLeaves([".h...h...h.", "ho..ho..ho.", "oS..oS..oS.", "SSSSSSSSSSS"]);
+const ZEUS_CENTRE_LEAF = zeusLeaves([
+  ".....h.....",
+  "....hoh....",
+  "..h.oSo.h..",
+  ".hoh.S.hoh.",
+  "SSSSSSSSSSS",
+]);
+const ZEUS_LAUREL_WREATH = local(
+  ["h...h...h..", "oh..oh..oh.", "SSSSSSSSSSS", "oh..oh..oh."],
+  9,
+  -2,
+  ZEUS_GOLD,
+);
+
 const POSEIDON_BAND = ["ooooooooS", ".oooooSS."];
 const POSEIDON_CROWN_INKS = { o: GOLD, S: "#c9962a", w: WHITE };
 const POSEIDON_TRIDENT_CROWN = simpleCrown(
@@ -1927,6 +1956,36 @@ const GODS: God[] = [
         name: "Zeus, bolt crown",
         note: "Ashton's Zeus in a gold band with one gold lightning bolt rising from it",
         parts: [...ZEUS_FINAL_BASE, ZEUS_BOLT_CROWN],
+      },
+      {
+        id: "zeus-final-leaf-crown",
+        name: "Zeus, gold leaf crown",
+        note: "Ashton's Zeus in a crown of three gold leaves, each with a dark midrib",
+        parts: [...ZEUS_FINAL_BASE, ZEUS_LEAF_CROWN],
+      },
+      {
+        id: "zeus-final-five-leaves",
+        name: "Zeus, five-leaf crown",
+        note: "Ashton's Zeus in a crown of five smaller gold leaves",
+        parts: [...ZEUS_FINAL_BASE, ZEUS_FIVE_LEAF_CROWN],
+      },
+      {
+        id: "zeus-final-leaf-spikes",
+        name: "Zeus, leaf spikes",
+        note: "Ashton's Zeus in a gold band with three leaves leaning on it",
+        parts: [...ZEUS_FINAL_BASE, ZEUS_LEAF_SPIKES],
+      },
+      {
+        id: "zeus-final-centre-leaf",
+        name: "Zeus, centre leaf crown",
+        note: "Ashton's Zeus in a gold band with one tall leaf between two small ones",
+        parts: [...ZEUS_FINAL_BASE, ZEUS_CENTRE_LEAF],
+      },
+      {
+        id: "zeus-final-laurel",
+        name: "Zeus, gold laurel wreath",
+        note: "Ashton's Zeus in a gold laurel wreath round the brow, leaves above and below the stem",
+        parts: [...ZEUS_FINAL_BASE, ZEUS_LAUREL_WREATH],
       },
     ],
   },

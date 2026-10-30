@@ -383,7 +383,11 @@ stands off him and reads as shiny, picked from five palettes on one crown. Seven
 shapes in it: **king's crown**, **tower crown** (a wall with blue gems), **spiked crown** (five
 spikes over blue gems), **winged crown** (swept up at both ends), **gem diadem** (low, one big
 blue gem), **simple crown** (Apollo's shape) and **bolt crown** (one gold bolt rising from the
-band).
+band). Then five gold-leaf ones beside them, same gold, eleven wide to match the head
+(`zeusLeaves()`): **gold leaf crown** (three pointed leaves with a dark midrib), **five-leaf
+crown**, **leaf spikes** (leaves leaning on the band), **centre leaf crown** (one tall leaf, two
+small) and **gold laurel wreath** (round the brow, leaves above and below the stem). Small
+two-cell leaves read as a checkerboard; the leaves need a point and a midrib.
 
 **Next session starts with:** Ashton's look at the Artemis leaf headband, Zeus gold headband
 and Athena shield variants on /dino; any pasted "Copy all" export is the starting point.
