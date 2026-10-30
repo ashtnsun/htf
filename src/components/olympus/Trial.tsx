@@ -1,16 +1,16 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
+import { Delete } from "lucide-react";
 import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
 import { checkRiddle, checkWord } from "@/app/olympus/actions";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
 import { GodRevealView } from "@/components/olympus/GodRevealView";
 import { Meander } from "@/components/olympus/Meander";
 import { roman, type GodReveal } from "@/components/olympus/shared";
-import { Eyebrow } from "@/components/ui/Eyebrow";
 import { TextField } from "@/components/ui/Field";
 import { SplitButton } from "@/components/ui/SplitButton";
-import { DURATION, EASE_GLIDE } from "@/lib/motion";
+import { DURATION, EASE_GLIDE, EASE_IN_OUT, EASE_SMOOTH } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 type Progress = { solved: string[]; reveal: GodReveal | null };
@@ -43,8 +43,7 @@ function shake(el: HTMLElement | null, reduce: boolean) {
 
 /**
  * A family's trial: the riddles one at a time (each checked on the server before the next
- * appears), the solved words collecting below with their first letters, then the letters to
- * unscramble, then the reveal.
+ * appears), the solved words collecting below in a row, then the final word, then the reveal.
  */
 export function Trial({ family, riddles }: { family: number; riddles: string[] }) {
   const reduce = useReducedMotionSafe();
@@ -58,62 +57,81 @@ export function Trial({ family, riddles }: { family: number; riddles: string[] }
   if (reveal) return <GodRevealView reveal={reveal} />;
 
   const index = solved.length;
+  // The answered riddle fades out quickly; the next one rises in slowly and settles.
   const step = {
-    initial: reduce ? false : { opacity: 0, y: 16 },
-    animate: { opacity: 1, y: 0 },
-    exit: reduce ? undefined : { opacity: 0, y: -16 },
-    transition: { duration: DURATION.base, ease: EASE_GLIDE },
+    initial: reduce ? false : { opacity: 0, y: 12 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE_GLIDE } },
+    exit: reduce ? undefined : { opacity: 0, transition: { duration: 0.25, ease: EASE_SMOOTH } },
   } as const;
+  // The solved words glide to wherever the next riddle's height puts them instead of jumping.
+  const glide = reduce ? undefined : { layout: { duration: DURATION.panel, ease: EASE_IN_OUT } };
 
   return (
-    <div className="flex flex-col items-center text-center">
-      <AnimatePresence mode="wait" initial={false}>
-        {index < riddles.length ? (
-          <motion.div key={index} className="flex w-full flex-col items-center" {...step}>
-            <RiddleStep
-              family={family}
-              index={index}
-              total={riddles.length}
-              riddle={riddles[index]!}
-              onSolved={(answer) => update({ solved: [...solved, answer], reveal: null })}
-            />
-          </motion.div>
-        ) : (
-          <motion.div key="word" className="flex w-full flex-col items-center" {...step}>
-            <Unscramble
-              family={family}
-              letters={solved.map((word) => word[0]!.toUpperCase())}
-              onSolved={(r) => update({ solved, reveal: r })}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+    <LayoutGroup>
+      <div className="flex flex-col items-center text-center">
+        <AnimatePresence mode="wait" initial={false}>
+          {index < riddles.length ? (
+            <motion.div
+              key={index}
+              layout="position"
+              transition={glide}
+              className="flex w-full flex-col items-start text-left"
+              {...step}
+            >
+              <RiddleStep
+                family={family}
+                index={index}
+                total={riddles.length}
+                riddle={riddles[index]!}
+                onSolved={(answer) => update({ solved: [...solved, answer], reveal: null })}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="word"
+              layout="position"
+              transition={glide}
+              className="flex w-full flex-col items-center"
+              {...step}
+            >
+              <FinalWord
+                family={family}
+                length={riddles.length}
+                onSolved={(r) => update({ solved, reveal: r })}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      {solved.length > 0 ? (
-        <section aria-labelledby="solved" className="mt-16 flex w-full flex-col items-center">
-          <Meander className="mb-8 w-36 text-green-deep" />
-          <Eyebrow as="h2" id="solved" tone="muted">
-            Revealed
-          </Eyebrow>
-          <ol className="mt-5 flex flex-col items-start gap-3">
-            {solved.map((word, i) => (
-              <motion.li
-                key={i}
-                className="flex items-center gap-4"
-                initial={reduce ? false : { opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: DURATION.reveal, ease: EASE_GLIDE }}
-              >
-                <span className="flex size-10 shrink-0 items-center justify-center bg-green font-olympus text-xl font-semibold text-bg">
-                  {word[0]!.toUpperCase()}
-                </span>
-                <span className="text-body-lg tracking-[0.12em] text-muted uppercase">{word}</span>
-              </motion.li>
-            ))}
-          </ol>
-        </section>
-      ) : null}
-    </div>
+        {solved.length > 0 ? (
+          <motion.section
+            layout="position"
+            transition={glide}
+            aria-label="Solved"
+            className="mt-16 flex w-full flex-col items-center"
+          >
+            <Meander className="mb-8 w-36 text-green-deep" />
+            <ol className="flex flex-wrap justify-center gap-x-10 gap-y-3">
+              {solved.map((word, i) => (
+                <motion.li
+                  key={i}
+                  className="text-body-lg tracking-[0.12em] text-muted uppercase"
+                  initial={reduce ? false : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  layout="position"
+                  transition={{
+                    opacity: { duration: DURATION.reveal, ease: EASE_SMOOTH, delay: 0.3 },
+                    ...glide,
+                  }}
+                >
+                  {word}
+                </motion.li>
+              ))}
+            </ol>
+          </motion.section>
+        ) : null}
+      </div>
+    </LayoutGroup>
   );
 }
 
@@ -159,11 +177,7 @@ function RiddleStep({
       <p className="font-oracle text-[1.625rem] leading-snug font-medium text-balance md:text-[2rem]">
         {riddle}
       </p>
-      <form
-        ref={formRef}
-        onSubmit={submit}
-        className="mt-8 flex w-full flex-col items-center gap-4"
-      >
+      <form ref={formRef} onSubmit={submit} className="mt-8 flex w-full flex-col items-start gap-4">
         <TextField
           id="answer"
           label="Your answer"
@@ -178,7 +192,7 @@ function RiddleStep({
           autoCorrect="off"
           spellCheck={false}
           enterKeyHint="go"
-          className="w-full [&_input]:text-center [&_p]:justify-center"
+          className="w-full"
         />
         <SplitButton type="submit" pending={pending}>
           Ask the Oracle
@@ -188,117 +202,164 @@ function RiddleStep({
   );
 }
 
-function Unscramble({
+const KEY_ROWS = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
+/** Milliseconds: each tile's flip, and the wait before the next one starts. */
+const FLIP = 500;
+const STAGGER = 250;
+
+/**
+ * The final word, played like Wordle: one row of empty tiles (a letter pops in as it is typed),
+ * an on-screen keyboard, Enter to ask. Nothing gives the letters away; the family has to see
+ * that the first letters of its answers spell it. A wrong word shakes the row and stays to be
+ * edited (no per-letter colours, which would hand over the order); the right one flips to
+ * green tile by tile, then the reveal takes over.
+ */
+function FinalWord({
   family,
-  letters,
+  length,
   onSolved,
 }: {
   family: number;
-  letters: string[];
+  length: number;
   onSolved: (reveal: GodReveal) => void;
 }) {
   const reduce = useReducedMotionSafe();
-  const empty = letters.map(() => null);
-  /** Which letter (its index in `letters`) sits in each slot of the word. */
-  const [placed, setPlaced] = useState<(number | null)[]>(empty);
+  const [letters, setLetters] = useState("");
   const [error, setError] = useState<string>();
+  const [won, setWon] = useState(false);
   const [pending, startTransition] = useTransition();
-  const wordRef = useRef<HTMLOListElement>(null);
+  const rowRef = useRef<HTMLOListElement>(null);
+  const busy = pending || won;
 
-  function place(i: number) {
-    const slot = placed.indexOf(null);
-    if (pending || slot < 0 || placed.includes(i)) return;
-    const next = placed.with(slot, i);
-    setPlaced(next);
+  function type(letter: string) {
+    if (busy || letters.length >= length) return;
+    setLetters(letters + letter);
     setError(undefined);
-    if (!next.includes(null)) check(next.map((j) => letters[j!]).join(""));
   }
 
-  function remove(slot: number) {
-    if (!pending) setPlaced(placed.with(slot, null));
+  function back() {
+    if (busy) return;
+    setLetters(letters.slice(0, -1));
+    setError(undefined);
   }
 
-  function check(word: string) {
+  function enter() {
+    if (busy) return;
+    if (letters.length < length) {
+      setError("Not enough letters.");
+      shake(rowRef.current, reduce);
+      return;
+    }
     startTransition(async () => {
       try {
-        const reveal = await checkWord(family, word);
-        if (reveal) return onSolved(reveal);
+        const reveal = await checkWord(family, letters);
+        if (reveal) {
+          setWon(true);
+          // The reveal waits for the last tile to finish flipping.
+          window.setTimeout(
+            () => onSolved(reveal),
+            reduce ? 0 : STAGGER * (length - 1) + FLIP + 600,
+          );
+          return;
+        }
         setError("The Oracle denies your word.");
       } catch {
         setError(OFFLINE);
       }
-      shake(wordRef.current, reduce);
-      window.setTimeout(() => setPlaced(empty), reduce ? 0 : 500);
+      shake(rowRef.current, reduce);
     });
   }
 
-  // On a keyboard, typing a letter places it and Backspace takes the last one back.
+  // A physical keyboard types too. A focused on-screen key answers Enter itself, as a click.
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
-      if (event.key === "Backspace") {
-        const last = placed.findLastIndex((p) => p !== null);
-        if (last >= 0) remove(last);
-        return;
-      }
-      const i = letters.findIndex(
-        (letter, j) => letter === event.key.toUpperCase() && !placed.includes(j),
-      );
-      if (i >= 0) place(i);
+      if (event.key === "Enter") {
+        if (!(event.target instanceof HTMLButtonElement)) enter();
+      } else if (event.key === "Backspace") back();
+      else if (/^[a-z]$/i.test(event.key)) type(event.key.toUpperCase());
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   });
 
-  const tile =
-    "flex size-14 items-center justify-center border font-olympus text-h3 font-semibold transition-colors";
+  const key =
+    "flex h-14 min-w-0 flex-1 items-center justify-center border border-line bg-surface-2 transition-colors hover:border-line-strong hover:bg-surface";
 
   return (
     <>
-      <Eyebrow tone="green">The final prophecy</Eyebrow>
-      <h2 className="mt-5 font-olympus text-h3 font-semibold">Unscramble the letters.</h2>
+      <h2 className="font-olympus text-h3 font-semibold">The final word</h2>
       <p className="mt-3 text-body-lg text-muted">One word, the sign of your god.</p>
 
-      <ol ref={wordRef} aria-label="Your word" className="mt-10 flex justify-center gap-2">
-        {placed.map((i, slot) => (
-          <li key={slot}>
-            {i === null ? (
-              <span className={cn(tile, "border-dashed border-line-strong")} />
-            ) : (
-              <button
-                type="button"
-                onClick={() => remove(slot)}
-                aria-label={`Take back ${letters[i]}`}
-                className={cn(tile, "border-green bg-green text-bg")}
-              >
-                {letters[i]}
-              </button>
+      <ol
+        ref={rowRef}
+        aria-label={`Your word, ${length} letters`}
+        data-olympus
+        className="mt-10 flex justify-center gap-2"
+      >
+        {Array.from({ length }, (_, i) => (
+          <li
+            key={i}
+            className={cn(
+              "flex size-14 items-center justify-center border-2 font-olympus text-h3 font-semibold sm:size-16",
+              won
+                ? "anim-olympus-flip border-muted"
+                : letters[i]
+                  ? "anim-olympus-pop border-muted"
+                  : "border-line-strong",
             )}
+            style={won ? { animationDelay: `${i * STAGGER}ms` } : undefined}
+          >
+            {letters[i]}
           </li>
         ))}
       </ol>
 
-      <ul aria-label="Letters" className="mt-4 flex justify-center gap-2">
-        {letters.map((letter, i) => (
-          <li key={i}>
-            <button
-              type="button"
-              onClick={() => place(i)}
-              disabled={placed.includes(i)}
-              className={cn(
-                tile,
-                "hover-corners border-line-strong bg-surface hover:bg-surface-2 disabled:invisible",
-              )}
-            >
-              {letter}
-            </button>
-          </li>
-        ))}
-      </ul>
-
-      <p role="status" className="mt-6 min-h-6 text-sm text-cyan">
+      <p role="status" className="mt-5 min-h-6 text-sm text-cyan">
         {error}
       </p>
+
+      <div
+        role="group"
+        aria-label="Keyboard"
+        className="mt-6 flex w-full max-w-lg flex-col gap-1.5"
+      >
+        {KEY_ROWS.map((row, r) => (
+          <div key={row} className="flex gap-1.5">
+            {r === 1 ? <span aria-hidden="true" className="flex-[0.5]" /> : null}
+            {r === 2 ? (
+              <button
+                type="button"
+                onClick={enter}
+                className={cn(key, "flex-[1.5] text-xs font-medium tracking-wide uppercase")}
+              >
+                Enter
+              </button>
+            ) : null}
+            {[...row].map((letter) => (
+              <button
+                key={letter}
+                type="button"
+                onClick={() => type(letter)}
+                className={cn(key, "font-olympus text-lg font-semibold")}
+              >
+                {letter}
+              </button>
+            ))}
+            {r === 2 ? (
+              <button
+                type="button"
+                onClick={back}
+                aria-label="Delete"
+                className={cn(key, "flex-[1.5]")}
+              >
+                <Delete className="size-5" aria-hidden="true" />
+              </button>
+            ) : null}
+            {r === 1 ? <span aria-hidden="true" className="flex-[0.5]" /> : null}
+          </div>
+        ))}
+      </div>
     </>
   );
 }

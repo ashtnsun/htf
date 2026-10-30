@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
-import { Meander } from "@/components/olympus/Meander";
 import type { GodReveal } from "@/components/olympus/shared";
 import { EASE_GLIDE } from "@/lib/motion";
 
@@ -98,9 +97,6 @@ export function GodRevealView({ reveal }: { reveal: GodReveal }) {
         <p className="mt-5 text-body-lg text-muted">
           Led by <span className="font-medium text-text">{reveal.exec}</span>
         </p>
-        <div className="mx-auto mt-8 w-36" style={{ color }}>
-          <Meander />
-        </div>
       </motion.div>
     </section>
   );

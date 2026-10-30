@@ -16,8 +16,8 @@ export default async function FamilyPage({ params }: PageProps<"/olympus/[family
   const riddles = FAMILIES[n - 1]!.riddles.map((r) => r.riddle);
   return (
     <>
-      {/* top left, just under the Greek key (the layout's 4rem bar and 12px band) */}
-      <div className="absolute inset-x-0 top-19 container-max flex justify-start container-x">
+      {/* far left in the layout's logo bar (4rem tall) */}
+      <div className="absolute top-0 left-0 flex h-16 items-center pl-6 md:pl-10">
         <Link
           href="/olympus"
           className="inline-flex min-h-11 items-center gap-2 text-sm text-muted transition-colors hover:text-green"

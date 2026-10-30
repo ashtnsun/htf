@@ -53,7 +53,7 @@ src/components/
                     goals/ (GoalsBoard: the FigJam-style board, Realtime; Sticky)
   olympus/          the family reveal (/olympus, an event page like Portfolio Night: no site
                     chrome, noindex): Trial (riddles checked by app/olympus/actions.ts, then the
-                    letters to unscramble), GodRevealView (the god's /dino sprite cell by cell),
+                    final word as Wordle, letters never given), GodRevealView (the god's /dino sprite cell by cell),
                     Meander (the pixel Greek key); content/olympus.ts is server only (answers)
   apply/            ApplyForm (client): the Google Form in a frame tall enough that no
                     section scrolls inside it — two measured heights, the first section and

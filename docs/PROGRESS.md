@@ -127,6 +127,16 @@ god's name; Cormorant Garamond (`font-oracle`) for the riddles. No family headin
 Greek key; the Oracle's voice ("Ask the Oracle", "The Oracle denies your answer.", "The final
 prophecy"); the Greek key as the divider above Revealed and, in the god's colour, under the reveal.
 
+**Second pass:** the riddle steps left-aligned again (only the solved words, the final word and
+the reveal are centred); the solved words a centred row of the key words alone (no first-letter
+tile, no label); the final word is Wordle (Trial's FinalWord): empty tiles, an on-screen keyboard
+and the physical one, a letter pops in, a wrong word shakes and stays, the right one flips green
+tile by tile (`anim-olympus-pop` / `anim-olympus-flip`). The letters are never shown: working out
+that the first letters spell the word is part of the puzzle, and there are no per-letter colours.
+"Families" sits far left in the logo bar; no Greek key under the reveal. The step transition
+fades the answered riddle out fast and raises the next one in, and the solved words glide to
+their new place (a LayoutGroup, so they follow the riddle's height without re-rendering).
+
 **Next session starts with:** Ashton's run through /olympus on a phone, and the final sprite per god.
 
 ## Session 16d — 2026-10-29 (the merch studio)

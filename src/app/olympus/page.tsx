@@ -9,9 +9,7 @@ export default function OlympusPage() {
       <h1 className="text-center font-olympus text-[2.5rem] leading-tight font-semibold sm:text-h2">
         Who is your <span className="text-green">god</span>?
       </h1>
-      <p className="mt-4 text-center text-body-lg text-muted">
-        Choose your group to begin.
-      </p>
+      <p className="mt-4 text-center text-body-lg text-muted">Choose your group to begin.</p>
       <ol className="mt-10 grid grid-cols-3 gap-3 sm:gap-4">
         {FAMILIES.map((_, i) => (
           <li key={i}>

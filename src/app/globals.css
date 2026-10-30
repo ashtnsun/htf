@@ -1374,6 +1374,39 @@ html[data-intro]:not([data-intro="play"]) body > header {
     opacity: 0;
   }
 }
+/* The final word, as Wordle: a letter pops in, and the right word flips to green tile by tile
+   (the colour changes when the tile is edge-on). */
+@keyframes olympus-pop {
+  50% {
+    transform: scale(1.1);
+  }
+}
+@keyframes olympus-flip {
+  0% {
+    transform: rotateX(0);
+  }
+  50% {
+    transform: rotateX(-90deg);
+    background-color: transparent;
+    border-color: var(--muted);
+    color: var(--text);
+  }
+  50.01%,
+  100% {
+    background-color: var(--green);
+    border-color: var(--green);
+    color: var(--bg);
+  }
+  100% {
+    transform: rotateX(0);
+  }
+}
+.anim-olympus-pop {
+  animation: olympus-pop 120ms ease-out;
+}
+.anim-olympus-flip {
+  animation: olympus-flip 500ms ease-in-out both;
+}
 @keyframes olympus-glow {
   from {
     opacity: 0;
