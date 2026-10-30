@@ -133,7 +133,7 @@ Verified: typecheck, lint, build; every look and view screenshotted; PNG and SVG
 axe 0 violations on /merch; no overflow at 390 px.
 
 **Next session starts with:** Ashton's look at /merch; a pasted "Settings" JSON is the
-starting point for any design he wants refined.
+starting point for any design to refine.
 
 ## Session 16c — 2026-10-29 (the dino editor)
 
