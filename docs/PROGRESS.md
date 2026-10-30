@@ -297,6 +297,16 @@ gold-winged sandals): **caduceus raised** at arm's length, **caduceus staff** (p
 ground in column 20 like a walking staff, the arm reaching forward to it) and **scroll** (open,
 two rolls with gold knobs, ink lines, a red seal hanging from it).
 
+Ashton found the Corinthian, dread and streaked-crest Ares too busy: all five are gone, and in
+their place two simple ones on the saved Ares (`aresFinalHelm()`: the same bowl, brim and stand,
+the crest two flat tones, a red arc over a dark underside with a short tail): **steel** (bright
+steel, red crest) and **blackened steel** (dark steel, bright red crest). The two Hermes
+caduceus variants shared one staff, so each has its own now: **grand caduceus** (held high, a
+gold orb, wide wings, two green snakes in a double helix, all above the helmet) and **herald's
+staff** (the older kerykeion: an open gold figure eight on a wooden staff in column 21, two
+ribbons tied under it, the arm reaching along row 10). Plus **proclamation**: a scroll hanging
+open from its top roller in the resting hand, a red seal under the bottom roller.
+
 **Next session starts with:** Ashton's look at the Artemis leaf headband, Zeus gold headband
 and Athena shield variants on /dino; any pasted "Copy all" export is the starting point.
 

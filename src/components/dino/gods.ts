@@ -14,7 +14,7 @@ import type { Variant } from "@/components/dino/variants";
 
 /**
  * The Greek gods in the dinosaur editor (no Hera since 2026-10-29): three variants of each, more
- * for some (Aphrodite four, redone, and no picks; Athena five and one pick; Ares eight, Hermes eight; Zeus and Artemis five,
+ * for some (Aphrodite four, redone, and no picks; Athena five and one pick; Ares five, Hermes nine; Zeus and Artemis five,
  * two from Ashton's saves), every one the footer T-rex in its own colour (one hue family per god) with one or two props that say who it is. Coordinates
  * are T-rex-local (components/dino/compose). Anything held upright stands in column 20 with the
  * arm raised to it; anything held low sits against the resting arm from column 16.
@@ -140,131 +140,31 @@ const LONG_SPEAR = [
 ];
 
 /**
- * A Corinthian helmet: a domed bronze bowl with a dark band, the back of the head and a cheek
- * guard covered, the face open from the eye forward, and a tall horsehair crest running front to
- * back on a stand, its tail hanging down the neck.
+ * Ashton's saved "Ares final" with the helmet in metal: a low bowl over the head's top row, a
+ * darker brim at front and back and a two-cell stand on top, and the crest kept to two flat
+ * tones, a red arc over a dark underside whose tail drops behind the head.
  */
-function corinthianHelm(metal: string, band: string, crest: string, crestLight: string): Part[] {
-  return local(
-    [
-      "......LLLLL....",
-      "....LLcccccLL..",
-      "...Lccccccccc..",
-      "..Lcccccccccc..",
-      ".Lcc..hhhhhh...",
-      ".cc..hhhhhhhh..",
-      ".cc..hhhhhhhh..",
-      "..c.dddddddddd.",
-      "..cchh.........",
-      "...chhh........",
-      "....hhh........",
-      "....hhd........",
-      "....dd.........",
-    ],
-    6,
-    -6,
-    { h: metal, d: band, c: crest, L: crestLight },
-  );
-}
-
-/**
- * A closed helmet: the whole head in dark steel with a light crown, a gold band, a visor slit
- * cut through at the eye with the eye glowing in it, and a crest running front to back.
- */
-function dreadHelm(steel: string, shine: string, trim: string, crest: string, eye: string) {
+function aresFinalHelm(metal: string, brim: string, crest: string, under: string) {
   return [
+    ...local(["......ss...", "...ssssss..", "..sssssssdd", ".dd........"], 8, -2, {
+      s: metal,
+      d: brim,
+    }),
     ...local(
       [
-        "......cccc....",
-        "....cccccccc..",
-        "..ccccccccccc.",
-        ".cc..ssssss...",
-        ".c...ssssssss.",
-        ".c..tttttttttt",
-        ".c..hh.vvvvhhh",
-        "..c.hhhhhhhhhh",
-        "....hhhhhhhhhh",
-        "....hhhhhhhhhh",
-        "....hhhhh.....",
+        ".....cccc....",
+        "...cccccccc..",
+        "..cccccccccc.",
+        ".uuuuuuuuuuu.",
+        "uu...........",
+        "u............",
       ],
-      6,
-      -4,
-      { s: shine, t: trim, h: steel, c: crest, v: "#22262c" },
+      7,
+      -6,
+      { c: crest, u: under },
     ),
-    ...cells([[12, 2]], eye),
   ];
 }
-
-/**
- * The helmet of Ashton's saved "Ares final", in steel: a low bowl over the head's top row, a
- * darker brim at front and back, and a two-cell stand on top that holds the crest clear of it.
- */
-const ARES_FINAL_HELM = local(["......ss...", "...ssssss..", "..sssssssdd", ".dd........"], 8, -2, {
-  s: STEEL,
-  d: GREY,
-});
-
-/**
- * Horsehair from a mask: `h` is hair, streaked in alternating strands of two reds that run
- * down the columns (or along the rows, for hair blown back), `l` its lit edge.
- */
-function horsehair(rows: readonly string[], ox: number, oy: number, along: "down" | "back") {
-  return rows.flatMap((row, j) =>
-    Array.from(row).flatMap((ch, i) => {
-      const x = ox + i;
-      const y = oy + j;
-      if (ch === "l") return [{ x, y, color: "#ff5a5f" }];
-      if (ch !== "h") return [];
-      const strand = Math.abs(along === "down" ? x : y) % 2;
-      return [{ x, y, color: strand ? "#8e1b22" : "#d62a33" }];
-    }),
-  );
-}
-
-/** Crests for that helmet: an arc whose tail falls down the neck, a bristling fan, and one blown back. */
-const CREST_ARC = horsehair(
-  [
-    "......llll....",
-    "....llhhhhll..",
-    "...lhhhhhhhhl.",
-    "..lhhhhhhhhhh.",
-    ".lhhhhhhhhhhh.",
-    ".hh.hhhhhhhhh.",
-    ".hh...........",
-    ".hh...........",
-    "..h...........",
-  ],
-  6,
-  -8,
-  "down",
-);
-const CREST_BRUSH = horsehair(
-  [
-    "l.l.l.l.l.",
-    "hlhlhlhlhl",
-    "hhhhhhhhhh",
-    "hhhhhhhhhh",
-    ".hhhhhhhh.",
-    "..hhhhhh..",
-    "...hhhhh..",
-  ],
-  9,
-  -9,
-  "down",
-);
-const CREST_WIND = horsehair(
-  [
-    "............llll...",
-    "........llllhhhhl..",
-    "....llllhhhhhhhhhl.",
-    "lhhhhhhhhhhhhhhhhh.",
-    ".lhhhhhh..hhhhhhhh.",
-    "...lhh.....hhhhhh..",
-  ],
-  1,
-  -8,
-  "back",
-);
 
 /** The helmet, wings and gold-winged sandals of Ashton's saved "Hermes final". */
 const HERMES_FINAL = [
@@ -286,30 +186,54 @@ const HERMES_FINAL = [
 ];
 
 /**
- * The caduceus planted on the ground like a walking staff in column 20, the arm reaching
- * forward to it: wings at the top clear of the snout, the snakes twined down the staff.
+ * A grand caduceus held high in column 21: a gold orb on top, wings spread wide, and two green
+ * snakes crossing the staff in a double helix that widens into loops, all above the helmet.
  */
-function caduceusStaff(staff: string, snakes: string): Part[] {
-  const twist = Array.from({ length: 9 }, (_, i) => i + 10).flatMap((y) =>
-    y % 3 === 0
-      ? cells([[20, y]], snakes)
-      : cells(
-          [
-            [19, y],
-            [21, y],
-          ],
-          snakes,
-        ),
-  );
-  return [
-    ...line(20, 7, 20, 21, staff),
-    ...twist,
-    ...local(["ww.ww", ".w.w."], 18, 7, { w: WHITE }),
-  ];
-}
+const GRAND_CADUCEUS = [
+  ...local(
+    [
+      "....a....",
+      "...aoo...",
+      "w..ooo..w",
+      "ww..o..ww",
+      "wwwwowwww",
+      ".wwwowww.",
+      "..wwoww..",
+      ".gg.o.ee.",
+      "...gox...",
+      "....g....",
+      "...eog...",
+      "..e.o.g..",
+      "..e.o.g..",
+      "...eog...",
+      "....e....",
+      "...gox...",
+    ],
+    17,
+    -15,
+    { a: "#fbe7a1", o: GOLD, w: WHITE, g: "#3ddc84", e: "#1b8a4c", x: "#1b8a4c" },
+  ),
+  ...line(21, 1, 21, 16, GOLD),
+];
 
-/** The resting arm stretched forward along row 10 to a staff in column 20. */
-const ARM_TO_STAFF = (color: string) => line(14, 10, 19, 10, color);
+/**
+ * The herald's staff, the older kerykeion: a wooden staff planted in column 21 under an open
+ * gold figure eight, its horns curling up, with two ribbons tied below it.
+ */
+const HERALD_STAFF = [
+  ...local(
+    ["o...b", "o...b", ".o.b.", "..o..", ".o.b.", "o...b", "o...b", ".o.b.", "..o.."],
+    19,
+    -14,
+    { o: GOLD, b: "#c9962a" },
+  ),
+  ...local(["..oww", "..o.wc", "..o..c"], 19, -5, { o: GOLD, w: WHITE, c: PLUME_LINE }),
+  ...line(21, -2, 21, 19, WOOD),
+  ...line(21, 20, 21, 21, GOLD),
+];
+
+/** The resting arm stretched forward along row 10 to a staff in column 21. */
+const ARM_TO_STAFF = (color: string) => line(14, 10, 20, 10, color);
 
 /** An open scroll held against the arm: two rolls with gold knobs, lines of ink, a red seal. */
 const SCROLL = [
@@ -326,6 +250,31 @@ const SCROLL = [
     ],
     RED,
   ),
+];
+
+/**
+ * A proclamation: a scroll hanging open from its top roller, which the resting hand holds, past
+ * lines of ink to the bottom roller, a red wax seal tied under it.
+ */
+const SCROLL_HANGING = [
+  ...local(
+    [
+      "kRRRRRk",
+      ".ppppp.",
+      ".piiip.",
+      ".ppppp.",
+      ".piiip.",
+      ".ppppp.",
+      ".piipp.",
+      ".ppppp.",
+      ".piiip.",
+      "kRRRRRk",
+    ],
+    16,
+    10,
+    { k: GOLD, R: "#d9c08a", p: "#f3e2b3", i: LEATHER },
+  ),
+  ...cells([[19, 20]], RED),
 ];
 
 /** A pomegranate against the arm, its crown on top. */
@@ -1227,61 +1176,25 @@ const GODS: God[] = [
         parts: [dino("#c8553d", "raised"), helmet(SILVER), SWORD],
       },
       {
-        id: "ares-corinthian",
-        name: "Ares, Corinthian",
-        note: "Ashton's Ares in a domed Corinthian helm with a tall horsehair crest, and the long spear",
+        id: "ares-final-steel",
+        name: "Ares, steel",
+        note: "Ashton's Ares, the helmet in bright steel under a plain red crest",
         parts: [
           dino("#e5383b", "none"),
           ARM_TO_SPEAR("#e5383b"),
           LONG_SPEAR,
-          corinthianHelm(BRONZE, "#a87a2c", "#a8242a", RED),
+          aresFinalHelm(STEEL, GREY, RED, "#a8242a"),
         ],
       },
       {
-        id: "ares-dread",
-        name: "Ares, dread",
-        note: "Deep red, a closed dark-steel helm with a glowing eye in the visor, and the long spear",
-        parts: [
-          dino("#b3202a", "none"),
-          ARM_TO_SPEAR("#b3202a"),
-          LONG_SPEAR,
-          dreadHelm("#4a525c", "#8a939c", GOLD, "#ff3b3b", "#ffb020"),
-        ],
-      },
-      {
-        id: "ares-final-arc",
-        name: "Ares, steel arc crest",
-        note: "Ashton's Ares, the helmet in steel, a streaked horsehair crest arcing back down the neck",
+        id: "ares-final-black",
+        name: "Ares, blackened steel",
+        note: "Ashton's Ares, the helmet in blackened steel under a bright red crest",
         parts: [
           dino("#e5383b", "none"),
           ARM_TO_SPEAR("#e5383b"),
           LONG_SPEAR,
-          ARES_FINAL_HELM,
-          CREST_ARC,
-        ],
-      },
-      {
-        id: "ares-final-brush",
-        name: "Ares, steel brush crest",
-        note: "Ashton's Ares, the helmet in steel, a tall bristling horsehair brush",
-        parts: [
-          dino("#e5383b", "none"),
-          ARM_TO_SPEAR("#e5383b"),
-          LONG_SPEAR,
-          ARES_FINAL_HELM,
-          CREST_BRUSH,
-        ],
-      },
-      {
-        id: "ares-final-wind",
-        name: "Ares, steel wind crest",
-        note: "Ashton's Ares, the helmet in steel, the horsehair streaming back in the wind",
-        parts: [
-          dino("#e5383b", "none"),
-          ARM_TO_SPEAR("#e5383b"),
-          LONG_SPEAR,
-          ARES_FINAL_HELM,
-          CREST_WIND,
+          aresFinalHelm("#4a525c", "#2e343b", "#ff3b3b", "#a8242a"),
         ],
       },
     ],
@@ -1526,31 +1439,32 @@ const GODS: God[] = [
       },
       {
         id: "hermes-final-caduceus",
-        name: "Hermes, caduceus raised",
-        note: "Ashton's Hermes holding the caduceus up at arm's length",
+        name: "Hermes, grand caduceus",
+        note: "Ashton's Hermes holding up a grand caduceus: a gold orb, wide wings, two green snakes",
         parts: [
           dino("#14c4b0", "raised"),
           cells([[20, 8]], "#14c4b0"),
-          caduceus(GOLD, SILVER),
+          GRAND_CADUCEUS,
           HERMES_FINAL,
         ],
       },
       {
         id: "hermes-final-staff",
-        name: "Hermes, caduceus staff",
-        note: "Ashton's Hermes leaning on the caduceus like a walking staff",
-        parts: [
-          dino("#14c4b0", "none"),
-          caduceusStaff(GOLD, SILVER),
-          ARM_TO_STAFF("#14c4b0"),
-          HERMES_FINAL,
-        ],
+        name: "Hermes, herald's staff",
+        note: "Ashton's Hermes leaning on the herald's staff, an open gold figure eight with ribbons",
+        parts: [dino("#14c4b0", "none"), HERALD_STAFF, ARM_TO_STAFF("#14c4b0"), HERMES_FINAL],
       },
       {
         id: "hermes-final-scroll",
         name: "Hermes, scroll",
         note: "Ashton's Hermes holding an open scroll with a red seal",
         parts: [dino("#14c4b0"), SCROLL, HERMES_FINAL],
+      },
+      {
+        id: "hermes-final-proclamation",
+        name: "Hermes, proclamation",
+        note: "Ashton's Hermes holding a scroll that hangs open from its top roller, a red seal below",
+        parts: [dino("#14c4b0"), SCROLL_HANGING, HERMES_FINAL],
       },
     ],
   },
