@@ -348,6 +348,15 @@ sea so none read as Zeus's points: **wave crown** (three curls with white foam),
 and **fin crown** (three shark fins swept back). Rejected: a scallop shell (at this size it read
 as a striped bun), a single big wave, a fez-like tall Ares crest and an Ares cheek guard.
 
+Ashton wanted better normal crowns, not quirky ones, so the Zeus crowns (bolts, spire, jewelled)
+and the Poseidon ones (waves, coral, fins) are replaced by proper crowns (`crownOn()`: points
+over a lit band over a band of gems, sat just above the head). Zeus in his darker golds with blue
+gems: **classic crown**, **five-point crown**, **arched crown** and **lightning jewel** (a faceted
+blue bolt standing in the crown; a bolt drawn inside a framed gem read as a plus or an F at this
+size, so the jewel is the bolt). Poseidon in bright gold with pearls and aquamarines, eight wide
+so the points stay clear of the trident's prong and crossbar: **classic crown**, **pearl crown**
+and **tall crown**.
+
 **Next session starts with:** Ashton's look at the Artemis leaf headband, Zeus gold headband
 and Athena shield variants on /dino; any pasted "Copy all" export is the starting point.
 

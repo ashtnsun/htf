@@ -1134,51 +1134,75 @@ const ARES_SWEPT_CREST = local(
 const ARES_GOLD_BROW = local(["gggggggggg"], 10, 1, { g: GOLD });
 
 /**
- * Crowns for Zeus in the darker golds of his saved one (the bright gold melts into his body), a
- * band on the head's top row: three blue lightning bolts standing on it, a spire with blue gems
- * on its points, or a row of points over a band of blue gems.
+ * Proper crowns for Ashton's Zeus and Poseidon finals, sat on the head with the bottom row just
+ * above it: a lit band (`h`) over a band of gems, points above. Zeus's are in the darker golds of
+ * his saved crown (bright gold melts into his body) with blue gems; Poseidon's in bright gold
+ * with pearls and aquamarines, eight wide so the points stay clear of the trident.
  */
-const ZEUS_CROWN_INKS = { o: DEEP_GOLD, d: "#9a6a10", b: "#4cc9ff", B: "#1f8fd0" };
-const ZEUS_BOLT_CROWN = local(
-  [".b...b...b", "bB..bB..bB", ".b...b...b", "b...b...b.", "oooooooooo", "dddddddddd"],
+const crownOn = (rows: readonly string[], ox: number, inks: Record<string, string>) =>
+  local(rows, ox, -rows.length, inks);
+const ZEUS_CROWN_INKS = {
+  o: DEEP_GOLD,
+  h: "#e0a83a",
+  d: "#9a6a10",
+  y: "#fff3a0",
+  g: "#4cc9ff",
+  G: "#1f8fd0",
+  b: "#7fdcff",
+  B: "#1f8fd0",
+};
+const ZEUS_CLASSIC_CROWN = crownOn(
+  ["y...y...y", "o...o...o", "oo.ooo.oo", "hhhhhhhhh", "ogoGoGogo", "ddddddddd"],
   10,
-  -5,
   ZEUS_CROWN_INKS,
 );
-const ZEUS_SPIRE_CROWN = local(
-  ["....b...", "....o...", ".b.ooo.b", ".o.ooo.o", "oooooooo", "ddddbddd"],
-  11,
-  -5,
-  ZEUS_CROWN_INKS,
-);
-const ZEUS_JEWEL_CROWN = local(
-  ["....o...", "..o.o.o.", "o.o.o.o.", "obobbbob", "oooooooo", "dddddddd"],
-  11,
-  -5,
-  ZEUS_CROWN_INKS,
-);
-
-/**
- * Crowns for Poseidon from the sea rather than points: three curling waves with white foam, a
- * branch of coral on a gold band, or three shark fins swept back.
- */
-const POSEIDON_WAVE_CROWN = local(
-  [".ww..ww..ww", "wcc.wcc.wcc", "c.c.c.c.c.c", "bbbbbbbbbbb"],
-  9,
-  -4,
-  { w: WHITE, c: "#53ddf9", b: "#22b9ec" },
-);
-const POSEIDON_CORAL_CROWN = local(
-  ["r...r..r.", "r.r.r.rr.", ".rr.rr.r.", "..r..r.r.", "..rrrrrr.", ".dddddddd"],
+const ZEUS_FIVE_CROWN = crownOn(
+  ["y.y.y.y.y", "o.o.o.o.o", "ooooooooo", "hhhhhhhhh", "oogoGogoo", "ddddddddd"],
   10,
-  -6,
-  { r: "#ff7a59", d: "#c9962a" },
+  ZEUS_CROWN_INKS,
 );
-const POSEIDON_FIN_CROWN = local(
-  ["c...c...c..", "cn..cn..cn.", "cnn.cnn.cnn", "bbbbbbbbbb."],
-  9,
-  -4,
-  { c: "#53ddf9", n: "#22b9ec", b: "#0b5fa8" },
+const ZEUS_ARCHED_CROWN = crownOn(
+  ["....y....", "..ooooo..", ".o..o..o.", "o...o...o", "hhhhhhhhh", "ogoGoGogo", "ddddddddd"],
+  10,
+  ZEUS_CROWN_INKS,
+);
+/** A lightning jewel: a faceted blue bolt (lit side, shaded side) standing in the crown. */
+const ZEUS_BOLT_JEWEL_CROWN = crownOn(
+  [
+    "......bB.",
+    ".....bB..",
+    "o...bbbB.",
+    "o....bB.o",
+    "oo..bB..o",
+    "hhhhhhhhh",
+    "ogoGoGogo",
+    "ddddddddd",
+  ],
+  10,
+  ZEUS_CROWN_INKS,
+);
+const POSEIDON_CROWN_INKS = {
+  o: GOLD,
+  h: "#ffe08a",
+  d: "#c9962a",
+  y: WHITE,
+  g: "#2ee6c8",
+  G: "#0fa3a3",
+};
+const POSEIDON_CLASSIC_CROWN = crownOn(
+  ["y..yy..y", "o..oo..o", "oo.oo.oo", "hhhhhhhh", "ogoGGogo", "dddddddd"],
+  10,
+  POSEIDON_CROWN_INKS,
+);
+const POSEIDON_PEARL_CROWN = crownOn(
+  ["y.y.y.y.", "o.o.o.o.", "oooooooo", "hhhhhhhh", "oGoyyoGo", "dddddddd"],
+  10,
+  POSEIDON_CROWN_INKS,
+);
+const POSEIDON_TALL_CROWN = crownOn(
+  ["...yy...", "...oo...", "y..oo..y", "o.oooo.o", "oooooooo", "hhhhhhhh", "ogoGGogo", "dddddddd"],
+  10,
+  POSEIDON_CROWN_INKS,
 );
 
 /**
@@ -1859,22 +1883,28 @@ const GODS: God[] = [
         framed: true,
       },
       {
-        id: "zeus-final-bolts",
-        name: "Zeus, lightning crown",
-        note: "Ashton's Zeus, three blue lightning bolts standing on a dark-gold band",
-        parts: [...ZEUS_FINAL_BASE, ZEUS_BOLT_CROWN],
+        id: "zeus-final-classic",
+        name: "Zeus, classic crown",
+        note: "Ashton's Zeus, a dark-gold crown, three points tipped in pale gold over a band of blue gems",
+        parts: [...ZEUS_FINAL_BASE, ZEUS_CLASSIC_CROWN],
       },
       {
-        id: "zeus-final-spire",
-        name: "Zeus, spire crown",
-        note: "Ashton's Zeus, a dark-gold spire crown with blue gems on its points",
-        parts: [...ZEUS_FINAL_BASE, ZEUS_SPIRE_CROWN],
+        id: "zeus-final-five",
+        name: "Zeus, five-point crown",
+        note: "Ashton's Zeus, a dark-gold crown of five tipped points over blue gems",
+        parts: [...ZEUS_FINAL_BASE, ZEUS_FIVE_CROWN],
       },
       {
-        id: "zeus-final-jewels",
-        name: "Zeus, jewelled crown",
-        note: "Ashton's Zeus, a row of dark-gold points over a band of blue gems",
-        parts: [...ZEUS_FINAL_BASE, ZEUS_JEWEL_CROWN],
+        id: "zeus-final-arched",
+        name: "Zeus, arched crown",
+        note: "Ashton's Zeus, an arched dark-gold crown with a pale-gold finial over blue gems",
+        parts: [...ZEUS_FINAL_BASE, ZEUS_ARCHED_CROWN],
+      },
+      {
+        id: "zeus-final-bolt-jewel",
+        name: "Zeus, lightning jewel",
+        note: "Ashton's Zeus, a crown with a faceted blue lightning-bolt jewel standing in it",
+        parts: [...ZEUS_FINAL_BASE, ZEUS_BOLT_JEWEL_CROWN],
       },
     ],
   },
@@ -1900,22 +1930,22 @@ const GODS: God[] = [
         parts: [dino("#7fe0d2", "none"), seaCrown(SILVER), beard(WHITE)],
       },
       {
-        id: "poseidon-final-waves",
-        name: "Poseidon, wave crown",
-        note: "Ashton's Poseidon, three curling waves with white foam for a crown",
-        parts: [...POSEIDON_FINAL_BASE, POSEIDON_WAVE_CROWN],
+        id: "poseidon-final-classic",
+        name: "Poseidon, classic crown",
+        note: "Ashton's Poseidon, a gold crown with pearl-tipped points over aquamarines",
+        parts: [...POSEIDON_FINAL_BASE, POSEIDON_CLASSIC_CROWN],
       },
       {
-        id: "poseidon-final-coral",
-        name: "Poseidon, coral crown",
-        note: "Ashton's Poseidon, a branch of coral on a gold band",
-        parts: [...POSEIDON_FINAL_BASE, POSEIDON_CORAL_CROWN],
+        id: "poseidon-final-pearls",
+        name: "Poseidon, pearl crown",
+        note: "Ashton's Poseidon, a gold crown of four pearl-tipped points, pearls and aquamarines set in the band",
+        parts: [...POSEIDON_FINAL_BASE, POSEIDON_PEARL_CROWN],
       },
       {
-        id: "poseidon-final-fins",
-        name: "Poseidon, fin crown",
-        note: "Ashton's Poseidon, three shark fins swept back",
-        parts: [...POSEIDON_FINAL_BASE, POSEIDON_FIN_CROWN],
+        id: "poseidon-final-tall",
+        name: "Poseidon, tall crown",
+        note: "Ashton's Poseidon, a gold crown with a tall centre point, pearl tips and aquamarines",
+        parts: [...POSEIDON_FINAL_BASE, POSEIDON_TALL_CROWN],
       },
     ],
   },
