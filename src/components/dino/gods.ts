@@ -14,7 +14,7 @@ import type { Variant } from "@/components/dino/variants";
 
 /**
  * The Greek gods in the dinosaur editor (no Hera since 2026-10-29): three variants of each, more
- * for some (Aphrodite four, redone, and no picks; Athena five and one pick; Ares five, Hermes fifteen; Zeus and Artemis five,
+ * for some (Aphrodite four, redone, and no picks, then two on Ashton's saved one; Athena five and one pick; Ares five, Hermes fifteen; Zeus and Artemis five,
  * two from Ashton's saves), every one the footer T-rex in its own colour (one hue family per god) with one or two props that say who it is. Coordinates
  * are T-rex-local (components/dino/compose). Anything held upright stands in column 20 with the
  * arm raised to it; anything held low sits against the resting arm from column 16.
@@ -790,6 +790,64 @@ function flowerCrown(a: string, b: string, c: string): Part[] {
   ];
 }
 
+/**
+ * Ashton's saved "Aphrodite final": the arm reaching forward and down to (16, 11), a crown of two
+ * daisies and a lilac flower on grey stems over the head's top row, and a long-stemmed red rose
+ * held up past the snout.
+ */
+const APHRODITE_FINAL_ARM = (color: string) =>
+  cells(
+    [
+      [14, 10],
+      [15, 10],
+      [16, 10],
+      [16, 11],
+    ],
+    color,
+  );
+const APHRODITE_FINAL_CROWN = local([".b..c..b.", "bdbcdcbdb", ".h..i..h."], 11, -2, {
+  b: WHITE,
+  d: "#ffe135",
+  c: LILAC,
+  h: "#cfcfe0",
+  i: "#9b74d4",
+});
+const ROSE_STEM = "#34b24f";
+const finalBloom = (x: number, y: number) =>
+  local([".ff.", "fggf", "fgff", ".ff."], x, y, { f: "#c40303", g: "#900404" });
+const APHRODITE_FINAL_ROSE = [
+  ...cells(
+    [
+      [19, 9],
+      [18, 10],
+      [19, 11],
+      [17, 11],
+      [16, 12],
+      [15, 13],
+      [15, 14],
+    ],
+    ROSE_STEM,
+  ),
+  ...finalBloom(19, 6),
+];
+
+/** Heart-shaped sunglasses: a hot-pink rim round a dark lens over the eye, a glint top left. */
+const HEART_SHADES = local([".k.k.", "kgllk", ".klk.", "..k.."], 10, 1, {
+  k: "#ff2e88",
+  l: "#3a0d24",
+  g: "#ffd1e6",
+});
+
+/** The same rose clenched in the teeth: the stem along the mouth, a leaf, the bloom past the snout. */
+const ROSE_IN_TEETH = [
+  ...line(15, 6, 19, 6, ROSE_STEM),
+  ...cells([[18, 7]], ROSE_STEM),
+  ...finalBloom(20, 4),
+];
+
+/** A heart floating up and away from the face. */
+const FLOATING_HEART = local([".h.h.", "hhhhh", ".hhh.", "..h.."], 22, -3, { h: "#ff2e88" });
+
 /** A hand mirror: a gold rim round pale glass with a glint, `rows` tall. */
 function mirror(x: number, y: number, rows: 5 | 6): Part[] {
   const glass = rows === 6 ? ["gsssg", "gwssg", "gsssg", "gsssg"] : ["gsssg", "gwssg", "gsssg"];
@@ -1396,6 +1454,31 @@ const GODS: God[] = [
         note: "Coral pink, a flower crown, a rose in the jaws and the mirror held out",
         parts: [dino("#ff7f9f"), flowerCrown(WHITE, RED, WHITE), ROSE_IN_JAWS, MIRROR_LEVEL],
         framed: true,
+      },
+      {
+        id: "aphrodite-final-shades",
+        name: "Aphrodite, heart shades",
+        note: "Ashton's Aphrodite in heart-shaped sunglasses, hot-pink rims, with the rose",
+        parts: [
+          dino("#ff6fae", "none"),
+          APHRODITE_FINAL_ROSE,
+          APHRODITE_FINAL_ARM("#ff6fae"),
+          APHRODITE_FINAL_CROWN,
+          HEART_SHADES,
+        ],
+      },
+      {
+        id: "aphrodite-final-teeth",
+        name: "Aphrodite, rose in teeth",
+        note: "Ashton's Aphrodite in heart shades with the rose clenched in her teeth and a heart floating up",
+        parts: [
+          dino("#ff6fae", "none"),
+          APHRODITE_FINAL_ARM("#ff6fae"),
+          APHRODITE_FINAL_CROWN,
+          HEART_SHADES,
+          ROSE_IN_TEETH,
+          FLOATING_HEART,
+        ],
       },
     ],
   },

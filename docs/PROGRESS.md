@@ -330,6 +330,13 @@ upright or level, the two slants a coil shows in front. **caduceus crossed** (th
 upright, the dark one level: two snakes crossing) and **caduceus spiral** (all upright, one coil
 winding down). `HERMES2_SNAKES_CROSSED` / `_SPIRAL`.
 
+Two cooler Aphrodites on Ashton's saved "Aphrodite final" (`APHRODITE_FINAL_ARM`, `_CROWN`,
+`_ROSE`: the arm reaching to (16, 11), daisies and a lilac flower on grey stems, a long-stemmed
+red rose): **heart shades** (heart-shaped sunglasses over the eye, a hot-pink rim round a dark
+lens with a glint, the rose as saved) and **rose in teeth** (the shades, the same rose clenched
+along the mouth, a heart floating up and away). Rejected at real size: an all-pink heart (it
+melts into the body) and a pearl choker with a pendant (it read as a blob).
+
 **Next session starts with:** Ashton's look at the Artemis leaf headband, Zeus gold headband
 and Athena shield variants on /dino; any pasted "Copy all" export is the starting point.
 
