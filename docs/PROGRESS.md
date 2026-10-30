@@ -88,6 +88,40 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 16e — 2026-10-30 (the family reveal, /olympus)
+
+**Built:** `/olympus`, the page for the family reveal event: nine families, each led by an exec
+as a Greek god. An event page like Portfolio Night: no site header or footer (layout/SiteChrome),
+not in the nav or sitemap, noindex. A logo bar and a pixel Greek key band (olympus/Meander) on top.
+
+- `/olympus`: "Who is your god?" and nine tiles, I to IX (Ashton chose a numbered list over
+  codes, so any phone can open any family; the numbers say nothing about the god).
+- `/olympus/[n]` (`olympus/Trial`, client only through TrialLoader): a progress bar of segments,
+  one riddle at a time, the answer checked by a server action (`app/olympus/actions.ts`) before
+  the next appears; a wrong answer shakes the form. Solved words collect below with their first
+  letter on a green tile. Then the letters to unscramble (tap a tile, tap it back; typing works on
+  a keyboard); the right word plays the reveal (olympus/GodRevealView): one white flash, the god's
+  dinosaur from /dino switching on cell by cell in its own colour's glow, "Children of", the god's
+  name and "Led by" the exec. Reduced motion: no flash, every cell on at once.
+- `content/olympus.ts` (server only): the riddles, answers, alternates, words, exec and the /dino
+  sprite id per god. Riddles are stored out of word order so the letters arrive scrambled (no order
+  spells a word). Answers are matched without case, spaces, punctuation, leading "a / the / your /
+  in / mount" or a plural "s"; no answer or god name is in the client bundle (checked in .next/static).
+- Progress is per tab (sessionStorage): a refresh keeps the family's place, a new tab starts over.
+- No skips or hints (Ashton's call): an exec helps in person.
+
+Family numbers: I Apollo (Jason), II Hades (Ben), III Athena (Arushi), IV Zeus (Arav),
+V Aphrodite (Khang), VI Ares (Naks), VII Poseidon (Emily), VIII Hermes (Ashton), IX Artemis
+(Shreeya). Sprites: apollo-pick-2, hades-pick-2, athena-shield, zeus-final-gem,
+aphrodite-final-roses, ares-final2-fitted, poseidon-final-trident, hermes2-final-spiral,
+artemis-leaf-headband (one-line swaps in content/olympus.ts).
+
+**Verified:** typecheck, lint, build; axe 0 violations on /olympus, /olympus/4 and /olympus/6 at
+1440 and 390; Families IV and VI played through end to end in Playwright at 390, 360 and 1440
+(wrong answers, alternates, a wrong word, the reveal, a reload on the reveal), no horizontal scroll.
+
+**Next session starts with:** Ashton's run through /olympus on a phone, and the final sprite per god.
+
 ## Session 16d — 2026-10-29 (the merch studio)
 
 Ashton asked for `/merch`: a tool for realistic mockups of a club zip-up, a washed black oversized

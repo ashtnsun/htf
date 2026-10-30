@@ -44,12 +44,17 @@ src/app/            routes. page.dev.tsx files exist only in `next dev` (see nex
                     the cover, the write-up with the team and stack in the right column, the
                     gallery and the CTA (no banner, jump links or "More projects");
                     contact/ lists email, LinkedIn and Instagram; portfolio/ and portfoliohost/
-                    are Portfolio Night (below), the only routes with server actions; no proxy
+                    are Portfolio Night (below) and olympus/ the family reveal, the only routes with
+                    server actions; no proxy
 src/components/
   portfolio/        Portfolio Night (2026-10-22): PortfolioSidebar (the whole frame; layout/SiteChrome
                     drops the site header and footer on these routes), PortfolioGrid (screenshot
                     cards, filtered by the sidebar's ?q=), AddPortfolio, HostControls, and
                     goals/ (GoalsBoard: the FigJam-style board, Realtime; Sticky)
+  olympus/          the family reveal (/olympus, an event page like Portfolio Night: no site
+                    chrome, noindex): Trial (riddles checked by app/olympus/actions.ts, then the
+                    letters to unscramble), GodRevealView (the god's /dino sprite cell by cell),
+                    Meander (the pixel Greek key); content/olympus.ts is server only (answers)
   apply/            ApplyForm (client): the Google Form in a frame tall enough that no
                     section scrolls inside it — two measured heights, the first section and
                     the rest (`scripts/measure-apply-form.mjs`), never a count of sections,

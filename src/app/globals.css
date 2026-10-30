@@ -1353,3 +1353,33 @@ html[data-intro]:not([data-intro="play"]) body > header {
 [data-section-nav]:not([data-stuck]) + * {
   border-top-color: transparent;
 }
+
+/* ------------------------------------------------------------------
+   The family reveal (/olympus, components/olympus/GodRevealView): one flash of light, then the
+   god's glow comes up behind the dinosaur as its cells switch on (`anim-pixel-on`). Under
+   reduced motion the flash is not drawn and every cell is on at once.
+------------------------------------------------------------------- */
+@keyframes olympus-flash {
+  from {
+    opacity: 0.85;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes olympus-glow {
+  from {
+    opacity: 0;
+  }
+}
+.anim-olympus-flash {
+  animation: olympus-flash 900ms var(--ease-smooth) both;
+}
+.anim-olympus-glow {
+  animation: olympus-glow 1600ms var(--ease-smooth) 400ms both;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-olympus] * {
+    animation-delay: 0s !important;
+  }
+}
