@@ -287,6 +287,16 @@ from the eye forward, a tall red horsehair crest whose tail hangs down the neck)
 dread** (deep red, a closed dark-steel helm with a pale crown, a gold band, a dark visor slit and
 the eye glowing amber in it, a bright red crest). `corinthianHelm()` and `dreadHelm()`.
 
+Then Ashton's saved Ares exactly (`ARES_FINAL_HELM`, the crest stand kept) with the helmet in
+steel and three horsehair crests, each streaked in strands of two reds with a lit edge
+(`horsehair()`: strands down the columns, or along the rows for hair blown back): **steel arc
+crest** (an arc whose tail falls down the neck), **steel brush crest** (a fan narrowing onto the
+stand, bristle tips on top) and **steel wind crest** (blown back past the tail). And three
+variants on Ashton's saved Hermes (`HERMES_FINAL`: the gold helmet with its white wing and the
+gold-winged sandals): **caduceus raised** at arm's length, **caduceus staff** (planted on the
+ground in column 20 like a walking staff, the arm reaching forward to it) and **scroll** (open,
+two rolls with gold knobs, ink lines, a red seal hanging from it).
+
 **Next session starts with:** Ashton's look at the Artemis leaf headband, Zeus gold headband
 and Athena shield variants on /dino; any pasted "Copy all" export is the starting point.
 

@@ -14,7 +14,7 @@ import type { Variant } from "@/components/dino/variants";
 
 /**
  * The Greek gods in the dinosaur editor (no Hera since 2026-10-29): three variants of each, more
- * for some (Aphrodite four, redone, and no picks; Athena five and one pick; Ares and Hermes five; Zeus and Artemis five,
+ * for some (Aphrodite four, redone, and no picks; Athena five and one pick; Ares eight, Hermes eight; Zeus and Artemis five,
  * two from Ashton's saves), every one the footer T-rex in its own colour (one hue family per god) with one or two props that say who it is. Coordinates
  * are T-rex-local (components/dino/compose). Anything held upright stands in column 20 with the
  * arm raised to it; anything held low sits against the resting arm from column 16.
@@ -194,6 +194,139 @@ function dreadHelm(steel: string, shine: string, trim: string, crest: string, ey
     ...cells([[12, 2]], eye),
   ];
 }
+
+/**
+ * The helmet of Ashton's saved "Ares final", in steel: a low bowl over the head's top row, a
+ * darker brim at front and back, and a two-cell stand on top that holds the crest clear of it.
+ */
+const ARES_FINAL_HELM = local(["......ss...", "...ssssss..", "..sssssssdd", ".dd........"], 8, -2, {
+  s: STEEL,
+  d: GREY,
+});
+
+/**
+ * Horsehair from a mask: `h` is hair, streaked in alternating strands of two reds that run
+ * down the columns (or along the rows, for hair blown back), `l` its lit edge.
+ */
+function horsehair(rows: readonly string[], ox: number, oy: number, along: "down" | "back") {
+  return rows.flatMap((row, j) =>
+    Array.from(row).flatMap((ch, i) => {
+      const x = ox + i;
+      const y = oy + j;
+      if (ch === "l") return [{ x, y, color: "#ff5a5f" }];
+      if (ch !== "h") return [];
+      const strand = Math.abs(along === "down" ? x : y) % 2;
+      return [{ x, y, color: strand ? "#8e1b22" : "#d62a33" }];
+    }),
+  );
+}
+
+/** Crests for that helmet: an arc whose tail falls down the neck, a bristling fan, and one blown back. */
+const CREST_ARC = horsehair(
+  [
+    "......llll....",
+    "....llhhhhll..",
+    "...lhhhhhhhhl.",
+    "..lhhhhhhhhhh.",
+    ".lhhhhhhhhhhh.",
+    ".hh.hhhhhhhhh.",
+    ".hh...........",
+    ".hh...........",
+    "..h...........",
+  ],
+  6,
+  -8,
+  "down",
+);
+const CREST_BRUSH = horsehair(
+  [
+    "l.l.l.l.l.",
+    "hlhlhlhlhl",
+    "hhhhhhhhhh",
+    "hhhhhhhhhh",
+    ".hhhhhhhh.",
+    "..hhhhhh..",
+    "...hhhhh..",
+  ],
+  9,
+  -9,
+  "down",
+);
+const CREST_WIND = horsehair(
+  [
+    "............llll...",
+    "........llllhhhhl..",
+    "....llllhhhhhhhhhl.",
+    "lhhhhhhhhhhhhhhhhh.",
+    ".lhhhhhh..hhhhhhhh.",
+    "...lhh.....hhhhhh..",
+  ],
+  1,
+  -8,
+  "back",
+);
+
+/** The helmet, wings and gold-winged sandals of Ashton's saved "Hermes final". */
+const HERMES_FINAL = [
+  ...local(
+    [
+      "w............",
+      "www..........",
+      ".wwwww.......",
+      "cwwwwwaaoob..",
+      "..cccwooooob.",
+      "...oooooooobb",
+      "..bb.........",
+    ],
+    7,
+    -4,
+    { w: WHITE, c: PLUME_LINE, a: "#fbe7a1", o: GOLD, b: "#c9962a" },
+  ),
+  ...local(["oo...oo", ".ob...ob"], 2, 19, { o: GOLD, b: "#c9962a" }),
+];
+
+/**
+ * The caduceus planted on the ground like a walking staff in column 20, the arm reaching
+ * forward to it: wings at the top clear of the snout, the snakes twined down the staff.
+ */
+function caduceusStaff(staff: string, snakes: string): Part[] {
+  const twist = Array.from({ length: 9 }, (_, i) => i + 10).flatMap((y) =>
+    y % 3 === 0
+      ? cells([[20, y]], snakes)
+      : cells(
+          [
+            [19, y],
+            [21, y],
+          ],
+          snakes,
+        ),
+  );
+  return [
+    ...line(20, 7, 20, 21, staff),
+    ...twist,
+    ...local(["ww.ww", ".w.w."], 18, 7, { w: WHITE }),
+  ];
+}
+
+/** The resting arm stretched forward along row 10 to a staff in column 20. */
+const ARM_TO_STAFF = (color: string) => line(14, 10, 19, 10, color);
+
+/** An open scroll held against the arm: two rolls with gold knobs, lines of ink, a red seal. */
+const SCROLL = [
+  ...local(
+    ["k.......k", "rpppppppr", "rpiiiiipr", "rpppppppr", "rpiiiippr", "rpppppppr", "k.......k"],
+    16,
+    8,
+    { k: GOLD, r: "#d9c08a", p: "#f3e2b3", i: LEATHER },
+  ),
+  ...cells(
+    [
+      [20, 14],
+      [20, 15],
+    ],
+    RED,
+  ),
+];
 
 /** A pomegranate against the arm, its crown on top. */
 const POMEGRANATE_FRUIT = local([".c.c.", ".rrr.", "rrrrr", "rrrrr", ".rrr."], 16, 8, {
@@ -1115,6 +1248,42 @@ const GODS: God[] = [
           dreadHelm("#4a525c", "#8a939c", GOLD, "#ff3b3b", "#ffb020"),
         ],
       },
+      {
+        id: "ares-final-arc",
+        name: "Ares, steel arc crest",
+        note: "Ashton's Ares, the helmet in steel, a streaked horsehair crest arcing back down the neck",
+        parts: [
+          dino("#e5383b", "none"),
+          ARM_TO_SPEAR("#e5383b"),
+          LONG_SPEAR,
+          ARES_FINAL_HELM,
+          CREST_ARC,
+        ],
+      },
+      {
+        id: "ares-final-brush",
+        name: "Ares, steel brush crest",
+        note: "Ashton's Ares, the helmet in steel, a tall bristling horsehair brush",
+        parts: [
+          dino("#e5383b", "none"),
+          ARM_TO_SPEAR("#e5383b"),
+          LONG_SPEAR,
+          ARES_FINAL_HELM,
+          CREST_BRUSH,
+        ],
+      },
+      {
+        id: "ares-final-wind",
+        name: "Ares, steel wind crest",
+        note: "Ashton's Ares, the helmet in steel, the horsehair streaming back in the wind",
+        parts: [
+          dino("#e5383b", "none"),
+          ARM_TO_SPEAR("#e5383b"),
+          LONG_SPEAR,
+          ARES_FINAL_HELM,
+          CREST_WIND,
+        ],
+      },
     ],
   },
   {
@@ -1354,6 +1523,34 @@ const GODS: God[] = [
           harpe(SILVER),
           GOLD_SANDALS,
         ],
+      },
+      {
+        id: "hermes-final-caduceus",
+        name: "Hermes, caduceus raised",
+        note: "Ashton's Hermes holding the caduceus up at arm's length",
+        parts: [
+          dino("#14c4b0", "raised"),
+          cells([[20, 8]], "#14c4b0"),
+          caduceus(GOLD, SILVER),
+          HERMES_FINAL,
+        ],
+      },
+      {
+        id: "hermes-final-staff",
+        name: "Hermes, caduceus staff",
+        note: "Ashton's Hermes leaning on the caduceus like a walking staff",
+        parts: [
+          dino("#14c4b0", "none"),
+          caduceusStaff(GOLD, SILVER),
+          ARM_TO_STAFF("#14c4b0"),
+          HERMES_FINAL,
+        ],
+      },
+      {
+        id: "hermes-final-scroll",
+        name: "Hermes, scroll",
+        note: "Ashton's Hermes holding an open scroll with a red seal",
+        parts: [dino("#14c4b0"), SCROLL, HERMES_FINAL],
       },
     ],
   },
