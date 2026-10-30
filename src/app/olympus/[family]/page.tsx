@@ -26,7 +26,10 @@ export default async function FamilyPage({ params }: PageProps<"/olympus/[family
           Families
         </Link>
       </div>
-      <h1 className="sr-only">Family {roman(n)}</h1>
+      {/* far right in the same bar */}
+      <h1 className="absolute top-0 right-0 flex h-16 items-center gap-2 pr-6 font-olympus text-base font-semibold md:pr-10">
+        <span className="text-muted">Group</span> {roman(n)}
+      </h1>
       <TrialLoader family={n} riddles={riddles} />
     </>
   );

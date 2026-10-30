@@ -1,16 +1,16 @@
 "use client";
 
-import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Delete } from "lucide-react";
 import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
 import { checkRiddle, checkWord } from "@/app/olympus/actions";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
+import { Colonnade } from "@/components/olympus/Colonnade";
 import { GodRevealView } from "@/components/olympus/GodRevealView";
-import { Meander } from "@/components/olympus/Meander";
 import { roman, type GodReveal } from "@/components/olympus/shared";
 import { TextField } from "@/components/ui/Field";
 import { SplitButton } from "@/components/ui/SplitButton";
-import { DURATION, EASE_GLIDE, EASE_IN_OUT, EASE_SMOOTH } from "@/lib/motion";
+import { EASE_GLIDE, EASE_SMOOTH } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 type Progress = { solved: string[]; reveal: GodReveal | null };
@@ -43,7 +43,9 @@ function shake(el: HTMLElement | null, reduce: boolean) {
 
 /**
  * A family's trial: the riddles one at a time (each checked on the server before the next
- * appears), the solved words collecting below in a row, then the final word, then the reveal.
+ * appears), then the final word, then the reveal. The solved words stand on their columns at the
+ * foot of the page (every column there from the start, held at the bottom by `mt-auto`, so
+ * nothing moves as words arrive or riddles change length).
  */
 export function Trial({ family, riddles }: { family: number; riddles: string[] }) {
   const reduce = useReducedMotionSafe();
@@ -63,75 +65,34 @@ export function Trial({ family, riddles }: { family: number; riddles: string[] }
     animate: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE_GLIDE } },
     exit: reduce ? undefined : { opacity: 0, transition: { duration: 0.25, ease: EASE_SMOOTH } },
   } as const;
-  // The solved words glide to wherever the next riddle's height puts them instead of jumping.
-  const glide = reduce ? undefined : { layout: { duration: DURATION.panel, ease: EASE_IN_OUT } };
 
   return (
-    <LayoutGroup>
-      <div className="flex flex-col items-center text-center">
-        <AnimatePresence mode="wait" initial={false}>
-          {index < riddles.length ? (
-            <motion.div
-              key={index}
-              layout="position"
-              transition={glide}
-              className="flex w-full flex-col items-start text-left"
-              {...step}
-            >
-              <RiddleStep
-                family={family}
-                index={index}
-                total={riddles.length}
-                riddle={riddles[index]!}
-                onSolved={(answer) => update({ solved: [...solved, answer], reveal: null })}
-              />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="word"
-              layout="position"
-              transition={glide}
-              className="flex w-full flex-col items-center"
-              {...step}
-            >
-              <FinalWord
-                family={family}
-                length={riddles.length}
-                onSolved={(r) => update({ solved, reveal: r })}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {solved.length > 0 ? (
-          <motion.section
-            layout="position"
-            transition={glide}
-            aria-label="Solved"
-            className="mt-16 flex w-full flex-col items-center"
-          >
-            <Meander className="mb-8 w-36 text-green-deep" />
-            <ol className="flex flex-wrap justify-center gap-x-10 gap-y-3">
-              {solved.map((word, i) => (
-                <motion.li
-                  key={i}
-                  className="text-body-lg tracking-[0.12em] text-muted uppercase"
-                  initial={reduce ? false : { opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  layout="position"
-                  transition={{
-                    opacity: { duration: DURATION.reveal, ease: EASE_SMOOTH, delay: 0.3 },
-                    ...glide,
-                  }}
-                >
-                  {word}
-                </motion.li>
-              ))}
-            </ol>
-          </motion.section>
-        ) : null}
+    <div className="flex flex-1 flex-col items-center text-center">
+      <AnimatePresence mode="wait" initial={false}>
+        {index < riddles.length ? (
+          <motion.div key={index} className="flex w-full flex-col items-start text-left" {...step}>
+            <RiddleStep
+              family={family}
+              index={index}
+              total={riddles.length}
+              riddle={riddles[index]!}
+              onSolved={(answer) => update({ solved: [...solved, answer], reveal: null })}
+            />
+          </motion.div>
+        ) : (
+          <motion.div key="word" className="flex w-full flex-col items-center" {...step}>
+            <FinalWord
+              family={family}
+              length={riddles.length}
+              onSolved={(r) => update({ solved, reveal: r })}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <div className="mt-auto w-full pt-16">
+        <Colonnade total={riddles.length} words={solved} />
       </div>
-    </LayoutGroup>
+    </div>
   );
 }
 
@@ -177,7 +138,7 @@ function RiddleStep({
       <p className="font-oracle text-[1.625rem] leading-snug font-medium text-balance md:text-[2rem]">
         {riddle}
       </p>
-      <form ref={formRef} onSubmit={submit} className="mt-8 flex w-full flex-col items-start gap-4">
+      <form ref={formRef} onSubmit={submit} className="mt-8 flex w-full flex-col items-start gap-8">
         <TextField
           id="answer"
           label="Your answer"
@@ -192,7 +153,7 @@ function RiddleStep({
           autoCorrect="off"
           spellCheck={false}
           enterKeyHint="go"
-          className="w-full"
+          className="w-full [&_label]:sr-only"
         />
         <SplitButton type="submit" pending={pending}>
           Ask the Oracle

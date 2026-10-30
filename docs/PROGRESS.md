@@ -137,6 +137,13 @@ that the first letters spell the word is part of the puzzle, and there are no pe
 fades the answered riddle out fast and raises the next one in, and the solved words glide to
 their new place (a LayoutGroup, so they follow the riddle's height without re-rendering).
 
+**Third pass:** the solved words stand on pixel Doric columns on the Greek key (olympus/Colonnade):
+every column drawn from the start, dim until its riddle is solved, then lit with a green abacus and
+the word on top in capitals (all one size, so no first letter stands out); pinned to the foot of
+the page with `mt-auto`, so the riddles' heights never move it (the LayoutGroup glide is gone).
+"Group IV" sits far right in the logo bar (the page's h1); the answer label is sr-only and the
+button sits further from the field.
+
 **Next session starts with:** Ashton's run through /olympus on a phone, and the final sprite per god.
 
 ## Session 16d — 2026-10-29 (the merch studio)
