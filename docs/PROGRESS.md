@@ -359,6 +359,16 @@ and **tall crown**. Then lowered ("they shouldn't be too tall"): four rows each 
 gems, base), five for Poseidon's tall centre, six for the lightning jewel, which is now one
 light-blue bolt (the blue he holds) between two points, the least a bolt needs to read.
 
+Still too busy: Ashton pointed at the crown on his saved Apollo (one gold with one darker shade at
+the back, a two-row band narrowing underneath, three one-cell points) as the model, unique but
+simple. So both sets are rebuilt on that band (`simpleCrown()`), only the points changing. Zeus,
+in the darker golds: **spiked crown** (one spike rising from a small peak), **gem crown** (a blue
+gem in the middle point) and **lightning crown** (a small blue bolt, with its jog, between two
+points). Poseidon, band a cell shorter to stay off the trident: **trident crown** (a little
+trident on top), **pearl crown** (three pearl-tipped points) and **pearl spire** (one tall point
+with a pearl). Rejected: zigzag points (they read as checker noise), a bolt without its jog (a
+slash), wave and arch tops (a chain, a checkerboard).
+
 **Next session starts with:** Ashton's look at the Artemis leaf headband, Zeus gold headband
 and Athena shield variants on /dino; any pasted "Copy all" export is the starting point.
 
