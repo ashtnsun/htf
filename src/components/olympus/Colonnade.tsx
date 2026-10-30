@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Shuffle } from "lucide-react";
 import { useState } from "react";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
 import { EASE_IN_OUT } from "@/lib/motion";
@@ -99,9 +98,8 @@ export function Colonnade({
             // After a tap, Enter belongs to the final word again, not to this button.
             if (event.detail > 0) event.currentTarget.blur();
           }}
-          className="mt-6 inline-flex min-h-11 items-center gap-2 text-sm text-muted transition-colors hover:text-green"
+          className="mt-6 inline-flex min-h-11 items-center text-sm text-muted transition-colors hover:text-green"
         >
-          <Shuffle className="size-4" aria-hidden="true" />
           Scramble
         </button>
       ) : null}
