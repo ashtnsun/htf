@@ -38,8 +38,11 @@ export const ARMHOLE = "M168 285C200 360 245 460 272 505";
 /** The sleeve's own frame: where its centre line meets the armhole seam, its angle, size. */
 export const SLEEVE_FRAME = { x: 220, y: 395, angle: 7.94, length: 476, width: 128 } as const;
 
-/** Where the back piece starts (the sleeve's frame origin) and how low the garland dips. */
-export const GARLAND = { anchor: [220, 395] as const, low: 598, spine: 250 } as const;
+/** The back piece: its arms end at the sleeves' seams (the sleeve frame's origin); it starts
+ * just under the hood and runs to above the hem. */
+export const BACK_ART = { anchor: [220, 395] as const, top: 500, bottom: 990 } as const;
+/** Where uploaded back artwork may sit: below the hood, inside the back panel. */
+export const UPLOAD_BACK = { x: 290, y: 470, w: 420, h: 520 } as const;
 
 /** Folds, left side, as centre lines for blurred strokes: shadow first, then light. */
 export const SLEEVE_FOLDS = {

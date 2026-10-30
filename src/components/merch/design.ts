@@ -23,13 +23,14 @@ export const TECHNIQUES = {
 } as const;
 export type Technique = keyof typeof TECHNIQUES;
 
-export const LINES = { solid: "Solid", outline: "Outline" } as const;
+export const LINES = { solid: "Solid", inline: "Inline", outline: "Outline" } as const;
 export type LineStyle = keyof typeof LINES;
 
 export const BACK_PIECES = {
   none: "Sleeves only",
-  garland: "Garland",
-  "garland-spine": "Garland + spine",
+  arms: "Arms",
+  "arms-spine": "Arms + spine",
+  full: "Arms, spine + wings",
 } as const;
 export type BackPiece = keyof typeof BACK_PIECES;
 
@@ -67,12 +68,13 @@ export type Design = {
   density: number;
   thorns: number;
   weight: number;
-  crescents: boolean;
-  sparkles: boolean;
-  curls: boolean;
-  chains: boolean;
+  ribs: boolean;
+  lattice: boolean;
+  beads: boolean;
+  needles: boolean;
   /** Mirror the left sleeve onto the right; off, the right sleeve gets its own seed. */
   mirror: boolean;
+  /** Solid ink, solid with an engraved inline in the second ink, or an outline. */
   line: LineStyle;
   back: BackPiece;
   span: SleeveSpan;
@@ -88,6 +90,9 @@ export type Design = {
   backdrop: Backdrop;
   marks: Record<MarkId, boolean>;
   markInk: "tonal" | "accent";
+  /** Uploaded back artwork: its width as a share of the back, and how far down it sits. */
+  uploadScale: number;
+  uploadY: number;
 };
 
 export const DEFAULT_DESIGN: Design = {
@@ -95,13 +100,13 @@ export const DEFAULT_DESIGN: Design = {
   density: 0.55,
   thorns: 0.6,
   weight: 0.35,
-  crescents: true,
-  sparkles: true,
-  curls: true,
-  chains: true,
+  ribs: true,
+  lattice: true,
+  beads: true,
+  needles: true,
   mirror: true,
   line: "solid",
-  back: "garland-spine",
+  back: "full",
   span: "full",
   technique: "screen",
   primary: "green",
@@ -113,6 +118,8 @@ export const DEFAULT_DESIGN: Design = {
   backdrop: "studio",
   marks: { chest: true, pull: false, pendant: false, cuff: false, hem: true },
   markInk: "tonal",
+  uploadScale: 0.8,
+  uploadY: 0.3,
 };
 
 /** Starting points: the ink and finish only; the drawing stays as it is. */
@@ -131,7 +138,7 @@ export const LOOKS: { id: string; label: string; patch: Partial<Design> }[] = [
   {
     id: "tonal",
     label: "Tonal + green",
-    patch: { primary: "tonal", accent: "green", technique: "puff", line: "solid", distress: 0 },
+    patch: { primary: "tonal", accent: "green", technique: "puff", line: "inline", distress: 0 },
   },
   {
     id: "bone",
@@ -162,10 +169,19 @@ export const LOOKS: { id: string; label: string; patch: Partial<Design> }[] = [
   },
 ];
 
-/** Reads a saved design back, filling anything a newer version added. */
+/** Reads a saved design back: anything missing or no longer valid takes the default. */
 export function normalizeDesign(raw: unknown): Design {
   const d = (raw && typeof raw === "object" ? raw : {}) as Partial<Design>;
-  return { ...DEFAULT_DESIGN, ...d, marks: { ...DEFAULT_DESIGN.marks, ...(d.marks ?? {}) } };
+  const out: Design = { ...DEFAULT_DESIGN };
+  for (const key of Object.keys(DEFAULT_DESIGN) as (keyof Design)[]) {
+    if (key in d && typeof d[key] === typeof DEFAULT_DESIGN[key]) {
+      (out as Record<string, unknown>)[key] = d[key];
+    }
+  }
+  out.marks = { ...DEFAULT_DESIGN.marks, ...(d.marks ?? {}) };
+  if (!(out.line in LINES)) out.line = DEFAULT_DESIGN.line;
+  if (!(out.back in BACK_PIECES)) out.back = DEFAULT_DESIGN.back;
+  return out;
 }
 
 /** Mixes two hex colours, `t` of the way from `a` to `b`. */

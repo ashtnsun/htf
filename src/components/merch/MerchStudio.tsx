@@ -1,7 +1,16 @@
 "use client";
 
-import { Check, Copy, Download, RotateCcw, Save, Shuffle, Trash2 } from "lucide-react";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  Check,
+  Copy,
+  Download,
+  RotateCcw,
+  Save,
+  Shuffle,
+  Trash2,
+  Upload as UploadIcon,
+} from "lucide-react";
+import { useDeferredValue, useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import {
   BACKDROPS,
@@ -21,8 +30,8 @@ import {
   type MarkId,
 } from "./design";
 import { CLOSE_UP, VIEW_H, VIEW_W } from "./garment";
-import { HoodieMockup, sigilFor } from "./HoodieMockup";
-import type { SigilPath } from "./sigil";
+import { artworkPng, generateCached, processUpload, withUploads, type Uploads } from "./art";
+import { HoodieMockup } from "./HoodieMockup";
 
 /**
  * The merch studio (/merch): a washed black oversized zip-up with a cybersigil piece that
@@ -35,6 +44,7 @@ import type { SigilPath } from "./sigil";
 
 const CURRENT_KEY = "htf-merch-current";
 const SAVED_KEY = "htf-merch-saved";
+const UPLOAD_KEYS = { sleeve: "htf-merch-upload-sleeve", back: "htf-merch-upload-back" } as const;
 
 type View = "both" | "front" | "back" | "close";
 const VIEWS: Record<View, string> = {
@@ -105,33 +115,6 @@ async function exportPng(svgs: SVGSVGElement[], boxes: [number, number][], name:
   canvas.toBlob((b) => b && download(b, name), "image/png");
 }
 
-/** The flat artwork, sleeves either side of the back piece, in the chosen inks. */
-function artworkSvg(design: Design): string {
-  const { left, right, back } = sigilFor(design);
-  const ink = (p: SigilPath) => INKS[p.role === "vine" ? design.primary : design.accent].hex;
-  const paths = (ps: SigilPath[]) =>
-    ps
-      .map((p) =>
-        design.line === "outline"
-          ? `<path d="${p.d}" fill="none" stroke="${ink(p)}" stroke-width="1.4"/>`
-          : `<path d="${p.d}" fill="${ink(p)}"/>`,
-      )
-      .join("");
-  const label = (x: number, text: string) =>
-    `<text x="${x}" y="40" fill="#A3A3A3" font-family="sans-serif" font-size="16" text-anchor="middle">${text}</text>`;
-  return [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 700" width="1240" height="700">`,
-    `<rect width="1240" height="700" fill="#141414"/>`,
-    label(130, "Left sleeve"),
-    label(620, "Back"),
-    label(1110, "Right sleeve"),
-    `<g transform="translate(130 80)">${paths(left)}</g>`,
-    `<g transform="translate(120 -300)">${paths(back.half)}<g transform="translate(1000 0) scale(-1 1)">${paths(back.half)}</g>${paths(back.centre)}</g>`,
-    `<g transform="translate(1110 80) scale(-1 1)">${paths(right)}</g>`,
-    `</svg>`,
-  ].join("");
-}
-
 export function MerchStudio() {
   const [design, setDesign] = useState<Design>(() =>
     normalizeDesign(load(CURRENT_KEY, DEFAULT_DESIGN)),
@@ -140,6 +123,10 @@ export function MerchStudio() {
   const [saved, setSaved] = useState<Saved[]>(() =>
     load<Saved[]>(SAVED_KEY, []).map((s) => ({ name: s.name, design: normalizeDesign(s.design) })),
   );
+  const [uploads, setUploads] = useState<Uploads>(() => ({
+    sleeve: load(UPLOAD_KEYS.sleeve, null),
+    back: load(UPLOAD_KEYS.back, null),
+  }));
   const [name, setName] = useState("");
   const [status, setStatus] = useState("");
   const frontRef = useRef<SVGSVGElement>(null);
@@ -147,6 +134,15 @@ export function MerchStudio() {
 
   useEffect(() => store(CURRENT_KEY, design), [design]);
   useEffect(() => store(SAVED_KEY, saved), [saved]);
+  useEffect(() => {
+    store(UPLOAD_KEYS.sleeve, uploads.sleeve);
+    store(UPLOAD_KEYS.back, uploads.back);
+  }, [uploads]);
+
+  // The drawing redraws only when a choice that shapes it changes, and a beat behind the
+  // controls, so dragging a slider stays smooth.
+  const drawing = useDeferredValue(design);
+  const art = withUploads(generateCached(drawing), uploads, design);
 
   const set = <K extends keyof Design>(key: K, value: Design[K]) =>
     setDesign((d) => ({ ...d, [key]: value }));
@@ -201,6 +197,7 @@ export function MerchStudio() {
           {view !== "back" && view !== "close" ? (
             <HoodieMockup
               design={design}
+              art={art}
               view="front"
               ref={frontRef}
               className="block h-auto w-full"
@@ -209,6 +206,7 @@ export function MerchStudio() {
           {view !== "front" ? (
             <HoodieMockup
               design={design}
+              art={art}
               view="back"
               closeUp={view === "close"}
               ref={backRef}
@@ -217,8 +215,8 @@ export function MerchStudio() {
           ) : null}
         </div>
         <p className="mt-3 text-body text-muted">
-          A mockup, not a print file: the artwork export is the drawing in flat ink for a printer to
-          separate.
+          A mockup, not a print file. The artwork export is the drawing in flat ink on a transparent
+          PNG, for a printer to separate.
         </p>
       </div>
 
@@ -269,21 +267,13 @@ export function MerchStudio() {
             onChange={(v) => set("line", v)}
           />
           <div className="mt-4 grid grid-cols-2 gap-x-4">
+            <Toggle label="Wing ribs" checked={design.ribs} onChange={(v) => set("ribs", v)} />
+            <Toggle label="Lattice" checked={design.lattice} onChange={(v) => set("lattice", v)} />
+            <Toggle label="Holed beads" checked={design.beads} onChange={(v) => set("beads", v)} />
             <Toggle
-              label="Crescents"
-              checked={design.crescents}
-              onChange={(v) => set("crescents", v)}
-            />
-            <Toggle
-              label="Sparkles"
-              checked={design.sparkles}
-              onChange={(v) => set("sparkles", v)}
-            />
-            <Toggle label="Curls" checked={design.curls} onChange={(v) => set("curls", v)} />
-            <Toggle
-              label="Bead chains"
-              checked={design.chains}
-              onChange={(v) => set("chains", v)}
+              label="Needle tips"
+              checked={design.needles}
+              onChange={(v) => set("needles", v)}
             />
             <Toggle
               label="Mirror sleeves"
@@ -319,13 +309,9 @@ export function MerchStudio() {
             value={design.technique}
             onChange={(v) => set("technique", v)}
           />
+          <Inks label="Ink" value={design.primary} onChange={(v) => set("primary", v)} />
           <Inks
-            label="Vines and blades"
-            value={design.primary}
-            onChange={(v) => set("primary", v)}
-          />
-          <Inks
-            label="Ornaments and sparkles"
+            label="Inline and accent ink"
             value={design.accent}
             onChange={(v) => set("accent", v)}
           />
@@ -376,6 +362,72 @@ export function MerchStudio() {
           />
         </Panel>
 
+        <Panel title="Your artwork" id="merch-upload">
+          <p className="text-body text-muted">
+            Art the club drew, commissioned or licensed: black on white, white on black or a
+            transparent PNG. It prints in the first ink, in place of the generated piece.
+          </p>
+          {(["sleeve", "back"] as const).map((slot) => (
+            <div key={slot} className="mt-4">
+              <p className="mb-2 text-body text-muted">
+                {slot === "sleeve" ? "Sleeves" : "Back"}:{" "}
+                <span className="text-text">{uploads[slot] ? "your artwork" : "generated"}</span>
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <label
+                  className={cn(
+                    btn,
+                    "cursor-pointer has-focus-visible:outline-2 has-focus-visible:outline-mint",
+                  )}
+                >
+                  <UploadIcon className="size-4.5" aria-hidden />
+                  Upload {slot === "sleeve" ? "sleeve" : "back"} art
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                    className="sr-only"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      e.target.value = "";
+                      if (!file) return;
+                      try {
+                        const u = await processUpload(file);
+                        setUploads((all) => ({ ...all, [slot]: u }));
+                        say("Artwork placed.");
+                      } catch (err) {
+                        say(err instanceof Error ? err.message : "Could not read that image.");
+                      }
+                    }}
+                  />
+                </label>
+                {uploads[slot] ? (
+                  <button
+                    type="button"
+                    className={btn}
+                    onClick={() => setUploads((all) => ({ ...all, [slot]: null }))}
+                  >
+                    Use generated
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          ))}
+          {uploads.back ? (
+            <>
+              <Slider
+                label="Back art size"
+                value={design.uploadScale}
+                onChange={(v) => set("uploadScale", Math.max(0.2, v))}
+              />
+              <Slider
+                label="Back art height"
+                value={design.uploadY}
+                onChange={(v) => set("uploadY", v)}
+              />
+            </>
+          ) : null}
+        </Panel>
+
         <Panel title="Export and save" id="merch-export">
           <div className="grid grid-cols-2 gap-2">
             <button type="button" className={btn} onClick={onPng}>
@@ -385,12 +437,12 @@ export function MerchStudio() {
             <button
               type="button"
               className={btn}
-              onClick={() =>
-                download(
-                  new Blob([artworkSvg(design)], { type: "image/svg+xml" }),
-                  `htf-sigil-${design.seed}.svg`,
-                )
-              }
+              onClick={async () => {
+                say("Drawing the artwork…");
+                const blob = await artworkPng(design, uploads);
+                if (blob) download(blob, `htf-sigil-${design.seed}.png`);
+                say(blob ? "Artwork saved." : "The artwork could not be made here.");
+              }}
             >
               <Download className="size-4.5" aria-hidden />
               Artwork

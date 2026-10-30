@@ -1,33 +1,36 @@
+import { Field, toDataUrl, type Box, type Hole, type Pt, type Stroke } from "./field";
+
 /**
- * The cybersigil generator for the /merch hoodie: thorned vines, crescent blades, concave
- * four-point sparkles, curled tendrils, beaded chains and a symmetric spine ornament, all
- * built as filled outlines (tapered strokes that end in points) so they print as one ink.
- * Deterministic: the same seed and options always draw the same piece.
+ * The cybersigil generator for the /merch hoodie, written in the style's own vocabulary
+ * rather than as scattered clip-art: a vertebral spine of holed beads with paired claws,
+ * long claw ribs fanning out and down like wings, arms of braided lattice with barbs that
+ * all sweep one way, and needle tips with a crossbar. Everything is drawn into a distance
+ * field (`field.ts`), so strokes swell, taper to needles and fuse where they meet.
  *
- * Coordinates are plain SVG user units. The sleeve piece is drawn in the sleeve's own frame
- * (x across the sleeve, y down it from the armhole seam); the back piece in the garment's
- * frame, left half only, mirrored about the centre line by the renderer.
+ * The back piece is drawn as its left half and mirrored about the centre line; its arms end
+ * at each sleeve's armhole seam, where the sleeve piece starts at the same width, so the two
+ * read as one line from cuff to cuff.
  */
-
-export type Pt = readonly [number, number];
-
-/** What a shape is, so the renderer can give it the primary or the accent ink. */
-export type SigilRole = "vine" | "ornament";
-export type SigilPath = { d: string; role: SigilRole };
 
 export type SigilOptions = {
   seed: number;
-  /** 0..1: how many thorns, curls and ornaments. */
+  /** 0..1: how many barbs, vertebrae and ribs. */
   density: number;
-  /** 0..1: how long and sharp the thorns are. */
+  /** 0..1: how long the barbs and claws reach. */
   thorns: number;
   /** 0..1: line weight. */
   weight: number;
-  crescents: boolean;
-  sparkles: boolean;
-  curls: boolean;
-  chains: boolean;
+  ribs: boolean;
+  lattice: boolean;
+  beads: boolean;
+  needles: boolean;
 };
+
+export type LineStyle = "solid" | "inline" | "outline";
+export type BackLayout = "none" | "arms" | "arms-spine" | "full";
+
+/** A rendered piece: white masks (the ink and the inline) placed over `box`. */
+export type ArtPiece = { box: Box; fill: string; inline: string | null };
 
 /** mulberry32: a small seeded generator, so a design is reproducible from its seed. */
 export function rng(seed: number) {
@@ -40,13 +43,11 @@ export function rng(seed: number) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-
 type Rand = ReturnType<typeof rng>;
 const between = (r: Rand, a: number, b: number) => a + (b - a) * r();
-const r1 = (n: number) => Math.round(n * 10) / 10;
 
-/** Catmull-Rom through the control points, sampled evenly per segment. */
-export function spline(ctrl: readonly Pt[], perSeg = 18): Pt[] {
+/** Catmull-Rom through the control points. */
+function spline(ctrl: readonly Pt[], perSeg = 14): Pt[] {
   const out: Pt[] = [];
   const n = ctrl.length;
   for (let i = 0; i < n - 1; i++) {
@@ -68,547 +69,441 @@ export function spline(ctrl: readonly Pt[], perSeg = 18): Pt[] {
   return out;
 }
 
-/** Unit tangent and left normal at each sample. */
+/** Arc-length position (0..1) and length, unit tangent and left normal at each point. */
 function frames(pts: readonly Pt[]) {
-  return pts.map((_, i) => {
-    const a = pts[Math.max(i - 1, 0)]!;
-    const b = pts[Math.min(i + 1, pts.length - 1)]!;
-    const dx = b[0] - a[0];
-    const dy = b[1] - a[1];
-    const len = Math.hypot(dx, dy) || 1;
-    const t: Pt = [dx / len, dy / len];
-    const n: Pt = [-t[1], t[0]];
-    return { t, n };
-  });
-}
-
-function arcLengths(pts: readonly Pt[]) {
   const acc = [0];
   for (let i = 1; i < pts.length; i++) {
     acc.push(acc[i - 1]! + Math.hypot(pts[i]![0] - pts[i - 1]![0], pts[i]![1] - pts[i - 1]![1]));
   }
   const total = acc[acc.length - 1] || 1;
-  return acc.map((v) => v / total);
-}
-
-/**
- * A filled outline around a centre line whose width follows `width(t)`. `bias` pushes the
- * width to one side: 0 centred, 1 all to the left of the direction of travel (a crescent's
- * inner edge stays on the line).
- */
-export function taper(pts: readonly Pt[], width: (t: number) => number, bias = 0): string {
-  const f = frames(pts);
-  const ts = arcLengths(pts);
-  const left: string[] = [];
-  const right: string[] = [];
-  pts.forEach((p, i) => {
-    const w = Math.max(width(ts[i]!), 0);
-    const { n } = f[i]!;
-    const wl = (w * (1 + bias)) / 2;
-    const wr = (w * (1 - bias)) / 2;
-    left.push(`${r1(p[0] + n[0] * wl)} ${r1(p[1] + n[1] * wl)}`);
-    right.push(`${r1(p[0] - n[0] * wr)} ${r1(p[1] - n[1] * wr)}`);
+  return pts.map((_, i) => {
+    const a = pts[Math.max(i - 1, 0)]!;
+    const b = pts[Math.min(i + 1, pts.length - 1)]!;
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+    const t: Pt = [(b[0] - a[0]) / len, (b[1] - a[1]) / len];
+    return { s: acc[i]! / total, len: acc[i]!, t, n: [-t[1], t[0]] as Pt };
   });
-  return `M${left.join("L")}L${right.reverse().join("L")}Z`;
 }
 
-/** Width profiles. */
-const pointed =
-  (w: number, p = 0.6) =>
-  (t: number) =>
-    w * Math.pow(Math.sin(Math.PI * t), p);
-const tail =
-  (w: number, p = 0.9) =>
-  (t: number) =>
-    w * Math.pow(1 - t, p);
+/** Swells just past the base, then thins to a needle. */
+const clawProfile = (w: number) => (t: number) =>
+  w * Math.pow(1 - t, 1.2) * (1 + 0.55 * Math.sin(Math.PI * Math.min(t * 1.7, 1)));
+/** Pointed at both ends. */
+const lensProfile = (w: number) => (t: number) => w * Math.pow(Math.sin(Math.PI * t), 0.75);
 
-/** Concave four-point star, the long axis vertical; `diag` adds four short diagonal rays. */
-export function sparkle(cx: number, cy: number, h: number, w: number, diag = false): string {
-  const k = Math.min(w, h) * 0.13;
-  const star = (x: number, y: number, hh: number, ww: number, kk: number) =>
-    `M${r1(x)} ${r1(y - hh)}Q${r1(x + kk)} ${r1(y - kk)} ${r1(x + ww)} ${r1(y)}` +
-    `Q${r1(x + kk)} ${r1(y + kk)} ${r1(x)} ${r1(y + hh)}Q${r1(x - kk)} ${r1(y + kk)} ${r1(x - ww)} ${r1(y)}` +
-    `Q${r1(x - kk)} ${r1(y - kk)} ${r1(x)} ${r1(y - hh)}Z`;
-  let d = star(cx, cy, h, w, k);
-  if (diag) {
-    const s = Math.min(w, h) * 0.38;
-    const q = s * 0.16;
-    const rays: Pt[] = [
-      [s, s],
-      [-s, s],
-      [s, -s],
-      [-s, -s],
-    ];
-    for (const [dx, dy] of rays) {
-      d += `M${r1(cx + dx)} ${r1(cy + dy)}L${r1(cx + q)} ${r1(cy)}L${r1(cx)} ${r1(cy + q * Math.sign(dy))}Z`;
-      d += `M${r1(cx + dx)} ${r1(cy + dy)}L${r1(cx)} ${r1(cy - q)}L${r1(cx - q)} ${r1(cy)}Z`;
-    }
-  }
-  return d;
+function curve(ctrl: readonly Pt[], profile: (t: number) => number, per = 14): Stroke {
+  const pts = spline(ctrl, per);
+  return { pts, r: frames(pts).map((x) => profile(x.s)) };
 }
 
-function dot(cx: number, cy: number, r: number): string {
-  return `M${r1(cx - r)} ${r1(cy)}a${r1(r)} ${r1(r)} 0 1 0 ${r1(2 * r)} 0a${r1(r)} ${r1(r)} 0 1 0 ${r1(-2 * r)} 0Z`;
-}
-
-/** A ring with spikes radiating from it, long and short in turn. */
-export function sun(cx: number, cy: number, r: number, rays: number, base: number): string {
-  const ri = r * 0.62;
-  let d = dot(cx, cy, r);
-  // The hole, wound the other way so it stays open under the nonzero rule.
-  d += `M${r1(cx - ri)} ${r1(cy)}a${r1(ri)} ${r1(ri)} 0 1 1 ${r1(2 * ri)} 0a${r1(ri)} ${r1(ri)} 0 1 1 ${r1(-2 * ri)} 0Z`;
-  d += dot(cx, cy, r * 0.28);
-  for (let i = 0; i < rays; i++) {
-    const a = (i / rays) * Math.PI * 2 - Math.PI / 2;
-    const len = r * (i % 2 ? 0.9 : 1.9);
-    const ca = Math.cos(a);
-    const sa = Math.sin(a);
-    const bx = cx + ca * r * 0.95;
-    const by = cy + sa * r * 0.95;
-    d += `M${r1(bx - sa * base)} ${r1(by + ca * base)}L${r1(cx + ca * (r + len))} ${r1(cy + sa * (r + len))}L${r1(bx + sa * base)} ${r1(by - ca * base)}Z`;
-  }
-  return d;
-}
-
-/** A straight line of beads hanging from `p`, the beads alternating in size. */
-function drop(p: Pt, length: number, bead: number, out: SigilPath[]) {
-  const n = Math.max(3, Math.round(length / (bead * 3.6)));
-  for (let i = 1; i <= n; i++) {
-    out.push({
-      d: dot(p[0], p[1] + (length * i) / n, i % 2 ? bead : bead * 1.45),
-      role: "ornament",
-    });
-  }
-}
-
-/** A curved spike growing from `p` in direction `dir` (unit), bending by `bend` radians. */
-function spike(p: Pt, dir: Pt, len: number, base: number, bend: number): string {
-  const pts: Pt[] = [];
+/** A claw: from `p` at `angle`, curling by `bend` radians, most of it near the tip. */
+function claw(p: Pt, angle: number, len: number, w: number, bend: number): Stroke {
+  const pts: Pt[] = [p];
   let [x, y] = p;
-  let a = Math.atan2(dir[1], dir[0]);
-  const steps = 9;
-  pts.push([x, y]);
+  let a = angle;
+  const steps = 16;
   for (let i = 1; i <= steps; i++) {
-    a += bend / steps;
+    a += (bend * 2 * i) / (steps * (steps + 1));
     x += (Math.cos(a) * len) / steps;
     y += (Math.sin(a) * len) / steps;
     pts.push([x, y]);
   }
-  return taper(pts, tail(base, 1.1));
+  const prof = clawProfile(w);
+  return { pts, r: pts.map((_, i) => prof(i / steps)) };
 }
 
-/** A spiral tendril that leaves `p` heading along `dir` and winds in on itself. */
-function curl(p: Pt, dir: Pt, size: number, turn: 1 | -1, base: number): string {
-  const pts: Pt[] = [];
-  let a = Math.atan2(dir[1], dir[0]);
-  let [x, y] = p;
-  const steps = 34;
-  let step = (size * 2.4) / steps;
-  pts.push([x, y]);
-  for (let i = 0; i < steps; i++) {
-    a += (turn * (Math.PI * 1.9)) / steps + turn * i * 0.012;
-    step *= 0.955;
-    x += Math.cos(a) * step;
-    y += Math.sin(a) * step;
-    pts.push([x, y]);
-  }
-  return taper(pts, tail(base, 0.8));
-}
+type Sink = { strokes: Stroke[]; holes: Hole[] };
 
-/** A crescent blade: an arc whose width swells in the middle and ends in two points. */
-function crescent(c: Pt, r: number, a0: number, sweep: number, thick: number): string {
-  const pts: Pt[] = [];
-  const steps = 40;
-  for (let i = 0; i <= steps; i++) {
-    const a = a0 + (sweep * i) / steps;
-    pts.push([c[0] + Math.cos(a) * r, c[1] + Math.sin(a) * r]);
+/**
+ * Barbs along a centre line, leaning toward the direction of travel by `sweep` and hooking
+ * further that way: even rhythm, a major and a minor barb in turn, the sides alternating
+ * (or one `side`), the length on an envelope, so the line reads as grown, not scattered.
+ */
+function barbs(
+  r: Rand,
+  pts: readonly Pt[],
+  opts: {
+    count: number;
+    len: number;
+    w: number;
+    sweep: number;
+    hook: number;
+    side?: 1 | -1;
+    from?: number;
+    to?: number;
+  },
+  out: Sink,
+) {
+  const f = frames(pts);
+  const from = opts.from ?? 0.06;
+  const to = opts.to ?? 0.94;
+  let side: 1 | -1 = opts.side ?? (r() < 0.5 ? 1 : -1);
+  for (let k = 0; k < opts.count; k++) {
+    const target = from + ((to - from) * (k + 0.5)) / opts.count;
+    const i = f.findIndex((x) => x.s >= target);
+    if (i < 0) continue;
+    const { t, n, s } = f[i]!;
+    const env = 0.4 + 0.6 * Math.sin(Math.PI * Math.min(1, Math.max(0, (s - from) / (to - from))));
+    const minor = k % 2 === 1;
+    const lean = opts.sweep * between(r, 0.85, 1.15);
+    const dir: Pt = [
+      n[0] * side * Math.cos(lean) + t[0] * Math.sin(lean),
+      n[1] * side * Math.cos(lean) + t[1] * Math.sin(lean),
+    ];
+    const len = opts.len * env * (minor ? 0.55 : 1) * between(r, 0.85, 1.12);
+    out.strokes.push(
+      claw(
+        pts[i]!,
+        Math.atan2(dir[1], dir[0]),
+        len,
+        opts.w * (minor ? 0.75 : 1),
+        -side * opts.hook,
+      ),
+    );
+    if (!opts.side) side = side === 1 ? -1 : 1;
   }
-  // Travelling clockwise in screen space the left normal points outward.
-  return taper(pts, pointed(thick, 0.85), sweep > 0 ? -1 : 1);
 }
 
 /**
- * A thorned vine along `pts`: the stem, thorns on alternating sides that sweep back along
- * the growth, now and then a curl, a sparkle at a node or a beaded chain hanging off it.
+ * A braided arm: two strands weaving around the centre line, crossing every half wavelength
+ * and leaving open cells between, with a holed bead where they cross.
  */
-function vine(
-  r: Rand,
-  o: SigilOptions,
+function braid(
   pts: readonly Pt[],
-  stem: (t: number) => number,
-  scale: number,
-  out: SigilPath[],
+  amp: (s: number) => number,
+  wave: number,
+  w: (s: number) => number,
+  beads: boolean,
+  out: Sink,
 ) {
-  out.push({ d: taper(pts, stem), role: "vine" });
   const f = frames(pts);
-  const ts = arcLengths(pts);
-  const count = Math.round(6 + o.density * 16);
-  let side = r() < 0.5 ? 1 : -1;
-  for (let k = 0; k < count; k++) {
-    const target = (k + 0.5 + between(r, -0.3, 0.3)) / count;
-    const i = Math.max(
-      1,
-      ts.findIndex((t) => t >= target),
-    );
-    const p = pts[i]!;
-    const { t, n } = f[i]!;
-    const env = 0.45 + 0.55 * Math.sin(Math.PI * ts[i]!);
-    const w = stem(ts[i]!);
-    if (r() < 0.78) side = -side;
-    const back = between(r, 0.35, 0.95);
-    const dir: Pt = [
-      n[0] * side * Math.cos(back) - t[0] * Math.sin(back) * -1,
-      n[1] * side * Math.cos(back) - t[1] * Math.sin(back) * -1,
-    ];
-    const len = scale * (0.25 + o.thorns * 0.75) * between(r, 0.6, 1.25) * env;
-    const roll = r();
-    if (o.curls && roll < 0.12 + o.density * 0.12) {
-      out.push({ d: curl(p, dir, len * 0.75, side > 0 ? -1 : 1, w * 0.8), role: "vine" });
-    } else {
-      out.push({
-        d: spike(p, dir, len, Math.max(w * 0.9, 2.2), side * between(r, 0.15, 0.6)),
-        role: "vine",
-      });
-      if (roll > 0.86) {
-        // A forked thorn: a second, shorter spike from the same node.
-        const d2: Pt = [dir[0] * 0.8 + t[0] * 0.6, dir[1] * 0.8 + t[1] * 0.6];
-        const l2 = Math.hypot(d2[0], d2[1]);
-        out.push({
-          d: spike(p, [d2[0] / l2, d2[1] / l2], len * 0.6, Math.max(w * 0.6, 1.8), -side * 0.4),
-          role: "vine",
-        });
-      }
-    }
-    if (o.sparkles && r() < 0.1 + o.density * 0.1) {
-      const sp = scale * between(r, 0.18, 0.32);
-      const off = len * 0.9;
-      out.push({
-        d: sparkle(p[0] + dir[0] * off, p[1] + dir[1] * off, sp, sp * 0.42, r() < 0.4),
-        role: "ornament",
-      });
-    }
-  }
-  if (o.chains && r() < 0.5 + o.density * 0.5) {
-    // A beaded chain slung from one node of the vine to another.
-    const a = Math.floor(between(r, 0.15, 0.45) * (pts.length - 1));
-    const b = Math.floor(between(r, 0.55, 0.85) * (pts.length - 1));
-    const pa = pts[a]!;
-    const pb = pts[b]!;
-    const sag = scale * between(r, 0.5, 1.1) * (r() < 0.5 ? 1 : -1);
-    const mid: Pt = [
-      (pa[0] + pb[0]) / 2 + f[a]!.n[0] * sag,
-      (pa[1] + pb[1]) / 2 + f[a]!.n[1] * sag,
-    ];
-    const chain = spline([pa, mid, pb], 40);
-    const ct = arcLengths(chain);
-    const bead = Math.max(1.6, scale * 0.045);
-    let next = 0;
-    let big = false;
-    chain.forEach((p, i) => {
-      if (ct[i]! >= next) {
-        out.push({ d: dot(p[0], p[1], big ? bead * 1.5 : bead), role: "ornament" });
-        big = !big;
-        next += 0.045;
-      }
+  for (const phase of [0, Math.PI]) {
+    const strand: Pt[] = [];
+    f.forEach((x, i) => {
+      const o = amp(x.s) * Math.sin((x.len / wave) * Math.PI * 2 + phase);
+      strand.push([pts[i]![0] + x.n[0] * o, pts[i]![1] + x.n[1] * o]);
+    });
+    out.strokes.push({
+      pts: strand,
+      r: f.map((x) => w(x.s) * (0.55 + 0.75 * Math.abs(Math.cos((x.len / wave) * Math.PI * 2)))),
     });
   }
+  if (!beads) return;
+  const total = f[f.length - 1]!.len;
+  for (let at = wave / 2; at < total - wave * 0.4; at += wave / 2) {
+    const i = f.findIndex((x) => x.len >= at);
+    if (i < 0) break;
+    const { t, s } = f[i]!;
+    const p = pts[i]!;
+    const half = wave * 0.2;
+    const bw = w(s) * 1.9;
+    if (bw < 1.2) continue;
+    out.strokes.push(
+      curve(
+        [[p[0] - t[0] * half, p[1] - t[1] * half], p, [p[0] + t[0] * half, p[1] + t[1] * half]],
+        lensProfile(bw),
+        6,
+      ),
+    );
+    out.holes.push({ c: p, rx: half * 0.42, ry: bw * 0.32, angle: Math.atan2(t[1], t[0]) });
+  }
 }
 
-/**
- * The symmetric spine: a shaft with stations along it (concave lozenges, lenses, upturned
- * barbs, crossbars, hooked crescents), pointed at both ends, a sparkle on top.
- */
-export function spine(
+/** A run of vertebrae down a vertical line: holed beads, claws curling out and down, a hook
+ * curling up every other one, shrinking toward the end. `half` draws the left side only
+ * (the mirror makes the pairs). */
+function vertebrae(
   r: Rand,
   o: SigilOptions,
   x: number,
   y0: number,
   y1: number,
-  s: number,
-): SigilPath[] {
-  const out: SigilPath[] = [];
-  const top = y0 - s * 0.9;
-  const bottom = y1 + s * 1.3;
-  out.push({
-    d: taper(
-      spline([
-        [x, top],
-        [x, (top + bottom) / 2],
-        [x, bottom],
-      ]),
-      pointed(s * (0.1 + o.weight * 0.1), 0.35),
+  size: number,
+  out: Sink,
+  half: boolean,
+) {
+  const n = Math.round(6 + o.density * 8);
+  const reach = 0.5 + o.thorns * 0.9;
+  const step0 = ((y1 - y0) / n) * 1.25;
+  out.strokes.push(
+    curve(
+      [
+        [x, y0 - size * 1.4],
+        [x, (y0 + y1) / 2],
+        [x, y1 + size * 2],
+      ],
+      (t) => size * 0.34 * Math.pow(Math.sin(Math.PI * Math.min(1, t * 1.1)), 0.4) + 0.3,
+      10,
     ),
-    role: "ornament",
-  });
-  const stations = Math.round(3 + o.density * 3);
-  for (let k = 0; k < stations; k++) {
-    const y = y0 + ((y1 - y0) * (k + between(r, 0.2, 0.8))) / stations;
-    const pick = Math.floor(r() * 7);
-    const size = s * between(r, 0.5, 1);
-    if (pick === 0) {
-      out.push({ d: sparkle(x, y, size * 0.8, size * 0.42), role: "ornament" });
-    } else if (pick === 1) {
-      const lens: Pt[] = [
-        [x, y - size * 0.7],
-        [x, y + size * 0.7],
-      ];
-      out.push({ d: taper(spline(lens, 20), pointed(size * 0.45, 0.9)), role: "ornament" });
-    } else if (pick === 2) {
-      for (const side of [1, -1]) {
-        out.push({
-          d: spike(
-            [x, y],
-            [side * 0.94, -0.34],
-            size * between(r, 0.9, 1.4),
-            s * 0.12,
-            -side * 0.9,
-          ),
-          role: "ornament",
-        });
-      }
-    } else if (pick === 3) {
-      out.push({
-        d: taper(
+  );
+  let y = y0;
+  for (let i = 0; i < n && y < y1; i++) {
+    const k = 1 - (0.5 * i) / n;
+    const sc = size * k;
+    const step = step0 * k;
+    if (o.beads) {
+      out.strokes.push(
+        curve(
           [
-            [x - size * 1.1, y],
+            [x, y - step * 0.36],
             [x, y],
-            [x + size * 1.1, y],
+            [x, y + step * 0.36],
           ],
-          pointed(s * 0.12, 0.5),
+          lensProfile(sc * 0.95),
+          6,
         ),
-        role: "ornament",
-      });
-      out.push({ d: sparkle(x, y, size * 0.35, size * 0.35), role: "ornament" });
-    } else if (pick === 5) {
-      // A sword cross: a long crossbar pointed at both ends, a sparkle at each tip.
-      const reach = size * between(r, 1.6, 2.4);
-      out.push({
-        d: taper(
-          [
-            [x - reach, y],
-            [x, y],
-            [x + reach, y],
-          ],
-          pointed(s * 0.16, 0.3),
+      );
+      out.holes.push({ c: [x, y], rx: sc * 0.28, ry: step * 0.15, angle: 0 });
+    }
+    for (const sd of half ? [-1] : [-1, 1]) {
+      const tilt = between(r, 0.15, 0.45);
+      const ang = sd < 0 ? Math.PI - tilt : tilt;
+      out.strokes.push(
+        claw(
+          [x + sd * sc * 0.3, y],
+          ang,
+          sc * reach * between(r, 2.4, 3.6),
+          sc * 0.42,
+          sd < 0 ? -0.9 : 0.9,
         ),
-        role: "ornament",
-      });
-      if (o.sparkles) {
-        for (const side of [1, -1]) {
-          out.push({ d: sparkle(x + side * reach, y, size * 0.32, size * 0.16), role: "ornament" });
-        }
-      }
-    } else if (pick === 6) {
-      out.push({ d: sun(x, y, size * 0.32, 14, s * 0.06), role: "ornament" });
-    } else {
-      for (const side of [1, -1]) {
-        out.push({
-          d: crescent(
-            [x + side * size * 0.15, y],
-            size * 0.55,
-            side > 0 ? -Math.PI * 0.55 : Math.PI * 1.55,
-            side > 0 ? Math.PI * 1.1 : -Math.PI * 1.1,
-            s * 0.14,
+      );
+      if (i % 2 === 0) {
+        out.strokes.push(
+          claw(
+            [x + sd * sc * 0.2, y - step * 0.2],
+            sd < 0 ? Math.PI + 0.5 : -0.5,
+            sc * reach * 1.3,
+            sc * 0.3,
+            sd < 0 ? 1.1 : -1.1,
           ),
-          role: "ornament",
-        });
+        );
       }
     }
+    y += step;
   }
-  if (o.sparkles)
-    out.push({ d: sparkle(x, top - s * 0.2, s * 0.9, s * 0.36, true), role: "ornament" });
-  return out;
+  if (o.needles) needle(x, y1 + size * 2.4, size, out, half);
 }
 
-/** The sleeve piece, in the sleeve's frame: `length` down the sleeve, `width` across it. */
-export function sleeveSigil(
+/** A needle point with a crossbar. */
+function needle(x: number, y: number, size: number, out: Sink, half: boolean) {
+  out.strokes.push(
+    curve(
+      [
+        [x, y - size * 1.6],
+        [x, y + size * 1.4],
+        [x, y + size * 4.5],
+      ],
+      lensProfile(size * 0.42),
+      10,
+    ),
+  );
+  const bar = size * 1.7;
+  out.strokes.push(
+    curve(
+      half
+        ? [
+            [x - bar, y],
+            [x - bar * 0.5, y],
+            [x, y],
+          ]
+        : [
+            [x - bar, y],
+            [x, y],
+            [x + bar, y],
+          ],
+      (t) => size * 0.26 * Math.pow(Math.sin(Math.PI * (half ? t / 2 : t)), 0.55) + 0.2,
+      8,
+    ),
+  );
+}
+
+/** Draws the strokes and holes into a field and returns the masks as data URLs. */
+function render(box: Box, ppu: number, sink: Sink, line: LineStyle, mirror = false): ArtPiece {
+  const field = new Field(box, ppu);
+  for (const s of sink.strokes) field.stroke(s, 3.2);
+  for (const h of sink.holes) field.hole(h, 1.2);
+  const m = field.masks({ outline: line === "outline", inline: line === "inline", mirror });
+  return {
+    box: mirror ? { ...box, w: box.w * 2 } : box,
+    fill: toDataUrl(m.fill, m.width, m.height),
+    inline: m.inline ? toDataUrl(m.inline, m.width, m.height) : null,
+  };
+}
+
+/** The sleeve piece, in the sleeve's frame: x across it, y down it from the armhole seam. */
+export function sleevePiece(
   o: SigilOptions,
+  line: LineStyle,
   length: number,
   width: number,
   from: number,
   to: number,
-): SigilPath[] {
+  ppu = 1,
+): ArtPiece {
   const r = rng(o.seed * 7919 + 17);
-  const out: SigilPath[] = [];
+  const sink: Sink = { strokes: [], holes: [] };
+  const wk = 0.7 + o.weight * 0.8;
   const y0 = from * length;
   const y1 = to * length;
-  const stemW = 3 + o.weight * 6;
-  const sway = width * 0.3;
-  const ctrl: Pt[] = [[0, y0 - 8]];
-  const nodes = 5;
-  let dir = r() < 0.5 ? 1 : -1;
-  for (let i = 1; i <= nodes; i++) {
-    dir = -dir;
-    ctrl.push([
-      dir * sway * between(r, 0.4, 1),
-      y0 + ((y1 - y0) * i) / nodes - (i === nodes ? 0 : between(r, -12, 12)),
-    ]);
+  const sway = width * between(r, 0.08, 0.16);
+  const flip = r() < 0.5 ? 1 : -1;
+  const pts = spline([
+    [0, y0 - 14],
+    [flip * sway, y0 + (y1 - y0) * 0.3],
+    [-flip * sway * 0.7, y0 + (y1 - y0) * 0.62],
+    [flip * sway * 0.3, y1 - 8],
+  ]);
+  const w = (s: number) => wk * 2.6 * (s < 0.85 ? 1 : Math.max(0, 1 - (s - 0.85) / 0.2)) + 0.3;
+  if (o.lattice) {
+    braid(
+      pts,
+      (s) => width * 0.07 * (0.7 + 0.3 * Math.sin(Math.PI * s)),
+      width * 0.42,
+      w,
+      o.beads,
+      sink,
+    );
+  } else {
+    sink.strokes.push({ pts, r: frames(pts).map((x) => w(x.s) * 1.4) });
   }
-  const pts = spline(ctrl);
-  // Full width at the seam so it meets the back piece, a point at the cuff end.
-  vine(
+  barbs(
     r,
-    o,
     pts,
-    (t) => stemW * (t < 0.08 ? 0.85 + t * 1.8 : Math.pow(1 - (t - 0.08) / 0.92, 0.7)),
-    width * 0.55,
-    out,
+    {
+      count: Math.round(8 + o.density * 12),
+      len: width * (0.18 + o.thorns * 0.32),
+      w: wk * 2.3,
+      sweep: 0.75,
+      hook: 0.9,
+      from: 0.04,
+      to: 0.8,
+    },
+    sink,
   );
-
-  if (o.density > 0.35) {
-    // A thinner second stem twisting around the first.
-    const ctrl2: Pt[] = ctrl.map(([x, y], i) => [-x * 0.8 + (i % 2 ? 6 : -6), y + 14]);
-    const pts2 = spline(ctrl2.slice(1));
-    vine(
-      r,
-      { ...o, density: o.density * 0.5, chains: false },
-      pts2,
-      pointed(stemW * 0.55, 0.5),
-      width * 0.3,
-      out,
-    );
-  }
-  if (o.crescents) {
-    const at = pts[Math.floor(pts.length * between(r, 0.3, 0.55))]!;
-    const side = at[0] > 0 ? -1 : 1;
-    const rad = width * between(r, 0.4, 0.52);
-    out.push({
-      d: crescent(
-        [at[0] + side * rad * 0.35, at[1]],
-        rad,
-        side > 0 ? Math.PI * 0.6 : Math.PI * 0.4,
-        side > 0 ? Math.PI * 1.25 : -Math.PI * 1.25,
-        stemW * 1.6,
-      ),
-      role: "vine",
-    });
-  }
-  // A short spine on the forearm, crossing the vine.
-  const sy0 = y0 + (y1 - y0) * 0.58;
-  out.push(
-    ...spine(
-      r,
-      o,
-      between(r, -width * 0.12, width * 0.12),
-      sy0,
-      sy0 + (y1 - y0) * 0.22,
-      width * 0.2,
-    ),
-  );
-  if (o.chains) {
-    // A bead chain hanging straight down from a node, as in the outlined pieces.
-    const at = pts[Math.floor(pts.length * between(r, 0.25, 0.5))]!;
-    drop(
-      [at[0] + (at[0] > 0 ? -width * 0.08 : width * 0.08), at[1]],
-      (y1 - y0) * between(r, 0.14, 0.22),
-      Math.max(1.6, width * 0.018),
-      out,
-    );
-  }
-  if (o.sparkles) {
-    for (let i = 0; i < 2 + Math.round(o.density * 3); i++) {
-      const h = width * between(r, 0.08, 0.16);
-      out.push({
-        d: sparkle(
-          between(r, -width * 0.36, width * 0.36),
-          between(r, y0 + 30, y1 - 20),
-          h,
-          h * 0.4,
-          r() < 0.3,
-        ),
-        role: "ornament",
-      });
+  if (o.ribs) {
+    // Long claws sweeping down the sleeve beside the line, like the ribs of a wing.
+    for (const sd of [1, -1] as const) {
+      const at = pts[Math.floor(pts.length * between(r, 0.12, 0.22))]!;
+      sink.strokes.push(
+        claw(at, Math.PI / 2 - sd * 0.55, (y1 - y0) * between(r, 0.38, 0.5), wk * 3.2, sd * 0.85),
+      );
     }
   }
-  return out;
+  // A short run of vertebrae on the forearm.
+  const vy = y0 + (y1 - y0) * 0.6;
+  const vp = pts.find((p) => p[1] >= vy) ?? pts[pts.length - 1]!;
+  vertebrae(
+    r,
+    { ...o, density: o.density * 0.45, needles: false },
+    vp[0],
+    vy,
+    vy + (y1 - y0) * 0.18,
+    width * 0.075 * wk,
+    sink,
+    false,
+  );
+  if (o.needles) needle(pts[pts.length - 1]![0], y1 - 30, width * 0.07 * wk, sink, false);
+  return render(
+    { x: -width / 2 - 14, y: -16, w: width + 28, h: length + 24 },
+    2.5 * ppu,
+    sink,
+    line,
+  );
 }
 
 /**
- * The back piece, left half: a thorned garland from the left sleeve's seam (`anchor`) that
- * dips below the hood to the centre line (`cx`, `low`), and, with `withSpine`, a spine hanging
- * from the centre. The renderer draws the half twice, the second mirrored about `cx`; the
- * spine is already symmetric and returned separately.
+ * The back piece, left half (mirrored about `cx`): arms from the centre to each sleeve's
+ * seam (`anchor`) with barbs hanging from them, then optionally the spine down the centre
+ * and claw ribs fanning out from it like wings. `top` is just under the hood.
  */
-export function backSigil(
+export function backPiece(
   o: SigilOptions,
+  line: LineStyle,
+  layout: Exclude<BackLayout, "none">,
   anchor: Pt,
   cx: number,
-  low: number,
-  withGarland: boolean,
-  spineLength: number,
-  /** Leave the centre free for the pixel dino. */
-  centreFree = false,
-): { half: SigilPath[]; centre: SigilPath[] } {
+  top: number,
+  bottom: number,
+  /** Clear a space at the centre for the pixel dino. */
+  clearHub = false,
+  ppu = 1,
+): ArtPiece {
   const r = rng(o.seed * 104729 + 3);
-  const half: SigilPath[] = [];
-  const centre: SigilPath[] = [];
-  const stemW = 3 + o.weight * 6;
-  if (withGarland) {
-    const [ax, ay] = anchor;
-    const span = cx - ax;
-    const ctrl: Pt[] = [
-      [ax, ay],
-      [ax + span * 0.25, ay + (low - ay) * between(r, 0.42, 0.55)],
-      [ax + span * 0.58, low - between(r, 4, 22)],
-      [cx - span * 0.16, low + between(r, -6, 4)],
-      [cx, low],
-    ];
-    const pts = spline(ctrl);
-    vine(
-      r,
-      { ...o, chains: false },
-      pts,
-      (t) => stemW * (0.85 + 0.25 * Math.sin(Math.PI * t)),
-      span * 0.22,
-      half,
-    );
-    if (o.chains) {
-      // The beaded swag under the garland, like a chain across the shoulders.
-      const chain = spline(
-        [
-          [ax + span * 0.12, ay + 30],
-          [ax + span * 0.55, low + 44],
-          [cx, low + 58],
-        ],
-        30,
+  const sink: Sink = { strokes: [], holes: [] };
+  const wk = 0.7 + o.weight * 0.8;
+  const [ax, ay] = anchor;
+  const span = cx - ax;
+  const hubY = top + 40;
+  const arm = spline([
+    [ax - 6, ay - 4],
+    [ax + span * 0.22, ay + between(r, 34, 50)],
+    [ax + span * 0.55, top + between(r, 4, 22)],
+    [cx - span * 0.14, hubY - 4],
+    [cx + 2, hubY],
+  ]);
+  const w = (s: number) => wk * 2.6 * (0.9 + 0.3 * s) + 0.3;
+  if (o.lattice) {
+    braid(arm, (s) => 9 * (0.75 + 0.25 * Math.sin(Math.PI * s)), 56, w, o.beads, sink);
+  } else {
+    sink.strokes.push({ pts: arm, r: frames(arm).map((x) => w(x.s) * 1.5) });
+  }
+  // Barbs hang from the arm and lean out toward the sleeve.
+  barbs(
+    r,
+    arm,
+    {
+      count: Math.round(6 + o.density * 8),
+      len: 34 + o.thorns * 80,
+      w: wk * 2.6,
+      sweep: -0.45,
+      hook: -0.7,
+      side: 1,
+      from: 0.1,
+      to: 0.92,
+    },
+    sink,
+  );
+  if (layout !== "arms") vertebrae(r, o, cx, hubY + 30, bottom - 80, 12 * wk, sink, true);
+  if (layout === "full" && o.ribs) {
+    // Wing fingers: long claws hanging from the arm, fanning from out-and-down at the
+    // shoulder to straight down near the spine, longest in the middle, hooking in at the tip,
+    // each with a few small barbs on its inner edge.
+    const af = frames(arm);
+    const count = 4 + Math.round(o.density * 2);
+    for (let i = 0; i < count; i++) {
+      const s = 0.14 + (0.6 * i) / (count - 1);
+      const j = af.findIndex((x) => x.s >= s);
+      const p = arm[j]!;
+      const fan = 0.85 - (1.05 * i) / (count - 1);
+      const len =
+        (150 + o.thorns * 170) *
+        (0.55 + 0.45 * Math.sin(Math.PI * (0.25 + (0.6 * i) / count))) *
+        between(r, 0.9, 1.08);
+      const rib = claw(p, Math.PI / 2 + fan, len, wk * (5 - i * 0.4), -0.65 - i * 0.05);
+      sink.strokes.push(rib);
+      barbs(
+        r,
+        rib.pts,
+        {
+          count: 2 + Math.round(o.density * 2),
+          len: 16 + o.thorns * 22,
+          w: wk * 1.5,
+          sweep: 0.9,
+          hook: 0.6,
+          side: 1,
+          from: 0.25,
+          to: 0.75,
+        },
+        sink,
       );
-      const ct = arcLengths(chain);
-      let next = 0;
-      let big = false;
-      chain.forEach((p, i) => {
-        if (ct[i]! >= next) {
-          half.push({ d: dot(p[0], p[1], big ? 3.6 : 2.2), role: "ornament" });
-          big = !big;
-          next += 0.032;
-        }
-      });
-    }
-    if (o.crescents) {
-      const at = pts[Math.floor(pts.length * 0.62)]!;
-      half.push({
-        d: crescent(
-          [at[0] + 6, at[1] + 34],
-          span * 0.2,
-          Math.PI * 0.95,
-          Math.PI * 1.15,
-          stemW * 1.8,
-        ),
-        role: "vine",
-      });
-    }
-    if (o.sparkles) {
-      const at = pts[Math.floor(pts.length * between(r, 0.25, 0.45))]!;
-      const h = span * 0.09;
-      half.push({
-        d: sparkle(at[0] + between(r, -10, 10), at[1] - h * 1.4, h, h * 0.4, true),
-        role: "ornament",
-      });
     }
   }
-  if (spineLength > 0) {
-    centre.push(...spine(r, o, cx, low + (centreFree ? 60 : 28), low + spineLength, 30));
-  }
-  if (withGarland && o.sparkles && !centreFree)
-    centre.push({ d: sparkle(cx, low, 34, 16, true), role: "ornament" });
-  return { half, centre };
+  if (clearHub) sink.holes.push({ c: [cx, hubY + 4], rx: 24, ry: 26, angle: 0 });
+  return render(
+    { x: ax - 40, y: ay - 30, w: cx - ax + 40, h: bottom - ay + 40 },
+    2 * ppu,
+    sink,
+    line,
+    true,
+  );
 }

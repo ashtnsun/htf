@@ -3,7 +3,7 @@
 import { useId, type ReactNode, type Ref } from "react";
 import { DINO_PIXELS } from "@/components/brand/dino-pixels";
 import { LOGO_GLYPHS, LOGO_WIDTH } from "@/components/brand/logo-paths";
-import { INKS, SLEEVE_SPANS, ZIPPERS, fabric, mix, type Design } from "./design";
+import { INKS, ZIPPERS, fabric, mix, type Design } from "./design";
 import {
   ARMHOLE,
   BODY_BACK,
@@ -16,7 +16,7 @@ import {
   CORD_TIP,
   CUFF,
   CUFF_TAG,
-  GARLAND,
+  BACK_ART,
   HEM,
   HEM_TAB,
   HOOD_BACK,
@@ -32,7 +32,7 @@ import {
   VIEW_H,
   VIEW_W,
 } from "./garment";
-import { backSigil, sleeveSigil, type SigilOptions, type SigilPath } from "./sigil";
+import type { ArtPiece } from "./sigil";
 
 export type MockupView = "front" | "back";
 
@@ -43,37 +43,8 @@ const DINO_D = DINO_PIXELS.flatMap((row, y) =>
 const DINO_W = DINO_PIXELS[0]!.length;
 const DINO_H = DINO_PIXELS.length;
 
-/** The sigil pieces for a design: the left sleeve, the right one, and the back piece. */
-export function sigilFor(design: Design) {
-  const o: SigilOptions = {
-    seed: design.seed,
-    density: design.density,
-    thorns: design.thorns,
-    weight: design.weight,
-    crescents: design.crescents,
-    sparkles: design.sparkles,
-    curls: design.curls,
-    chains: design.chains,
-  };
-  const span = SLEEVE_SPANS[design.span];
-  const sleeve = (seed: number) =>
-    sleeveSigil({ ...o, seed }, SLEEVE_FRAME.length, SLEEVE_FRAME.width, span.from, span.to);
-  const left = sleeve(design.seed);
-  const right = design.mirror ? left : sleeve(design.seed + 1);
-  const back =
-    design.back === "none"
-      ? { half: [], centre: [] }
-      : backSigil(
-          o,
-          GARLAND.anchor,
-          CENTRE_X,
-          GARLAND.low,
-          true,
-          design.back === "garland-spine" ? GARLAND.spine : 0,
-          design.marks.pendant,
-        );
-  return { left, right, back };
-}
+/** The art for a mockup: each sleeve (in the sleeve's frame) and the back (garment frame). */
+export type MockupArt = { left: ArtPiece | null; right: ArtPiece | null; back: ArtPiece | null };
 
 /**
  * A photographic mockup of the zip-up, front or back, as one SVG: the garment pieces in
@@ -84,12 +55,14 @@ export function sigilFor(design: Design) {
  */
 export function HoodieMockup({
   design,
+  art,
   view,
   closeUp = false,
   ref,
   className,
 }: {
   design: Design;
+  art: MockupArt;
   view: MockupView;
   closeUp?: boolean;
   ref?: Ref<SVGSVGElement>;
@@ -99,35 +72,44 @@ export function HoodieMockup({
   const id = (n: string) => `${uid}-${n}`;
   const url = (n: string) => `url(#${id(n)})`;
   const fab = fabric(design.wash);
-  const sigil = sigilFor(design);
   const front = view === "front";
   const metal = ZIPPERS[design.zipper].hex;
   const markFill = design.markInk === "tonal" ? fab.tonal : INKS[design.accent].hex;
   const light = design.backdrop === "light";
 
-  const inkFor = (p: SigilPath) => INKS[p.role === "vine" ? design.primary : design.accent].hex;
-  const print = (paths: SigilPath[]) =>
-    paths.map((p, i) =>
-      design.line === "outline" ? (
-        <path
-          key={i}
-          d={p.d}
-          fill="none"
-          stroke={inkFor(p)}
-          strokeWidth={1.4}
-          strokeLinejoin="round"
+  /** A piece: its masks tinted with the two inks, then printed (warped, worn, finished). */
+  const print = (p: ArtPiece | null) =>
+    p ? (
+      <g filter={url("print")}>
+        <image
+          href={p.fill}
+          x={p.box.x}
+          y={p.box.y}
+          width={p.box.w}
+          height={p.box.h}
+          preserveAspectRatio="none"
+          filter={url("tint-primary")}
         />
-      ) : (
-        <path key={i} d={p.d} fill={inkFor(p)} />
-      ),
-    );
+        {p.inline ? (
+          <image
+            href={p.inline}
+            x={p.box.x}
+            y={p.box.y}
+            width={p.box.w}
+            height={p.box.h}
+            preserveAspectRatio="none"
+            filter={url("tint-accent")}
+          />
+        ) : null}
+      </g>
+    ) : null;
 
   // Wearer's left is the viewer's left from the back and the viewer's right from the front.
   const wearerLeft = front ? MIRROR : undefined;
-  const sleevePrint = (paths: SigilPath[]) => (
+  const sleevePrint = (p: ArtPiece | null) => (
     <g clipPath={url("sleeve")}>
       <g transform={`translate(${SLEEVE_FRAME.x} ${SLEEVE_FRAME.y}) rotate(${SLEEVE_FRAME.angle})`}>
-        <g filter={url("print")}>{print(paths)}</g>
+        {print(p)}
       </g>
     </g>
   );
@@ -269,6 +251,12 @@ export function HoodieMockup({
         {(["xs", "s", "m", "l"] as const).map((k, i) => (
           <filter key={k} id={id(`blur-${k}`)} {...region}>
             <feGaussianBlur stdDeviation={[1.2, 5, 12, 24][i]} />
+          </filter>
+        ))}
+        {(["primary", "accent"] as const).map((k) => (
+          <filter key={k} id={id(`tint-${k}`)} colorInterpolationFilters="sRGB">
+            <feFlood floodColor={INKS[design[k]].hex} />
+            <feComposite in2="SourceGraphic" operator="in" />
           </filter>
         ))}
         <filter id={id("mottle")} {...region}>
@@ -477,17 +465,13 @@ export function HoodieMockup({
 
       {/* Body, its print (the back piece), folds and edge shading. */}
       <path d={front ? BODY_FRONT : BODY_BACK} fill={fab.base} />
-      {!front && (sigil.back.half.length || sigil.back.centre.length) ? (
+      {!front && art.back ? (
         <g clipPath={url("body")}>
-          <g filter={url("print")}>
-            {print(sigil.back.half)}
-            <g transform={MIRROR}>{print(sigil.back.half)}</g>
-            {print(sigil.back.centre)}
-          </g>
+          {print(art.back)}
           {design.marks.pendant ? (
             <path
               d={DINO_D}
-              transform={`translate(${CENTRE_X - (DINO_W * 1.6) / 2} ${GARLAND.low - (DINO_H * 1.6) / 2 + 6}) scale(1.6)`}
+              transform={`translate(${CENTRE_X - (DINO_W * 1.6) / 2} ${BACK_ART.top + 44 - (DINO_H * 1.6) / 2}) scale(1.6)`}
               fill={markFill}
               shapeRendering="crispEdges"
               filter={url("stitched")}
@@ -565,13 +549,7 @@ export function HoodieMockup({
         <>
           <path d={SLEEVE} fill={fab.base} />
           {sleevePrint(
-            front
-              ? side === "l"
-                ? sigil.right
-                : sigil.left
-              : side === "l"
-                ? sigil.left
-                : sigil.right,
+            front ? (side === "l" ? art.right : art.left) : side === "l" ? art.left : art.right,
           )}
           <g clipPath={url("sleeve")}>{folds(SLEEVE_FOLDS)}</g>
           {edge(SLEEVE, "sleeve", 60, 0.5)}

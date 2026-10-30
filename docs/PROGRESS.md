@@ -132,8 +132,43 @@ sword crosses, a spiked sun, stacked spines and hanging bead chains.
 Verified: typecheck, lint, build; every look and view screenshotted; PNG and SVG downloads;
 axe 0 violations on /merch; no overflow at 390 px.
 
-**Next session starts with:** Ashton's look at /merch; a pasted "Settings" JSON is the
-starting point for any design to refine.
+Then Ashton: the designs "look really bad and ai genned"; take cybersigilism tattoos from online
+and convert them into designs. Not done as asked: each tattoo is its artist's work and one
+reference was an Adobe Stock image (watermarked, ID 1632493026), so tracing them onto merch the
+club prints would copy someone's art without a licence. Instead:
+
+- **The generator rewritten in the style's own vocabulary** (`merch/field.ts`, `merch/sigil.ts`):
+  a signed distance field on a pixel grid, strokes that swell and taper to needles, a smooth
+  union so they fuse like melted metal where they meet, holes carved with a smooth subtraction.
+  The back is arms of braided lattice (two strands crossing, holed beads at the crossings,
+  thick near the crossings) from each sleeve's seam to the centre, barbs hanging from them
+  that all lean the same way, a vertebral spine (holed beads, claws curling out and down, small
+  hooks up, a needle with a crossbar at the end) and wing fingers: long claws fanning down from
+  the arms, hooking in, with small barbs on their inner edges. The sleeves carry the arm on
+  down to a needle at the cuff, with two long ribs and a short run of vertebrae. The motif
+  toggles are now wing ribs, lattice, holed beads and needle tips; back layouts are sleeves
+  only, arms, arms + spine, and arms, spine + wings. The pieces render as white masks (data
+  URL PNGs) that the mockup tints with the inks, so an ink change never redraws them; a
+  one-entry cache keyed on the drawing choices keeps the finish and garment controls instant.
+- **Line styles**: solid, **inline** (an engraved line inset in the thicker parts, in the
+  second ink: the Tonal + green look is tonal black puff with a green inline) and outline.
+- **Your artwork** (`merch/art.ts`): upload art for the sleeves and/or the back (art the club
+  drew, commissioned or licensed). A transparent PNG keeps its alpha; anything else is read
+  as ink on paper with the background taken from the border, so black on white and white on
+  black both work; cropped to the ink and stored in this browser. It prints through the same
+  inks and finishes; the back upload has size and height sliders and stays above the hem.
+- **Artwork export** is now a transparent PNG in the inks, every piece at one scale (6 px a
+  garment unit, about 300 dpi across a 60 cm back), the generated pieces drawn at 3× the
+  mockup's resolution.
+
+Verified: every view and look screenshotted, an upload of a scratch drawing (Pillow, not
+anyone's art) placed and exported, axe 0 violations, no overflow at 390 px, typecheck, lint,
+build.
+
+**Next session starts with:** Ashton's look at the rewritten generator on /merch. If the club
+wants a specific tattoo-style piece, the route is commissioning an artist or licensing the
+stock image, then uploading it; a pasted "Settings" JSON is the starting point for tuning a
+generated one.
 
 ## Session 16c — 2026-10-29 (the dino editor)
 

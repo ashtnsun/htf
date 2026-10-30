@@ -60,11 +60,14 @@ src/components/
                     PixelDino (footer), dino-pixels.ts (the 20×22 T-rex map the footer and the
                     process scene share)
   merch/            the /merch studio (a tool like /dino: not in the nav or sitemap, noindex):
-                    sigil.ts (the seeded cybersigil generator, tapered filled outlines),
-                    garment.ts (the zip-up's paths, left side, mirrored), HoodieMockup (the
-                    SVG product shot: print filters per technique, folds, wash, hardware),
-                    design.ts (the Design object, inks, looks), MerchStudio (client only,
-                    through MerchStudioLoader)
+                    field.ts (a distance field: tapered strokes fused by a smooth union, holes
+                    carved), sigil.ts (the seeded cybersigil: braided arms, vertebral spine,
+                    wing claws, needles; white mask PNGs), art.ts (the cache, uploads turned
+                    into masks, the artwork PNG export), garment.ts (the zip-up's paths, left
+                    side, mirrored), HoodieMockup (the SVG product shot: masks tinted with the
+                    inks, print filters per technique, folds, wash, hardware), design.ts (the
+                    Design object, inks, looks), MerchStudio (client only, through
+                    MerchStudioLoader). Never trace other artists' tattoos or stock art into it
   dino/             the /dino pixel editor (a tool, not in the nav or sitemap, noindex):
                     sprite.ts (the model: string-map rows + palette, PNG / SVG / code export),
                     compose.ts (T-rex-local cells, the arm poses, `local` / `line` / `compose`),
