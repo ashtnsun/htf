@@ -355,7 +355,9 @@ gems: **classic crown**, **five-point crown**, **arched crown** and **lightning 
 blue bolt standing in the crown; a bolt drawn inside a framed gem read as a plus or an F at this
 size, so the jewel is the bolt). Poseidon in bright gold with pearls and aquamarines, eight wide
 so the points stay clear of the trident's prong and crossbar: **classic crown**, **pearl crown**
-and **tall crown**.
+and **tall crown**. Then lowered ("they shouldn't be too tall"): four rows each (tips, points,
+gems, base), five for Poseidon's tall centre, six for the lightning jewel, which is now one
+light-blue bolt (the blue he holds) between two points, the least a bolt needs to read.
 
 **Next session starts with:** Ashton's look at the Artemis leaf headband, Zeus gold headband
 and Athena shield variants on /dino; any pasted "Copy all" export is the starting point.

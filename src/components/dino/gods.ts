@@ -1134,8 +1134,9 @@ const ARES_SWEPT_CREST = local(
 const ARES_GOLD_BROW = local(["gggggggggg"], 10, 1, { g: GOLD });
 
 /**
- * Proper crowns for Ashton's Zeus and Poseidon finals, sat on the head with the bottom row just
- * above it: a lit band (`h`) over a band of gems, points above. Zeus's are in the darker golds of
+ * Proper crowns for Ashton's Zeus and Poseidon finals, kept low (four rows; five or six where a
+ * centre point or the bolt needs it), sat just above the head: tipped points over a band of gems
+ * over a dark base. Zeus's are in the darker golds of
  * his saved crown (bright gold melts into his body) with blue gems; Poseidon's in bright gold
  * with pearls and aquamarines, eight wide so the points stay clear of the trident.
  */
@@ -1143,64 +1144,52 @@ const crownOn = (rows: readonly string[], ox: number, inks: Record<string, strin
   local(rows, ox, -rows.length, inks);
 const ZEUS_CROWN_INKS = {
   o: DEEP_GOLD,
-  h: "#e0a83a",
   d: "#9a6a10",
   y: "#fff3a0",
   g: "#4cc9ff",
   G: "#1f8fd0",
-  b: "#7fdcff",
-  B: "#1f8fd0",
+  b: "#4cc9ff",
 };
 const ZEUS_CLASSIC_CROWN = crownOn(
-  ["y...y...y", "o...o...o", "oo.ooo.oo", "hhhhhhhhh", "ogoGoGogo", "ddddddddd"],
+  ["y...y...y", "oo.ooo.oo", "ogoGoGogo", "ddddddddd"],
   10,
   ZEUS_CROWN_INKS,
 );
 const ZEUS_FIVE_CROWN = crownOn(
-  ["y.y.y.y.y", "o.o.o.o.o", "ooooooooo", "hhhhhhhhh", "oogoGogoo", "ddddddddd"],
+  ["y.y.y.y.y", "ooooooooo", "oogoGogoo", "ddddddddd"],
   10,
   ZEUS_CROWN_INKS,
 );
 const ZEUS_ARCHED_CROWN = crownOn(
-  ["....y....", "..ooooo..", ".o..o..o.", "o...o...o", "hhhhhhhhh", "ogoGoGogo", "ddddddddd"],
+  ["...oyo...", "oooo.oooo", "ogoGoGogo", "ddddddddd"],
   10,
   ZEUS_CROWN_INKS,
 );
-/** A lightning jewel: a faceted blue bolt (lit side, shaded side) standing in the crown. */
+/** A lightning jewel: a blue bolt, in the blue of the one he holds, standing between two points. */
 const ZEUS_BOLT_JEWEL_CROWN = crownOn(
-  [
-    "......bB.",
-    ".....bB..",
-    "o...bbbB.",
-    "o....bB.o",
-    "oo..bB..o",
-    "hhhhhhhhh",
-    "ogoGoGogo",
-    "ddddddddd",
-  ],
+  [".....bb..", "o...bb..o", "o..bbbb.o", "oo..bb.oo", "oo.bb..oo", "ddddddddd"],
   10,
   ZEUS_CROWN_INKS,
 );
 const POSEIDON_CROWN_INKS = {
   o: GOLD,
-  h: "#ffe08a",
   d: "#c9962a",
   y: WHITE,
   g: "#2ee6c8",
   G: "#0fa3a3",
 };
 const POSEIDON_CLASSIC_CROWN = crownOn(
-  ["y..yy..y", "o..oo..o", "oo.oo.oo", "hhhhhhhh", "ogoGGogo", "dddddddd"],
+  ["y..yy..y", "oo.oo.oo", "ogoGGogo", "dddddddd"],
   10,
   POSEIDON_CROWN_INKS,
 );
 const POSEIDON_PEARL_CROWN = crownOn(
-  ["y.y.y.y.", "o.o.o.o.", "oooooooo", "hhhhhhhh", "oGoyyoGo", "dddddddd"],
+  ["y.y.y.y.", "oooooooo", "oGoyyoGo", "dddddddd"],
   10,
   POSEIDON_CROWN_INKS,
 );
 const POSEIDON_TALL_CROWN = crownOn(
-  ["...yy...", "...oo...", "y..oo..y", "o.oooo.o", "oooooooo", "hhhhhhhh", "ogoGGogo", "dddddddd"],
+  ["...yy...", "y..oo..y", "oooooooo", "ogoGGogo", "dddddddd"],
   10,
   POSEIDON_CROWN_INKS,
 );
@@ -1903,7 +1892,7 @@ const GODS: God[] = [
       {
         id: "zeus-final-bolt-jewel",
         name: "Zeus, lightning jewel",
-        note: "Ashton's Zeus, a crown with a faceted blue lightning-bolt jewel standing in it",
+        note: "Ashton's Zeus, a low crown with a blue lightning-bolt jewel standing between two points",
         parts: [...ZEUS_FINAL_BASE, ZEUS_BOLT_JEWEL_CROWN],
       },
     ],
