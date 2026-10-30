@@ -1,3 +1,4 @@
+import { dinoCells } from "@/components/brand/dino-pixels";
 import {
   cells,
   compose,
@@ -48,6 +49,7 @@ const SASH = "#a9a6e0";
 const SASH_FOLD = "#7f7cc0";
 const SKY_CLOUD = "#e4e1f2";
 const SKY_CLOUD_SHADE = "#b9b5d6";
+const ROBE_FOLD = "#c9ced6";
 const GREY = "#8a939c";
 
 /* ---------------------------------------------------------------- props */
@@ -497,6 +499,25 @@ const ROSE_OFFERED = [
   ),
   ...bloom(22, 9),
 ];
+
+/* ---------------------------------------------------------------- Zeus's robe */
+
+/**
+ * A robe draped from the front shoulder down across the body to the knees: the dinosaur's own
+ * cells below a diagonal edge (the tail stays out), a hem over the thighs, trim on the edge and
+ * the hem, and two drape folds. The raised arm is drawn over it again.
+ */
+function robe(cloth: string, trim: string): Part[] {
+  const edge = (x: number) => 8 + Math.max(0, Math.round((11 - x) * 0.55));
+  const body = dinoCells({ withoutArm: true })
+    .filter(({ x, y }) => x >= 3 && y >= edge(x) && y <= 17)
+    .map(({ x, y }) => ({ x, y, color: y === edge(x) ? trim : cloth }));
+  const hem = local(["ccccccc", "ttttttt"], 4, 18, { c: cloth, t: trim });
+  const folds = [...line(8, 12, 6, 18, ROBE_FOLD), ...line(12, 10, 10, 18, ROBE_FOLD)].filter(
+    ({ x, y }) => [...body, ...hem].some((p) => p.x === x && p.y === y && p.color === cloth),
+  );
+  return [...body, ...hem, ...folds];
+}
 
 /* ---------------------------------------------------------------- Athena */
 
@@ -1063,6 +1084,25 @@ const GODS: God[] = [
         name: "Zeus, marble",
         note: "Marble white, a gold laurel and a thunderbolt",
         parts: [dino("#eceff3", "raised"), laurel(GOLD), bolt(YELLOW)],
+      },
+      {
+        id: "zeus-robe",
+        name: "Zeus, robe",
+        note: "The pick in a white robe trimmed in the bolt's blue: halo, raised thunderbolt",
+        parts: [
+          dino("#ffd60a", "raised"),
+          robe(WHITE, "#6fd3ff"),
+          cells(
+            [
+              [14, 10],
+              [15, 10],
+            ],
+            "#ffd60a",
+          ),
+          halo(WHITE),
+          bolt("#6fd3ff"),
+        ],
+        framed: true,
       },
     ],
   },
