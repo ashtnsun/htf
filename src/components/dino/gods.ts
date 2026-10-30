@@ -13,8 +13,8 @@ import {
 import type { Variant } from "@/components/dino/variants";
 
 /**
- * The Greek gods in the dinosaur editor: three variants of each (Aphrodite has four, redone, and
- * no picks; Athena four and one pick), every one the footer T-rex in
+ * The Greek gods in the dinosaur editor: three variants of each, more for some (Aphrodite has four,
+ * redone, and no picks; Athena four and one pick; Zeus a robe, Artemis a leaf crown), every one the footer T-rex in
  * its own colour (one hue family per god) with one or two props that say who it is. Coordinates
  * are T-rex-local (components/dino/compose). Anything held upright stands in column 20 with the
  * arm raised to it; anything held low sits against the resting arm from column 16.
@@ -499,6 +499,16 @@ const ROSE_OFFERED = [
   ),
   ...bloom(22, 9),
 ];
+
+/* ---------------------------------------------------------------- Artemis's leaf crown */
+
+/** A leaf crown: big pointed leaves standing on a band round the head, a dark midrib in each. */
+const LEAF_CROWN = local(
+  ["...l...l...l.", "..lvl.lvl.lvl", "..lvl.lvl.lvl", ".lllllllllll.", "l............"],
+  8,
+  -4,
+  { l: "#9be564", v: "#5aa832" },
+);
 
 /* ---------------------------------------------------------------- Zeus's robe */
 
@@ -1038,6 +1048,13 @@ const GODS: God[] = [
         name: "Artemis, stag",
         note: "Moonstone, antlers and the moon behind",
         parts: [moon(WHITE), dino("#a9c7e8"), ANTLERS],
+      },
+      {
+        id: "artemis-leaf-crown",
+        name: "Artemis, leaf crown",
+        note: "The pick with a crown of leaves instead of the antlers: forest green, a drawn bow",
+        parts: [dino("#2f7d5b", "raised"), LEAF_CROWN, BOW],
+        framed: true,
       },
     ],
   },

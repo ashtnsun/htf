@@ -159,8 +159,14 @@ resting hand (ivory), a barred owl flying beside her (lavender), the spear with 
 streaming back from the neck (silver), and the spear and the owl above clouds (ivory). Her
 first pick (owl perched, bronze shield) stays.
 
-**Next session starts with:** Ashton's look at the new Aphrodite and Athena variants, the
-second picks on /dino.
+Then two single additions from Ashton: Zeus in a robe (the pick, halo and raised bolt, in a
+white robe draped from the front shoulder to the knees, trimmed in the bolt's blue, two drape
+folds; the robe is the dinosaur's own cells below a diagonal edge) and Artemis with a leaf
+crown instead of the antlers (the pick's drawn bow, big lime leaves with dark midribs standing
+on a band).
+
+**Next session starts with:** Ashton's look at the new Aphrodite, Athena, Zeus robe and
+Artemis leaf-crown variants and the second picks on /dino.
 
 ## Session 16b — 2026-10-29 (the 2026-2027 cycle closed)
 
