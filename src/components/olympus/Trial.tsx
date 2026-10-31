@@ -7,13 +7,15 @@ import { checkRiddle, checkWord } from "@/app/olympus/actions";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
 import { Colonnade } from "@/components/olympus/Colonnade";
 import { GodRevealView } from "@/components/olympus/GodRevealView";
+import { RevealGate } from "@/components/olympus/RevealGate";
 import { roman, type GodReveal } from "@/components/olympus/shared";
 import { TextField } from "@/components/ui/Field";
 import { SplitButton } from "@/components/ui/SplitButton";
 import { EASE_GLIDE, EASE_SMOOTH } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
-type Progress = { solved: string[]; reveal: GodReveal | null };
+/** `opened`: the REVEAL button has been held through (RevealGate), so the reveal shows. */
+type Progress = { solved: string[]; reveal: GodReveal | null; opened: boolean };
 
 const OFFLINE = "The Oracle is silent. Try again in a moment.";
 
@@ -23,26 +25,35 @@ const OFFLINE = "The Oracle is silent. Try again in a moment.";
  * the dinosaur are asked of the server again on every load, so a changed sprite or name shows up
  * on a refresh instead of a stale copy.
  */
-type Saved = { solved: string[]; word: string | null };
+type Saved = { solved: string[]; word: string | null; opened: boolean };
 
 function load(family: number): Saved {
   try {
     const saved = JSON.parse(sessionStorage.getItem(`olympus:${family}`) ?? "null") as {
       solved?: unknown;
       word?: string | null;
+      opened?: boolean;
       reveal?: { word?: string } | null;
     } | null;
     if (Array.isArray(saved?.solved)) {
-      // `reveal` is how the first version saved a finished family.
-      return { solved: saved.solved as string[], word: saved.word ?? saved.reveal?.word ?? null };
+      // `reveal` is how the first version saved a finished family (it had no gate: opened).
+      return {
+        solved: saved.solved as string[],
+        word: saved.word ?? saved.reveal?.word ?? null,
+        opened: saved.opened ?? Boolean(saved.reveal),
+      };
     }
   } catch {}
-  return { solved: [], word: null };
+  return { solved: [], word: null, opened: false };
 }
 
 function save(family: number, progress: Progress) {
   try {
-    const saved: Saved = { solved: progress.solved, word: progress.reveal?.word ?? null };
+    const saved: Saved = {
+      solved: progress.solved,
+      word: progress.reveal?.word ?? null,
+      opened: progress.opened,
+    };
     sessionStorage.setItem(`olympus:${family}`, JSON.stringify(saved));
   } catch {}
 }
@@ -58,14 +69,18 @@ function shake(el: HTMLElement | null, reduce: boolean) {
 
 /**
  * A family's trial: the riddles one at a time (each checked on the server before the next
- * appears), then the final word, then the reveal. The solved words stand on their columns at the
+ * appears), then the final word, then the hold-to-reveal gate, then the reveal. The solved words stand on their columns at the
  * foot of the page (every column there from the start, held at the bottom by `mt-auto`, so
  * nothing moves as words arrive or riddles change length).
  */
 export function Trial({ family, riddles }: { family: number; riddles: string[] }) {
   const reduce = useReducedMotionSafe();
   const [saved] = useState(() => load(family));
-  const [progress, setProgress] = useState<Progress>({ solved: saved.solved, reveal: null });
+  const [progress, setProgress] = useState<Progress>({
+    solved: saved.solved,
+    reveal: null,
+    opened: saved.opened,
+  });
   // A family that was already through: fetch its reveal fresh (the page waits blank meanwhile).
   const [restoring, setRestoring] = useState(saved.word !== null);
   useEffect(() => {
@@ -79,9 +94,10 @@ export function Trial({ family, riddles }: { family: number; riddles: string[] }
     setProgress(next);
     save(family, next);
   };
-  const { solved, reveal } = progress;
+  const { solved, reveal, opened } = progress;
 
-  if (reveal) return <GodRevealView reveal={reveal} />;
+  if (reveal && opened) return <GodRevealView reveal={reveal} />;
+  if (reveal) return <RevealGate onOpen={() => update({ ...progress, opened: true })} />;
   if (restoring) return <div className="min-h-80" aria-hidden="true" />;
 
   const index = solved.length;
@@ -102,7 +118,9 @@ export function Trial({ family, riddles }: { family: number; riddles: string[] }
               index={index}
               total={riddles.length}
               riddle={riddles[index]!}
-              onSolved={(answer) => update({ solved: [...solved, answer], reveal: null })}
+              onSolved={(answer) =>
+                update({ solved: [...solved, answer], reveal: null, opened: false })
+              }
             />
           </motion.div>
         ) : (
@@ -110,7 +128,7 @@ export function Trial({ family, riddles }: { family: number; riddles: string[] }
             <FinalWord
               family={family}
               length={riddles.length}
-              onSolved={(r) => update({ solved, reveal: r })}
+              onSolved={(r) => update({ solved, reveal: r, opened: false })}
             />
           </motion.div>
         )}

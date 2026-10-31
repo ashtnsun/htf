@@ -157,6 +157,17 @@ A finished family's tab saves only its solved word, never the reveal: the reveal
 the server on every load, so a changed sprite or name can't be shadowed by a stale copy (the first
 version saved the whole reveal; those saves are still read, for their word only).
 
+**Fifth pass:** the temple builds itself on load (olympus/TempleBuild: a blank page, then the
+cells come on in 40ms groups from the steps to the roof, then the logo bar, heading and numerals
+fade in; a frame loop sets each path's opacity, because hundreds of CSS animations on SVG paths
+froze half-faded in Ashton's Chrome; replays on refresh, not on the way back from a group, whose
+columns now navigate through the router). `anim-pixel-on` is linear now: steps(1, end) left cells
+invisible when Chrome ended the animation at a progress of 0.99999 (missing pixels in the reveal).
+After the right word comes the gate (olympus/RevealGate): a blank full screen, "Call over an exec
+member" and a REVEAL button held for 2.8s (pointer, Space or Enter): it fills with green, light
+gathers, lit cells crowd to the middle, the screen rumbles and the phone buzzes faster; letting go
+drains it. A refresh at the gate comes back to it (`opened` in the tab's save).
+
 **Next session starts with:** Ashton's run through /olympus on a phone.
 
 ## Session 16d — 2026-10-29 (the merch studio)
