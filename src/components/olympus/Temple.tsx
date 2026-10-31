@@ -1,4 +1,3 @@
-import { useId } from "react";
 import { roman } from "@/components/olympus/shared";
 
 /**
@@ -7,6 +6,11 @@ import { roman } from "@/components/olympus/shared";
  * drawn at a whole number of pixels per cell (`.temple` rounds its width down to a multiple of
  * the grid, so the pixels stay crisp). Each column with its numeral is a link; it turns green on
  * hover and focus.
+ *
+ * On a full page load the temple builds itself pixel by pixel from the steps up to the roof
+ * (TempleBuild switches each path on at its `data-at` second, set by its row and a little
+ * scatter), then everything marked `temple-after` fades in. Cells that come on in the same 40ms
+ * share one path, so the drawing stays a few hundred elements, not thousands.
  */
 
 const COLUMN = [
@@ -23,79 +27,98 @@ const COL_W = COLUMN[0]!.length;
 const GAP = 2;
 const MARGIN = 2;
 
-function cellsOf(rows: readonly string[]) {
-  return rows.flatMap((row, y) => [...row].flatMap((ch, x) => (ch === "#" ? [{ x, y }] : [])));
+/** Seconds: the build runs bottom to top over BUILD, each cell up to SCATTER early or late. */
+const BUILD = 2;
+const SCATTER = 0.35;
+const BUCKET = 0.04;
+
+type Cell = { x: number; y: number };
+
+function cellsOf(rows: readonly string[], x0 = 0, y0 = 0): Cell[] {
+  return rows.flatMap((row, y) =>
+    [...row].flatMap((ch, x) => (ch === "#" ? [{ x: x0 + x, y: y0 + y }] : [])),
+  );
+}
+
+function rowCells(y: number, from: number, to: number, height = 1): Cell[] {
+  return Array.from({ length: height }, (_, dy) =>
+    Array.from({ length: to - from }, (_, dx) => ({ x: from + dx, y: y + dy })),
+  ).flat();
+}
+
+/** Cells grouped by the moment they switch on: one path per moment. */
+function paths(cells: readonly Cell[], top: number) {
+  const groups = new Map<number, string[]>();
+  for (const { x, y } of cells) {
+    // A fixed scatter per cell (no randomness, so server and client draw the same thing).
+    const scatter = (((x * 7919 + y * 104729) % 97) / 97 - 0.5) * SCATTER;
+    const delay = Math.max(0, (1 - y / top) * BUILD + scatter);
+    const bucket = Math.round(delay / BUCKET);
+    const d = groups.get(bucket) ?? [];
+    d.push(`M${x} ${y}h1v1h-1z`);
+    groups.set(bucket, d);
+  }
+  return [...groups].map(([bucket, d]) => ({ delay: bucket * BUCKET, d: d.join("") }));
+}
+
+function Cells({ cells, top, className }: { cells: Cell[]; top: number; className?: string }) {
+  return paths(cells, top).map(({ delay, d }) => (
+    <path key={delay} d={d} data-at={delay.toFixed(2)} className={className} />
+  ));
 }
 
 export function Temple({ count }: { count: number }) {
-  const id = useId();
   const W = MARGIN * 2 + count * COL_W + (count - 1) * GAP;
   const cx = (W - 1) / 2;
 
   // Pediment: a low gable (about 1 in 4), its sloped edges a staircase of whole cells.
   const PED = Math.round(W / 8);
-  const pediment: { x: number; y: number; edge: boolean }[] = [];
+  const edge: Cell[] = [];
+  const tympanum: Cell[] = [];
   let prev = 0;
-  for (let r = 0; r < PED; r += 1) {
-    const half = Math.round(((r + 1) / PED) * (W / 2));
+  for (let y = 0; y < PED; y += 1) {
+    const half = Math.round(((y + 1) / PED) * (W / 2));
     for (let x = Math.ceil(cx - half); x <= Math.floor(cx + half); x += 1) {
-      const fromCentre = Math.abs(x - cx);
-      pediment.push({ x, y: r, edge: fromCentre > prev - 1 || r === 0 });
+      (Math.abs(x - cx) > prev - 1 || y === 0 ? edge : tympanum).push({ x, y });
     }
     prev = half;
   }
 
-  // Entablature: cornice, the Greek key frieze, architrave.
+  // Entablature: cornice, the Greek key frieze, architrave; then the columns and two steps.
   const cornice = PED;
-  const frieze = cornice + 2;
+  const frieze = cornice + 3;
   const architrave = frieze + KEY.length + 1;
   const shaftTop = architrave + 2;
   const stepTop = shaftTop + COLUMN.length;
   const labelY = stepTop + 4 + 9;
   const H = labelY + 3;
+  const top = stepTop + 4;
 
-  const column = cellsOf(COLUMN);
-  const key = cellsOf(KEY);
+  const white = [
+    ...edge,
+    ...rowCells(cornice, 0, W, 2),
+    ...rowCells(architrave, 2, W - 2, 2),
+    ...rowCells(stepTop, 2, W - 2, 2),
+    ...rowCells(stepTop + 2, 0, W, 2),
+  ];
+  const key = Array.from({ length: Math.ceil(W / KEY[0]!.length) }, (_, i) =>
+    cellsOf(KEY, i * KEY[0]!.length, frieze),
+  )
+    .flat()
+    .filter(({ x }) => x < W);
 
   return (
-    <nav aria-label="Groups" className="w-[min(56rem,calc(100vw_-_2rem))] self-center">
+    <nav aria-label="Groups" data-temple className="w-[min(56rem,calc(100vw_-_2rem))] self-center">
       <svg
         viewBox={`0 0 ${W} ${H}`}
         className="temple mx-auto block h-auto"
         style={{ "--temple-cells": W } as React.CSSProperties}
         shapeRendering="crispEdges"
       >
-        <defs>
-          <pattern id={id} width={KEY[0]!.length} height={KEY.length} patternUnits="userSpaceOnUse">
-            {key.map(({ x, y }) => (
-              <rect
-                key={`${x}-${y}`}
-                x={x}
-                y={y}
-                width={1}
-                height={1}
-                className="fill-green-deep"
-              />
-            ))}
-          </pattern>
-        </defs>
-
         <g aria-hidden="true">
-          {pediment.map(({ x, y, edge }) => (
-            <rect
-              key={`${x}-${y}`}
-              x={x}
-              y={y}
-              width={1}
-              height={1}
-              className={edge ? "fill-text" : "fill-surface"}
-            />
-          ))}
-          <rect x={0} y={cornice} width={W} height={2} className="fill-text" />
-          <rect x={0} y={frieze + 1} width={W} height={KEY.length} fill={`url(#${id})`} />
-          <rect x={2} y={architrave} width={W - 4} height={2} className="fill-text" />
-          <rect x={2} y={stepTop} width={W - 4} height={2} className="fill-text" />
-          <rect x={0} y={stepTop + 2} width={W} height={2} className="fill-text" />
+          <Cells cells={tympanum} top={top} className="fill-surface" />
+          <Cells cells={white} top={top} className="fill-text" />
+          <Cells cells={key} top={top} className="fill-green-deep" />
         </g>
 
         {Array.from({ length: count }, (_, i) => {
@@ -115,23 +138,14 @@ export function Temple({ count }: { count: number }) {
                 height={H - shaftTop}
                 fill="transparent"
               />
-              {column.map(({ x, y }) => (
-                <rect
-                  key={`${x}-${y}`}
-                  x={x0 + x}
-                  y={shaftTop + y}
-                  width={1}
-                  height={1}
-                  fill="currentColor"
-                />
-              ))}
+              <Cells cells={cellsOf(COLUMN, x0, shaftTop)} top={top} className="fill-current" />
               <text
                 x={x0 + COL_W / 2}
                 y={labelY}
                 textAnchor="middle"
                 fontSize={5}
                 fill="currentColor"
-                className="font-olympus font-semibold"
+                className="temple-after font-olympus font-semibold"
               >
                 {roman(i + 1)}
               </text>

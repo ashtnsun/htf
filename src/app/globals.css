@@ -1375,6 +1375,19 @@ html[data-intro]:not([data-intro="play"]) body > header {
   width: 100%;
   width: round(down, 100%, calc(var(--temple-cells) * 1px));
 }
+/* The temple's entrance (components/olympus/TempleBuild): a blank page, the temple's cells come
+   on group by group, then (once `data-built`) the logo bar, the Greek key, the heading and the
+   numerals, everything marked `temple-after`, fade in. */
+[data-temple]:not([data-built]) path[data-at] {
+  opacity: 0;
+}
+.temple-after {
+  transition: opacity 900ms var(--ease-smooth);
+}
+:root:has([data-temple]:not([data-built])) .temple-after {
+  opacity: 0;
+  transition: none;
+}
 @keyframes olympus-flash {
   from {
     opacity: 0.85;

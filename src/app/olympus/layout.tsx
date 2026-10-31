@@ -30,12 +30,12 @@ export default function OlympusLayout({ children }: LayoutProps<"/olympus">) {
     <div
       className={`${cinzel.variable} ${cormorant.variable} relative flex min-h-dvh flex-col overflow-x-clip`}
     >
-      <div className="container-max flex h-16 items-center container-x">
+      <div className="temple-after container-max flex h-16 items-center container-x">
         <Link href="/" className="transition-opacity hover:opacity-80">
           <Logo height={20} />
         </Link>
       </div>
-      <Meander className="text-green-deep" />
+      <Meander className="temple-after text-green-deep" />
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col container-x py-12 md:py-20">
         {children}
       </div>
