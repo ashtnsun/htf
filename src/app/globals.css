@@ -963,14 +963,17 @@
     transform-origin: center;
     animation: hero-ping 2.8s var(--ease-out-quart) infinite;
   }
-  /* Pixels: each cell switches on at its own moment (whole cells, never half-lit). */
+  /* Pixels: each cell switches on at its own moment (a hundredth of a second, so never seen
+     half-lit). Linear, not steps(1, end): Chrome can finish an animation at a progress of
+     0.99999… after a fractional delay, which steps() rounds down to the start, leaving the cell
+     invisible for good. */
   @keyframes page-pixel-on {
     from {
       opacity: 0;
     }
   }
   .anim-pixel-on {
-    animation: page-pixel-on 0.01s steps(1, end) both;
+    animation: page-pixel-on 0.01s linear both;
   }
   /* Viewfinder: the brackets start wide and faint, then lock onto the copy. */
   @keyframes page-viewfinder-lock {
