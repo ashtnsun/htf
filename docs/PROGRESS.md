@@ -153,6 +153,10 @@ tiles). The reveal draws Ashton's nine final dinosaurs (`components/dino/reveal.
 cell from his exported PNGs, also listed in /dino under "Family reveal"); content/olympus.ts no
 longer names sprite ids.
 
+A finished family's tab saves only its solved word, never the reveal: the reveal is fetched from
+the server on every load, so a changed sprite or name can't be shadowed by a stale copy (the first
+version saved the whole reveal; those saves are still read, for their word only).
+
 **Next session starts with:** Ashton's run through /olympus on a phone.
 
 ## Session 16d — 2026-10-29 (the merch studio)

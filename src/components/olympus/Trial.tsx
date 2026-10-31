@@ -17,18 +17,33 @@ type Progress = { solved: string[]; reveal: GodReveal | null };
 
 const OFFLINE = "The Oracle is silent. Try again in a moment.";
 
-/** Per tab: a refresh keeps a family's place, a new tab (or another phone) starts over. */
-function load(family: number): Progress {
+/**
+ * Per tab: a refresh keeps a family's place, a new tab (or another phone) starts over. Only the
+ * solved word is kept once the family is through, never the reveal itself: the god, the exec and
+ * the dinosaur are asked of the server again on every load, so a changed sprite or name shows up
+ * on a refresh instead of a stale copy.
+ */
+type Saved = { solved: string[]; word: string | null };
+
+function load(family: number): Saved {
   try {
-    const saved = JSON.parse(sessionStorage.getItem(`olympus:${family}`) ?? "null") as Progress;
-    if (Array.isArray(saved?.solved)) return saved;
+    const saved = JSON.parse(sessionStorage.getItem(`olympus:${family}`) ?? "null") as {
+      solved?: unknown;
+      word?: string | null;
+      reveal?: { word?: string } | null;
+    } | null;
+    if (Array.isArray(saved?.solved)) {
+      // `reveal` is how the first version saved a finished family.
+      return { solved: saved.solved as string[], word: saved.word ?? saved.reveal?.word ?? null };
+    }
   } catch {}
-  return { solved: [], reveal: null };
+  return { solved: [], word: null };
 }
 
 function save(family: number, progress: Progress) {
   try {
-    sessionStorage.setItem(`olympus:${family}`, JSON.stringify(progress));
+    const saved: Saved = { solved: progress.solved, word: progress.reveal?.word ?? null };
+    sessionStorage.setItem(`olympus:${family}`, JSON.stringify(saved));
   } catch {}
 }
 
@@ -49,7 +64,17 @@ function shake(el: HTMLElement | null, reduce: boolean) {
  */
 export function Trial({ family, riddles }: { family: number; riddles: string[] }) {
   const reduce = useReducedMotionSafe();
-  const [progress, setProgress] = useState(() => load(family));
+  const [saved] = useState(() => load(family));
+  const [progress, setProgress] = useState<Progress>({ solved: saved.solved, reveal: null });
+  // A family that was already through: fetch its reveal fresh (the page waits blank meanwhile).
+  const [restoring, setRestoring] = useState(saved.word !== null);
+  useEffect(() => {
+    if (saved.word === null) return;
+    checkWord(family, saved.word)
+      .then((reveal) => setProgress((p) => ({ ...p, reveal })))
+      .catch(() => {})
+      .finally(() => setRestoring(false));
+  }, [family, saved.word]);
   const update = (next: Progress) => {
     setProgress(next);
     save(family, next);
@@ -57,6 +82,7 @@ export function Trial({ family, riddles }: { family: number; riddles: string[] }
   const { solved, reveal } = progress;
 
   if (reveal) return <GodRevealView reveal={reveal} />;
+  if (restoring) return <div className="min-h-80" aria-hidden="true" />;
 
   const index = solved.length;
   // The answered riddle fades out quickly; the next one rises in slowly and settles.
