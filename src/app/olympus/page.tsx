@@ -16,7 +16,7 @@ export default function OlympusPage() {
             <Link
               href={`/olympus/${i + 1}`}
               aria-label={`Family ${roman(i + 1)}`}
-              className="hover-corners flex aspect-square items-center justify-center border border-line bg-surface font-olympus text-h3 font-semibold transition-colors hover:border-line-strong hover:bg-surface-2 sm:text-display"
+              className="flex aspect-square items-center justify-center border border-line bg-surface font-olympus text-h3 font-semibold transition-colors hover:border-green hover:bg-surface-2 sm:text-display"
             >
               {roman(i + 1)}
             </Link>
