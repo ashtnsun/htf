@@ -1366,6 +1366,12 @@ html[data-intro]:not([data-intro="play"]) body > header {
   --font-olympus: var(--font-cinzel), serif;
   --font-oracle: var(--font-cormorant), serif;
 }
+/* The /olympus temple (components/olympus/Temple): as wide as fits, rounded down to a whole
+   number of pixels per cell so the pixel art stays crisp. */
+.temple {
+  width: 100%;
+  width: round(down, 100%, calc(var(--temple-cells) * 1px));
+}
 @keyframes olympus-flash {
   from {
     opacity: 0.85;

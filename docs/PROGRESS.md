@@ -112,9 +112,7 @@ not in the nav or sitemap, noindex. A logo bar and a pixel Greek key band (olymp
 
 Family numbers: I Apollo (Jason), II Hades (Ben), III Athena (Arushi), IV Zeus (Arav),
 V Aphrodite (Khang), VI Ares (Naks), VII Poseidon (Emily), VIII Hermes (Ashton), IX Artemis
-(Shreeya). Sprites: apollo-pick-2, hades-pick-2, athena-shield, zeus-final-gem,
-aphrodite-final-roses, ares-final2-fitted, poseidon-final-trident, hermes2-final-spiral,
-artemis-leaf-headband (one-line swaps in content/olympus.ts).
+(Shreeya). Sprites: Ashton's final nine, in components/dino/reveal.ts (since the fourth pass).
 
 **Verified:** typecheck, lint, build; axe 0 violations on /olympus, /olympus/4 and /olympus/6 at
 1440 and 390; Families IV and VI played through end to end in Playwright at 390, 360 and 1440
@@ -147,7 +145,15 @@ button sits further from the field.
 On the final word a quiet "Scramble" text control under the columns shuffles them (each slides to
 its new place, `layout`; never the same order twice in a row); a tap blurs it so Enter still asks.
 
-**Next session starts with:** Ashton's run through /olympus on a phone, and the final sprite per god.
+**Fourth pass:** the /olympus home is a temple front (olympus/Temple): one SVG on a cell grid, a
+stepped pediment, the Greek key frieze, nine columns on two steps, each column with its numeral a
+link that turns green; `.temple` rounds its width down to whole pixels per cell (3px on a phone,
+7px on desktop). The group tiles' corner brackets are gone (a whole green border while they were
+tiles). The reveal draws Ashton's nine final dinosaurs (`components/dino/reveal.ts`, read cell for
+cell from his exported PNGs, also listed in /dino under "Family reveal"); content/olympus.ts no
+longer names sprite ids.
+
+**Next session starts with:** Ashton's run through /olympus on a phone.
 
 ## Session 16d — 2026-10-29 (the merch studio)
 

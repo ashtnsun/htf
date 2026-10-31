@@ -1,7 +1,7 @@
 "use server";
 
 import { FAMILIES } from "@content/olympus";
-import { GOD_VARIANTS } from "@/components/dino/gods";
+import { REVEAL_SPRITES } from "@/components/dino/reveal";
 import type { GodReveal } from "@/components/olympus/shared";
 
 /** Lower case, letters and digits only, without leading words like "a", "the", "in", "mount". */
@@ -38,7 +38,7 @@ export async function checkRiddle(n: number, index: number, guess: string) {
 export async function checkWord(n: number, guess: string): Promise<GodReveal | null> {
   const f = family(n);
   if (!f || typeof guess !== "string" || normalize(guess) !== normalize(f.word)) return null;
-  const sprite = GOD_VARIANTS.find((v) => v.id === f.dino)!.sprite;
+  const sprite = REVEAL_SPRITES[f.god]!;
   // The body is the colour most cells share.
   const counts = sprite.palette.map((_, i) => sprite.cells.filter((c) => c === i + 1).length);
   const color = sprite.palette[counts.indexOf(Math.max(...counts))]!;

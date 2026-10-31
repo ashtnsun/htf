@@ -55,7 +55,8 @@ src/components/
                     chrome, noindex): Trial (riddles checked by app/olympus/actions.ts, then the
                     final word as Wordle, letters never given), GodRevealView (the god's /dino sprite cell by cell),
                     Meander (the pixel Greek key), Colonnade (the solved
-                    words on pixel columns at the foot of the page); content/olympus.ts is server only (answers)
+                    words on pixel columns at the foot of the page), Temple (the home: one
+                    column per group); the gods' sprites are dino/reveal.ts; content/olympus.ts is server only (answers)
   apply/            ApplyForm (client): the Google Form in a frame tall enough that no
                     section scrolls inside it — two measured heights, the first section and
                     the rest (`scripts/measure-apply-form.mjs`), never a count of sections,

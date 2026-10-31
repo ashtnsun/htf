@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { FAMILIES } from "@content/olympus";
-import { roman } from "@/components/olympus/shared";
+import { Temple } from "@/components/olympus/Temple";
 
-/** /olympus: pick your family. The numbers say nothing about the god behind them. */
+/** /olympus: pick your group, one temple column each. The numbers say nothing of the gods. */
 export default function OlympusPage() {
   return (
     <>
@@ -10,19 +9,9 @@ export default function OlympusPage() {
         Who is your <span className="text-green">god</span>?
       </h1>
       <p className="mt-4 text-center text-body-lg text-muted">Choose your group to begin.</p>
-      <ol className="mt-10 grid grid-cols-3 gap-3 sm:gap-4">
-        {FAMILIES.map((_, i) => (
-          <li key={i}>
-            <Link
-              href={`/olympus/${i + 1}`}
-              aria-label={`Family ${roman(i + 1)}`}
-              className="flex aspect-square items-center justify-center border border-line bg-surface font-olympus text-h3 font-semibold transition-colors hover:border-green hover:bg-surface-2 sm:text-display"
-            >
-              {roman(i + 1)}
-            </Link>
-          </li>
-        ))}
-      </ol>
+      <div className="mt-12 flex flex-col">
+        <Temple count={FAMILIES.length} />
+      </div>
     </>
   );
 }

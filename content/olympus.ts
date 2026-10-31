@@ -9,7 +9,7 @@ import "server-only";
  *
  * `also` lists other accepted answers. Every guess is compared without case, spaces,
  * punctuation, leading words like "a", "the", "in" or "mount", or a trailing plural "s".
- * `dino` is the god's sprite id in the /dino editor (components/dino/gods.ts).
+ * Each god's dinosaur is in components/dino/reveal.ts, by name.
  */
 export type Riddle = { riddle: string; answer: string; also?: readonly string[] };
 
@@ -17,7 +17,6 @@ export type Family = {
   god: string;
   exec: string;
   word: string;
-  dino: string;
   riddles: readonly Riddle[];
 };
 
@@ -27,7 +26,6 @@ export const FAMILIES: readonly Family[] = [
     god: "Apollo",
     exec: "Jason",
     word: "LYRE",
-    dino: "apollo-pick-2",
     riddles: [
       {
         riddle:
@@ -58,7 +56,6 @@ export const FAMILIES: readonly Family[] = [
     god: "Hades",
     exec: "Ben",
     word: "SOUL",
-    dino: "hades-pick-2",
     riddles: [
       {
         riddle:
@@ -85,7 +82,6 @@ export const FAMILIES: readonly Family[] = [
     god: "Athena",
     exec: "Arushi",
     word: "WISE",
-    dino: "athena-shield",
     riddles: [
       {
         riddle:
@@ -113,7 +109,6 @@ export const FAMILIES: readonly Family[] = [
     god: "Zeus",
     exec: "Arav",
     word: "BOLT",
-    dino: "zeus-final-gem",
     riddles: [
       {
         riddle: "The more I dry, the wetter I get. What am I?",
@@ -141,7 +136,6 @@ export const FAMILIES: readonly Family[] = [
     god: "Aphrodite",
     exec: "Khang",
     word: "LOVE",
-    dino: "aphrodite-final-roses",
     riddles: [
       {
         riddle:
@@ -171,7 +165,6 @@ export const FAMILIES: readonly Family[] = [
     god: "Ares",
     exec: "Naks",
     word: "SPEAR",
-    dino: "ares-final2-fitted",
     riddles: [
       {
         riddle: "Before it was discovered, what was the tallest mountain on Earth?",
@@ -203,7 +196,6 @@ export const FAMILIES: readonly Family[] = [
     god: "Poseidon",
     exec: "Emily",
     word: "TIDE",
-    dino: "poseidon-final-trident",
     riddles: [
       {
         riddle:
@@ -230,7 +222,6 @@ export const FAMILIES: readonly Family[] = [
     god: "Hermes",
     exec: "Ashton",
     word: "WING",
-    dino: "hermes2-final-spiral",
     riddles: [
       {
         riddle:
@@ -258,7 +249,6 @@ export const FAMILIES: readonly Family[] = [
     god: "Artemis",
     exec: "Shreeya",
     word: "HUNT",
-    dino: "artemis-leaf-headband",
     riddles: [
       {
         riddle: "It belongs to you, but other people use it far more than you do. What is it?",

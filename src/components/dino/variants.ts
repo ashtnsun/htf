@@ -1,6 +1,7 @@
 import { DINO_PIXELS } from "@/components/brand/dino-pixels";
 import { compose, GREEN, layer, local, WHITE } from "@/components/dino/compose";
 import { GOD_VARIANTS } from "@/components/dino/gods";
+import { REVEAL_SPRITES } from "@/components/dino/reveal";
 import { BRAND_COLORS, flipX, fromRows, type Sprite } from "@/components/dino/sprite";
 
 /**
@@ -137,5 +138,11 @@ const STARTING_POINTS: readonly Omit<Variant, "group">[] = [
 
 export const VARIANTS: readonly Variant[] = [
   ...STARTING_POINTS.map((v) => ({ ...v, group: GROUP })),
+  ...Object.entries(REVEAL_SPRITES).map(([god, sprite]) => ({
+    id: `reveal-${god.toLowerCase()}`,
+    group: "Family reveal",
+    note: `${god}, as /olympus reveals them`,
+    sprite,
+  })),
   ...GOD_VARIANTS,
 ];
