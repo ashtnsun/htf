@@ -55,7 +55,7 @@ src/components/
                     chrome, noindex): Trial runs journey/ on the family's laptop, a cipher chain
                     where no step explains itself (Portrait: webcam photo, faces found on the laptop
                     by MediaPipe and named one by one; Riddles; Wordle; Inscription, a Vigenère stone
-                    with five wheels, keyed by the word plus a count under each wheel; Herald, a folded A4 letter hidden in the room where the stone says, its seal word typed on the laptop (the letters print from app/olympus/letters/page.dev.tsx, dev only, so the seal words never deploy); Torches,
+                    with five wheels, keyed by the word plus a count under each wheel; Herald, a folded A4 letter hidden in the room where the stone says, its seal word typed on the laptop (the letters print from /olympus/letters, live since 2026-11-02: noindex and unlinked, but anyone with the URL can read the seal words); Torches,
                     Polybius fires; Finale, the word for /oracle), every step checked in
                     app/olympus/actions.ts, Curtain between steps, styles in journey/journey.css;
                     /olympuz is the frozen pre-chain snapshot (components/olympuz, content/olympuz.ts),

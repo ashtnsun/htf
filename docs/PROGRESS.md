@@ -88,6 +88,18 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 16l — 2026-11-02 (the herald's letters go live)
+
+**Asked:** Ashton: push the seal letters to live, to print them.
+
+**Done:** `app/olympus/letters/page.dev.tsx` became `page.tsx`, so /olympus/letters is on the deployed site. Noindex through the Olympus layout, not in the sitemap, linked from nowhere.
+
+**Decision:** this reverses the dev-only rule of Session 16j at Ashton's request. Anyone with the URL can read every group's seal word until it is moved back.
+
+**TODOs:** rename the page back to `page.dev.tsx` after printing and before the reveal. The sheets are A4; a Letter printer needs "fit to page".
+
+**Next session starts with:** whether the letters are printed, then moving the page back to dev only.
+
 ## Session 16k — 2026-11-01 (Olympus floats)
 
 **Asked:** the home page "Climb Olympus" graphic is bad; make it something like a floating
