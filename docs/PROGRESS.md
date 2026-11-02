@@ -88,6 +88,38 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 16m — 2026-11-02 (the Prologue: the family reveal's slides)
+
+**Asked:** slides for the family reveal, presented from the site and clicked through: a cinematic reveal of the Greek-god theme, the task (find whose family you are in), the setup (one laptop per family, the site) and the Oracle (bring the final word to the presentation laptop).
+
+**Built:** `/prologue` (`components/olympus/prologue`), noindex, no site chrome, 15 beats, one per press. The picture is one canvas of solid cells that flies from scene to scene, snapped to the grid.
+
+- Standby: one small flame, to sit on the projectors while the room settles.
+- The tilt up a three-screen mountain, then lightning and the OLYMPUS title.
+- A roll call of the nine gods (shape and body colour only), then all nine in a pediment.
+- The nine execs, a roulette over their photos that stops on nobody, "Whose family are you in?"
+- The chain of trials ("No trial explains itself").
+- Setup I to IV: one laptop, the address, the group's column, the camera and the tab.
+- The Oracle: the fire, a demonstration of typing a word and holding REVEAL, a nameless dark T-rex with a green eye.
+- "Who is your god?" with the address, left up while families start. The next press collapses everything into the flame and lands on /oracle.
+
+Keys: click, Space, Enter, right arrow or Page Down go on; left arrow or Page Up go back to the finished beat; F full screen, S sound, B black. The place is in the hash, so a refresh resumes.
+
+**Decisions (mine, for Ashton to overrule):**
+
+- The slides never connect an exec to a god: no import of `content/olympus.ts`, and the gods' order matches neither the families nor the board. The nine god names and shapes are public on this route.
+- Nothing explains a trial. The only first-trial detail is what a family needs to get going: allow the camera, every face in the frame, keep the tab.
+- Sound is synthesised and off until S. I measured it (thunder peak 0.85, drone 0.2, after finding and trimming thunder at 1.41) but could not listen to it.
+- The address reads `location.host`, so it shows the right site only when presented from the deployed one.
+
+**Verified:** typecheck, lint and `pnpm build` clean; no puzzle answer in `.next/static`. The whole deck played on the production build at 1920×1080 and 1366×768, ending on /oracle, no console errors. In dev: 60 fps at 1920 in headless Chromium, back, resume and black; reduced motion ran without errors and its frames at 1440×900 look right; axe 0 violations at 1440 and 390. Screenshots: `docs/screenshots/session-16m/`.
+
+**Not verified:** a run at 1280×800 and axe against the production build (the machine ran low on memory and both were stopped); the sound by ear; a real projector or clicker; a phone, since the deck is meant for a laptop on projectors.
+
+**TODOs:** Ashton's run through with sound on. Confirm "Click your group's column" fits how groups get their numerals.
+
+**Next session starts with:** Ashton's look at /prologue, then whether it ships.
+
 ## Session 16l — 2026-11-02 (the herald's letters go live)
 
 **Asked:** Ashton: push the seal letters to live, to print them.
@@ -175,8 +207,7 @@ hidden in the room, Greek-framed.
   print CSS (letters.css) hides the layout and puts one sheet per page with no margins.
 
 **Checked:** typecheck, lint. Played Group V in Playwright: the wheels, the corner word, the
-stone, the herald (KLEOS and ARETE refused, MOIRA opens), the fires receiving the clue; 1440 and
-375. Printed /olympus/letters to PDF: 9 A4 pages.
+stone, the herald (KLEOS and ARETE refused, MOIRA opens), the fires receiving the clue; 1440 and 375. Printed /olympus/letters to PDF: 9 A4 pages.
 
 **Not done:** not committed; no `pnpm build` (the dev server was running). A tab saved on the
 old scytale step starts over from the photo (its stage no longer exists).
