@@ -52,10 +52,22 @@ src/components/
                     cards, filtered by the sidebar's ?q=), AddPortfolio, HostControls, and
                     goals/ (GoalsBoard: the FigJam-style board, Realtime; Sticky)
   olympus/          the family reveal (/olympus, an event page like Portfolio Night: no site
-                    chrome, noindex): Trial (riddles checked by app/olympus/actions.ts, then the
-                    final word as Wordle, letters never given), GodRevealView (the god's /dino sprite cell by cell),
+                    chrome, noindex): Trial runs journey/ on the family's laptop, a cipher chain
+                    where no step explains itself (Portrait: webcam photo, faces found on the laptop
+                    by MediaPipe and named one by one; Riddles; Wordle; Inscription, a Vigenère stone
+                    with five wheels, keyed by the word plus a count under each wheel; Herald, a folded A4 letter hidden in the room where the stone says, its seal word typed on the laptop (the letters print from app/olympus/letters/page.dev.tsx, dev only, so the seal words never deploy); Torches,
+                    Polybius fires; Finale, the word for /oracle), every step checked in
+                    app/olympus/actions.ts, Curtain between steps, styles in journey/journey.css;
+                    /olympuz is the frozen pre-chain snapshot (components/olympuz, content/olympuz.ts),
+                    GodRevealView (the god's /dino sprite cell by cell),
                     Meander (the pixel Greek key), Colonnade (the solved
-                    words on pixel columns at the foot of the page), Temple (the home: one
+                    words on pixel columns at the foot of the page), OlympusButton (every
+                    button on /olympus and /oracle instead of SplitButton: Cinzel capitals in one
+                    of ten Greek looks, buttons/looks.tsx, picked per browser in the "g" menu
+                    (buttons/ButtonMenu, skipped while Wordle's `data-reads-keys` board is up),
+                    Meander keys by default, and one of six hovers, `data-hover` in globals.css,
+                    Double rule by default;
+                    game controls and the REVEAL hold keep their own), Temple (the home: one
                     column per group, built on load by TempleBuild), RevealGate (hold to reveal); the gods' sprites are dino/reveal.ts; content/olympus.ts is server only (answers)
   apply/            ApplyForm (client): the Google Form in a frame tall enough that no
                     section scrolls inside it — two measured heights, the first section and
@@ -115,7 +127,14 @@ src/components/
                     Chat / Badge show only on /dev/ui), SeasonNote, OnThisPage (/privacy only)
   home/             Hero (renders heroes/PhotoHero; Globe, Atlas, Typewriter, Cells and
                     Wordmark remain in heroes/ but are unreachable since the menu went;
-                    HeroShell is the shared frame), Globe (SVG, takes pins), WhatWeDo, Process (+ ProcessScroll,
+                    HeroShell is the shared frame), olympus/ (under the hero, the way into
+                    /olympus: OlympusScene, one centred link, an SVG cell grid drawn like
+                    olympus/Temple: Olympus as a floating island in a night sky (temple, braziers
+                    with green flames, ruins, vines, banked and drifting clouds, moon, stars),
+                    the T-rex on a ledge with stepping stones up to it, each rock bobbing
+                    one cell; it builds
+                    itself in view, the temple turns green when it is hovered itself, a click takes it apart and
+                    goes to /olympus), Globe (SVG, takes pins), WhatWeDo, Process (+ ProcessScroll,
                     ProcessScene: the footer T-rex as detective, team lead, builder and party
                     host in pixel art that dissolves cell by cell with scroll, the sprites in
                     ProcessSprites.ts; also the stills on /nonprofits),
@@ -230,7 +249,10 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
 - Contrast (checked, WCAG AA): text/muted/green/mint/cyan on bg, surface and surface-2 all
   pass; dark text on green (8.6:1) and on lime (16.6:1) pass; white on green FAILS (never);
   green-deep on bg is 3.8:1 → large text or decoration only; pink (6.0:1) and blue (5.7:1) on
-  bg pass but stay decoration. `/dev/ui` shows the table.
+  bg pass but stay decoration. `/dev/ui` shows the table. `--red #FF4545` (a raw var, no
+  utility) is only the one-second flash on a wrong answer in /olympus (`journey/parts` `wrong`):
+  a wrong answer there shows no words, only the shake and the flash (a screen reader still
+  hears it); the offline message stays visible in cyan.
 
 ## Component rules
 
@@ -244,7 +266,7 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
 - Every list renders `li` as the direct child of `ul`/`ol` (put `Reveal` inside the `li`,
   or around the whole list when the cards share rows through `grid-rows-subgrid`, which
   needs the direct grid → `li` → children chain).
-- Every CTA is a `SplitButton` (primary: green label, green arrow cell, 1.5px black divider;
+- Every CTA is a `SplitButton` (except on /olympus and /oracle: `olympus/OlympusButton`) (primary: green label, green arrow cell, 1.5px black divider;
   secondary: outlined, white arrow that turns black on the green hover fill; on hover the
   label rolls up into a copy and the arrow glyph nudges, since 2026-09-08; `presentational`
   renders a span for a button inside a card that is itself the link);

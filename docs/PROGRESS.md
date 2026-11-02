@@ -88,6 +88,282 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 16k — 2026-11-01 (Olympus floats)
+
+**Asked:** the home page "Climb Olympus" graphic is bad; make it something like a floating
+island in the clouds (Ashton's references: a pixel round colonnade on clouds, a ruined floating
+island, a temple up a stair under a big moon).
+
+**Built:** `home/olympus/OlympusScene` redrawn on a 120 × 60 cell grid, same pixel language
+(white outlines around dark fills, green accents, `crispEdges`) and the same build-in / click
+hand-off / hover code.
+
+- **The island:** a floating rock (`rock()`: a rounded belly with three hanging points, a
+  green grass row, white stepped outline, a few faint cracks in `line-strong`), vines in
+  `green-deep` off its underside with a leaf every third cell.
+- **On it:** the temple (two steps, six columns, architrave, dentils, cornice, pediment with a
+  dark tympanum; it turns green on hover as before), two braziers whose green flames flicker
+  between two frames, a broken column and a fallen drum.
+- **The climb:** the small T-rex (`SMALL_DINO_PIXELS`, with its eyelid blink) on a ledge at
+  the left, three stepping stones (small rocks from the same function) up to the island.
+- **The sky:** a crescent moon, ten twinkling stars, three dim clouds drifting behind; cloud
+  banks in front (muted outlines, dark fill, `cloud()`: puffs plus a flat body with rounded
+  bottom corners) around the island, the ledge and under the island.
+- **Motion:** the island, each stone and the ledge drop one cell and rise again on a 4 s cycle,
+  out of step (`.olympus-bob`, `steps(1)`); flames and stars in `globals.css` too. Under reduced
+  motion everything stands still and one flame frame shows.
+
+**Verified:** typecheck and lint clean; axe 0 violations on the section; the click still takes
+the scene apart and lands on /olympus with no console errors. Screenshots in
+`docs/screenshots/session-16k/`. Not committed (the scene sits in the untracked
+`components/home/olympus/` with the other session's Olympus work).
+
+**Then (Ashton):** the full-size T-rex (`DINO_PIXELS`), not the small one, on the ledge; and
+the hover only on the building: the temple's group carries `hover:text-green` over a
+transparent rect the size of the temple (the link still covers the whole scene, and focusing
+it still turns the temple green).
+
+**Next session starts with:** Ashton's look at the floating island.
+
+## Session 16j — 2026-11-01 (the stone's wheels count, step V becomes the herald's letters)
+
+**Asked:** the Inscription should not take the Wordle word as is: five sums under the wheels
+turn it into the key. Then the word in the step's top-left corner. Then a new step V: the
+scytale was pointless once the wheels counted the longest name. A labyrinth was built and
+dropped (one person's busywork); Ashton's own idea replaced it: a printed letter per group,
+hidden in the room, Greek-framed.
+
+**Built:**
+
+- `journey/cipher.ts`: `KEY_STEPS` (shown under the wheels) and `inscriptionKey`. Each letter
+  of the word moves by + letters in the shortest name, − faces in the family photo, + group
+  number × 2, + letters in the longest name, − number of exec members (9), wrapping A–Z. The
+  server carves the stone with that key (`guessWord` now takes the names) and checks it in
+  `readInscription`. Group V (SIGMA) with Ashton, Mia, Jonathan, Lee opens on VEQUR.
+- Inscription: the word as green tiles in the page's top-left corner under the Greek key
+  (in the column's flow on phones, where the corner crowded the heading). Its button is now
+  "Seek the letter".
+- Each family's stone now carries its own `hiding` line (content/olympus.ts): where its letter
+  is hidden. All nine are `HIDING_TODO` until the day.
+- Step V is "The Herald" (stage `herald`; the scytale and the labyrinth are gone):
+  `journey/Herald.tsx` quotes the stone, shows the pixel wax seal (`journey/Seal.tsx`) and takes
+  the seal word; `breakSeal` checks it for that group (another group's word is refused) and
+  returns the clue and the torches. A wrong word shakes, no silence.
+- The seal (`journey/Seal.tsx`, 21 × 21): a wax blob with drips, a pressed rim, the Greek key
+  stamped in its face, shade lower right, a glint upper left. Dark wax until the word is right,
+  then it lights green, its glow a drop shadow that follows the wax (a box-shadow had drawn a
+  black square round it), and it cracks down a jagged line, the halves stepping a cell apart.
+  `mono` for the printed letters (pressed cells left as paper).
+- The clue is now a sentence that reads without punctuation: "IN THE SQUARE OF POLYBIUS THE
+  LEFT FIRES COUNT THE ROW" (`CLUE`). Seal words, one per group: ARETE, KLEOS, XENIA, NOSTOS,
+  MOIRA, LOGOS, KAIROS, ETHOS, AGON.
+- `/olympus/letters` (`page.dev.tsx`, dev only so the seals never deploy): nine A4 sheets to
+  print and Z-fold. Outside panel: "A letter from the herald", "Group V", the seal, "Break no
+  seal but your own"; inside: the clue, then "The seal" and the word. Fold marks in the margins;
+  print CSS (letters.css) hides the layout and puts one sheet per page with no margins.
+
+**Checked:** typecheck, lint. Played Group V in Playwright: the wheels, the corner word, the
+stone, the herald (KLEOS and ARETE refused, MOIRA opens), the fires receiving the clue; 1440 and
+375. Printed /olympus/letters to PDF: 9 A4 pages.
+
+**Not done:** not committed; no `pnpm build` (the dev server was running). A tab saved on the
+old scytale step starts over from the photo (its stage no longer exists).
+
+**TODO (Ashton, on the day):** hide the letters, then give each family's `hiding` a cryptic
+line for its spot (capitals and spaces only) and deploy.
+
+**Next session starts with:** Ashton's print of the letters and his run through the stone and
+the herald.
+
+## Session 16i — 2026-11-01 (ten looks for the Olympus button, the "g" menu)
+
+Ashton did not like the /olympus and /oracle buttons and asked for ten simple Greek variants
+to compare from a config menu on "g".
+
+- `components/olympus/buttons/`: `looks.tsx` (the ten looks: Meander keys, Columns, Temple
+  front, Laurel, Stele, Key band, Dentils, Inscription, Alpha and omega, Running wave; every
+  ornament a pixel string map or a stepped course, currentColor, crisp edges), `store.ts`
+  (localStorage + `useSyncExternalStore`; server and hydration see the default) and
+  `ButtonMenu.tsx` (the right-edge panel on both layouts, a preview of the primary and
+  secondary of each look, Escape closes). `OlympusButton` is now a client switch over the looks.
+- "g" is ignored in fields and while an element with `data-reads-keys` is on the page (the
+  Wordle board, which reads every letter from the window).
+- Hover is a second setting in the same menu (Ashton did not like the green fill or the words
+  turning green): Torchlight (ornaments and frame glow), Flicker (ornaments gutter in
+  `steps()`), Underline (a rule draws out from the centre), Brackets (pixel corners), Double rule
+  (the default since 2026-11-01, Ashton's pick over Torchlight), Wash. CSS in globals.css under "The Olympus button hovers", keyed by `data-hover`; primary
+  words never change colour, secondary brightens muted → white.
+- Checked: typecheck, lint, build; screenshots of every look at rest and on hover (not kept).
+
+**Next session starts with:** Ashton's pick of a look and a hover. Then make them the only ones
+and remove the menu, the store and the rest (the way the Shift + M menu went), so nobody at the event opens it.
+
+## Session 16h — 2026-11-01 (the photo step holds still)
+
+**Asked:** on step I, drop the "Everyone close together…" and "Tap a face the stone missed…"
+lines, centre the camera frame on the screen, a real shutter button with "Three second timer"
+under it, no shift between the photo and the naming, the name field underlined only (it showed
+the mint focus box and the caret sat inside the placeholder), a looser zoom on each face, and
+"Remember these names" as the last title in place of "The temple knows you".
+
+**Built:**
+
+- `journey/Portrait`: from the live camera to the last name the step is one stage
+  (`.portrait-stage` in journey.css). The frame keeps the middle of the screen, the heading
+  sits above it and the controls hang below, and both change in place with a fade
+  (`.journey-fade`). The photo appears under the flash in the frame the preview used. The
+  scroll on "Everyone is here" is gone. The camera code is now a hook (`useCamera`) and a
+  `CameraView`.
+- The preview and the photo are both cut to 16:9 from the middle (`still()`), so the photo is
+  what the camera showed and the frame never changes size. The live face marks now line up on
+  cameras that are not 16:9.
+- `Shutter`: a pixel ring round a green disc (17 × 17 cells at 4px) that lights on hover or
+  focus, with "Three second timer" under it (its `aria-describedby`).
+- The name field: the bottom line only (green while focused, no outline), no placeholder. A
+  "First name" caption sits under the line, and a wrong name replaces it.
+- `Mural` zoom: a face now fills about a third of the frame height (scale 1.4–3, was 1.6–5).
+  New `fade` prop (off on the photo step).
+- `StageHeading`: titles and lines fade when they change. With `steady`, the line keeps its
+  room even when empty, so the heading never changes height.
+
+**Checked:** typecheck, lint, build. Played in Playwright with a fake camera at 1440×900,
+1280×720 and 390×844. The frame's box is identical across camera, flash, review, naming and
+named at each size, and its centre is the screen's centre. Nothing scrolls. axe found 0
+violations on the camera and naming states.
+
+**Not done:** not committed (journey/ is still untracked with 16g's work). At 1280×720 the
+frame is only 370px wide: keeping it centred, with the heading above and the name form below,
+leaves that much room.
+
+## Session 16g — 2026-10-31 (the family reveal becomes a cipher chain)
+
+**Asked:** Ashton worried families would breeze through the riddles. After several rounds of
+ideas, the final plan: a longer chain on each family's laptop that ends in a word only the
+Oracle (`/oracle`, the projector laptop) can turn into the god. After a first build, Ashton
+played it in under 5 minutes, so: no pixelation, harder riddles, and no step that explains
+itself or hands over its answer.
+
+**Built (`components/olympus/journey/`, run by `olympus/Trial`, same path and props so
+TrialLoader and the Passage still work):**
+
+1. **The mural** (`Portrait`, `Mural`, `faces`). The webcam, the family's live faces marked, a
+   3-2-1 count and a flash.
+   - Faces are found on the laptop by MediaPipe BlazeFace (`@mediapipe/tasks-vision` 1.1.1),
+     searched whole and in 2×2, 3×3 and 4×4 overlapping tiles, then merged. It found all nine
+     faces in front in `team-selfie.jpg` and none of the crowd behind.
+   - The family fixes the marks: tap a missed face, tap a frame to remove it.
+   - The photo then zooms onto each face in turn for a first name, and ends with the names under
+     the faces. No pixelation (Ashton).
+   - Without a camera, the family types its names in a list.
+   - The runtime (26 MB) is copied into `public/olympus/mediapipe` by
+     `scripts/copy-mediapipe.mjs` on postinstall and build, and is git-ignored. The 230 KB model,
+     `public/olympus/blaze-face.tflite`, is committed.
+2. **Riddles:** five per family, rewritten to be oblique, with new neutral 5-letter words
+   (GYROS, DELTA, TITAN, HOMER, SIGMA, PLATO, CHAOS, OMEGA, ATLAS). Nothing in a word points to
+   the god.
+3. **Wordle** with green and gold marks. Gold `#E9C46A` is used only on these tiles, behind dark
+   text. The columns stand beside the board.
+   - Six tries a round; the sixth wrong one clears the board and starts a 60-second silence.
+4. **The inscription:** a stone in a Vigenère cipher whose key is the word. Five wheels each turn
+   their own column; nothing says the word is the key.
+5. **The scytale:** a strip wound on a rod as thick as the longest first name. The stone says
+   only "the longest of your names is the measure of the rod".
+   - The family chooses a thickness and then winds; nothing previews.
+   - A wrong rod tears the strip and starts a 30-second silence.
+6. **The fires:** two walls of five braziers in pixel art with stepped green flames, signalling
+   Polybius pairs.
+   - The square is never drawn, and nothing gives the word's length.
+   - A wrong answer starts a 15-second silence.
+7. **The final word** (DRACHMA, MARATHON, PHOENIX, SPARTAN, PEGASUS, AMPHORA, CENTAUR,
+   MINOTAUR, ODYSSEY) goes to the Oracle. `consultOracle` matches it, and its return shape for
+   htf-e3's Oracle is unchanged.
+
+**How it holds together:**
+
+- Every step is checked by a server action that also re-checks the step before it, and nothing
+  of a later step reaches the browser early. A grep of `.next/static` found no answer, word or
+  message.
+- Silences are kept in the tab's save, so a refresh can't skip them.
+- Between steps, `Curtain` closes the screen in cells, shows the step's numeral, title and Greek
+  key, then opens; the step's parts rise in as it opens.
+- Styles live in `journey/journey.css`, out of `globals.css`.
+
+**The snapshot:** `/olympuz` freezes the flow as it stood before this session:
+`content/olympuz.ts`, `components/olympuz/*`, `app/olympuz/*`, and `Temple` gained a `base`
+prop. Its old words still open the Oracle. SiteChrome drops the site chrome there too.
+
+**Verified:**
+
+- typecheck, lint, build.
+- Family I played end to end in Playwright, with a club photo standing in for the webcam. This
+  covered a wrong riddle, a wrong rod (torn, silenced), a wrong fires answer and a reload on the
+  last step. No console errors, no horizontal scroll.
+- axe found 0 violations on all seven steps at 1440 and 390, and on /olympus, /olympuz and
+  /olympuz/1.
+- Screenshots are in `docs/screenshots/session-16g/`.
+
+**Not done:**
+
+- Nothing is committed: htf-e3's Oracle work is in the same files and still uncommitted.
+- Not tried on a real webcam, or with a real group around one laptop.
+- Not timed by a real group: the target is about 25–35 minutes, against under 5 before.
+
+**Next session starts with:** Ashton's own run of /olympus/1 on a laptop with its real camera,
+then a decision on the commit split with htf-e3 (Trial.tsx and actions.ts carry both sessions'
+work).
+
+## Session 16f — 2026-10-30/31 (the way into /olympus from home)
+
+**Built:** a scene between the home hero and "What do we do?" that leads to /olympus
+(`components/home/olympus/`).
+
+Ashton went through nine rounds:
+
+1. A bordered panel.
+2. A night climb.
+3. A stepped mountain.
+4. Procedural vistas.
+5. Pixelated CC0 photos.
+6. A detailed procedural vista.
+7. A clean symmetric palace.
+8. A city on the mountain with a ruin foreground. Higgsfield was tried first, but it returned
+   "Requires basic plan or higher" on the free plan; no credits were spent.
+9. What shipped: everything scrapped. "Less detail, simple, in the same style as the graphic on
+   the olympus home page."
+
+The canvas painter, the photo pipeline, the climb transition and their helpers were all
+deleted.
+
+- `OlympusScene` (client) inside `OlympusSection`: an eyebrow and "Climb _Olympus_" in Cinzel,
+  then one SVG on a 120 × 48 cell grid, drawn like `olympus/Temple`: solid cells, details
+  carved out, white with a `fill-surface` interior, the Greek key in `fill-green-deep`.
+  - **Mountain:** a stepped Mount Olympus (a white staircase edge around a dark fill) with a
+    small temple on its summit. The temple has two steps, five columns, an architrave, a
+    cornice, and a pediment with a dark tympanum.
+  - **Ground:** a white ground line over the Greek key.
+  - **Clouds:** three muted clouds drifting behind, one cell a step, drawn twice so they wrap.
+  - **The T-rex:** the big map in green on the ground at the left, facing the mountain, with
+    the footer's eyelid blink.
+  - **Hover:** turns the temple green, as the /olympus columns do.
+- `.olympus-scene` rounds the width down to whole pixels per cell (up to 960px).
+- It builds itself cell group by cell group from the ground up the first time it scrolls into
+  view (the TempleBuild technique: one frame loop setting each path's opacity at its
+  `data-at`).
+- A plain click takes it apart top down, about 0.6 s, then the router goes to /olympus, which
+  builds its own temple. Reduced motion: it is just there, and the link is plain.
+- `SMALL_DINO_PIXELS` moved from ProcessSprites into `brand/dino-pixels` (round 2) and stays
+  there.
+
+**Verified:**
+
+- Typecheck of these files and `pnpm lint` are clean; axe found 0 violations.
+- Playwright: built scene, hover, the click hand-off to /olympus, and the phone with reduced
+  motion. Screenshots are in `docs/screenshots/session-16f/`.
+- `pnpm build` fails only on the parallel session's in-progress olympus files.
+- Not committed: `OlympusSection` imports that session's untracked `components/olympus/fonts.ts`.
+
+**Next session starts with:** Ashton's look at the simple scene.
+
 ## Session 16e — 2026-10-30 (the family reveal, /olympus)
 
 **Built:** `/olympus`, the page for the family reveal event: nine families, each led by an exec
