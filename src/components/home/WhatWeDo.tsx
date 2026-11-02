@@ -45,7 +45,6 @@ export function WhatWeDo({ services }: { services: Service[] }) {
       aria-labelledby="what-we-do-title"
       padding="lg"
       contain={false}
-      className="border-t border-line"
     >
       <RevealGroup>
         <div className="container-max container-x">

@@ -1,4 +1,10 @@
-import { DINO_ARM, DINO_EYE, dinoCells } from "@/components/brand/dino-pixels";
+import {
+  DINO_ARM,
+  DINO_EYE,
+  SMALL_DINO_EYE,
+  SMALL_DINO_PIXELS,
+  dinoCells,
+} from "@/components/brand/dino-pixels";
 import type { ProcessStep } from "@/lib/content/schemas";
 
 /**
@@ -124,36 +130,12 @@ const TRAIL = Array.from({ length: 8 }, (_, i) =>
 
 /* ---------------------------------------------------------------- match: the team */
 
-/**
- * The T-rex at about two thirds of its size, reduced by hand from the 20 × 22 map so it keeps
- * the same features on the same grid: the carved eye, the open mouth, the tiny arm, the tail
- * and the two legs. Faces right like the big map; the teammates are mirrored to face the lead.
- */
-const SMALL_DINO: readonly string[] = [
-  "........#####.",
-  ".......#######",
-  ".......##.####",
-  ".......#######",
-  ".......#######",
-  ".......####...",
-  ".......######.",
-  "#.....####....",
-  "#...#######...",
-  "##.#########..",
-  "##########.#..",
-  ".#########....",
-  "..#######.....",
-  "...##.##......",
-  "...#...#......",
-  "...##..##.....",
-];
-const SMALL_COLS = SMALL_DINO[0]!.length;
-const SMALL_EYE = { x: 9, y: 2 } as const;
+const SMALL_COLS = SMALL_DINO_PIXELS[0]!.length;
 
 /** A small T-rex mirrored to face left, its top-left cell at (ox, oy) in T-rex-local space. */
 function teammate(ox: number, oy: number, ink: Ink): Cell[] {
   const cells: Cell[] = [];
-  SMALL_DINO.forEach((row, y) => {
+  SMALL_DINO_PIXELS.forEach((row, y) => {
     Array.from(row).forEach((ch, x) => {
       if (ch === "#") {
         cells.push([TREX_ORIGIN.x + ox + (SMALL_COLS - 1 - x), TREX_ORIGIN.y + oy + y, ink]);
@@ -163,8 +145,8 @@ function teammate(ox: number, oy: number, ink: Ink): Cell[] {
   return cells;
 }
 const teammateEye = (ox: number, oy: number, ink: Ink, delay: number) => ({
-  x: TREX_ORIGIN.x + ox + (SMALL_COLS - 1 - SMALL_EYE.x),
-  y: TREX_ORIGIN.y + oy + SMALL_EYE.y,
+  x: TREX_ORIGIN.x + ox + (SMALL_COLS - 1 - SMALL_DINO_EYE.x),
+  y: TREX_ORIGIN.y + oy + SMALL_DINO_EYE.y,
   ink,
   delay,
 });

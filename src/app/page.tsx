@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Hero } from "@/components/home/Hero";
 import { HomeIntro } from "@/components/home/HomeIntro";
 import { ImpactBand } from "@/components/home/ImpactBand";
+import { OlympusSection } from "@/components/home/olympus/OlympusSection";
 import { Process } from "@/components/home/Process";
 import { WhatWeDo } from "@/components/home/WhatWeDo";
 import { WhoWeServe } from "@/components/home/WhoWeServe";
@@ -22,7 +23,7 @@ export const metadata: Metadata = { alternates: { canonical: "/" } };
 const linkClass = "font-medium text-green transition-colors hover:text-text";
 
 /**
- * Home (order from the 2026-09-06 audit): hero → what we do → how it works (scroll-driven
+ * Home (order from the 2026-09-06 audit): hero → the way into /olympus (2026-10-30) → what we do → how it works (scroll-driven
  * process) → impact (stats, testimonials, awards; hidden until published) → who we serve →
  * FAQ → contact CTA. Every section reads from content/ and content/site.ts; nothing here is
  * hard-coded except section copy.
@@ -32,6 +33,7 @@ export default function HomePage() {
     <>
       <HomeIntro />
       <Hero />
+      <OlympusSection />
       <WhatWeDo services={getServices()} />
       <Process steps={getProcess()} />
       <ImpactBand stats={getStats()} testimonials={getTestimonials()} awards={getAwards()} />
