@@ -146,6 +146,7 @@ export function Portrait({ onDone }: { onDone: (result: PortraitResult) => void 
           title: camera.seen.length
             ? `${roman(camera.seen.length)} in the frame`
             : "Into the frame",
+          line: "Make sure all members are in frame.",
         }
       : phase === "carving"
         ? { title: "Finding every face", line: "Hold still." }
