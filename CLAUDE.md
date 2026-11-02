@@ -68,7 +68,16 @@ src/components/
                     Meander keys by default, and one of six hovers, `data-hover` in globals.css,
                     Double rule by default;
                     game controls and the REVEAL hold keep their own), Temple (the home: one
-                    column per group, built on load by TempleBuild), RevealGate (hold to reveal); the gods' sprites are dino/reveal.ts; content/olympus.ts is server only (answers)
+                    column per group, built on load by TempleBuild), RevealGate (hold to reveal); the gods' sprites are dino/reveal.ts; content/olympus.ts is server only (answers);
+                    prologue/ is /prologue, the slides that open the event (noindex, no site chrome,
+                    client only): Prologue (the beats, one per press; keys in its comment; the last
+                    press lands on /oracle), stage (one canvas of solid cells that fly from scene to
+                    scene, snapped to the grid, plus the camera and the rock's flat spans),
+                    formations (the pictures as cell lists), score (sound synthesised in the browser,
+                    off until S). It must never say which exec is which god: it never imports
+                    content/olympus.ts, it draws the gods' shapes only, and GODS is in an order that
+                    matches neither the families nor the board. The address on screen reads
+                    location.host, so it is only right when presented from the deployed site
   apply/            ApplyForm (client): the Google Form in a frame tall enough that no
                     section scrolls inside it — two measured heights, the first section and
                     the rest (`scripts/measure-apply-form.mjs`), never a count of sections,

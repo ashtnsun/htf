@@ -1,0 +1,585 @@
+/* The Prologue (/prologue, components/olympus/prologue/Prologue): the family reveal's slides.
+   Sized like a slide: `--u` is one pixel of a 1920 × 1080 slide, whatever the projector is. */
+.pro-root {
+  --u: min(calc(100vw / 1920), calc(100vh / 1080));
+  --bar: calc(var(--u) * 104);
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  cursor: default;
+}
+.pro-root[data-idle] {
+  cursor: none;
+}
+.pro-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+.pro-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 52%, rgb(0 0 0 / 0.6) 100%);
+}
+.pro-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1600ms var(--ease-smooth);
+}
+.pro-root[data-glow] .pro-glow {
+  opacity: 1;
+}
+.pro-root[data-glow="summit"] .pro-glow {
+  background: radial-gradient(circle at 50% 54%, rgb(3 198 82 / 0.2), transparent 26%);
+}
+.pro-root[data-glow="fire"] .pro-glow {
+  background: radial-gradient(circle at 50% 48%, rgb(3 198 82 / 0.2), transparent 34%);
+}
+
+/* The letterbox: it closes for the story and opens for the practical steps. */
+.pro-bar {
+  position: absolute;
+  inset-inline: 0;
+  height: var(--bar);
+  background: #000;
+  transition: transform 1100ms var(--ease-in-out-soft);
+  z-index: 2;
+}
+.pro-bar-top {
+  top: 0;
+  transform: translateY(-100%);
+}
+.pro-bar-bottom {
+  bottom: 0;
+  transform: translateY(100%);
+}
+.pro-root[data-bars] .pro-bar {
+  transform: none;
+}
+
+.pro-text {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+.pro-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+}
+.pro-black {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  background: #000;
+}
+.pro-hint {
+  position: absolute;
+  inset-inline: 0;
+  bottom: calc(var(--u) * 48);
+  z-index: 3;
+  text-align: center;
+  font-size: max(13px, calc(var(--u) * 18));
+  color: var(--muted);
+}
+.pro-note {
+  position: absolute;
+  right: calc(var(--u) * 40);
+  bottom: calc(var(--u) * 40);
+  z-index: 7;
+  padding: 6px 12px;
+  background: var(--surface);
+  font-size: 14px;
+}
+.pro-preload {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------ type */
+.pro-voice {
+  font-family: var(--font-cormorant), serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: calc(var(--u) * 68);
+  line-height: 1.2;
+  color: var(--text);
+  text-shadow: 0 0 calc(var(--u) * 24) var(--bg);
+}
+.pro-voice-strong {
+  color: var(--green);
+}
+.pro-head {
+  font-family: var(--font-cinzel), serif;
+  font-weight: 600;
+  font-size: calc(var(--u) * 96);
+  line-height: 1.12;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 calc(var(--u) * 24) var(--bg);
+}
+.pro-body {
+  font-family: var(--font-cormorant), serif;
+  font-weight: 600;
+  font-size: calc(var(--u) * 62);
+  line-height: 1.2;
+  color: var(--text);
+}
+.pro-step-num {
+  font-family: var(--font-cinzel), serif;
+  font-weight: 600;
+  font-size: calc(var(--u) * 96);
+  line-height: 1.12;
+  color: var(--green);
+}
+
+/* The way type arrives: out of a soft focus, a little low. */
+.pro-in {
+  animation: pro-in 1100ms var(--ease-glide) var(--d, 0ms) both;
+}
+@keyframes pro-in {
+  from {
+    opacity: 0;
+    filter: blur(calc(var(--u) * 10));
+    transform: translateY(calc(var(--u) * 16));
+  }
+}
+.pro-root[data-instant] :is(.pro-in, .pro-title, .pro-question, .pro-god-name, .pro-exec) {
+  animation: none;
+}
+
+/* The climb's first two lines come and go while the rock passes; the third stays, in the sky. */
+.pro-passing {
+  position: absolute;
+  inset-inline: 0;
+  top: 38vh;
+  opacity: 0;
+  animation: pro-passing 3000ms linear var(--d, 0ms) both;
+}
+@keyframes pro-passing {
+  0% {
+    opacity: 0;
+    filter: blur(calc(var(--u) * 10));
+  }
+  22%,
+  76% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(calc(var(--u) * 6));
+  }
+}
+.pro-root[data-instant] .pro-passing {
+  display: none;
+}
+.pro-mountain-line {
+  font-size: calc(var(--u) * 88);
+  color: var(--green);
+}
+
+/* The mountain's line, in the sky above the summit. */
+.pro-lines {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(var(--bar) + var(--u) * 56);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 8);
+  text-align: center;
+}
+
+/* The title card: the name tightening slowly, as trailers do. */
+.pro-title-card {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(var(--bar) + var(--u) * 28);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.pro-logo {
+  height: calc(var(--u) * 36);
+  margin-bottom: calc(var(--u) * 10);
+}
+.pro-logo svg {
+  width: auto;
+  height: 100%;
+}
+.pro-title {
+  font-family: var(--font-cinzel), serif;
+  font-weight: 700;
+  font-size: calc(var(--u) * 216);
+  line-height: 1.05;
+  letter-spacing: 0.1em;
+  padding-left: 0.1em;
+  text-transform: uppercase;
+  text-shadow: 0 0 calc(var(--u) * 40) rgb(3 198 82 / 0.4);
+  animation: pro-title 8s cubic-bezier(0.1, 0.8, 0.2, 1) both;
+}
+@keyframes pro-title {
+  from {
+    letter-spacing: 0.34em;
+    padding-left: 0.34em;
+    opacity: 0;
+    filter: blur(calc(var(--u) * 14));
+  }
+  14% {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/* The roll call: the name slams in beside the god. */
+.pro-god {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 56%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pro-god[data-side="right"] {
+  right: 0;
+}
+.pro-god[data-side="left"] {
+  left: 0;
+}
+.pro-god-name {
+  font-family: var(--font-cinzel), serif;
+  font-weight: 700;
+  font-size: calc(var(--u) * 150);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  animation: pro-slam 300ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+@keyframes pro-slam {
+  from {
+    opacity: 0;
+    transform: scale(1.3);
+    filter: blur(calc(var(--u) * 10));
+  }
+}
+
+/* All nine: a line either side of the pediment. */
+.pro-pair {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: calc(var(--u) * 90);
+}
+.pro-pair > p {
+  width: calc(var(--u) * 330);
+  font-size: calc(var(--u) * 64);
+}
+.pro-pair > p:last-child {
+  text-align: right;
+}
+
+/* The execs. */
+.pro-execs-scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 84);
+  text-align: center;
+}
+.pro-execs {
+  display: flex;
+  gap: calc(var(--u) * 16);
+  transition: opacity 700ms var(--ease-smooth);
+}
+.pro-execs[data-dim] {
+  opacity: 0.16;
+}
+.pro-exec {
+  width: calc(var(--u) * 186);
+  animation: pro-in 1000ms var(--ease-glide) var(--d, 0ms) both;
+}
+.pro-execs[data-settled] .pro-exec {
+  animation: none;
+}
+.pro-exec-frame {
+  position: relative;
+  display: block;
+  height: calc(var(--u) * 232);
+  overflow: hidden;
+  background: var(--surface);
+  filter: grayscale(1) brightness(0.86);
+  transition: filter 120ms linear;
+}
+.pro-exec[data-lit] .pro-exec-frame {
+  filter: none;
+  outline: calc(var(--u) * 4) solid var(--green);
+  outline-offset: calc(var(--u) * -4);
+}
+.pro-exec-name {
+  display: block;
+  margin-top: calc(var(--u) * 10);
+  font-family: var(--font-cinzel), serif;
+  font-weight: 600;
+  font-size: calc(var(--u) * 30);
+  color: var(--text);
+}
+.pro-exec[data-lit] .pro-exec-name {
+  color: var(--green);
+}
+.pro-question {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-cinzel), serif;
+  font-weight: 700;
+  font-size: calc(var(--u) * 116);
+  line-height: 1.1;
+  text-shadow: 0 0 calc(var(--u) * 50) var(--bg);
+  animation: pro-slam 500ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+/* The chain: the line above it, the rule below it. */
+.pro-chain {
+  position: absolute;
+  inset: 0;
+  text-align: center;
+}
+.pro-chain > .pro-head {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(var(--bar) + var(--u) * 150);
+}
+.pro-chain-under {
+  position: absolute;
+  inset-inline: 0;
+  top: 68%;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 8);
+}
+
+/* The setup scenes. */
+.pro-step {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 52%;
+  right: calc(var(--u) * 96);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: calc(var(--u) * 28);
+}
+.pro-url {
+  position: absolute;
+  inset: 0;
+  text-align: center;
+}
+.pro-url-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: calc(var(--u) * 36);
+}
+.pro-url > .pro-url-head {
+  position: absolute;
+  inset-inline: 0;
+  top: 19%;
+}
+.pro-url-field {
+  position: absolute;
+  inset-inline: 0;
+  top: 42%;
+  height: 32.6%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: calc(var(--u) * 72);
+}
+.pro-url > .pro-body {
+  position: absolute;
+  inset-inline: 0;
+  top: 80%;
+}
+.pro-below {
+  position: absolute;
+  inset-inline: 0;
+  bottom: calc(var(--u) * 96);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 12);
+  text-align: center;
+}
+.pro-address {
+  position: relative;
+  display: inline-block;
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.pro-address-ghost {
+  visibility: hidden;
+}
+.pro-address-typed {
+  position: absolute;
+  inset: 0;
+  text-align: left;
+}
+.pro-caret {
+  display: inline-block;
+  width: 0.08em;
+  height: 0.9em;
+  margin-left: 0.05em;
+  vertical-align: -0.08em;
+  background: var(--green);
+}
+
+/* The Oracle's fire: a line either side of the flame. */
+.pro-oracle {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: calc(var(--u) * 120);
+}
+.pro-oracle-side {
+  width: calc(var(--u) * 520);
+}
+.pro-oracle-side:last-child {
+  text-align: right;
+}
+
+/* The demonstration: the same word box and REVEAL button as /oracle. */
+.pro-demo {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(var(--bar) + var(--u) * 56);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 44);
+}
+.pro-demo-word {
+  width: calc(var(--u) * 1000);
+  min-height: calc(var(--u) * 120);
+  padding-bottom: calc(var(--u) * 12);
+  border-bottom: 2px solid var(--line-strong);
+  text-align: center;
+  font-family: var(--font-cinzel), serif;
+  font-weight: 600;
+  font-size: calc(var(--u) * 88);
+  line-height: 1.2;
+  letter-spacing: 0.25em;
+}
+.pro-demo-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--u) * 460);
+  height: calc(var(--u) * 104);
+  overflow: hidden;
+  border: 2px solid var(--green);
+  background: var(--bg);
+  font-family: var(--font-cinzel), serif;
+  font-weight: 600;
+  font-size: calc(var(--u) * 36);
+  letter-spacing: 0.35em;
+  padding-left: 0.35em;
+}
+.pro-demo-fill {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 0.35em;
+  background: var(--green);
+  color: var(--bg);
+  clip-path: inset(0 100% 0 0);
+  animation: pro-fill 3600ms linear both;
+}
+@keyframes pro-fill {
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+.pro-after {
+  position: absolute;
+  inset-inline: 0;
+  bottom: calc(var(--bar) + var(--u) * 28);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 6);
+  text-align: center;
+}
+
+.pro-after .pro-head {
+  font-size: calc(var(--u) * 72);
+}
+
+/* The last slide: the question and the address, left up while the families set off. */
+.pro-final {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(var(--bar) + var(--u) * 40);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 28);
+  text-align: center;
+}
+.pro-final-title {
+  font-family: var(--font-cinzel), serif;
+  font-weight: 700;
+  font-size: calc(var(--u) * 132);
+  line-height: 1.05;
+  text-shadow: 0 0 calc(var(--u) * 40) rgb(3 198 82 / 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pro-passing {
+    display: none;
+  }
+  .pro-in,
+  .pro-title,
+  .pro-question,
+  .pro-god-name,
+  .pro-exec {
+    animation: none;
+  }
+  .pro-demo-fill {
+    animation: none;
+    clip-path: inset(0 0 0 0);
+  }
+  .pro-bar,
+  .pro-glow {
+    transition: none;
+  }
+}
