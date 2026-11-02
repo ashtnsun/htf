@@ -127,8 +127,9 @@ src/components/
                     Chat / Badge show only on /dev/ui), SeasonNote, OnThisPage (/privacy only)
   home/             Hero (renders heroes/PhotoHero; Globe, Atlas, Typewriter, Cells and
                     Wordmark remain in heroes/ but are unreachable since the menu went;
-                    HeroShell is the shared frame), olympus/ (under the hero, the way into
-                    /olympus: OlympusScene, one centred link, an SVG cell grid drawn like
+                    HeroShell is the shared frame), olympus/ (the way into /olympus, off the
+                    home page since 2026-11-01 and kept to come back, so /olympus is reached
+                    by URL only: OlympusScene, one centred link, an SVG cell grid drawn like
                     olympus/Temple: Olympus as a floating island in a night sky (temple, braziers
                     with green flames, ruins, vines, banked and drifting clouds, moon, stars),
                     the T-rex on a ledge with stepping stones up to it, each rock bobbing
