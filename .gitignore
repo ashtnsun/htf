@@ -53,3 +53,10 @@ next-env.d.ts
 
 # scratch
 .tmp-*
+
+# the family reveal face finder runtime, copied from node_modules (scripts/copy-mediapipe.mjs)
+/public/olympus/mediapipe/
+
+# tool output: Playwright MCP logs, Python bytecode
+/.playwright-mcp/
+__pycache__/

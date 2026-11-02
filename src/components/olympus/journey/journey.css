@@ -1,0 +1,277 @@
+/* The family reveal's journey (components/olympus/Trial and journey/*): the chain of steps from
+   the family's photo to the word they take to the Oracle. Kept beside the journey rather than in
+   globals.css; the shared olympus animations (pop, flip) stay there. */
+
+/* A step's parts rise in one after another (`--d` is each one's delay). They wait, paused,
+   while the curtain (journey/Curtain) still covers the step, so they play as it opens. */
+.journey-rise {
+  animation: journey-rise 900ms var(--ease-glide) var(--d, 0ms) both;
+}
+[data-held] .journey-rise {
+  animation-play-state: paused;
+}
+@keyframes journey-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+/* A part that changes in place (a heading's new title, the photo step's controls): it fades in
+   where the old one was, without moving. */
+.journey-fade {
+  animation: journey-fade 600ms var(--ease-smooth) var(--d, 0ms) both;
+}
+@keyframes journey-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The photo step (journey/Portrait), from the live camera to the last name: the frame holds the
+   middle of the screen whatever it shows, the heading sits on top of it and the controls hang
+   under it, so nothing moves when one view gives way to the next. The stage cancels the
+   layout's vertical padding (py-12, md:py-20) and fills the screen under the logo bar (4rem and
+   the 12px Greek key); the column is the frame's width, and controls wider than it overflow
+   both sides evenly instead of widening it. The frame is as wide as the column allows but leaves 32rem of height for
+   the bar, the heading and the controls. */
+.portrait-stage {
+  --bar: calc(4rem + 12px);
+  --frame-w: min(56rem, calc(100vw - 2rem), max(20rem, calc((100dvh - 32rem) * 16 / 9)));
+  --frame-h: calc((var(--frame-w) - 1rem - 2px) * 9 / 16 + 1rem + 2px);
+  display: grid;
+  grid-template-rows: max(10rem, calc(50dvh - var(--bar) - var(--frame-h) / 2)) auto 1fr;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  width: var(--frame-w);
+  min-height: calc(100dvh - var(--bar));
+  margin-block: -3rem;
+}
+@media (min-width: 48rem) {
+  .portrait-stage {
+    margin-block: -5rem;
+  }
+}
+
+/* The curtain's title card: the numeral settles, the title tracks in, the key draws in whole
+   turns, then the line rises. */
+.curtain-numeral {
+  animation: curtain-numeral 1100ms var(--ease-glide) both;
+}
+.curtain-title {
+  animation: curtain-track 1000ms var(--ease-glide) 300ms both;
+}
+.curtain-key {
+  animation: curtain-key 700ms steps(7, jump-end) 600ms both;
+}
+.curtain-line {
+  animation: journey-rise 900ms var(--ease-glide) 900ms both;
+}
+[data-phase="open"] .curtain-card {
+  animation: curtain-out 400ms var(--ease-smooth) both;
+}
+@keyframes curtain-numeral {
+  from {
+    opacity: 0;
+    transform: scale(1.18);
+    filter: blur(6px);
+  }
+}
+@keyframes curtain-track {
+  from {
+    opacity: 0;
+    letter-spacing: 0.6em;
+  }
+}
+@keyframes curtain-key {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+@keyframes curtain-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* A Wordle tile turns to its mark when it is edge-on (`--mark-bg`, `--mark-fg` set per tile). */
+.journey-flip {
+  animation: journey-flip 520ms ease-in-out var(--d, 0ms) both;
+}
+@keyframes journey-flip {
+  0% {
+    transform: rotateX(0);
+  }
+  50% {
+    transform: rotateX(-90deg);
+    background-color: transparent;
+    border-color: var(--muted);
+    color: var(--text);
+  }
+  50.01%,
+  100% {
+    background-color: var(--mark-bg);
+    border-color: var(--mark-bg);
+    color: var(--mark-fg);
+  }
+  100% {
+    transform: rotateX(0);
+  }
+}
+
+/* A letter of the inscription turning over to what the key reads it as. */
+.journey-turn {
+  animation: journey-turn 420ms var(--ease-in-out-soft) var(--d, 0ms) both;
+}
+@keyframes journey-turn {
+  0% {
+    transform: rotateY(90deg);
+    opacity: 0.2;
+  }
+}
+
+/* The stone, the rod or the fires answering: a green light comes up behind and settles. */
+.journey-wake {
+  animation: journey-wake 1600ms var(--ease-smooth) both;
+}
+@keyframes journey-wake {
+  0% {
+    box-shadow: 0 0 0 0 rgb(3 198 82 / 0);
+  }
+  30% {
+    box-shadow: 0 0 80px 8px rgb(3 198 82 / 0.45);
+  }
+  100% {
+    box-shadow: 0 0 40px 0 rgb(3 198 82 / 0.15);
+  }
+}
+
+/* The camera's flash. */
+.journey-flash {
+  animation: journey-flash 700ms var(--ease-smooth) both;
+}
+@keyframes journey-flash {
+  from {
+    opacity: 0.95;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* A countdown numeral: in big, then gone. */
+.journey-count {
+  animation: journey-count 1000ms var(--ease-glide) both;
+}
+@keyframes journey-count {
+  0% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* A torch's flame: three frames of whole cells (journey/Torches), stepped, never tweened. */
+.journey-flame > g {
+  opacity: 0;
+  animation: journey-flame 540ms steps(1, end) infinite;
+}
+.journey-flame > g:nth-child(2) {
+  animation-delay: -180ms;
+}
+.journey-flame > g:nth-child(3) {
+  animation-delay: -360ms;
+}
+@keyframes journey-flame {
+  0%,
+  33.33% {
+    opacity: 1;
+  }
+  33.34%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* The mural in the wall and the zoom onto each face. */
+.journey-pan {
+  transition:
+    transform 1400ms var(--ease-in-out-soft),
+    opacity 1000ms var(--ease-smooth);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .journey-rise,
+  .journey-fade,
+  .journey-flip,
+  .journey-turn,
+  .journey-wake,
+  .journey-count,
+  .curtain-numeral,
+  .curtain-title,
+  .curtain-key,
+  .curtain-line {
+    animation-duration: 1ms;
+    animation-delay: 0ms;
+  }
+  .journey-flame > g {
+    animation: none;
+  }
+  .journey-flame > g:first-child {
+    opacity: 1;
+  }
+  .journey-pan {
+    transition: none;
+  }
+}
+
+/*
+ * The herald's seal (journey/Seal). Dormant it is dark wax; broken it lights green with a white
+ * glint, its glow follows the wax (a drop shadow, not a box), and its halves step apart one
+ * whole cell at a time.
+ */
+.seal path {
+  transition: fill 1000ms var(--ease-smooth);
+}
+.seal-half {
+  transition: transform 400ms steps(1, end) 250ms;
+}
+.seal-dormant {
+  --seal-wax: var(--green-deep);
+  --seal-shade: color-mix(in srgb, var(--green-deep) 45%, var(--bg));
+  --seal-glint: color-mix(in srgb, var(--green-deep) 55%, white);
+}
+.seal-lit {
+  --seal-wax: var(--green);
+  --seal-shade: var(--green-deep);
+  --seal-glint: white;
+}
+.seal-wake {
+  animation: seal-wake 1600ms var(--ease-smooth) both;
+}
+@keyframes seal-wake {
+  0% {
+    filter: drop-shadow(0 0 0 rgb(3 198 82 / 0));
+  }
+  30% {
+    filter: drop-shadow(0 0 28px rgb(3 198 82 / 0.6));
+  }
+  100% {
+    filter: drop-shadow(0 0 14px rgb(3 198 82 / 0.25));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .seal-half,
+  .seal path {
+    transition: none;
+  }
+}

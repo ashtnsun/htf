@@ -8,7 +8,7 @@ import { EASE_GLIDE } from "@/lib/motion";
 /** Seconds: the dinosaur's cells switch on from START over SPREAD, then the name rises in. */
 const START = 0.5;
 const SPREAD = 1.4;
-/** Every cell the same size on every god, a whole number of pixels. */
+/** Pixels per cell: the same on every god, a whole number (the Oracle passes a bigger one). */
 const CELL = 10;
 
 /**
@@ -16,7 +16,7 @@ const CELL = 10;
  * cell in its own glow, then the god's name and the exec who leads the family. Under reduced
  * motion everything is simply there.
  */
-export function GodRevealView({ reveal }: { reveal: GodReveal }) {
+export function GodRevealView({ reveal, cell = CELL }: { reveal: GodReveal; cell?: number }) {
   const reduce = useReducedMotionSafe();
   const { sprite, color } = reveal;
   const cells = sprite.cells.flatMap((v, i) =>
@@ -40,18 +40,7 @@ export function GodRevealView({ reveal }: { reveal: GodReveal }) {
         />
       )}
 
-      <ol aria-label={`Your word: ${reveal.word}`} className="flex gap-2">
-        {[...reveal.word].map((letter, i) => (
-          <li
-            key={i}
-            className="flex size-10 items-center justify-center bg-green font-olympus text-xl font-semibold text-bg"
-          >
-            {letter}
-          </li>
-        ))}
-      </ol>
-
-      <div className="relative mt-12" style={{ width: sprite.width * CELL, maxWidth: "100%" }}>
+      <div className="relative" style={{ width: sprite.width * cell, maxWidth: "100%" }}>
         <div
           aria-hidden="true"
           className="anim-olympus-glow absolute -inset-1/4"

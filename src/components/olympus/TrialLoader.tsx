@@ -10,6 +10,7 @@ export const TrialLoader = dynamic(
   () => import("@/components/olympus/Trial").then((m) => m.Trial),
   {
     ssr: false,
-    loading: () => <div className="mt-10 min-h-80" aria-hidden="true" />,
+    // `data-trial-pending`: the Passage keeps its title card up until the trial is here.
+    loading: () => <div data-trial-pending className="mt-10 min-h-80" aria-hidden="true" />,
   },
 );

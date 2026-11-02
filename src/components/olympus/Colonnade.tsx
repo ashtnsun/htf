@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
+import { OlympusButton } from "@/components/olympus/OlympusButton";
 import { EASE_IN_OUT } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
@@ -91,17 +92,17 @@ export function Colonnade({
         })}
       </ol>
       {scramble ? (
-        <button
-          type="button"
+        <OlympusButton
+          variant="secondary"
           onClick={(event) => {
             setOrder(shuffled(order));
             // After a tap, Enter belongs to the final word again, not to this button.
             if (event.detail > 0) event.currentTarget.blur();
           }}
-          className="mt-6 inline-flex min-h-11 items-center text-sm text-muted transition-colors hover:text-green"
+          className="mt-6"
         >
           Scramble
-        </button>
+        </OlympusButton>
       ) : null}
     </section>
   );

@@ -9,9 +9,6 @@ export default function OlympusPage() {
       <h1 className="temple-after text-center font-olympus text-[2.5rem] leading-tight font-semibold sm:text-h2">
         Who is your <span className="text-green">god</span>?
       </h1>
-      <p className="temple-after mt-4 text-center text-body-lg text-muted">
-        Choose your group to begin.
-      </p>
       <div className="mt-12 flex flex-col">
         <Temple count={FAMILIES.length} />
       </div>

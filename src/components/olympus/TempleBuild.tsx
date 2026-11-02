@@ -2,9 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect } from "react";
-
-/** Whether this visit has seen the temple go up. A refresh reloads the module, so it plays again. */
-let played = false;
+import { playPassage } from "@/components/olympus/Passage";
 
 /** Milliseconds of blank page before the first cell. */
 const PAUSE = 300;
@@ -14,9 +12,10 @@ const PAUSE = 300;
  * `data-at` second, by setting its opacity from a frame loop. Not CSS animations: hundreds of
  * them on SVG paths can freeze half-faded in Chrome (across a page transition, for one). Once the
  * last group is on, `data-built` on the temple lets the logo bar, the heading and the numerals
- * fade in (globals.css). Coming back from a group within the same visit, or under reduced motion,
- * the temple is simply there. The temple's columns are plain SVG links (next/link renders HTML),
- * so this also routes their clicks through the router: a full page load would forget `played`.
+ * fade in (globals.css). It builds on every visit, coming back from a group included; under
+ * reduced motion the temple is simply there. The temple's columns are plain SVG links (next/link
+ * renders HTML), so this also routes their clicks through the router, by way of the Passage into
+ * the trial unless motion is reduced.
  */
 export function TempleBuild() {
   const router = useRouter();
@@ -26,7 +25,7 @@ export function TempleBuild() {
       const link = (event.target as Element).closest("a[href]");
       if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey) return;
       event.preventDefault();
-      router.push(link.getAttribute("href")!);
+      if (!playPassage(link)) router.push(link.getAttribute("href")!);
     };
     temple?.addEventListener("click", onClick);
     return () => temple?.removeEventListener("click", onClick);
@@ -39,9 +38,10 @@ export function TempleBuild() {
       .sort((a, b) => a.at - b.at);
     const built = () => {
       temple.dataset.built = "";
-      played = true;
+      // the hand-off from the home page's scene is over (OlympusScene)
+      delete document.documentElement.dataset.olympusLeaving;
     };
-    if (played || matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
       built();
       return;
     }

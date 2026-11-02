@@ -67,7 +67,8 @@ function Cells({ cells, top, className }: { cells: Cell[]; top: number; classNam
   ));
 }
 
-export function Temple({ count }: { count: number }) {
+/** `base`: where the columns lead (the /olympuz snapshot passes its own). */
+export function Temple({ count, base = "/olympus" }: { count: number; base?: string }) {
   const W = MARGIN * 2 + count * COL_W + (count - 1) * GAP;
   const cx = (W - 1) / 2;
 
@@ -126,7 +127,7 @@ export function Temple({ count }: { count: number }) {
           return (
             <a
               key={i}
-              href={`/olympus/${i + 1}`}
+              href={`${base}/${i + 1}`}
               aria-label={`Group ${roman(i + 1)}`}
               className="group text-text transition-colors hover:text-green focus-visible:text-green"
             >

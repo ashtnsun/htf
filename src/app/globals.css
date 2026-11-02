@@ -19,6 +19,8 @@
   /* Decoration only (the process scene's teammates), never text or a brand colour. */
   --pink: #ff3d9e;
   --blue: #3388ff;
+  /* A wrong answer on /olympus: the field flashes it for a second (journey/parts `wrong`). Never text at rest. */
+  --red: #ff4545;
   /* Lime is an interaction accent only (split-button arrow cell), never a brand color. */
   --lime: #c8ff3d;
 
@@ -1443,5 +1445,301 @@ html[data-intro]:not([data-intro="play"]) body > header {
 @media (prefers-reduced-motion: reduce) {
   [data-olympus] * {
     animation-delay: 0s !important;
+  }
+}
+
+/* The passage from a temple column into its trial (components/olympus/Passage). The chosen
+   column lights and keeps its numeral while everything else on the page goes out; the overlay
+   is its own view-transition layer and stays live, so the route change underneath never shows. */
+.temple a[data-chosen] {
+  color: var(--green);
+}
+:root:has([data-temple][data-leaving]) .temple-after {
+  opacity: 0;
+  transition-duration: 500ms;
+}
+:root:has([data-temple][data-leaving]) [data-chosen] .temple-after {
+  opacity: 1;
+}
+.olympus-passage {
+  view-transition-name: olympus-passage;
+}
+::view-transition-group(olympus-passage) {
+  animation: none;
+  z-index: 130;
+}
+::view-transition-old(olympus-passage) {
+  display: none;
+}
+::view-transition-new(olympus-passage) {
+  animation: none;
+}
+.olympus-passage :is(.passage-eyebrow, .passage-numeral, .passage-key, .passage-line) {
+  opacity: 0;
+}
+.olympus-passage:is([data-phase="title"], [data-phase="reveal"]) {
+  & .passage-numeral {
+    animation: passage-fly 1000ms var(--ease-glide) both;
+  }
+  & .passage-eyebrow {
+    animation: passage-track 900ms var(--ease-glide) 450ms both;
+  }
+  & .passage-key {
+    animation: passage-key 700ms steps(7, jump-end) 700ms both;
+  }
+  & .passage-line {
+    animation: passage-rise 800ms var(--ease-glide) 1000ms both;
+  }
+}
+.olympus-passage[data-phase="reveal"] .passage-title {
+  animation: passage-out 450ms var(--ease-smooth) both;
+}
+@keyframes passage-fly {
+  from {
+    opacity: 1;
+    color: var(--green);
+    transform: translate(var(--from-x, 0), var(--from-y, 0)) scale(var(--from-scale, 1));
+  }
+  to {
+    opacity: 1;
+    color: var(--text);
+    transform: none;
+  }
+}
+@keyframes passage-track {
+  from {
+    opacity: 0;
+    letter-spacing: 1.2em;
+  }
+  to {
+    opacity: 1;
+    letter-spacing: 0.45em;
+  }
+}
+@keyframes passage-key {
+  from {
+    opacity: 1;
+    clip-path: inset(0 50%);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0);
+  }
+}
+@keyframes passage-rise {
+  from {
+    opacity: 0;
+    translate: 0 0.75rem;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@keyframes passage-out {
+  to {
+    opacity: 0;
+    translate: 0 -1rem;
+  }
+}
+
+/* ------------------------------------------------------------------
+   The Olympus scene under the home hero (components/home/olympus/OlympusScene), drawn like the
+   /olympus temple: as wide as fits up to 960px, rounded down to a whole number of pixels per
+   cell. Until it has built itself (`data-pending`) its cells are off; the clouds drift one
+   cell at a time and wrap around the picture.
+------------------------------------------------------------------- */
+.olympus-scene {
+  width: min(100%, 960px);
+  width: round(down, min(100%, 960px), 120px);
+}
+[data-olympus-scene][data-pending] path[data-at] {
+  opacity: 0;
+}
+/* Leaving for /olympus (a click on the scene): everything around the scene fades out while it
+   takes itself apart, i.e. every element beside the chain of ancestors that leads down to it,
+   and the route change that follows swaps two blank pages without the page crossfade. The mark
+   stays on <html> until the /olympus temple has built (TempleBuild). */
+:root[data-olympus-leaving]
+  :has([data-olympus-scene])
+  > :not(:has([data-olympus-scene]), [data-olympus-scene]) {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 600ms var(--ease-smooth);
+}
+:root[data-olympus-leaving]::view-transition-old(*),
+:root[data-olympus-leaving]::view-transition-new(*) {
+  animation: none;
+}
+@keyframes olympus-cloud {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-120px);
+  }
+}
+.olympus-cloud {
+  animation: olympus-cloud var(--cloud-speed, 200s) steps(120) infinite;
+}
+/* The island, the stepping stones and the T-rex's rock each drop one cell and rise again. */
+@keyframes olympus-bob {
+  50% {
+    transform: translateY(1px);
+  }
+}
+.olympus-bob {
+  animation: olympus-bob 4s steps(1, end) var(--bob-delay, 0s) infinite;
+}
+/* The brazier flames: two frames taking turns. */
+@keyframes olympus-flame {
+  50% {
+    opacity: 0;
+  }
+}
+.olympus-flame {
+  animation: olympus-flame 0.6s steps(1, end) infinite;
+}
+.olympus-flame[data-frame="1"] {
+  animation-delay: -0.3s;
+}
+@keyframes olympus-star {
+  80% {
+    opacity: 0.25;
+  }
+}
+.olympus-star {
+  animation: olympus-star 5s steps(1, end) var(--star-delay, 0s) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .olympus-cloud,
+  .olympus-bob,
+  .olympus-flame,
+  .olympus-star {
+    animation: none;
+  }
+  .olympus-flame[data-frame="1"] {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------------
+   The Olympus button hovers (components/olympus/buttons/looks.tsx `ButtonFace`), one per
+   `data-hover`, picked in the "g" menu. `.ob-box` is the frame, or the whole button when the
+   look has none; `.ob-orn` / the row's pixel ornaments are what glows and flickers. Nothing
+   moves; under reduced motion the flicker holds still and the rule appears without drawing.
+------------------------------------------------------------------- */
+.ob :is(.ob-box, .ob-orn, .ob-row svg, .ob-row .text-green) {
+  transition:
+    color 300ms var(--ease-smooth),
+    border-color 300ms var(--ease-smooth),
+    filter 500ms var(--ease-glide),
+    box-shadow 500ms var(--ease-glide),
+    background-color 500ms var(--ease-glide);
+}
+/* Torchlight: the ornaments and the frame give off a green glow. */
+.ob[data-hover="lit"]:is(:hover, :focus-visible)
+  :is(.ob-orn, .ob-row svg:not(.animate-spin), .ob-row .text-green) {
+  filter: drop-shadow(0 0 4px var(--green));
+}
+.ob[data-hover="lit"]:is(:hover, :focus-visible) .ob-frame {
+  box-shadow:
+    0 0 18px -4px var(--green),
+    inset 0 0 14px -8px var(--green);
+}
+/* Flicker: the ornaments and the frame's lines gutter like a torch, jumping between levels. */
+@keyframes ob-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  14% {
+    opacity: 0.45;
+  }
+  24% {
+    opacity: 1;
+  }
+  52% {
+    opacity: 0.7;
+  }
+  60% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.55;
+  }
+}
+@keyframes ob-flicker-line {
+  0%,
+  100% {
+    border-color: var(--green);
+  }
+  14% {
+    border-color: var(--green-deep);
+  }
+  24% {
+    border-color: var(--green);
+  }
+  80% {
+    border-color: var(--green-deep);
+  }
+}
+.ob[data-hover="flicker"]:is(:hover, :focus-visible)
+  :is(.ob-orn, .ob-row svg:not(.animate-spin), .ob-row .text-green) {
+  animation: ob-flicker 1.4s steps(1, end) infinite;
+}
+.ob[data-hover="flicker"]:is(:hover, :focus-visible) .ob-frame {
+  animation: ob-flicker-line 1.4s steps(1, end) infinite;
+}
+/* Underline: a 2px green rule draws out from the centre, a little below the button. */
+.ob-line {
+  position: absolute;
+  inset-inline: 0;
+  bottom: -10px;
+  height: 2px;
+  background: var(--green);
+  clip-path: inset(0 50%);
+  transition: clip-path 600ms var(--ease-glide);
+}
+.ob:is(:hover, :focus-visible) .ob-line {
+  clip-path: inset(0);
+}
+/* Brackets: pixel L-brackets (2px, 10px arms) close in on the four corners, 6px outside. */
+.ob-corners {
+  position: absolute;
+  inset: -6px;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    linear-gradient(var(--green), var(--green)) left top / 10px 2px,
+    linear-gradient(var(--green), var(--green)) left top / 2px 10px,
+    linear-gradient(var(--green), var(--green)) right top / 10px 2px,
+    linear-gradient(var(--green), var(--green)) right top / 2px 10px,
+    linear-gradient(var(--green), var(--green)) left bottom / 10px 2px,
+    linear-gradient(var(--green), var(--green)) left bottom / 2px 10px,
+    linear-gradient(var(--green), var(--green)) right bottom / 10px 2px,
+    linear-gradient(var(--green), var(--green)) right bottom / 2px 10px;
+  background-repeat: no-repeat;
+  transition: opacity 500ms var(--ease-glide);
+}
+.ob:is(:hover, :focus-visible) .ob-corners {
+  opacity: 1;
+}
+/* Double rule: a second green rule stands 3px off the frame. */
+.ob[data-hover="double"]:is(:hover, :focus-visible) .ob-box {
+  box-shadow:
+    0 0 0 3px var(--bg),
+    0 0 0 5px var(--green);
+}
+/* Wash: a faint green wash comes up behind the words. */
+.ob[data-hover="wash"]:is(:hover, :focus-visible) .ob-box {
+  background-color: color-mix(in srgb, var(--green) 14%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ob * {
+    animation: none !important;
+  }
+  .ob-line {
+    transition: none;
   }
 }

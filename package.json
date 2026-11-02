@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "pnpm gen:placeholders && pnpm gen:icon && pnpm validate:content && next build",
+    "build": "pnpm gen:placeholders && pnpm copy:mediapipe && pnpm gen:icon && pnpm validate:content && next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
@@ -14,11 +14,14 @@
     "media:check": "tsx --conditions=react-server scripts/media-check.ts",
     "gen:placeholders": "node scripts/gen-placeholders.mjs",
     "gen:icon": "node scripts/gen-dino-icon.mjs",
+    "copy:mediapipe": "node scripts/copy-mediapipe.mjs",
     "screenshots": "node scripts/screenshots.mjs",
     "a11y": "node scripts/a11y.mjs",
-    "supabase:types": "supabase gen types typescript --local > parked/src/lib/supabase/database.types.ts && prettier --write parked/src/lib/supabase/database.types.ts"
+    "supabase:types": "supabase gen types typescript --local > parked/src/lib/supabase/database.types.ts && prettier --write parked/src/lib/supabase/database.types.ts",
+    "postinstall": "node scripts/copy-mediapipe.mjs"
   },
   "dependencies": {
+    "@mediapipe/tasks-vision": "1.1.1",
     "@react-three/fiber": "9.7.0",
     "@supabase/ssr": "0.12.6",
     "@supabase/supabase-js": "2.115.0",
