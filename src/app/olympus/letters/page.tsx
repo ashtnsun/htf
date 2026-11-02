@@ -71,12 +71,8 @@ export default function LettersPage() {
               </div>
             </section>
 
-            <div className="letter-fold" style={{ top: "99mm" }}>
-              <span>Fold back</span>
-            </div>
-            <div className="letter-fold" style={{ top: "198mm" }}>
-              <span>Fold forward</span>
-            </div>
+            <div className="letter-fold" style={{ top: "99mm" }} />
+            <div className="letter-fold" style={{ top: "198mm" }} />
           </article>
         ))}
       </div>
