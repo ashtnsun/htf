@@ -1,6 +1,6 @@
 /**
  * The Prologue's sound, synthesised in the browser so there are no audio files to license or
- * load: a low drone under the deck, and a hit, thunder, a rising charge, ticks and a shutter on
+ * load: a low drone under the deck, and a hit, thunder, a rising charge and ticks on
  * cue. Off until the presenter presses S (a browser will not play sound before a key press
  * anyway). Everything goes through a compressor so a thunderclap cannot clip the room's speakers.
  */
@@ -201,12 +201,6 @@ export class Score {
     if (!this.on || !this.ctx) return;
     this.hit(0.4);
     this.burst(this.noise!, "bandpass", 520, 0.18, 0.12);
-  }
-
-  shutter() {
-    if (!this.on || !this.ctx) return;
-    this.burst(this.noise!, "highpass", 3000, 0.22, 0.03);
-    this.burst(this.noise!, "highpass", 2200, 0.16, 0.05, 0.09);
   }
 
   close() {

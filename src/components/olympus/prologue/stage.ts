@@ -55,6 +55,8 @@ const SWEEP_INK = "#03c652";
 const SWEEP_STEP = 620;
 const CAPACITY = 60000;
 const BOLT_LIFE = 320;
+/** Cells a second squared, pulling a spark down. */
+const SPARK_FALL = 70;
 
 const easeInOut = (u: number) => (u < 0.5 ? 4 * u ** 3 : 1 - (-2 * u + 2) ** 3 / 2);
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
@@ -98,6 +100,15 @@ export class CellStage {
   private shakeUntil = 0;
   private shakeSize = 0;
   private bolts: { x: number; y: number; start: number }[][] = [];
+  private sparkles: {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    start: number;
+    life: number;
+    ink: string;
+  }[] = [];
   private sweepOn = false;
   private back: (Backdrop & { start: number; leaving: boolean }) | null = null;
 
@@ -355,6 +366,26 @@ export class CellStage {
     this.wake();
   }
 
+  /** A burst of single cells off a hammer blow, falling and gone in half a second. */
+  sparks(x: number, y: number, n = 26) {
+    if (this.still) return;
+    const start = performance.now();
+    for (let i = 0; i < n; i += 1) {
+      const a = Math.random() * Math.PI * 2;
+      const speed = 12 + Math.random() * 34;
+      this.sparkles.push({
+        x,
+        y,
+        vx: Math.cos(a) * speed,
+        vy: Math.sin(a) * speed - 12,
+        start,
+        life: 260 + Math.random() * 340,
+        ink: Math.random() < 0.35 ? "#f5f5f5" : "#03c652",
+      });
+    }
+    this.wake();
+  }
+
   private wake() {
     if (this.still) {
       this.draw(performance.now());
@@ -459,6 +490,20 @@ export class CellStage {
         const age = now - bolt[0]!.start;
         if (age > 90 && age < 150) continue;
         for (const b of bolt) ctx.fillRect(b.x * cell, (b.y + shakeY) * cell, cell, cell);
+      }
+    }
+
+    if (this.sparkles.length) {
+      this.sparkles = this.sparkles.filter((s) => now - s.start < s.life);
+      for (const s of this.sparkles) {
+        const age = (now - s.start) / 1000;
+        ctx.fillStyle = s.ink;
+        ctx.fillRect(
+          Math.round(s.x + s.vx * age) * cell,
+          Math.round(s.y + s.vy * age + SPARK_FALL * age * age) * cell,
+          cell,
+          cell,
+        );
       }
     }
   }

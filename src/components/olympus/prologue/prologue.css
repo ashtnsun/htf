@@ -41,7 +41,7 @@
   background: radial-gradient(circle at 50% 54%, rgb(3 198 82 / 0.2), transparent 26%);
 }
 .pro-root[data-glow="fire"] .pro-glow {
-  background: radial-gradient(circle at 50% 48%, rgb(3 198 82 / 0.2), transparent 34%);
+  background: radial-gradient(circle at 50% 62%, rgb(3 198 82 / 0.22), transparent 36%);
 }
 
 /* The letterbox: it closes for the story and opens for the practical steps. */
@@ -140,14 +140,6 @@
   line-height: 1.2;
   color: var(--text);
 }
-.pro-step-num {
-  font-family: var(--font-cinzel), serif;
-  font-weight: 600;
-  font-size: calc(var(--u) * 96);
-  line-height: 1.12;
-  color: var(--green);
-}
-
 /* The way type arrives: out of a soft focus, a little low. */
 .pro-in {
   animation: pro-in 1100ms var(--ease-glide) var(--d, 0ms) both;
@@ -159,7 +151,7 @@
     transform: translateY(calc(var(--u) * 16));
   }
 }
-.pro-root[data-instant] :is(.pro-in, .pro-title, .pro-question, .pro-god-name, .pro-exec) {
+.pro-root[data-instant] :is(.pro-in, .pro-title, .pro-question, .pro-exec) {
   animation: none;
 }
 
@@ -248,30 +240,6 @@
   }
 }
 
-/* The roll call: the name slams in beside the god. */
-.pro-god {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 56%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.pro-god[data-side="right"] {
-  right: 0;
-}
-.pro-god[data-side="left"] {
-  left: 0;
-}
-.pro-god-name {
-  font-family: var(--font-cinzel), serif;
-  font-weight: 700;
-  font-size: calc(var(--u) * 150);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  animation: pro-slam 300ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
-}
 @keyframes pro-slam {
   from {
     opacity: 0;
@@ -280,24 +248,7 @@
   }
 }
 
-/* All nine: a line either side of the pediment. */
-.pro-pair {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-inline: calc(var(--u) * 90);
-}
-.pro-pair > p {
-  width: calc(var(--u) * 330);
-  font-size: calc(var(--u) * 64);
-}
-.pro-pair > p:last-child {
-  text-align: right;
-}
-
-/* The execs. */
+/* The execs. The gap has to hold a Greek key band with air both sides (Prologue's BAND_*). */
 .pro-execs-scene {
   position: absolute;
   inset: 0;
@@ -305,7 +256,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: calc(var(--u) * 84);
+  gap: calc(var(--u) * 136);
   text-align: center;
 }
 .pro-execs {
@@ -399,13 +350,7 @@
   inset: 0;
   text-align: center;
 }
-.pro-url-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: calc(var(--u) * 36);
-}
-.pro-url > .pro-url-head {
+.pro-url > .pro-head {
   position: absolute;
   inset-inline: 0;
   top: 19%;
@@ -438,6 +383,7 @@
   position: relative;
   display: inline-block;
   font-family: var(--font-body);
+  font-size: calc(var(--u) * 140);
   font-weight: 600;
   letter-spacing: -0.01em;
   white-space: nowrap;
@@ -459,92 +405,18 @@
   background: var(--green);
 }
 
-/* The Oracle's fire: a line either side of the flame. */
+/* The Oracle's line, in the sky over its fire. */
 .pro-oracle {
   position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-inline: calc(var(--u) * 120);
-}
-.pro-oracle-side {
-  width: calc(var(--u) * 520);
-}
-.pro-oracle-side:last-child {
-  text-align: right;
-}
-
-/* The demonstration: the same word box and REVEAL button as /oracle. */
-.pro-demo {
-  position: absolute;
   inset-inline: 0;
-  top: calc(var(--bar) + var(--u) * 56);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: calc(var(--u) * 44);
-}
-.pro-demo-word {
-  width: calc(var(--u) * 1000);
-  min-height: calc(var(--u) * 120);
-  padding-bottom: calc(var(--u) * 12);
-  border-bottom: 2px solid var(--line-strong);
-  text-align: center;
-  font-family: var(--font-cinzel), serif;
-  font-weight: 600;
-  font-size: calc(var(--u) * 88);
-  line-height: 1.2;
-  letter-spacing: 0.25em;
-}
-.pro-demo-button {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: calc(var(--u) * 460);
-  height: calc(var(--u) * 104);
-  overflow: hidden;
-  border: 2px solid var(--green);
-  background: var(--bg);
-  font-family: var(--font-cinzel), serif;
-  font-weight: 600;
-  font-size: calc(var(--u) * 36);
-  letter-spacing: 0.35em;
-  padding-left: 0.35em;
-}
-.pro-demo-fill {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-left: 0.35em;
-  background: var(--green);
-  color: var(--bg);
-  clip-path: inset(0 100% 0 0);
-  animation: pro-fill 3600ms linear both;
-}
-@keyframes pro-fill {
-  to {
-    clip-path: inset(0 0 0 0);
-  }
-}
-.pro-after {
-  position: absolute;
-  inset-inline: 0;
-  bottom: calc(var(--bar) + var(--u) * 28);
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--u) * 6);
+  top: calc(var(--bar) + var(--u) * 28);
   text-align: center;
 }
-
-.pro-after .pro-head {
-  font-size: calc(var(--u) * 72);
+.pro-oracle .pro-head {
+  font-size: calc(var(--u) * 84);
 }
 
-/* The last slide: the question and the address, left up while the families set off. */
+/* Good luck: the summit, the address still up while the families set off. */
 .pro-final {
   position: absolute;
   inset-inline: 0;
@@ -552,15 +424,18 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: calc(var(--u) * 28);
+  gap: calc(var(--u) * 20);
   text-align: center;
 }
 .pro-final-title {
   font-family: var(--font-cinzel), serif;
   font-weight: 700;
-  font-size: calc(var(--u) * 132);
+  font-size: calc(var(--u) * 168);
   line-height: 1.05;
   text-shadow: 0 0 calc(var(--u) * 40) rgb(3 198 82 / 0.4);
+}
+.pro-final .pro-address {
+  font-size: calc(var(--u) * 56);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -570,13 +445,8 @@
   .pro-in,
   .pro-title,
   .pro-question,
-  .pro-god-name,
   .pro-exec {
     animation: none;
-  }
-  .pro-demo-fill {
-    animation: none;
-    clip-path: inset(0 0 0 0);
   }
   .pro-bar,
   .pro-glow {

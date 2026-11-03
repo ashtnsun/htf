@@ -1,5 +1,4 @@
 import { DINO_PIXELS } from "@/components/brand/dino-pixels";
-import { REVEAL_SPRITES } from "@/components/dino/reveal";
 import { FX, type Dot, type Grid, type Span } from "@/components/olympus/prologue/stage";
 
 /**
@@ -17,23 +16,6 @@ const SHADOW = "#1c1c1c";
 const GREEN = "#03c652";
 const DEEP = "#277d4a";
 const MINT = "#00eb88";
-
-/**
- * The gods, in the order the deck calls them: not the families' order and not the exec board's,
- * so no list on screen lines up with another. Only each god's shape and body colour are drawn;
- * the props in their own colours wait for the real reveal.
- */
-export const GODS = [
-  "Artemis",
-  "Apollo",
-  "Hades",
-  "Aphrodite",
-  "Ares",
-  "Poseidon",
-  "Hermes",
-  "Athena",
-  "Zeus",
-] as const;
 
 /** mulberry32: seeded, so a scene is the same after a resize or a step back. */
 function seeded(seed: number) {
@@ -90,19 +72,6 @@ function outline(x: number, y: number, w: number, h: number, ink: string, weight
     ...rect(x, y + weight, weight, h - weight * 2, ink),
     ...rect(x + w - weight, y + weight, weight, h - weight * 2, ink),
   ];
-}
-
-/** A god's map cut to the cells it uses, with every inked cell as `#`. */
-function godRows(god: string) {
-  const sprite = REVEAL_SPRITES[god]!;
-  const rows = Array.from({ length: sprite.height }, (_, y) =>
-    Array.from({ length: sprite.width }, (_, x) =>
-      sprite.cells[y * sprite.width + x] ? "#" : ".",
-    ).join(""),
-  ).filter((row) => row.includes("#"));
-  const left = Math.min(...rows.map((r) => r.indexOf("#")));
-  const right = Math.max(...rows.map((r) => r.lastIndexOf("#")));
-  return { rows: rows.map((r) => r.slice(left, right + 1)), ink: sprite.palette[0]! };
 }
 
 // ---------------------------------------------------------------- the flame
@@ -162,6 +131,25 @@ const GLYPH: Record<string, string[]> = {
 };
 const NUMERALS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"];
 
+/** A pixel numeral centred on column `cx`, its top on row `y`. */
+function numeral(
+  text: string,
+  cx: number,
+  y: number,
+  ink: string,
+  { scale = 1, extra = {} }: { scale?: number; extra?: Partial<Dot> } = {},
+) {
+  const glyphs = [...text];
+  const width = glyphs.reduce((sum, ch) => sum + GLYPH[ch]![0]!.length + 1, -1) * scale;
+  let x = cx - Math.floor(width / 2);
+  const dots: Dot[] = [];
+  for (const ch of glyphs) {
+    dots.push(...blit(GLYPH[ch]!, x, y, ink, { scale, extra }));
+    x += (GLYPH[ch]![0]!.length + 1) * scale;
+  }
+  return dots;
+}
+
 /**
  * The /olympus temple: the same column, Greek key and pediment as olympus/Temple. `sweep` lights
  * the columns green in turn (nothing singled out: each group's column gets the same).
@@ -197,13 +185,7 @@ export function temple(g: Grid, { sweep = false, top }: { sweep?: boolean; top?:
     const extra = sweep ? { fx: FX.SWEEP, group: i } : {};
     dots.push(...blit(COLUMN, cxi, shaftTop, WHITE, { extra }));
     // The numeral under the column.
-    const glyphs = [...NUMERALS[i]!];
-    const width = glyphs.reduce((sum, ch) => sum + GLYPH[ch]![0]!.length + 1, -1);
-    let gx = cxi + Math.floor((COL_W - width) / 2);
-    for (const ch of glyphs) {
-      dots.push(...blit(GLYPH[ch]!, gx, stepTop + 7, LIGHT, { extra }));
-      gx += GLYPH[ch]![0]!.length + 1;
-    }
+    dots.push(...numeral(NUMERALS[i]!, cxi + Math.floor(COL_W / 2), stepTop + 7, LIGHT, { extra }));
   }
   dots.push(...rect(x0 + 2, stepTop, W - 4, 2, WHITE));
   dots.push(...rect(x0, stepTop + 2, W, 2, WHITE));
@@ -395,42 +377,6 @@ export function summitPoint(g: Grid) {
   return { x: Math.floor(g.cols / 2), y: Math.round(g.rows * SUMMIT) - 25 };
 }
 
-// ---------------------------------------------------------------- the gods
-
-/** One god, huge, for the roll call: shape and body colour. `side` is where it stands. */
-export function godSolo(g: Grid, god: string, side: "left" | "right") {
-  const { rows, ink } = godRows(god);
-  const scale = Math.max(2, Math.floor((g.rows * 0.62) / rows.length));
-  const width = rows[0]!.length * scale;
-  const x =
-    side === "left" ? Math.floor(g.cols * 0.27 - width / 2) : Math.floor(g.cols * 0.73 - width / 2);
-  const y = Math.floor((g.rows - rows.length * scale) / 2);
-  return blit(rows, x, y, ink, { scale, mirror: side === "right" });
-}
-
-/** All nine, in a pediment's shape: one, three, five. */
-export function pantheon(g: Grid) {
-  const tiers = [GODS.slice(8), GODS.slice(5, 8), GODS.slice(0, 5)];
-  const dots: Dot[] = [];
-  const pitch = 28;
-  const rise = 27;
-  const top = Math.floor((g.rows - rise * 3) / 2);
-  tiers.forEach((tier, row) => {
-    const span = tier.length * pitch;
-    tier.forEach((god, i) => {
-      const { rows, ink } = godRows(god);
-      const x = Math.floor(g.cols / 2 - span / 2 + i * pitch + (pitch - rows[0]!.length) / 2);
-      const y = top + row * rise + (rise - 2 - rows.length);
-      dots.push(...blit(rows, x, y, ink));
-    });
-    // The ledge the tier stands on.
-    dots.push(
-      ...rect(Math.floor(g.cols / 2 - span / 2), top + row * rise + rise - 2, span, 1, STONE),
-    );
-  });
-  return dots;
-}
-
 // ---------------------------------------------------------------- the execs' frieze
 
 /** Greek key bands above and below the row of photos. */
@@ -444,48 +390,137 @@ export function frieze(g: Grid, upper: number, lower: number) {
 
 // ---------------------------------------------------------------- the chain
 
-const LINK_FACE = [
-  "..##########..",
-  ".############.",
-  "###........###",
-  "##..........##",
-  "##..........##",
-  "##..........##",
-  "##..........##",
-  "##..........##",
-  "##..........##",
-  "##..........##",
-  "##..........##",
-  "###........###",
-  ".############.",
-  "..##########..",
-];
-const LINK_EDGE = ["################", "################", "################", "################"];
+/** The trials a family has to solve (journey/save's STAGES, less the last, which is the Oracle). */
+const TRIALS = 6;
 
-/** A chain across the screen, link by link from the left, ending at a green flame. */
-export function chain(g: Grid) {
-  const cy = Math.round(g.rows * 0.56);
-  const end = g.cols - 34;
+const LINK_W = 24;
+const LINK_H = 20;
+const LINK_WALL = 3;
+const LINK_GAP = 4;
+const CHAIN_SAG = 7;
+
+/** Whether a cell is inside a `w` × `h` box with corners of radius `r`. */
+function rounded(x: number, y: number, w: number, h: number, r: number) {
+  if (x < 0 || y < 0 || x >= w || y >= h) return false;
+  const dx = Math.max(r - (x + 0.5), x + 0.5 - (w - r));
+  const dy = Math.max(r - (y + 0.5), y + 0.5 - (h - r));
+  return dx <= 0 || dy <= 0 || dx * dx + dy * dy <= r * r;
+}
+
+/**
+ * One great link, face on, a round iron bar lit from the upper left. Its lit edge and its numeral
+ * belong to `group`, so the charge running down the chain (FX.SWEEP) catches them in turn.
+ */
+function faceLink(x0: number, y0: number, group: number, order: number) {
+  const on = (x: number, y: number) =>
+    rounded(x, y, LINK_W, LINK_H, 6) &&
+    !rounded(x - LINK_WALL, y - LINK_WALL, LINK_W - LINK_WALL * 2, LINK_H - LINK_WALL * 2, 3);
   const dots: Dot[] = [];
-  const links = Math.ceil((end + 24) / 24);
-  let x = end - links * 24;
-  for (let i = 0; i < links; i += 1, x += 24) {
-    const order = Math.max(0, x) / end;
-    dots.push(...blit(LINK_EDGE, x + 10, cy - 2, LIGHT, { extra: { order: order * 0.9 } }));
-    dots.push(...blit(LINK_FACE, x + 20 - 7, cy - 7, WHITE, { extra: { order: order * 0.9 } }));
+  for (let y = 0; y < LINK_H; y += 1) {
+    for (let x = 0; x < LINK_W; x += 1) {
+      if (!on(x, y)) continue;
+      const lit = !on(x, y - 1) || !on(x - 1, y);
+      const ink = lit ? WHITE : !on(x, y + 1) || !on(x + 1, y) ? STONE : LIGHT;
+      dots.push({
+        x: x0 + x,
+        y: y0 + y,
+        ink,
+        order,
+        ...(lit ? { fx: FX.SWEEP, group } : {}),
+      });
+    }
   }
-  const bowlX = end + 18;
-  dots.push(...rect(end + 8, cy - 2, 8, 4, LIGHT).map((d) => ({ ...d, order: 0.95 })));
-  dots.push(...rect(bowlX - 6, cy + 2, 13, 2, WHITE).map((d) => ({ ...d, order: 1 })));
-  dots.push(...rect(bowlX - 4, cy + 4, 9, 2, WHITE).map((d) => ({ ...d, order: 1 })));
-  dots.push(...rect(bowlX - 1, cy + 6, 3, 10, LIGHT).map((d) => ({ ...d, order: 1 })));
-  dots.push(...flame(bowlX, cy + 1, 22, 9).map((d) => ({ ...d, order: 1 })));
   return dots;
+}
+
+/** The link between two faces, edge on: a capsule whose ends sit inside the holes either side. */
+function edgeLink(x0: number, y0: number, w: number, order: number) {
+  const shade = [WHITE, LIGHT, LIGHT, LIGHT, STONE, ROCK];
+  const dots: Dot[] = [];
+  shade.forEach((ink, dy) => {
+    for (let dx = 0; dx < w; dx += 1) {
+      if ((dy === 0 || dy === shade.length - 1) && (dx === 0 || dx === w - 1)) continue;
+      dots.push({ x: x0 + dx, y: y0 + dy, ink, order });
+    }
+  });
+  return dots;
+}
+
+/**
+ * The chain of trials: one great link for each trial, numbered as the families' own title cards
+ * number them, bolted to a column at the left and sagging under its own weight to the fire at the
+ * right, which is the Oracle. `order` forges it link by link, left to right. Returns the middle of
+ * each link and the fire's foot, for the sparks.
+ */
+export function chain(g: Grid) {
+  const cy = Math.round(g.rows * 0.5);
+  const width = TRIALS * LINK_W + (TRIALS - 1) * LINK_GAP;
+  const x0 = Math.floor(g.cols / 2) - Math.floor(width / 2) - 6;
+  const pitch = LINK_W + LINK_GAP;
+  const reach = LINK_WALL + 3;
+  const top = (i: number) => {
+    const u = ((i + 0.5) / TRIALS) * 2 - 1;
+    return cy - LINK_H / 2 + Math.round(CHAIN_SAG * (1 - u * u));
+  };
+
+  // The edge links first, so each face can be cut one cell clear of the two that pass over it.
+  const columnR = x0 - 8;
+  const edges: { x: number; y: number; w: number; order: number }[] = [];
+  for (let i = 0; i <= TRIALS; i += 1) {
+    const left = i ? x0 + (i - 1) * pitch + LINK_W - reach : columnR + 3;
+    const right = i < TRIALS ? x0 + i * pitch + reach : x0 + (TRIALS - 1) * pitch + LINK_W + 10;
+    const fromY = i ? top(i - 1) + LINK_H / 2 : cy;
+    const toY = i < TRIALS ? top(i) + LINK_H / 2 : cy;
+    edges.push({
+      x: left,
+      y: Math.round((fromY + toY) / 2) - 3,
+      w: right - left,
+      order: Math.min(i + 1, TRIALS + 1) / (TRIALS + 1),
+    });
+  }
+  const clear = (d: Dot) =>
+    edges.every((e) => d.x < e.x - 1 || d.x > e.x + e.w || d.y < e.y - 1 || d.y > e.y + 6);
+
+  const dots: Dot[] = [];
+  // The column at the left and the plate bolted to it.
+  for (let i = 0; i < 14; i += 1) {
+    const ink = i % 3 === 2 ? ROCK : i < 6 ? LIGHT : STONE;
+    dots.push(...rect(columnR - 14 + i, 0, 1, g.rows, ink, { order: 0 }));
+  }
+  dots.push(...rect(columnR - 2, cy - 9, 6, 18, WHITE, { order: 0 }));
+  dots.push(...rect(columnR, cy - 7, 2, 2, ROCK, { order: 0 }));
+  dots.push(...rect(columnR, cy + 5, 2, 2, ROCK, { order: 0 }));
+
+  const links: { x: number; y: number }[] = [];
+  for (let i = 0; i < TRIALS; i += 1) {
+    const x = x0 + i * pitch;
+    const y = top(i);
+    const order = (i + 1) / (TRIALS + 1);
+    links.push({ x: x + LINK_W / 2, y: y + LINK_H / 2 });
+    dots.push(...faceLink(x, y, i, order).filter(clear));
+    dots.push(
+      ...numeral(NUMERALS[i]!, x + LINK_W / 2, y + LINK_H / 2 - 5, DEEP, {
+        scale: 2,
+        extra: { fx: FX.SWEEP, group: i, order },
+      }),
+    );
+  }
+  for (const { x, y, w, order } of edges) dots.push(...edgeLink(x, y, w, order));
+
+  // The bowl on its stand, the end of the chain made fast to it, and the fire.
+  const bowlX = x0 + (TRIALS - 1) * pitch + LINK_W + 22;
+  const done = { order: 1 };
+  dots.push(...rect(bowlX - 14, cy + 1, 29, 2, WHITE, done));
+  dots.push(...rect(bowlX - 11, cy + 3, 23, 2, WHITE, done));
+  dots.push(...rect(bowlX - 7, cy + 5, 15, 2, LIGHT, done));
+  dots.push(...rect(bowlX - 1, cy + 7, 3, g.rows - cy - 7, LIGHT, done));
+  dots.push(...flame(bowlX, cy, 42, 9).map((d) => ({ ...d, ...done })));
+  return { dots, links, fire: { x: bowlX, y: cy } };
 }
 
 // ---------------------------------------------------------------- the setup
 
-/** Left half of the screen, for the numbered setup scenes: the type stands on the right. */
+/** Left half of the screen, for the laptop: the type stands on the right. */
 function setupCentre(g: Grid) {
   return Math.floor(g.cols * 0.27);
 }
@@ -525,57 +560,21 @@ export function browser(g: Grid) {
   ];
 }
 
-/** Five dinosaurs squeezing into a viewfinder. */
-export function family(g: Grid) {
-  const cx = setupCentre(g);
-  const cy = Math.floor(g.rows / 2);
-  const w = 100;
-  const h = 60;
-  const x = cx - w / 2;
-  const y = cy - h / 2;
-  const bracket = (bx: number, by: number, dx: number, dy: number) => [
-    ...rect(dx > 0 ? bx : bx - 11, by, 12, 2, WHITE),
-    ...rect(bx, dy > 0 ? by : by - 10, 2, 12, WHITE),
-  ];
-  const dots: Dot[] = [
-    ...bracket(x, y, 1, 1),
-    ...bracket(x + w - 2, y, -1, 1),
-    ...bracket(x, y + h - 2, 1, -1),
-    ...bracket(x + w - 2, y + h - 2, -1, -1),
-  ];
-  const stand = [
-    { dx: 6, dy: 28, ink: GREEN, mirror: false },
-    { dx: 24, dy: 18, ink: MINT, mirror: false },
-    { dx: 41, dy: 30, ink: GREEN, mirror: false },
-    { dx: 57, dy: 18, ink: MINT, mirror: true },
-    { dx: 74, dy: 28, ink: GREEN, mirror: true },
-  ];
-  for (const { dx, dy, ink, mirror } of stand) {
-    dots.push(...blit(DINO_PIXELS, x + dx, y + dy, ink, { mirror }));
-  }
-  return dots;
-}
-
 // ---------------------------------------------------------------- the Oracle
 
-/** The Oracle's fire: a tall tripod and a great green flame in the middle of the screen. */
-export function oracleFire(
-  g: Grid,
-  { big = true, low = false }: { big?: boolean; low?: boolean } = {},
-) {
+/** The Oracle's fire: a great green flame on a tripod, under the line that names it. */
+export function oracleFire(g: Grid) {
   const cx = Math.floor(g.cols / 2);
-  const bowl = low ? g.rows - 22 : Math.round(g.rows * 0.62);
-  const height = big ? 54 : 20;
-  const legsTo = g.rows;
+  const bowl = g.rows - 34;
   const dots: Dot[] = [
     ...sky(g, 21, 1).map((d) => ({ ...d, layer: 2 })),
-    ...flame(cx, bowl - 1, height, 4),
+    ...flame(cx, bowl - 1, 58, 4),
     ...rect(cx - 16, bowl, 33, 2, WHITE),
     ...rect(cx - 13, bowl + 2, 27, 2, WHITE),
     ...rect(cx - 9, bowl + 4, 19, 2, LIGHT),
     ...rect(cx - 1, bowl + 6, 3, 12, LIGHT),
   ];
-  for (let dy = 0; dy < legsTo - bowl - 18; dy += 1) {
+  for (let dy = 0; dy < g.rows - bowl - 18; dy += 1) {
     const out = Math.round(dy * 0.55);
     dots.push(
       { x: cx - out - 1, y: bowl + 18 + dy, ink: STONE },
@@ -585,54 +584,22 @@ export function oracleFire(
   return dots;
 }
 
-/** The storm that gathers while REVEAL is held in the demonstration: rings, not any god's scene. */
-export function storm(g: Grid) {
-  const rand = seeded(31);
-  const cx = g.cols / 2;
-  const cy = g.rows / 2;
+/** The fire taking the whole screen, white at the root and green at the licking tips. */
+export function inferno(g: Grid) {
   const dots: Dot[] = [];
-  for (let r = 16; r < Math.hypot(g.cols, g.rows) / 2; r += 5) {
-    const n = Math.round(r * 2.4);
-    for (let i = 0; i < n; i += 1) {
-      const a = rand() * Math.PI * 2;
-      const ink = rand() < 0.14 ? WHITE : rand() < 0.5 ? GREEN : DEEP;
-      // The eye of the storm is where the word and the button sit, so they stay readable.
-      const dx = (Math.cos(a) * r) / (g.cols * 0.36);
-      const dy = (cy + Math.sin(a) * r - g.rows * 0.36) / (g.rows * 0.32);
-      if (dx * dx + dy * dy < 1) continue;
+  for (let x = 0; x < g.cols; x += 1) {
+    const height =
+      g.rows * 1.02 + Math.sin(x * 0.11) * 7 + Math.sin(x * 0.29 + 1) * 5 + Math.sin(x * 0.73) * 3;
+    for (let y = 0; y < g.rows; y += 1) {
+      const u = (g.rows - y) / height;
+      if (u > 1) continue;
       dots.push({
-        x: Math.round(cx + Math.cos(a) * r),
-        y: Math.round(cy + Math.sin(a) * r),
-        ink,
-        fx: FX.FLAME,
+        x,
+        y,
+        ink: u < 0.45 ? WHITE : u < 0.78 ? MINT : GREEN,
+        fx: u > 0.3 ? FX.FLAME : 0,
       });
     }
   }
-  return dots;
-}
-
-/** The dark god: a huge black shape, its back rim-lit, one green eye. Nobody in particular. */
-export function darkGod(g: Grid) {
-  const scale = Math.max(2, Math.floor((g.rows * 0.5) / DINO_PIXELS.length));
-  const width = DINO_PIXELS[0]!.length * scale;
-  const x0 = Math.floor((g.cols - width) / 2);
-  const y0 = Math.round(g.rows * 0.15);
-  const at = (x: number, y: number) => DINO_PIXELS[y]?.[x] === "#";
-  const dots = blit(
-    DINO_PIXELS,
-    x0,
-    y0,
-    (_, x, y) => (!at(x, y - 1) ? LIGHT : !at(x + 1, y) ? STONE : ROCK),
-    { scale },
-  );
-  // The carved eye burns.
-  DINO_PIXELS.forEach((row, y) => {
-    [...row].forEach((ch, x) => {
-      if (ch !== "." || y > 4) return;
-      if (at(x - 1, y) && at(x + 1, y) && at(x, y - 1) && at(x, y + 1)) {
-        dots.push(...rect(x0 + x * scale, y0 + y * scale, scale, scale, GREEN));
-      }
-    });
-  });
   return dots;
 }

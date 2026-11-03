@@ -11,16 +11,11 @@ import {
   chain,
   climb,
   CLIMB_FROM,
-  darkGod,
   ember,
-  family,
   frieze,
-  godSolo,
-  GODS,
+  inferno,
   laptop,
   oracleFire,
-  pantheon,
-  storm,
   summitPoint,
   temple,
 } from "@/components/olympus/prologue/formations";
@@ -30,7 +25,7 @@ import { Media } from "@/components/ui/Media";
 
 export type PrologueExec = { name: string; photo: string };
 
-type ViewProps = { phase: number; execs: readonly PrologueExec[]; address: string };
+type ViewProps = { phase: number; execs: readonly PrologueExec[] };
 
 /** What a beat's cue can do: the picture, the sound, timers cancelled when the beat is left. */
 type Cue = {
@@ -43,6 +38,8 @@ type Cue = {
   setPhase: (phase: number) => void;
   /** Morphs, or sets when instant. */
   place: (dots: readonly Dot[], options?: MorphOptions) => void;
+  /** Leaves the deck for /oracle without a press (only the last beat does). */
+  leave: () => void;
 };
 
 type Beat = {
@@ -70,27 +67,21 @@ function In({
   );
 }
 
-function Address({ address, shown }: { address: string; shown?: number }) {
-  const path = "/olympus";
-  const host = address.slice(0, -path.length);
-  const n = shown ?? address.length;
-  // Fits one line on the 1920 × 1080 slide however long the deployed host is.
-  const size = Math.min(104, 1480 / (address.length * 0.6));
+/** Where the families start: the home page, whose Olympus section is up on the day. */
+const SITE = "htfpurdue.org";
+
+function Address({ shown = SITE.length }: { shown?: number }) {
   return (
-    <span
-      className="pro-address"
-      style={{ fontSize: `calc(var(--u) * ${size.toFixed(1)})` } as React.CSSProperties}
-    >
+    <span className="pro-address">
       {/* The whole address takes its room from the start, so typing never shifts it. */}
       <span aria-hidden="true" className="pro-address-ghost">
-        {address}
+        {SITE}
       </span>
       <span aria-hidden="true" className="pro-address-typed">
-        <span>{host.slice(0, n)}</span>
-        <span className="text-green">{path.slice(0, Math.max(0, n - host.length))}</span>
-        {n < address.length ? <span className="pro-caret" /> : null}
+        {SITE.slice(0, shown)}
+        {shown < SITE.length ? <span className="pro-caret" /> : null}
       </span>
-      <span className="sr-only">{address}</span>
+      <span className="sr-only">{SITE}</span>
     </span>
   );
 }
@@ -142,7 +133,23 @@ const ROULETTE = Array.from({ length: 22 }, (_, i) => ({
 const ROULETTE_END = ROULETTE.at(-1)!.ms + 640;
 const DARK = 100;
 
-const WORD_DEMO = "YOUR WORD";
+/** Slide pixels from the middle of the screen to the top of each Greek key band over the execs. */
+const BAND_ABOVE = 236;
+const BAND_BELOW = 188;
+
+function execBands(stage: CellStage) {
+  const { rows } = stage.grid;
+  return frieze(
+    stage.grid,
+    Math.round(rows / 2 - stage.units(BAND_ABOVE)),
+    Math.round(rows / 2 + stage.units(BAND_BELOW)),
+  );
+}
+
+/** Milliseconds over which the chain is forged, first link to fire. */
+const FORGE = 4200;
+/** How long the Oracle's line holds before the fire takes the screen. */
+const ORACLE_HOLD = 7000;
 
 const BEATS: readonly Beat[] = [
   // ------------------------------------------------------------ standby: one flame in the dark
@@ -225,74 +232,13 @@ const BEATS: readonly Beat[] = [
     },
   },
 
-  // ------------------------------------------------------------ the roll call, then all nine
-  {
-    bars: true,
-    view: ({ phase }) => {
-      if (phase === 0) return null;
-      if (phase <= GODS.length) {
-        const side = phase % 2 ? "right" : "left";
-        return (
-          <div key={phase} className="pro-god" data-side={side}>
-            <p className="pro-god-name">{GODS[phase - 1]}</p>
-          </div>
-        );
-      }
-      return (
-        <div className="pro-pair">
-          <In d={700} className="pro-head">
-            Nine gods.
-          </In>
-          <In d={1500} className="pro-head">
-            Nine families.
-          </In>
-        </div>
-      );
-    },
-    cue: ({ stage, score, instant, at, flash, setPhase }) => {
-      const STEP = 1050;
-      const OPEN = 300;
-      score.drone(0.5);
-      if (instant) {
-        stage.set(pantheon(stage.grid));
-        setPhase(GODS.length + 1);
-        return;
-      }
-      GODS.forEach((god, i) => {
-        at(OPEN + i * STEP, () => {
-          // Odd calls stand left with the name on the right; the last god gets the bolt.
-          const side = i % 2 ? "right" : "left";
-          stage.morph(godSolo(stage.grid, god, side), {
-            duration: 420,
-            spread: 160,
-            burn: "#f5f5f5",
-          });
-          setPhase(i + 1);
-          stage.shake(160, 1);
-          score.hit(0.7);
-          if (i === GODS.length - 1) {
-            at(400, () => {
-              stage.strike(Math.floor(stage.cols * 0.27), 0, stage.rows);
-              flash(0.7, 500);
-              score.thunder();
-            });
-          }
-        });
-      });
-      at(OPEN + GODS.length * STEP + 900, () => {
-        stage.morph(pantheon(stage.grid), { duration: 1500, spread: 700, order: "up" });
-        setPhase(GODS.length + 1);
-      });
-    },
-  },
-
   // ------------------------------------------------------------ the execs
   {
     bars: true,
     view: ({ execs }) => (
       <div className="pro-execs-scene">
         <In d={200} className="pro-voice">
-          Nine execs have taken their names.
+          Nine execs have taken a god&apos;s name.
         </In>
         <ExecRow execs={execs} />
         <In d={2300} className="pro-voice">
@@ -302,19 +248,7 @@ const BEATS: readonly Beat[] = [
     ),
     cue: ({ stage, score, place }) => {
       score.drone(0.3);
-      const g = stage.grid;
-      place(
-        frieze(
-          g,
-          Math.round(g.rows / 2 - stage.units(190)),
-          Math.round(g.rows / 2 + stage.units(142)),
-        ),
-        {
-          duration: 1200,
-          spread: 400,
-          exit: "fall",
-        },
-      );
+      place(execBands(stage), { duration: 1200, spread: 400, exit: "fall" });
     },
   },
 
@@ -337,14 +271,7 @@ const BEATS: readonly Beat[] = [
       </div>
     ),
     cue: ({ stage, score, instant, at, setPhase, place, flash }) => {
-      const g = stage.grid;
-      place(
-        frieze(
-          g,
-          Math.round(g.rows / 2 - stage.units(190)),
-          Math.round(g.rows / 2 + stage.units(142)),
-        ),
-      );
+      place(execBands(stage));
       if (instant) {
         setPhase(DARK);
         return;
@@ -368,7 +295,6 @@ const BEATS: readonly Beat[] = [
   // ------------------------------------------------------------ the chain
   {
     bars: true,
-    glow: undefined,
     view: () => (
       <div className="pro-chain">
         <In d={300} className="pro-head">
@@ -376,7 +302,7 @@ const BEATS: readonly Beat[] = [
         </In>
         <div className="pro-chain-under">
           <In d={3000} className="pro-voice">
-            A chain of trials. Each answer is the key to the next.
+            Six trials. Each answer is the key to the next.
           </In>
           <In d={5400} className="pro-voice pro-voice-strong">
             No trial explains itself.
@@ -384,25 +310,36 @@ const BEATS: readonly Beat[] = [
         </div>
       </div>
     ),
-    cue: ({ stage, score, instant, at, place }) => {
+    cue: ({ stage, score, instant, at, place, flash }) => {
       score.drone(0.35);
-      place(chain(stage.grid), { order: "given", duration: 1000, spread: 4200, burn: "#03c652" });
+      const { dots, links, fire } = chain(stage.grid);
+      place(dots, { order: "given", duration: 500, spread: FORGE, burn: "#03c652" });
       if (instant) return;
-      for (let i = 0; i < 9; i += 1) at(900 + i * 470, () => score.tick(420, 0.3));
-      at(5300, () => score.stone());
+      // Each link lands on a hammer blow, then the fire catches at the end of the chain.
+      links.forEach(({ x, y }, i) => {
+        at(((i + 1) / (links.length + 1)) * FORGE + 520, () => {
+          score.stone();
+          stage.shake(130, 1);
+          stage.sparks(x, y);
+        });
+      });
+      at(FORGE + 520, () => {
+        score.hit(0.8);
+        stage.sparks(fire.x, fire.y, 60);
+        flash(0.18, 360);
+      });
     },
   },
 
-  // ------------------------------------------------------------ setup I: the laptop
+  // ------------------------------------------------------------ setup: the laptop
   {
     bars: false,
     view: () => (
       <div className="pro-step">
-        <In className="pro-step-num">I</In>
         <In d={200} className="pro-head">
           One family.
           <br />
-          One laptop.
+          <span className="text-green">One laptop.</span>
         </In>
         <In d={900} className="pro-body">
           Choose it now. Everyone else gathers round it.
@@ -416,35 +353,31 @@ const BEATS: readonly Beat[] = [
     },
   },
 
-  // ------------------------------------------------------------ setup II: the address
+  // ------------------------------------------------------------ setup: the site
   {
     bars: false,
-    view: ({ address, phase }) => (
+    view: ({ phase }) => (
       <div className="pro-url">
-        <div className="pro-url-head">
-          <In className="pro-step-num">II</In>
-          <In d={150} className="pro-head">
-            Go to the HTF site.
-          </In>
-        </div>
+        <In d={150} className="pro-head">
+          Go to the HTF site.
+        </In>
         <div className="pro-url-field">
-          <Address address={address} shown={phase} />
+          <Address shown={phase} />
         </div>
-        <In d={1800} className="pro-body">
-          Type the whole address. No link on the site will take you there.
+        <In d={2000} className="pro-body">
+          Then scroll down to the Olympus section.
         </In>
       </div>
     ),
     cue: ({ stage, score, instant, at, setPhase, place }) => {
       place(browser(stage.grid), { duration: 900, spread: 350, burn: "#03c652" });
-      const length = location.host.length + "/olympus".length;
       if (instant) {
-        setPhase(length);
+        setPhase(SITE.length);
         return;
       }
       at(600, () => score.stone());
-      for (let i = 1; i <= length; i += 1) {
-        at(800 + i * 42, () => {
+      for (let i = 1; i <= SITE.length; i += 1) {
+        at(800 + i * 70, () => {
           setPhase(i);
           score.tick(1900, 0.07);
         });
@@ -452,17 +385,14 @@ const BEATS: readonly Beat[] = [
     },
   },
 
-  // ------------------------------------------------------------ setup III: the column
+  // ------------------------------------------------------------ setup: the column
   {
     bars: false,
     view: () => (
       <div className="pro-below">
-        <div className="pro-url-head">
-          <In className="pro-step-num">III</In>
-          <In d={150} className="pro-head">
-            Click your group&apos;s column.
-          </In>
-        </div>
+        <In d={150} className="pro-head">
+          Click your group&apos;s column.
+        </In>
         <In d={800} className="pro-body">
           Nine columns, numbered I to IX. Yours waits for you.
         </In>
@@ -479,145 +409,15 @@ const BEATS: readonly Beat[] = [
     },
   },
 
-  // ------------------------------------------------------------ setup IV: the camera, the tab
-  {
-    bars: false,
-    view: () => (
-      <div className="pro-step">
-        <In className="pro-step-num">IV</In>
-        <In d={200} className="pro-head">
-          Allow the camera.
-        </In>
-        <In d={900} className="pro-body">
-          The first trial wants every face in the frame.
-        </In>
-        <In d={1500} className="pro-body">
-          Then keep that tab. A refresh is fine. A new tab starts you over.
-        </In>
-      </div>
-    ),
-    cue: ({ stage, score, at, place, flash, instant }) => {
-      place(family(stage.grid), { duration: 1000, spread: 500, burn: "#03c652" });
-      if (instant) return;
-      at(800, () => score.stone());
-      at(2300, () => {
-        flash(0.35, 240);
-        score.shutter();
-      });
-    },
-  },
-
-  // ------------------------------------------------------------ the Oracle
-  {
-    bars: true,
-    glow: "fire",
-    view: () => (
-      <div className="pro-oracle">
-        <In d={500} className="pro-oracle-side pro-voice">
-          The last trial leaves you one word.
-        </In>
-        <In d={2600} className="pro-oracle-side pro-voice pro-voice-strong">
-          Bring it here. To this laptop, in front of everyone.
-        </In>
-      </div>
-    ),
-    cue: ({ stage, score, at, place, instant }) => {
-      score.drone(0.5, 3);
-      place(oracleFire(stage.grid), { duration: 1400, spread: 1000, order: "up", burn: "#03c652" });
-      if (!instant) at(1200, () => score.stone());
-    },
-  },
-
-  // ------------------------------------------------------------ the demonstration: the word
-  {
-    bars: true,
-    glow: "fire",
-    view: ({ phase }) => (
-      <div className="pro-demo">
-        <In className="pro-voice">Type your word.</In>
-        <span className="pro-demo-word">
-          {WORD_DEMO.slice(0, phase)}
-          {phase < WORD_DEMO.length ? <span className="pro-caret" /> : null}
-        </span>
-        <span className="pro-demo-button">
-          <span>REVEAL</span>
-        </span>
-      </div>
-    ),
-    cue: ({ stage, score, instant, at, setPhase, place }) => {
-      place(oracleFire(stage.grid, { big: false, low: true }), { duration: 1100, spread: 400 });
-      if (instant) {
-        setPhase(WORD_DEMO.length);
-        return;
-      }
-      for (let i = 1; i <= WORD_DEMO.length; i += 1) {
-        at(900 + i * 150, () => {
-          setPhase(i);
-          score.tick(900, 0.14);
-        });
-      }
-    },
-  },
-
-  // ------------------------------------------------------------ the demonstration: the hold
-  {
-    bars: true,
-    view: ({ phase }) =>
-      phase === 0 ? (
-        <div className="pro-demo">
-          <p className="pro-voice">Hold REVEAL.</p>
-          <span className="pro-demo-word">{WORD_DEMO}</span>
-          <span className="pro-demo-button" data-holding>
-            <span>REVEAL</span>
-            <span aria-hidden="true" className="pro-demo-fill">
-              REVEAL
-            </span>
-          </span>
-        </div>
-      ) : (
-        <div className="pro-after">
-          <In d={900} className="pro-head">
-            Your god. Your exec. Your family.
-          </In>
-          <In d={2200} className="pro-voice">
-            On this screen, for the whole room.
-          </In>
-        </div>
-      ),
-    cue: ({ stage, score, instant, at, setPhase, flash }) => {
-      const HOLD = 3600;
-      if (instant) {
-        stage.set(darkGod(stage.grid));
-        setPhase(1);
-        return;
-      }
-      score.rise(HOLD / 1000);
-      stage.morph(storm(stage.grid), {
-        duration: 1700,
-        spread: 1700,
-        order: "in",
-        burn: "#f5f5f5",
-      });
-      at(1800, () => stage.shake(1800, 1));
-      at(HOLD, () => {
-        stage.set(darkGod(stage.grid));
-        flash(1, 1100);
-        stage.shake(500, 2);
-        score.thunder();
-        setPhase(1);
-      });
-    },
-  },
-
-  // ------------------------------------------------------------ the last slide: the way in
+  // ------------------------------------------------------------ good luck, back on the summit
   {
     bars: true,
     glow: "summit",
-    view: ({ address }) => (
+    view: () => (
       <div className="pro-final">
-        <h2 className="pro-in pro-final-title">Who is your god?</h2>
+        <h2 className="pro-in pro-final-title">Good luck.</h2>
         <In d={1000} className="pro-final-address">
-          <Address address={address} />
+          <Address />
         </In>
       </div>
     ),
@@ -628,6 +428,35 @@ const BEATS: readonly Beat[] = [
       stage.backdrop(rock, { instant });
     },
   },
+
+  // ------------------------------------------------------------ on to the Oracle, unprompted
+  {
+    bars: true,
+    glow: "fire",
+    view: () => (
+      <div className="pro-oracle">
+        <In d={1300} className="pro-head">
+          Bring your final word
+        </In>
+        <In d={2300} className="pro-head">
+          to the <span className="text-green">Oracle.</span>
+        </In>
+      </div>
+    ),
+    cue: ({ stage, score, at, place, instant, leave }) => {
+      score.drone(0.5, 3);
+      place(oracleFire(stage.grid), {
+        duration: 1300,
+        spread: 1000,
+        order: "up",
+        exit: "fall",
+        burn: "#03c652",
+      });
+      if (instant) return;
+      at(1200, () => score.stone());
+      at(ORACLE_HOLD, leave);
+    },
+  },
 ];
 
 /**
@@ -635,11 +464,12 @@ const BEATS: readonly Beat[] = [
  * at the projectors. Each press plays one beat. The picture is one field of cells that reshapes
  * itself from scene to scene (stage.ts, formations.ts); the type sits over it, scaled like a
  * slide (`--u` is one pixel of a 1920 × 1080 slide). It starts on a small flame so it can sit on
- * the projectors while the room settles, and its last press collapses everything back into that
- * flame and lands on /oracle, ready for the first family's word.
+ * the projectors while the room settles. "Good luck" is the last press: the Oracle's fire rises,
+ * says where the final word goes, takes the whole screen and burns through to /oracle, ready for
+ * the first family's word.
  *
- * Nothing here says which exec is which god: the gods and execs are never listed in the same
- * order as each other or as the families, and only the gods' shapes are drawn.
+ * It sets the families off and stops there: no god is named or drawn (nothing here imports their
+ * sprites or content/olympus.ts), and no trial is explained.
  *
  * Next: click, Space, Enter, → or Page Down (what clickers send). Back: ← or Page Up, which lands
  * on the finished beat. F full screen, S sound, B black. The place is kept in the URL's hash, so a
@@ -665,7 +495,6 @@ export function Prologue({ execs }: { execs: readonly PrologueExec[] }) {
   const [black, setBlack] = useState(false);
   const [note, setNote] = useState("");
   const [resized, setResized] = useState(0);
-  const [address] = useState(() => `${location.host}/olympus`);
   const { index, instant } = nav;
   const beat = BEATS[index]!;
 
@@ -679,6 +508,31 @@ export function Prologue({ execs }: { execs: readonly PrologueExec[] }) {
     },
     [reduce],
   );
+
+  // The fire rises through the whole screen, the letterbox opening for it, and burns out on /oracle.
+  const leave = useCallback(() => {
+    if (leaving) return;
+    if (reduce || !stage) {
+      router.push("/oracle");
+      return;
+    }
+    setLeaving(true);
+    score.rise(1.7);
+    stage.morph(inferno(stage.grid), {
+      duration: 800,
+      spread: 900,
+      order: "up",
+      burn: "#00eb88",
+    });
+    stage.shake(1700, 1);
+    window.setTimeout(() => {
+      flash(1, 1000);
+      score.drone(0, 0.3);
+      score.thunder();
+      stage.set([]);
+      router.push("/oracle");
+    }, 1700);
+  }, [flash, leaving, reduce, router, score, stage]);
 
   // The stage, for the life of the page.
   useEffect(() => {
@@ -719,34 +573,12 @@ export function Prologue({ execs }: { execs: readonly PrologueExec[] }) {
         flash,
         setPhase: (value) => setProgress({ of: index, value }),
         place: (dots, options) => (now ? stage.set(dots) : stage.morph(dots, options)),
+        leave,
       });
     });
     history.replaceState(null, "", index ? `#${index}` : location.pathname);
     return () => timers.forEach((t) => window.clearTimeout(t));
-  }, [stage, index, instant, reduce, resized, leaving, score, flash]);
-
-  const leave = useCallback(() => {
-    if (leaving) return;
-    if (reduce || !stage) {
-      router.push("/oracle");
-      return;
-    }
-    setLeaving(true);
-    score.rise(1.4);
-    stage.morph(ember(stage.grid), {
-      duration: 1000,
-      spread: 400,
-      exit: "center",
-      burn: "#03c652",
-    });
-    window.setTimeout(() => {
-      flash(1, 900);
-      score.drone(0, 0.3);
-      score.hit(1);
-      stage.set([]);
-      router.push("/oracle");
-    }, 1400);
-  }, [flash, leaving, reduce, router, score, stage]);
+  }, [stage, index, instant, reduce, resized, leaving, score, flash, leave]);
 
   const go = useCallback(
     (delta: number) => {
@@ -813,7 +645,7 @@ export function Prologue({ execs }: { execs: readonly PrologueExec[] }) {
       ref={rootRef}
       className="pro-root"
       data-instant={instant || reduce || undefined}
-      data-bars={beat.bars || undefined}
+      data-bars={(beat.bars && !leaving) || undefined}
       data-glow={leaving ? undefined : beat.glow}
       onClick={() => go(1)}
     >
@@ -830,7 +662,7 @@ export function Prologue({ execs }: { execs: readonly PrologueExec[] }) {
 
       <h1 className="sr-only">Olympus: the prologue to the family reveal</h1>
       <div key={index} className="pro-text" aria-live="polite">
-        {leaving || !beat.view ? null : beat.view({ phase, execs, address })}
+        {leaving || !beat.view ? null : beat.view({ phase, execs })}
       </div>
 
       {index === 0 && !leaving ? (
