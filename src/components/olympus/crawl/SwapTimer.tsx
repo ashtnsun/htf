@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { TombSound } from "@/components/olympus/crawl/sound";
 
 /** Seconds at the controls before the family swaps. */
 const TURN = 120;
-/** How long the swap banner stays up. */
-const BANNER_MS = 6000;
-const KEY = "olympus3.2:swap";
+/** How long the word stays on screen. */
+const FLASH_MS = 500;
+const KEY = "olympus3.3:swap";
 
 function loadLeft() {
   try {
@@ -18,13 +17,13 @@ function loadLeft() {
 }
 
 /**
- * The family's clock, always on screen under the map: two minutes, then it beeps, the screen says
- * so as loudly as it can, and it starts again. Nothing stops for it, so the game plays on under the
- * banner; only a cutscene holds the clock (`paused`). Kept through a refresh.
+ * The family's clock, always on screen under the map: two minutes, then a big green SWAP! for half
+ * a second, and it starts again. It makes no sound and nothing stops for it; only a cutscene or the
+ * opening fall holds it (`paused`). Kept through a refresh.
  */
-export function SwapTimer({ paused, sound }: { paused: boolean; sound: TombSound }) {
+export function SwapTimer({ paused }: { paused: boolean }) {
   const [left, setLeft] = useState(loadLeft);
-  const [banner, setBanner] = useState(0);
+  const [flash, setFlash] = useState(0);
   const leftRef = useRef(left);
   const pausedRef = useRef(paused);
 
@@ -39,14 +38,10 @@ export function SwapTimer({ paused, sound }: { paused: boolean; sound: TombSound
       const dt = (now - last) / 1000;
       last = now;
       if (pausedRef.current) return;
-      const before = Math.ceil(leftRef.current);
       let next = leftRef.current - dt;
       if (next <= 0) {
         next = TURN;
-        sound.swap();
-        setBanner((n) => n + 1);
-      } else if (Math.ceil(next) < before && Math.ceil(next) <= 5) {
-        sound.beep();
+        setFlash((n) => n + 1);
       }
       leftRef.current = next;
       setLeft(next);
@@ -60,13 +55,13 @@ export function SwapTimer({ paused, sound }: { paused: boolean; sound: TombSound
       };
     }
     return () => window.clearInterval(id);
-  }, [sound]);
+  }, []);
 
   useEffect(() => {
-    if (!banner) return;
-    const id = window.setTimeout(() => setBanner(0), BANNER_MS);
+    if (!flash) return;
+    const id = window.setTimeout(() => setFlash(0), FLASH_MS);
     return () => window.clearTimeout(id);
-  }, [banner]);
+  }, [flash]);
 
   const whole = Math.ceil(left);
   const minutes = Math.floor(whole / 60);
@@ -86,11 +81,10 @@ export function SwapTimer({ paused, sound }: { paused: boolean; sound: TombSound
           {minutes}:{seconds}
         </span>
       </div>
-      {banner ? (
-        <div key={banner} role="alert" className="crawl-swap">
-          <p className="crawl-swap-word font-olympus">Swap!</p>
-          <p className="crawl-swap-line font-oracle">Pass the controls to the next player.</p>
-        </div>
+      {flash ? (
+        <p key={flash} role="alert" className="crawl-swap font-olympus">
+          Swap!
+        </p>
       ) : null}
     </>
   );

@@ -56,16 +56,16 @@ const LABELS: Record<Open["kind"], string> = {
 
 /** The shopkeeper talks at you: no choices, only a bubble. Never a family's word (cosmetics.ts). */
 const KEEPER_IDLE = [
-  "Everything here is genuine. Mostly.",
+  "Nine seas I have carried this. You will not find it cheaper.",
   "Solve things, earn coin. That is the whole economy down here.",
   "That helm was worn by a hero. Briefly.",
-  "No refunds. The last one who asked is in the Crypt.",
-  "There is a mirror on the wall. Free of charge. For now.",
-  "The machines next door? Don't. Or do. I own those as well.",
+  "No refunds. I will be gone by morning.",
+  "There is a mirror against the wall. Free of charge. For now.",
+  "The machines past the spikes? Don't. Or do. I sold them those.",
   "You have an honest face. For a lizard.",
-  "Buy something or stop breathing on the merchandise.",
+  "Mind the rugs. They have been further than you ever will.",
 ];
-const KEEPER_WELCOME = "Ah! A customer. Or a thief. Show me coin and we'll know which.";
+const KEEPER_WELCOME = "Ah! A traveller. Sit, look, buy. I leave when the lamp runs out.";
 const KEEPER_SOLD = [
   "Sold! It suits you. Try the mirror.",
   "A fine choice. I was going to say that about any of them.",
@@ -180,47 +180,60 @@ export function Crawl({
         setKeeperLine(pick(KEEPER_BROKE));
         return;
       }
-      patch({ coins: s.coins - item.price, owned: [...s.owned, id] });
-      score.coin();
+      // On at once: the newest purchase goes straight on the dinosaur.
+      patch({
+        coins: s.coins - item.price,
+        owned: [...s.owned, id],
+        look: { ...s.look, [item.slot]: id },
+      });
+      score.buy();
       setKeeperLine(pick(KEEPER_SOLD));
     },
     [patch, score],
   );
 
-  const say = useCallback((text: string) => {
-    setBark((b) => ({ text, id: (b?.id ?? 0) + 1 }));
-  }, []);
+  const say = useCallback(
+    (text: string) => {
+      score.talk();
+      setBark((b) => ({ text, id: (b?.id ?? 0) + 1 }));
+    },
+    [score],
+  );
 
-  const closeTrial = useCallback((event?: WorldEvent) => {
-    if (closing.current) return;
-    closing.current = true;
-    window.clearTimeout(settleTimer.current);
-    openKind.current = null;
-    const engine = engineRef.current;
-    const settled = event ?? pendingEvent.current;
-    pendingEvent.current = null;
-    setLeaving(true);
-    const instant = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    window.setTimeout(
-      () => {
-        setTrial(null);
-        setLeaving(false);
-        engine?.wake();
-        engine?.releaseLook();
-        if (worldRef.current) delete worldRef.current.dataset.zoom;
-        if (settled) engine?.play(settled);
-        rootRef.current?.focus();
-        window.setTimeout(
-          () => {
-            closing.current = false;
-            engine?.resume();
-          },
-          instant ? 0 : RETURN,
-        );
-      },
-      instant ? 0 : LEAVE,
-    );
-  }, []);
+  const closeTrial = useCallback(
+    (event?: WorldEvent) => {
+      if (closing.current) return;
+      closing.current = true;
+      score.menu(false);
+      window.clearTimeout(settleTimer.current);
+      openKind.current = null;
+      const engine = engineRef.current;
+      const settled = event ?? pendingEvent.current;
+      pendingEvent.current = null;
+      setLeaving(true);
+      const instant = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      window.setTimeout(
+        () => {
+          setTrial(null);
+          setLeaving(false);
+          engine?.wake();
+          engine?.releaseLook();
+          if (worldRef.current) delete worldRef.current.dataset.zoom;
+          if (settled) engine?.play(settled);
+          rootRef.current?.focus();
+          window.setTimeout(
+            () => {
+              closing.current = false;
+              engine?.resume();
+            },
+            instant ? 0 : RETURN,
+          );
+        },
+        instant ? 0 : LEAVE,
+      );
+    },
+    [score],
+  );
 
   const openTrial = useCallback(
     (target: Target) => {
@@ -229,7 +242,10 @@ export function Crawl({
       const s = latest.current;
       if (target.kind === "note") return say(target.text);
       if (target.kind === "item") return buy(target.id);
-      if (target.kind === "keeper") return setKeeperLine(pick(KEEPER_IDLE));
+      if (target.kind === "keeper") {
+        score.talk();
+        return setKeeperLine(pick(KEEPER_IDLE));
+      }
       if (target.kind === "gate") {
         if (s.word) return say("It has heard you.");
         const empty = s.solved.filter((answer) => !answer).length;
@@ -259,7 +275,7 @@ export function Crawl({
           }, 1000);
         }
       }
-      score.whoosh(0.06, 0.5);
+      score.menu(true);
       openKind.current = target.kind;
       setTrial(target);
     },
@@ -534,7 +550,7 @@ export function Crawl({
         <div className={trial || cine ? "crawl-corner-map crawl-hud-hidden" : "crawl-corner-map"}>
           <TombMap room={room} visited={save.visited} solved={save} dotRef={dotRef} />
         </div>
-        <SwapTimer paused={cine || falling} sound={score} />
+        <SwapTimer paused={cine || falling} />
       </div>
 
       {/* What stays on screen: whose tomb this is, the map, what the dinosaur can do right here. */}
@@ -744,6 +760,7 @@ export function Crawl({
               onPay={() => addCoins(-1)}
               onCoin={() => addCoins(1)}
               onBest={(best) => patch({ best })}
+              sound={score}
             />
           ) : trial.kind === "blackjack" ? (
             <Blackjack
@@ -752,6 +769,7 @@ export function Crawl({
               onRound={setBjRound}
               onSpend={(n) => addCoins(-n)}
               onWin={(n) => addCoins(n)}
+              sound={score}
             />
           ) : save.finalWord ? (
             <Finale word={save.finalWord} />

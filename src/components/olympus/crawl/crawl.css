@@ -133,56 +133,27 @@
 .crawl-timer[data-paused] {
   opacity: 0.6;
 }
-.crawl-timer[data-urgent] {
-  outline: 2px solid var(--pink);
-}
 .crawl-timer[data-urgent] .crawl-timer-time {
-  color: var(--pink);
-  animation: crawl-urgent 1s steps(2) infinite;
-}
-@keyframes crawl-urgent {
-  50% {
-    opacity: 0.45;
-  }
+  color: var(--green);
 }
 
-/* Swap: as loud as a screen can be without stopping the game under it. */
+/* Swap: one word, big and green, for half a second, over a game that goes on playing. */
 .crawl-swap {
   position: fixed;
   z-index: 30;
   inset: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  padding-top: 14vh;
+  justify-content: center;
   pointer-events: none;
-  box-shadow: inset 0 0 0 14px var(--pink);
-  animation: crawl-swap-frame 700ms steps(2) infinite;
-}
-@keyframes crawl-swap-frame {
-  50% {
-    box-shadow: inset 0 0 0 14px var(--green);
-  }
-}
-.crawl-swap-word,
-.crawl-swap-line {
-  background: rgb(4 4 4 / 0.92);
-  padding-inline: 1.5rem;
-  text-align: center;
-}
-.crawl-swap-word {
-  font-size: clamp(4rem, 12vw, 9rem);
-  line-height: 1.1;
+  color: var(--green);
+  font-size: clamp(6rem, 20vw, 16rem);
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--pink);
-}
-.crawl-swap-line {
-  padding-block: 0.25rem 0.5rem;
-  font-size: clamp(1.5rem, 3vw, 2.25rem);
-  font-style: italic;
+  text-shadow:
+    0 6px 0 #000,
+    0 0 60px rgb(0 0 0 / 0.9);
 }
 
 /* The purse. */
@@ -227,9 +198,9 @@
   max-width: 19rem;
   padding: 0.5rem 0.875rem;
   transform: translateX(-88%);
-  background: #f2f6f8;
-  color: #14131f;
-  border: 3px solid #14131f;
+  background: #e6d6ad;
+  color: #24160a;
+  border: 3px solid #3e2a14;
   font-size: 1.125rem;
   font-weight: 600;
   line-height: 1.2;
@@ -242,9 +213,9 @@
   bottom: -12px;
   width: 12px;
   height: 9px;
-  background: #f2f6f8;
-  border-inline: 3px solid #14131f;
-  border-bottom: 3px solid #14131f;
+  background: #e6d6ad;
+  border-inline: 3px solid #3e2a14;
+  border-bottom: 3px solid #3e2a14;
 }
 
 /* ------------------------------------------------------------------ the machines */
@@ -253,31 +224,30 @@
   width: min(52rem, 100%);
   margin: auto;
   padding: 0.75rem;
-  background: #170d22;
-  border: 3px solid #4a2e6b;
-  box-shadow: 0 0 40px rgb(255 61 158 / 0.25);
-}
-.crawl-cabinet-felt {
-  box-shadow: 0 0 40px rgb(0 224 255 / 0.2);
+  background-color: #141110;
+  background-image: var(--crawl-stone);
+  background-size: 192px;
+  border: 3px solid #8a6a3a;
+  outline: 1px solid #2a2014;
+  outline-offset: -8px;
+  box-shadow: 0 0 60px rgb(0 0 0 / 0.8);
 }
 .crawl-marquee {
   margin-bottom: 0.75rem;
-  padding: 0.25rem;
-  background: var(--pink);
-  color: #14081c;
+  padding: 0.375rem;
+  background: #1d1610;
+  border-block: 2px solid #8a6a3a;
+  color: #d2aa6a;
   font-size: 1.5rem;
   font-weight: 600;
   letter-spacing: 0.3em;
   text-align: center;
   text-transform: uppercase;
 }
-.crawl-cabinet-felt .crawl-marquee {
-  background: var(--cyan);
-}
 .crawl-screen {
   position: relative;
-  border: 3px solid #07040c;
-  background: #0b0a12;
+  border: 3px solid #050404;
+  background: #0a1020;
 }
 .crawl-screen canvas {
   display: block;
@@ -303,7 +273,7 @@
   gap: 0.75rem;
   padding: 1rem;
   text-align: center;
-  background: rgb(8 6 14 / 0.72);
+  background: rgb(6 8 16 / 0.72);
 }
 .crawl-panel {
   display: flex;
@@ -348,15 +318,37 @@
   font-size: 1.25rem;
 }
 
-.crawl-felt {
-  padding: 0.75rem 1.25rem 1.25rem;
-  background: #0d3b26;
-  border: 3px solid #07241a;
-  box-shadow: inset 0 0 60px rgb(0 0 0 / 0.45);
+/* The table: the inside of a black-glazed cup, its rim painted with the key. */
+.crawl-table {
+  position: relative;
+  padding: 1.75rem 1.25rem 1.75rem;
+  background:
+    url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='88'%20height='112'%20viewBox='0%200%2011%2014'%20shape-rendering='crispEdges'%3E%3Cpath%20fill='%238e4a1f'%20d='M2%200h1v1h-1zM3%200h1v1h-1zM4%200h1v1h-1zM5%200h1v1h-1zM6%200h1v1h-1zM7%200h1v1h-1zM8%200h1v1h-1zM3%201h1v1h-1zM4%201h1v1h-1zM5%201h1v1h-1zM6%201h1v1h-1zM7%201h1v1h-1zM3%202h1v1h-1zM4%202h1v1h-1zM5%202h1v1h-1zM6%202h1v1h-1zM7%202h1v1h-1zM1%203h1v1h-1zM3%203h1v1h-1zM4%203h1v1h-1zM5%203h1v1h-1zM6%203h1v1h-1zM7%203h1v1h-1zM9%203h1v1h-1zM0%204h1v1h-1zM3%204h1v1h-1zM4%204h1v1h-1zM5%204h1v1h-1zM6%204h1v1h-1zM7%204h1v1h-1zM10%204h1v1h-1zM0%205h1v1h-1zM2%205h1v1h-1zM3%205h1v1h-1zM4%205h1v1h-1zM5%205h1v1h-1zM6%205h1v1h-1zM7%205h1v1h-1zM8%205h1v1h-1zM10%205h1v1h-1zM1%207h1v1h-1zM4%207h1v1h-1zM7%207h1v1h-1zM10%207h1v1h-1zM1%209h1v1h-1zM2%209h1v1h-1zM3%209h1v1h-1zM4%209h1v1h-1zM5%209h1v1h-1zM6%209h1v1h-1zM7%209h1v1h-1zM8%209h1v1h-1zM9%209h1v1h-1zM3%2010h1v1h-1zM4%2010h1v1h-1zM5%2010h1v1h-1zM6%2010h1v1h-1zM7%2010h1v1h-1zM4%2011h1v1h-1zM5%2011h1v1h-1zM6%2011h1v1h-1zM5%2012h1v1h-1zM3%2013h1v1h-1zM4%2013h1v1h-1zM5%2013h1v1h-1zM6%2013h1v1h-1zM7%2013h1v1h-1z'/%3E%3Cpath%20fill='%235e3218'%20d='M2%2010h1v1h-1zM8%2010h1v1h-1zM3%2011h1v1h-1zM7%2011h1v1h-1zM4%2012h1v1h-1zM6%2012h1v1h-1z'/%3E%3Cpath%20fill='%23000'%20d='M1%206h1v1h-1zM2%206h1v1h-1zM3%206h1v1h-1zM4%206h1v1h-1zM5%206h1v1h-1zM6%206h1v1h-1zM7%206h1v1h-1zM8%206h1v1h-1zM9%206h1v1h-1zM0%207h1v1h-1zM2%207h1v1h-1zM3%207h1v1h-1zM5%207h1v1h-1zM6%207h1v1h-1zM8%207h1v1h-1zM9%207h1v1h-1zM0%208h1v1h-1zM1%208h1v1h-1zM2%208h1v1h-1zM3%208h1v1h-1zM4%208h1v1h-1zM5%208h1v1h-1zM6%208h1v1h-1zM7%208h1v1h-1zM8%208h1v1h-1zM9%208h1v1h-1zM10%208h1v1h-1z'/%3E%3C/svg%3E")
+      7% 55% no-repeat,
+    url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='88'%20height='112'%20viewBox='0%200%2011%2014'%20shape-rendering='crispEdges'%3E%3Cpath%20fill='%238e4a1f'%20d='M2%200h1v1h-1zM3%200h1v1h-1zM4%200h1v1h-1zM5%200h1v1h-1zM6%200h1v1h-1zM7%200h1v1h-1zM8%200h1v1h-1zM3%201h1v1h-1zM4%201h1v1h-1zM5%201h1v1h-1zM6%201h1v1h-1zM7%201h1v1h-1zM3%202h1v1h-1zM4%202h1v1h-1zM5%202h1v1h-1zM6%202h1v1h-1zM7%202h1v1h-1zM1%203h1v1h-1zM3%203h1v1h-1zM4%203h1v1h-1zM5%203h1v1h-1zM6%203h1v1h-1zM7%203h1v1h-1zM9%203h1v1h-1zM0%204h1v1h-1zM3%204h1v1h-1zM4%204h1v1h-1zM5%204h1v1h-1zM6%204h1v1h-1zM7%204h1v1h-1zM10%204h1v1h-1zM0%205h1v1h-1zM2%205h1v1h-1zM3%205h1v1h-1zM4%205h1v1h-1zM5%205h1v1h-1zM6%205h1v1h-1zM7%205h1v1h-1zM8%205h1v1h-1zM10%205h1v1h-1zM1%207h1v1h-1zM4%207h1v1h-1zM7%207h1v1h-1zM10%207h1v1h-1zM1%209h1v1h-1zM2%209h1v1h-1zM3%209h1v1h-1zM4%209h1v1h-1zM5%209h1v1h-1zM6%209h1v1h-1zM7%209h1v1h-1zM8%209h1v1h-1zM9%209h1v1h-1zM3%2010h1v1h-1zM4%2010h1v1h-1zM5%2010h1v1h-1zM6%2010h1v1h-1zM7%2010h1v1h-1zM4%2011h1v1h-1zM5%2011h1v1h-1zM6%2011h1v1h-1zM5%2012h1v1h-1zM3%2013h1v1h-1zM4%2013h1v1h-1zM5%2013h1v1h-1zM6%2013h1v1h-1zM7%2013h1v1h-1z'/%3E%3Cpath%20fill='%235e3218'%20d='M2%2010h1v1h-1zM8%2010h1v1h-1zM3%2011h1v1h-1zM7%2011h1v1h-1zM4%2012h1v1h-1zM6%2012h1v1h-1z'/%3E%3Cpath%20fill='%23000'%20d='M1%206h1v1h-1zM2%206h1v1h-1zM3%206h1v1h-1zM4%206h1v1h-1zM5%206h1v1h-1zM6%206h1v1h-1zM7%206h1v1h-1zM8%206h1v1h-1zM9%206h1v1h-1zM0%207h1v1h-1zM2%207h1v1h-1zM3%207h1v1h-1zM5%207h1v1h-1zM6%207h1v1h-1zM8%207h1v1h-1zM9%207h1v1h-1zM0%208h1v1h-1zM1%208h1v1h-1zM2%208h1v1h-1zM3%208h1v1h-1zM4%208h1v1h-1zM5%208h1v1h-1zM6%208h1v1h-1zM7%208h1v1h-1zM8%208h1v1h-1zM9%208h1v1h-1zM10%208h1v1h-1z'/%3E%3C/svg%3E")
+      93% 55% no-repeat,
+    radial-gradient(ellipse at center, #1f1610 0%, #0c0805 75%);
+  border: 3px solid #5e3a1c;
 }
-.crawl-felt-rule {
-  margin-bottom: 0.75rem;
-  color: #79c29c;
+.crawl-table::before,
+.crawl-table::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' shape-rendering='crispEdges'%3E%3Cpath fill='%23c96f33' d='M0 0h10v2H2v6h4V4H4V2h4v8H0zM0 10h12v2H0z'/%3E%3C/svg%3E")
+    repeat-x;
+}
+.crawl-table::before {
+  top: 4px;
+}
+.crawl-table::after {
+  bottom: 4px;
+}
+.crawl-table-rule {
+  margin-bottom: 0.5rem;
+  color: #c98a58;
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.14em;
@@ -377,7 +369,7 @@
 .crawl-hand-name {
   width: 100%;
   margin-bottom: 0.375rem;
-  color: #cfe8d8;
+  color: #e6c9a0;
   font-size: 0.8125rem;
   font-weight: 600;
   letter-spacing: 0.1em;
@@ -392,43 +384,83 @@
   justify-content: center;
   gap: 0.375rem;
 }
+/* A card off a painted pot: fired clay, a black key at its head and foot, the figure in black. */
 .crawl-card {
   position: relative;
   flex: none;
-  width: 4rem;
-  height: 5.5rem;
-  background: #f2efe4;
-  color: #14131f;
-  border: 2px solid #14131f;
-  box-shadow: 0 3px 0 rgb(0 0 0 / 0.4);
+  width: 4.25rem;
+  height: 6rem;
+  background: #c96f33;
+  color: #14100c;
+  border: 2px solid #14100c;
+  box-shadow: 0 3px 0 rgb(0 0 0 / 0.5);
   animation: journey-rise 300ms var(--ease-glide) both;
 }
-.crawl-card-red {
-  color: #b3263a;
+.crawl-card::before,
+.crawl-card::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: repeating-linear-gradient(90deg, #14100c 0 4px, transparent 4px 6px);
+}
+.crawl-card::before {
+  top: 2px;
+}
+.crawl-card::after {
+  bottom: 2px;
+}
+.crawl-card-pale {
+  background: #e6d6ad;
 }
 .crawl-card-rank {
   position: absolute;
-  top: 0.25rem;
-  left: 0.375rem;
-  font-size: 1.25rem;
+  top: 0.625rem;
+  left: 0.3125rem;
+  font-size: 1.0625rem;
   font-weight: 600;
   line-height: 1;
 }
+.crawl-card-rank-low {
+  top: auto;
+  left: auto;
+  right: 0.3125rem;
+  bottom: 0.625rem;
+  transform: rotate(180deg);
+}
 .crawl-card-suit {
   position: absolute;
-  right: 0.5rem;
-  bottom: 0.5rem;
+  left: 50%;
+  top: 50%;
+  width: 1.875rem;
+  height: 1.875rem;
+  transform: translate(-50%, -50%);
 }
 .crawl-card-back {
-  background: #124a30;
-  background-image: repeating-linear-gradient(45deg, #1b6a45 0 4px, transparent 4px 8px);
-  border-color: #e9c46a;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 9 9' shape-rendering='crispEdges'%3E%3Cpath fill='%23c96f33' d='M0 0h9v9H2V3h4v3H5V4H3v4h5V1H0z'/%3E%3C/svg%3E")
+      center no-repeat,
+    #14100c;
+  border-color: #14100c;
+  box-shadow:
+    inset 0 0 0 3px #14100c,
+    inset 0 0 0 5px #c96f33,
+    0 3px 0 rgb(0 0 0 / 0.5);
+}
+.crawl-card-back::before,
+.crawl-card-back::after {
+  display: none;
 }
 .crawl-card-ghost {
   background: none;
-  border: 2px dashed rgb(255 255 255 / 0.18);
+  border: 2px dashed rgb(201 111 51 / 0.35);
   box-shadow: none;
   animation: none;
+}
+.crawl-card-ghost::before,
+.crawl-card-ghost::after {
+  display: none;
 }
 .crawl-result {
   margin-top: 0.375rem;
@@ -903,8 +935,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .crawl-swap,
-  .crawl-timer-time,
   .crawl-purse-pop {
     animation: none !important;
   }

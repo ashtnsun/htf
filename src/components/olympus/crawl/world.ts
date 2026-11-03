@@ -53,7 +53,17 @@ export type Spot = {
 };
 
 export type PropKind =
-  "column" | "stump" | "amphora" | "statue" | "sarcophagus" | "bones" | "rubble" | "coins";
+  | "column"
+  | "stump"
+  | "amphora"
+  | "statue"
+  | "sarcophagus"
+  | "bones"
+  | "rubble"
+  | "coins"
+  | "crate"
+  | "sack"
+  | "rolls";
 
 export type Prop = {
   kind: PropKind;
@@ -128,10 +138,33 @@ export const DOOR_HALF = 16;
 const rect = (x0: number, y0: number, x1: number, y1: number) => (x: number, y: number) =>
   x >= x0 && x < x1 && y >= y0 && y < y1;
 
-/** Where each thing for sale stands: two rows of seven, wide enough to walk between. */
-export function pedestal(i: number) {
-  return { x: 40 + (i % 7) * 40, y: i < 7 ? 124 : 160 };
-}
+/** Where each thing for sale lies: on three rugs, not in rows, the way a merchant lays them out. */
+const WARES = [
+  // Hats on the long rug.
+  [40, 116],
+  [68, 116],
+  [96, 116],
+  [124, 116],
+  [40, 154],
+  [68, 154],
+  [96, 154],
+  [124, 154],
+  // Faces on the small one.
+  [152, 128],
+  [180, 128],
+  [152, 158],
+  [180, 158],
+  // Things for the back, then things to carry, on the blue one.
+  [204, 158],
+  [232, 158],
+  [260, 158],
+  [288, 158],
+  [204, 128],
+  [232, 128],
+  [260, 128],
+  [288, 128],
+] as const;
+export const ware = (i: number) => ({ x: WARES[i]![0], y: WARES[i]![1] });
 
 const tablet = (index: number, x: number, floorTop: number): Spot => ({
   target: { kind: "tablet", index },
@@ -202,7 +235,6 @@ const SPECS: RoomSpec[] = [
     ambient: 0.4,
     shape: rect(16, 96, 368, 208),
     doors: { e: { to: "hall", at: 160 } },
-    sconces: { left: [28, 43, 58, 73, 88], right: [296, 311, 326, 341, 356] },
     props: [
       { kind: "statue", x: 104, y: 112 },
       { kind: "statue", x: 280, y: 112, flip: true },
@@ -216,7 +248,7 @@ const SPECS: RoomSpec[] = [
     ],
     spots: [
       { target: { kind: "mural" }, x: 192, y: 104, r: 34, capY: 2 },
-      { target: { kind: "mirror" }, x: 58, y: 106, r: 20, capY: 2 },
+      { target: { kind: "mirror" }, x: 58, y: 108, r: 20, capY: 30 },
       note("Someone came before you. They did not stand before the wall.", 72, 204),
       {
         ...note("It will not open for strangers.", 346, 160, 22),
@@ -417,26 +449,28 @@ const SPECS: RoomSpec[] = [
   },
   {
     id: "shop",
-    title: "The Agora",
+    title: "The Caravan",
     theme: "agora",
     at: [272, 432],
     w: 20,
     h: 12,
     wall: 4,
-    ambient: 0.22,
+    ambient: 0.42,
     shape: rect(16, 64, 304, 176),
     doors: { n: { to: "teeth", at: 160 } },
     props: [
-      { kind: "amphora", x: 28, y: 78, seed: 1 },
-      { kind: "amphora", x: 40, y: 72, seed: 3 },
-      { kind: "amphora", x: 292, y: 74, seed: 4 },
+      { kind: "crate", x: 30, y: 84 },
+      { kind: "crate", x: 30, y: 72 },
+      { kind: "sack", x: 50, y: 80, seed: 1 },
+      { kind: "rolls", x: 124, y: 84 },
+      { kind: "sack", x: 138, y: 78, seed: 2 },
     ],
     spots: [
-      { target: { kind: "mirror" }, x: 90, y: 74, r: 20, capY: 2 },
-      { target: { kind: "keeper" }, x: 240, y: 106, r: 18, capX: 204, capY: 70, label: "Talk" },
+      { target: { kind: "mirror" }, x: 90, y: 76, r: 20, capY: 2 },
+      { target: { kind: "keeper" }, x: 204, y: 110, r: 20, capX: 178, capY: 66, label: "Talk" },
       ...FOR_SALE.map((item, i): Spot => {
-        const { x, y } = pedestal(i);
-        return { target: { kind: "item", id: item.id }, x, y: y + 10, r: 15, capY: y - 34 };
+        const { x, y } = ware(i);
+        return { target: { kind: "item", id: item.id }, x, y: y + 4, r: 14, capY: y - 34 };
       }),
     ],
   },
@@ -448,13 +482,34 @@ const SPECS: RoomSpec[] = [
     w: 14,
     h: 10,
     wall: 3,
-    ambient: 0.42,
+    ambient: 0.8,
     shape: rect(16, 48, 208, 144),
     doors: { w: { to: "teeth", at: 96 } },
-    props: [{ kind: "amphora", x: 196, y: 134, seed: 2 }],
+    props: [
+      { kind: "stump", x: 196, y: 70, seed: 23 },
+      { kind: "amphora", x: 192, y: 134, seed: 2 },
+      { kind: "bones", x: 118, y: 128 },
+    ],
     spots: [
-      { target: { kind: "arcade" }, x: 76, y: 78, r: 22, capY: 6, label: "Play the machine" },
-      { target: { kind: "blackjack" }, x: 150, y: 78, r: 22, capY: 6, label: "Sit at the table" },
+      {
+        target: { kind: "arcade" },
+        x: 72,
+        y: 78,
+        r: 22,
+        capX: 100,
+        capY: 34,
+        label: "Play the machine",
+      },
+      {
+        target: { kind: "blackjack" },
+        x: 152,
+        y: 78,
+        r: 22,
+        capX: 180,
+        capY: 34,
+        label: "Sit at the machine",
+      },
+      note("He bet the last of it.", 118, 136, 20),
     ],
   },
 ];
@@ -578,6 +633,11 @@ export function solidOf(prop: Prop): { x: number; y: number; w: number; h: numbe
       return { x: prop.x - 11, y: prop.y - 7, w: 22, h: 8 };
     case "sarcophagus":
       return { x: prop.x - 21, y: prop.y - 18, w: 42, h: 20 };
+    case "crate":
+      return { x: prop.x - 9, y: prop.y - 6, w: 18, h: 7 };
+    case "sack":
+    case "rolls":
+      return { x: prop.x - 7, y: prop.y - 4, w: 14, h: 5 };
     default:
       return null;
   }

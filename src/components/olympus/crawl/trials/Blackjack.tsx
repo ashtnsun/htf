@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
 import {
   canDouble,
@@ -17,34 +17,76 @@ import {
   type Round,
   type Suit,
 } from "@/components/olympus/crawl/blackjack";
+import type { TombSound } from "@/components/olympus/crawl/sound";
 import { OlympusButton } from "@/components/olympus/OlympusButton";
 import { cn } from "@/lib/utils";
 
+/** The four suits, in the black figure of a painted pot: owl, jar, helm and lyre. */
 const SUIT_MAPS: Record<Suit, readonly string[]> = {
-  spade: ["...#...", "..###..", ".#####.", "#######", "#######", "#.###.#", "..###.."],
-  heart: [".##.##.", "#######", "#######", ".#####.", "..###..", "...#...", "......."],
-  diamond: ["...#...", "..###..", ".#####.", "#######", ".#####.", "..###..", "...#..."],
-  club: ["..###..", "..###..", "#.###.#", "#######", "#.###.#", "...#...", "..###.."],
+  spade: [
+    "##.....##",
+    "#########",
+    "#..###..#",
+    "#.#.#.#.#",
+    "#..###..#",
+    "####.####",
+    ".#######.",
+    ".#.###.#.",
+    "..#.#.#..",
+  ],
+  heart: [
+    "..#####..",
+    "...###...",
+    ".#.###.#.",
+    "#..###..#",
+    "#.#####.#",
+    ".#######.",
+    "..#####..",
+    "...###...",
+    "..#####..",
+  ],
+  diamond: [
+    "..#####..",
+    ".#######.",
+    "#########",
+    "###..####",
+    "###..####",
+    "#########",
+    "##.###.##",
+    "##.....##",
+    "##.....##",
+  ],
+  club: [
+    "#.......#",
+    "##.....##",
+    ".#.#.#.#.",
+    ".#.#.#.#.",
+    ".#.#.#.#.",
+    ".#.#.#.#.",
+    ".#######.",
+    "...###...",
+    "..#####..",
+  ],
 };
 const SUIT_NAMES: Record<Suit, string> = {
-  spade: "spades",
-  heart: "hearts",
-  diamond: "diamonds",
-  club: "clubs",
+  spade: "owls",
+  heart: "jars",
+  diamond: "helms",
+  club: "lyres",
 };
 const RESULT_WORDS: Record<Result, string> = {
   blackjack: "Blackjack",
   win: "You win",
   push: "Push",
-  lose: "The house wins",
+  lose: "The Fates win",
   bust: "Bust",
 };
 
 function SuitIcon({ suit }: { suit: Suit }) {
   return (
     <svg
-      viewBox="0 0 7 7"
-      className="block size-5"
+      viewBox="0 0 9 9"
+      className="block size-full"
       shapeRendering="crispEdges"
       fill="currentColor"
       aria-hidden="true"
@@ -66,11 +108,12 @@ function CardFace({ card, hidden }: { card: Card; hidden?: boolean }) {
       </li>
     );
   }
-  const red = card.suit === "heart" || card.suit === "diamond";
+  // Half the deck is red-figure clay, half white-ground, like the pots they came off.
+  const pale = card.suit === "heart" || card.suit === "club";
   return (
     <li
       aria-label={`${card.rank} of ${SUIT_NAMES[card.suit]}`}
-      className={cn("crawl-card font-olympus", red && "crawl-card-red")}
+      className={cn("crawl-card font-olympus", pale && "crawl-card-pale")}
     >
       <span aria-hidden="true" className="crawl-card-rank">
         {card.rank}
@@ -78,13 +121,16 @@ function CardFace({ card, hidden }: { card: Card; hidden?: boolean }) {
       <span aria-hidden="true" className="crawl-card-suit">
         <SuitIcon suit={card.suit} />
       </span>
+      <span aria-hidden="true" className="crawl-card-rank crawl-card-rank-low">
+        {card.rank}
+      </span>
     </li>
   );
 }
 
 /**
  * The blackjack machine, up close: traditional rules (blackjack.ts). A bet of whole coins, a hand
- * against the house, hit, stand, double or split. The stake leaves as it is played, and winnings
+ * against the Fates, hit, stand, double or split. The stake leaves as it is played, and winnings
  * land the moment the round is decided, so stepping away never costs anything: the hand waits.
  */
 export function Blackjack({
@@ -93,12 +139,14 @@ export function Blackjack({
   onRound,
   onSpend,
   onWin,
+  sound,
 }: {
   coins: number;
   round: Round | null;
   onRound: (round: Round | null) => void;
   onSpend: (coins: number) => void;
   onWin: (coins: number) => void;
+  sound: TombSound;
 }) {
   const reduce = useReducedMotionSafe();
   const [bet, setBet] = useState(1);
@@ -109,11 +157,25 @@ export function Blackjack({
 
   useEffect(() => {
     if (!round?.over || reduce || shown >= round.dealer.length) return;
-    const id = window.setTimeout(() => setShown((n) => n + 1), 520);
+    const id = window.setTimeout(() => {
+      sound.card();
+      setShown((n) => n + 1);
+    }, 520);
     return () => window.clearTimeout(id);
-  }, [reduce, round, shown]);
+  }, [reduce, round, shown, sound]);
+
+  // Once the Fates have shown their hand: a win sings, a loss knocks, a push says nothing.
+  const announced = useRef(round);
+  useEffect(() => {
+    if (!round?.over || !dealerDone || announced.current === round) return;
+    announced.current = round;
+    const results = round.hands.map((h) => h.result);
+    if (results.some((r) => r === "win" || r === "blackjack")) sound.solved();
+    else if (results.some((r) => r === "lose" || r === "bust")) sound.thud();
+  }, [dealerDone, round, sound]);
 
   function update(next: Round) {
+    sound.card();
     onRound(next);
     if (next.over) onWin(totalPayout(next));
   }
@@ -131,16 +193,16 @@ export function Blackjack({
   const visible = dealerUp && !reduce ? dealerCards.slice(0, shown) : dealerCards;
 
   return (
-    <div className="crawl-cabinet crawl-cabinet-felt journey-rise">
+    <div className="crawl-cabinet journey-rise">
       <p className="crawl-marquee font-olympus">Blackjack</p>
-      <div className="crawl-felt">
-        <p className="crawl-felt-rule font-olympus">
-          Blackjack pays 3 to 2 · The house stands on 17
+      <div className="crawl-table">
+        <p className="crawl-table-rule font-olympus">
+          Blackjack pays 3 to 2 · The Fates stand on 17
         </p>
 
-        <section aria-label="The house" className="crawl-hand">
+        <section aria-label="The Fates" className="crawl-hand">
           <h2 className="crawl-hand-name font-olympus">
-            The house
+            The Fates
             {dealerUp && dealerDone ? ` · ${total(dealerCards).total}` : ""}
           </h2>
           <ol className="crawl-cards">

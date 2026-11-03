@@ -2,7 +2,6 @@ import { DINO_ARM, DINO_EYE, DINO_PIXELS } from "@/components/brand/dino-pixels"
 import {
   cosmeticById,
   DINO_COLORS,
-  TOGA,
   type Cosmetic,
   type Look,
   DEFAULT_LOOK,
@@ -153,37 +152,37 @@ export const THEMES: Record<ThemeId, Theme> = {
     "#b08d57",
     "#b08d57",
   ),
-  // A whitewashed market on the islands: the one cheerful room down here.
+  // A merchant's camp pitched in the ruin: old umber stone, lamplight, dust.
   agora: ramp(
     [
-      "#0f1620",
-      "#1a2533",
-      "#2a3a4e",
-      "#3d5068",
-      "#5a708a",
-      "#8097ad",
-      "#a8bccb",
-      "#cfdbe3",
-      "#f2f6f8",
+      "#140c08",
+      "#21140c",
+      "#322013",
+      "#46301d",
+      "#5f4329",
+      "#815f3b",
+      "#a88354",
+      "#ceac7c",
+      "#efdbb2",
     ],
-    "#2f6fd0",
-    "#2f6fd0",
+    "#3b3417",
+    "#b5502f",
   ),
-  // Lamp-black and plum, and machines that should not be here.
+  // A back room no one was meant to find: nearly black, a few candles.
   den: ramp(
     [
-      "#0d0714",
-      "#170d22",
-      "#241537",
-      "#34204d",
-      "#4a2e6b",
-      "#684390",
-      "#8f63b8",
-      "#b98fdc",
-      "#e7d5f7",
+      "#060505",
+      "#0c0a09",
+      "#141110",
+      "#1d1918",
+      "#2a2523",
+      "#3d3632",
+      "#574e47",
+      "#7c7066",
+      "#b0a394",
     ],
-    "#ff3d9e",
-    "#ff3d9e",
+    "#14130d",
+    "#5f4f33",
   ),
   // The end of it.
   gold: ramp(
@@ -286,12 +285,7 @@ export const DINO_H = 22 + DINO_TOP;
 /** The point between the feet, in the picture's cells. */
 export const DINO_FOOT_X = 9 + DINO_LEFT;
 
-/** The shopkeeper's colour: clay, and never one of the nine. */
-const KEEPER_COLOR = { body: "#b8743a", light: "#e0a56a" };
-export const KEEPER_LOOK: Look = { ...DEFAULT_LOOK, color: "keeper", head: "laurel" };
-
-const colorOf = (id: string) =>
-  id === "keeper" ? KEEPER_COLOR : (DINO_COLORS.find((c) => c.id === id) ?? DINO_COLORS[0]);
+export const colorOf = (id: string) => DINO_COLORS.find((c) => c.id === id) ?? DINO_COLORS[0];
 
 /** One frame of the dinosaur as it is dressed: `step` is the walk's place (0-3), `blink` the eye. */
 export function dinoFrame(step: number, blink: boolean, flip: boolean, look: Look = DEFAULT_LOOK) {
@@ -320,7 +314,6 @@ export function dinoFrame(step: number, blink: boolean, flip: boolean, look: Loo
       }),
     );
     if (blink) cell(DINO_EYE.x, DINO_EYE.y, color.body);
-    if (look.color === "keeper") wear(TOGA);
     wear(cosmeticById(look.face));
     wear(cosmeticById(look.head));
     wear(cosmeticById(look.hand));
@@ -671,6 +664,72 @@ export function propPicture(prop: Prop, theme: ThemeId) {
         return fromRows(BONES, { w: t.s7 });
       case "sarcophagus":
         return sarcophagusPicture(t, false);
+      case "crate":
+        return fromRows(
+          [
+            "wwwwwwwwwwwwwwwwww",
+            "wWWWWWWWWWWWWWWWWd",
+            "wWddWWWWWWWWWWddWd",
+            "wWWddWWWWWWWWddWWd",
+            "wWWWddWWWWWWddWWWd",
+            "wWWWWddWWWWddWWWWd",
+            "wWWWWWddWWddWWWWWd",
+            "wWWWWWWddddWWWWWWd",
+            "wWWWWWddWWddWWWWWd",
+            "wWWWWddWWWWddWWWWd",
+            "wWWWddWWWWWWddWWWd",
+            "wdddddddddddddddd.",
+          ],
+          { w: "#9a7344", W: "#6f4f2a", d: "#3e2a14" },
+        );
+      case "sack":
+        return fromRows(
+          [
+            "....rrrr....",
+            "...rRRRRr...",
+            "....rrrr....",
+            "...cCCCCc...",
+            "..cCCCCCCc..",
+            ".cCCCCCCCCc.",
+            ".cCCCCCCCCc.",
+            "cCCCCCCCCCDc",
+            "cCCCCCCCCDDc",
+            "cCCCCCCCDDDc",
+            ".cDDDDDDDDc.",
+            "..cccccccc..",
+          ],
+          (prop.seed ?? 1) % 2
+            ? { r: "#6b4a26", R: "#9a7344", c: "#7a6a4a", C: "#b8a77f", D: "#8f8058" }
+            : { r: "#6b4a26", R: "#9a7344", c: "#6e3320", C: "#a8583a", D: "#85432b" },
+        );
+      case "rolls":
+        return fromRows(
+          [
+            "..b...r...",
+            ".bBb.rRr..",
+            ".bBb.rRr..",
+            ".bBb.rRr..",
+            ".bGb.rGr..",
+            ".bBb.rRr.i",
+            ".bBb.rRrii",
+            ".bBb.rRrIi",
+            ".bGb.rGrIi",
+            ".bBb.rRrIi",
+            ".bBb.rRrIi",
+            ".bBb.rRrGi",
+            ".bBb.rRrIi",
+            ".bbb.rrrii",
+          ],
+          {
+            b: "#1e2f55",
+            B: "#35508a",
+            r: "#6e1f24",
+            R: "#a4333a",
+            G: "#e0bd7a",
+            i: "#7a5a1e",
+            I: "#c0902f",
+          },
+        );
       case "coins": {
         const r = rng((prop.seed ?? 1) * 53);
         const { canvas, ctx } = makeCanvas(28, 14);
@@ -1052,6 +1111,68 @@ function paintTiers(ctx: CanvasRenderingContext2D, t: Theme) {
   }
 }
 
+/** A woven rug: bands, the key, a fringe at each end. */
+function paintRug(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  ground: string,
+  dark: string,
+  pale: string,
+) {
+  fill(ctx, "rgba(0,0,0,0.35)", x + 2, y + 2, w, h);
+  for (let i = 0; i < w; i += 2) {
+    fill(ctx, pale, x + i, y - 2, 1, 2);
+    fill(ctx, pale, x + i, y + h, 1, 2);
+  }
+  fill(ctx, dark, x, y, w, h);
+  fill(ctx, pale, x + 2, y + 2, w - 4, 1);
+  fill(ctx, pale, x + 2, y + h - 3, w - 4, 1);
+  fill(ctx, pale, x + 2, y + 2, 1, h - 4);
+  fill(ctx, pale, x + w - 3, y + 2, 1, h - 4);
+  fill(ctx, ground, x + 4, y + 4, w - 8, h - 8);
+  // Woven checks across the field.
+  for (let row = y + 6; row < y + h - 6; row += 2) {
+    for (let col = x + 6; col < x + w - 6; col += 2) {
+      if ((Math.floor((col - x) / 8) + Math.floor((row - y) / 8)) % 2 === 0) {
+        fill(ctx, dark, col, row, 1, 1);
+      }
+    }
+  }
+}
+
+function paintCamp(ctx: CanvasRenderingContext2D) {
+  paintRug(ctx, 26, 94, 113, 78, "#7e2528", "#4f1518", "#e0bd7a");
+  paintRug(ctx, 141, 108, 51, 64, "#4d2a55", "#301838", "#d9c08c");
+  paintRug(ctx, 194, 108, 106, 64, "#22345f", "#141f3c", "#d9c08c");
+}
+
+/** Pennants on a sagging rope, strung across the wall of the camp. */
+function paintBunting(ctx: CanvasRenderingContext2D, W: number) {
+  const inks = ["#a4333a", "#e0bd7a", "#35508a", "#efdbb2"];
+  let i = 0;
+  for (const [from, to] of [
+    [16, 140],
+    [180, W - 16],
+  ] as const) {
+    for (let x = from; x < to; x += 1) {
+      const u = (x - from) / (to - from);
+      const y = 14 + Math.round(10 * 4 * u * (1 - u));
+      fill(ctx, "#2a1c10", x, y, 1, 1);
+      if ((x - from) % 10 === 4) {
+        const ink = inks[i % inks.length]!;
+        i += 1;
+        for (let row = 1; row <= 6; row += 1) {
+          const half = Math.round(3 * (1 - row / 7));
+          fill(ctx, ink, x - half, y + row, half * 2 + 1, 1);
+        }
+      }
+    }
+  }
+}
+
 /** The Sanctum's floor: a square gold field under the altar. */
 function paintSanctumFloor(ctx: CanvasRenderingContext2D, t: Theme) {
   for (let y = -40; y < 40; y += 2) {
@@ -1335,6 +1456,7 @@ export function paintRoom(room: Room, square: { x: number; y: number; tile: numb
   if (room.id === "mural") paintMosaic(ctx, t);
   if (room.id === "gate") paintTiers(ctx, t);
   if (room.id === "sanctum") paintSanctumFloor(ctx, t);
+  if (room.id === "shop") paintCamp(ctx);
   if (room.id === "hall") paintSquareBed(ctx, t, square);
   paintSpikeBeds(ctx, room, t);
   paintPits(ctx, room, t, r);
@@ -1343,6 +1465,7 @@ export function paintRoom(room: Room, square: { x: number; y: number; tile: numb
   paintShade(ctx, room);
   paintEdges(ctx, room, t);
   paintNorthDoor(ctx, room, t);
+  if (room.id === "shop") paintBunting(ctx, room.W);
   return canvas;
 }
 
@@ -1405,59 +1528,213 @@ const COIN = [
 export const coinPicture = () =>
   kept("coin", () => fromRows(COIN, { g: "#a57e2a", G: "#e9c46a", k: "#7c5c1c" }));
 
-/** A plinth for what is for sale, its price on the front. */
-export function pedestalPicture(t: Theme, price: number) {
-  return kept(`pedestal:${t.s5}:${price}`, () => {
-    const { canvas, ctx } = makeCanvas(22, 16);
-    fill(ctx, t.s7, 2, 0, 18, 2);
-    fill(ctx, t.s8, 2, 0, 18, 1);
-    fill(ctx, t.s3, 3, 2, 16, 11);
-    fill(ctx, t.s6, 0, 13, 22, 3);
-    ctx.drawImage(coinPicture(), 4, 3);
-    drawLetter(ctx, String(price), 13, 4, C.gold);
+/** A cushion on the rug for what is for sale, the price lying in front of it. */
+export function warePicture(price: number, ink: string, dark: string) {
+  return kept(`ware:${price}:${ink}`, () => {
+    const { canvas, ctx } = makeCanvas(22, 20);
+    fill(ctx, dark, 2, 3, 18, 4);
+    fill(ctx, ink, 2, 2, 18, 3);
+    fill(ctx, ink, 4, 1, 14, 1);
+    fill(ctx, "#e9c46a", 1, 2, 1, 1);
+    fill(ctx, "#e9c46a", 20, 2, 1, 1);
+    ctx.drawImage(coinPicture(), 2, 10);
+    drawLetter(ctx, String(price), 12, 11, "#efdbb2");
     return canvas;
   });
 }
 
-/** A mirror on the wall: a frame of old gold round dark glass. */
-export function mirrorPicture(t: Theme) {
-  return kept(`mirror:${t.s5}`, () => {
-    const { canvas, ctx } = makeCanvas(32, 46);
-    fill(ctx, "#a57e2a", 0, 2, 32, 44);
-    fill(ctx, "#a57e2a", 4, 0, 24, 2);
-    fill(ctx, "#e9c46a", 1, 3, 30, 1);
-    fill(ctx, "#e9c46a", 1, 3, 1, 42);
-    fill(ctx, "#6d5029", 30, 4, 1, 41);
-    fill(ctx, "#6d5029", 1, 44, 30, 1);
-    fill(ctx, "#101a1e", 4, 6, 24, 36);
-    fill(ctx, "#1a2b30", 4, 6, 24, 18);
-    fill(ctx, "#e9c46a", 14, 0, 4, 3);
-    return canvas;
-  });
-}
+/** The travelling merchant: a hooded old dinosaur under everything it owns, seen from the side. */
+const MERCHANT = [
+  ".................rrrrrrr......",
+  ".................rRGRRGr......",
+  "................bbb.rrr.......",
+  "...............bBBbb.ppppp....",
+  "......hhhhh....bbbbbpppppppp..",
+  "....hhHHHHHh...pppppppppppppp.",
+  "...hhHHHHHHHh..pPPPPPPPPPPPpp.",
+  "..ssshhhhHHHHh.pPppppppppPPpp.",
+  ".sssssshhhHHHh.pPrRRRRRRrPppp.",
+  ".ssessshhhHHHhcpPrRRRRRRrPppp.",
+  "..sssssshHHHhccpPrRRRRRRrPpp..",
+  "...ssshhhHHhcccpPPPPPPPPPPPpp.",
+  "......hhhhhccccppppppppppppp..",
+  ".....cccccccccccppppppppppp...",
+  "....ccCcccccccccc.iiiiiiii....",
+  "...cccCcccccccccc.iGIIGIIi....",
+  "...ccCCccccccccccc.iiiiii.....",
+  "...ccCcccccccccccc............",
+  "...ccCccccccccccccc...........",
+  "...GGGGGGGGGGGGGGGG...........",
+  "....ccccccccccccccc.........s.",
+  "....ccccccccccccccc........ss.",
+  "....cccccccccccccccs......sss.",
+  ".....ccccccccccccccsssssssss..",
+  ".....sss.....sss...sssssss....",
+  ".....ssss....ssss.............",
+];
+const MERCHANT_INKS = {
+  h: "#3a2350",
+  H: "#55337a",
+  s: "#7f9b5a",
+  e: "#f2c84b",
+  c: "#7a2f24",
+  C: "#a14534",
+  G: "#e0bd7a",
+  p: "#5e3f20",
+  P: "#8a6233",
+  r: "#1e2f55",
+  R: "#35508a",
+  i: "#7a5a1e",
+  I: "#c0902f",
+  b: "#a8842f",
+  B: "#e9c46a",
+};
+export const merchantPicture = () => kept("merchant", () => fromRows(MERCHANT, MERCHANT_INKS));
 
-/** A coin-op cabinet: the tomb has no business having one. `ink` is its marquee. */
-export function cabinetPicture(t: Theme, ink: string, word: string) {
-  return kept(`cabinet:${word}`, () => {
-    const W = 34;
-    const H = 48;
+/** A covered wagon: it has been a long way. */
+export function wagonPicture() {
+  return kept("wagon", () => {
+    const W = 78;
+    const H = 58;
     const { canvas, ctx } = makeCanvas(W, H);
-    fill(ctx, t.s2, 0, 2, W, H - 2);
-    fill(ctx, t.s4, 0, 2, 1, H - 2);
-    fill(ctx, t.s0, W - 1, 2, 1, H - 2);
-    // The marquee.
-    fill(ctx, ink, 2, 0, W - 4, 11);
-    fill(ctx, "#ffffff", 2, 0, W - 4, 1);
-    drawWord(ctx, word, W / 2, 2, "#0d0714");
-    // The screen's surround and the control panel.
-    fill(ctx, t.s0, 3, 13, W - 6, 20);
-    fill(ctx, t.s5, 1, 34, W - 2, 6);
-    fill(ctx, t.s7, 1, 34, W - 2, 1);
-    fill(ctx, ink, 6, 36, 3, 2);
-    fill(ctx, "#00e0ff", 12, 36, 3, 2);
-    fill(ctx, "#e9c46a", 26, 36, 3, 2);
-    fill(ctx, t.s1, 3, 41, W - 6, 7);
-    fill(ctx, t.s4, 14, 43, 6, 2);
+    // The canvas, striped, arched in whole steps.
+    for (let y = 0; y < 30; y += 1) {
+      const half = Math.round(34 * Math.sqrt(1 - ((30 - y) / 31) ** 2));
+      for (let x = 39 - half; x < 39 + half; x += 1) {
+        const stripe = Math.floor((x + 4) / 10) % 2 === 0;
+        const edge = x < 39 - half + 2 || x >= 39 + half - 2;
+        fill(ctx, edge ? "#5a2019" : stripe ? "#a4333a" : "#e4cfa0", x, y, 1, 1);
+      }
+    }
+    fill(ctx, "#3e2a14", 4, 28, 70, 2);
+    // The box.
+    fill(ctx, "#6f4f2a", 2, 30, 74, 14);
+    fill(ctx, "#9a7344", 2, 30, 74, 2);
+    fill(ctx, "#3e2a14", 2, 36, 74, 1);
+    fill(ctx, "#3e2a14", 2, 42, 74, 2);
+    for (let x = 8; x < 74; x += 13) fill(ctx, "#3e2a14", x, 32, 1, 10);
+    // A sign: a coin.
+    fill(ctx, "#3e2a14", 31, 31, 16, 11);
+    ctx.drawImage(coinPicture(), 35, 32);
+    // Wheels.
+    for (const cx of [17, 61]) {
+      for (let y = -10; y <= 10; y += 1) {
+        for (let x = -10; x <= 10; x += 1) {
+          const d = Math.hypot(x, y);
+          if (d > 10.4) continue;
+          const spoke = x === 0 || y === 0 || Math.abs(x) === Math.abs(y);
+          if (d > 8) fill(ctx, "#6f4f2a", cx + x, 47 + y, 1, 1);
+          else if (d < 2.5) fill(ctx, "#3e2a14", cx + x, 47 + y, 1, 1);
+          else if (spoke) fill(ctx, "#9a7344", cx + x, 47 + y, 1, 1);
+        }
+      }
+    }
+    return canvas;
+  });
+}
+
+/** The little dinosaur on the arcade machine's screen, in the player's own colour. */
+export function miniDino(colorId: string, step: number) {
+  return kept(`mini:${colorId}:${step}`, () => {
+    const legs = step ? ["..#.#....", "..#......"] : ["..#.#....", "....#...."];
+    return fromRows(
+      [
+        ".....####",
+        ".....#.##",
+        ".....####",
+        ".....##..",
+        "#...###..",
+        "##.#####.",
+        "#######..",
+        ".#####...",
+        ...legs,
+      ],
+      { "#": colorOf(colorId).body },
+    );
+  });
+}
+
+/**
+ * A tall floor mirror leaning against the wall: its feet on the floor, its head further off and
+ * tipped over to one side, in whole cells, with the shadow it throws on the stone behind it.
+ */
+export const MIRROR = { w: 33, h: 54 };
+const MIRROR_BODY = MIRROR.h - 6;
+const mirrorEdge = (y: number) => {
+  const up = (MIRROR_BODY - y) / MIRROR_BODY;
+  const side = 2 + Math.round(up);
+  return { x: side + Math.round(up * 4), w: 26 - 2 * Math.round(up) };
+};
+/** The glass, row by row, since it leans: what the reflection is clipped to. */
+export const MIRROR_GLASS = Array.from({ length: 38 }, (_, i) => {
+  const y = 7 + i;
+  const edge = mirrorEdge(y);
+  return { x: edge.x + 5, y, w: edge.w - 10 };
+});
+export function mirrorPicture() {
+  return kept("mirror", () => {
+    const { canvas, ctx } = makeCanvas(MIRROR.w, MIRROR.h);
+    for (let y = 0; y < MIRROR_BODY; y += 1) {
+      const edge = mirrorEdge(y);
+      // The shadow on the wall behind it, thinning as the frame gets nearer the stone.
+      fill(ctx, "rgba(0,0,0,0.42)", edge.x + edge.w, y + 1, 1 + Math.floor((y + 6) / 16), 1);
+      // An arched head, in steps.
+      const arch = y < 3 ? 6 - y * 2 : 0;
+      fill(ctx, y < 2 ? "#a8824a" : "#6f4c28", edge.x + arch, y, edge.w - 2 * arch, 1);
+      fill(ctx, "#a8824a", edge.x + arch, y, 1, 1);
+      fill(ctx, "#3e2a14", edge.x + edge.w - arch - 1, y, 1, 1);
+    }
+    MIRROR_GLASS.forEach((row, i) => {
+      fill(ctx, i < 17 ? "#1c2e34" : "#0f181c", row.x, row.y, row.w, 1);
+      if (i === 0) fill(ctx, "#3e2a14", row.x - 1, row.y - 1, row.w + 2, 1);
+    });
+    fill(ctx, "#c9a35f", mirrorEdge(4).x + 9, 4, 8, 1);
+    // Its stand: a rail and two blocks, wedging the foot.
+    fill(ctx, "#3e2a14", 1, MIRROR_BODY, 28, 2);
+    fill(ctx, "#6f4c28", 2, MIRROR_BODY, 26, 1);
+    fill(ctx, "#4a3520", 3, MIRROR_BODY + 2, 7, 4);
+    fill(ctx, "#4a3520", 20, MIRROR_BODY + 2, 7, 4);
+    fill(ctx, "#6f4c28", 3, MIRROR_BODY + 2, 7, 1);
+    fill(ctx, "#6f4c28", 20, MIRROR_BODY + 2, 7, 1);
+    return canvas;
+  });
+}
+
+/** A machine in stone and old bronze, built like a little temple: a pediment, a name, a screen. */
+export function cabinetPicture(t: Theme, word: string) {
+  return kept(`cabinet:${word}`, () => {
+    const W = 42;
+    const H = 60;
+    const bronze = "#8a6a3a";
+    const pale = "#c9a35f";
+    const { canvas, ctx } = makeCanvas(W, H);
+    // The pediment, stepped.
+    for (let y = 0; y < 8; y += 1) {
+      const half = 3 + y * 2 + Math.floor(y / 2);
+      fill(ctx, t.s5, W / 2 - half, y, half * 2, 1);
+      fill(ctx, t.s7, W / 2 - half, y, 2, 1);
+      fill(ctx, t.s7, W / 2 + half - 2, y, 2, 1);
+    }
+    // The body.
+    fill(ctx, t.s3, 1, 8, W - 2, H - 12);
+    fill(ctx, t.s5, 1, 8, 2, H - 12);
+    fill(ctx, t.s1, W - 3, 8, 2, H - 12);
+    // Its name on a bronze plate.
+    fill(ctx, bronze, 4, 9, W - 8, 10);
+    fill(ctx, pale, 4, 9, W - 8, 1);
+    drawWord(ctx, word, W / 2, 11, "#14100c");
+    // The screen's surround and the controls.
+    fill(ctx, "#050404", 3, 20, W - 6, 26);
+    fill(ctx, bronze, 3, 20, W - 6, 1);
+    fill(ctx, t.s5, 2, 47, W - 4, 5);
+    fill(ctx, t.s7, 2, 47, W - 4, 1);
+    fill(ctx, pale, 8, 49, 3, 2);
+    fill(ctx, pale, 15, 49, 3, 2);
+    fill(ctx, bronze, 28, 49, 6, 2);
+    // Steps at its foot.
+    fill(ctx, t.s4, 0, 52, W, 4);
+    fill(ctx, t.s6, 0, 52, W, 1);
+    fill(ctx, t.s3, 0, 56, W, 4);
     return canvas;
   });
 }

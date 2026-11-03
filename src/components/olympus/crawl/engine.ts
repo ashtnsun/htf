@@ -4,7 +4,6 @@ import {
   BRONZE,
   C,
   cabinetPicture,
-  coinPicture,
   cosmeticPicture,
   dinoFrame,
   DINO_FOOT_X,
@@ -19,27 +18,31 @@ import {
   drawWord,
   fromRows,
   gearPicture,
-  KEEPER_LOOK,
   kept,
   lightPicture,
   makeCanvas,
   maskPicture,
+  merchantPicture,
+  miniDino,
+  MIRROR,
+  MIRROR_GLASS,
   mirrorPicture,
   paintRoom,
   PATINA,
-  pedestalPicture,
   propPicture,
   rng,
   sarcophagusPicture,
   THEMES,
   tintPicture,
+  wagonPicture,
+  warePicture,
   type Theme,
 } from "@/components/olympus/crawl/art";
 import { cosmeticById, FOR_SALE, type Look } from "@/components/olympus/crawl/cosmetics";
 import type { TombSound } from "@/components/olympus/crawl/sound";
 import {
   OPPOSITE,
-  pedestal,
+  ware,
   ROOM_LIST,
   ROOMS,
   SQUARE,
@@ -109,14 +112,25 @@ const SLIDE = 0.62;
 const FALL = 0.6;
 const DROP = 0.8;
 const SPIKE_PERIOD = 2.6;
-/** The fires' clock, in milliseconds: as on /olympus. */
-const BEAT = { FLARE: 900, AFTER_FLARE: 1400, LIT: 2000, DARK: 700, END: 3200 };
+/** The fires' clock, in milliseconds. */
+const BEAT = { FLASH: 140, FLASH_GAP: 130, AFTER_FLARE: 1400, LIT: 2000, DARK: 700, END: 3200 };
 
-type Beat = { left: number; right: number; ms: number };
+type Beat = { left: number; right: number; ms: number; flare?: boolean };
 
-function beatsOf(signal: readonly [number, number][]): Beat[] {
+/**
+ * The signal, from the top: every fire flashes red three times, fast, so the restart can never be
+ * taken for a letter (5 and 5 being a letter too); under reduced motion it is one steady red. Then
+ * each letter, held in green.
+ */
+function beatsOf(signal: readonly [number, number][], reduce: boolean): Beat[] {
+  const flashes: Beat[] = reduce
+    ? [{ left: 5, right: 5, ms: 900, flare: true }]
+    : [0, 1, 2].flatMap(() => [
+        { left: 5, right: 5, ms: BEAT.FLASH, flare: true },
+        { left: 0, right: 0, ms: BEAT.FLASH_GAP },
+      ]);
   return [
-    { left: 5, right: 5, ms: BEAT.FLARE },
+    ...flashes,
     { left: 0, right: 0, ms: BEAT.AFTER_FLARE },
     ...signal.flatMap(([left, right]) => [
       { left, right, ms: BEAT.LIT },
@@ -125,6 +139,9 @@ function beatsOf(signal: readonly [number, number][]): Beat[] {
     { left: 0, right: 0, ms: BEAT.END },
   ];
 }
+
+/** How much fire the room's sound should crackle with. */
+const fireIn = (room: Room) => (room.id === "hall" ? 0.22 : room.fires.length ? 0.08 : 0);
 
 type FireNow = { left: number; right: number; flare: boolean };
 type Mote = { x: number; y: number; vx: number; vy: number; life: number; ink: string };
@@ -146,8 +163,28 @@ const GREAT_DOOR = { x: 152, y: 2, w: 80, h: 62 };
 const MECHANISM = { x: 192, foot: 146 };
 
 const mirrorX = (spot: Spot) => spot.x;
-const KEEPER = { x: 240, foot: 88 };
-const CABINETS = { arcade: { x: 76, foot: 66 }, blackjack: { x: 150, foot: 66 } };
+const KEEPER = { x: 204, foot: 96 };
+const WAGON = { x: 228, foot: 100 };
+/** Lamps hung in the merchant's camp. */
+const LANTERNS = [
+  { x: 56, y: 36 },
+  { x: 120, y: 32 },
+  { x: 208, y: 30 },
+];
+/** Where a mirror leans, its foot on the floor at the wall. */
+const MIRRORS: Partial<Record<RoomId, { x: number; foot: number }>> = {
+  mural: { x: 58, foot: 100 },
+  shop: { x: 90, foot: 68 },
+};
+const CABINETS = { arcade: { x: 72, foot: 66 }, blackjack: { x: 152, foot: 66 } };
+/** The only light in the den, apart from the machines. */
+const CANDLES = [
+  { x: 28, y: 60 },
+  { x: 112, y: 58 },
+  { x: 194, y: 58 },
+  { x: 30, y: 134 },
+  { x: 170, y: 136 },
+];
 
 /** Where the camera closes in on each thing, in room pixels. */
 function focusOf(target: Target, spot: Spot): { x: number; y: number } {
@@ -300,13 +337,14 @@ export class CrawlEngine {
   ) {
     this.ctx = canvas.getContext("2d", { alpha: false })!;
     this.dark = makeCanvas(1, 1);
-    this.beats = beatsOf(signal);
+    this.beats = beatsOf(signal, reduce);
     this.cycle = this.beats.reduce((sum, b) => sum + b.ms, 0);
     this.flags = flags;
     this.reduce = reduce;
     for (const room of ROOM_LIST) this.live.set(room.id, this.build(room));
     const known = start && ROOMS[start.room] ? start : null;
     this.current = this.live.get(known?.room ?? "mural")!;
+    this.score.fire(fireIn(this.current.room));
     this.x = known?.x ?? 192;
     this.y = known?.y ?? 154;
     this.drop = known || reduce ? 0 : DROP;
@@ -428,7 +466,7 @@ export class CrawlEngine {
       case "mural":
         this.muralStart = now;
         this.slabStart = now + 1900;
-        this.score.chime();
+        this.score.fanfare();
         this.playCine([
           { x: 192, y: 56, ms: 1700 },
           {
@@ -445,18 +483,18 @@ export class CrawlEngine {
         break;
       case "tablet":
         this.tabletPulse.set(event.index, now);
-        this.score.chime();
+        this.score.solved();
         break;
       case "word":
         this.wordPulse = now + 300;
         this.shake(900, 2);
         this.score.rumble(0.6);
-        this.score.chime();
+        this.score.secret();
         this.playCine([{ x: 192, y: 48, ms: 2400 }]);
         break;
       case "stone":
         this.stonePulse = now;
-        this.score.chime();
+        this.score.secret();
         this.playCine([{ x: 192, y: 116, ms: 2000 }]);
         break;
       case "square":
@@ -464,13 +502,14 @@ export class CrawlEngine {
         this.shake(1800, 2);
         this.score.rumble(0.8);
         this.score.whoosh(0.15, 1.4);
+        this.score.secret();
         this.playCine([{ x: 192, y: 118, ms: 2800 }]);
         break;
       case "door":
         this.doorStart = now + 500;
         this.shake(2000, 2);
         this.score.rumble(1);
-        this.score.chime();
+        this.score.fanfare();
         this.playCine([{ x: 192, y: 40, ms: 3000 }]);
         break;
     }
@@ -602,7 +641,7 @@ export class CrawlEngine {
     if (this.tile) {
       this.stamps.push({ r: this.tile.r, c: this.tile.c });
       this.emitStamps();
-      this.score.stone();
+      this.score.press(this.stamps.length);
       this.spray(this.x, this.y, C.green, 6);
     }
   }
@@ -665,76 +704,86 @@ export class CrawlEngine {
       items.push({ y: 112, draw: (ctx, time) => this.drawAltar(ctx, t, 160, 112, time) });
       solids.push({ x: 138, y: 96, w: 44, h: 16 });
     }
+    const mirror = MIRRORS[room.id];
+    if (mirror) {
+      solids.push({ x: mirror.x - 13, y: mirror.foot - 6, w: 26, h: 7 });
+      items.push({
+        y: mirror.foot,
+        draw: (ctx) => this.drawMirror(ctx, room, mirror.x, mirror.foot),
+      });
+    }
     if (room.id === "shop") {
+      const cloths: [string, string][] = [
+        ["#c9a14a", "#8a6a24"],
+        ["#3f6f6a", "#274a46"],
+        ["#b5502f", "#7a3320"],
+      ];
       FOR_SALE.forEach((item, i) => {
-        const { x, y } = pedestal(i);
-        const plinth = pedestalPicture(t, item.price);
+        const { x, y } = ware(i);
+        const [ink, dark] = cloths[i % cloths.length]!;
+        const cushion = warePicture(item.price, ink, dark);
         const icon = cosmeticPicture(item);
-        solids.push({ x: x - 9, y: y - 5, w: 18, h: 6 });
         items.push({
           y,
           draw: (ctx, time) => {
-            ctx.fillStyle = "rgba(0,0,0,0.35)";
-            ctx.fillRect(x - 11, y - 1, 22, 3);
             if (this.flags.owned.includes(item.id)) {
-              // Sold: the plinth alone, no price on it.
-              ctx.drawImage(plinth, 0, 0, 22, 2, x - 11, y - 15, 22, 2);
-              ctx.fillStyle = t.s3;
-              ctx.fillRect(x - 8, y - 13, 16, 11);
-              ctx.drawImage(plinth, 0, 13, 22, 3, x - 11, y - 2, 22, 3);
+              // Sold: the empty cushion, no price.
+              ctx.drawImage(cushion, 0, 0, 22, 8, x - 11, y - 8, 22, 8);
               return;
             }
-            ctx.drawImage(plinth, x - 11, y - 15);
+            ctx.drawImage(cushion, x - 11, y - 8);
             const bob = !this.reduce && Math.floor(time * 2 + i) % 2 ? 1 : 0;
-            ctx.drawImage(icon, x - Math.floor(icon.width / 2), y - 16 - icon.height + bob);
+            ctx.drawImage(icon, x - Math.floor(icon.width / 2), y - 8 - icon.height + bob);
           },
         });
       });
-      // The counter, and the shopkeeper's corner behind it, closed to customers.
-      solids.push({ x: 214, y: 64, w: 90, h: 36 });
+      // The wagon along the wall, and the merchant beside it with a lamp on a staff.
+      const wagon = wagonPicture();
+      solids.push({ x: WAGON.x, y: 64, w: 76, h: WAGON.foot - 64 });
+      solids.push({ x: KEEPER.x - 12, y: KEEPER.foot - 8, w: 26, h: 9 });
       items.push({
-        y: 100,
+        y: WAGON.foot,
         draw: (ctx) => {
-          ctx.fillStyle = "rgba(0,0,0,0.4)";
-          ctx.fillRect(214, 99, 52, 3);
-          ctx.fillStyle = t.s7;
-          ctx.fillRect(214, 86, 52, 3);
-          ctx.fillStyle = t.s8;
-          ctx.fillRect(214, 86, 52, 1);
-          ctx.fillStyle = t.s4;
-          ctx.fillRect(216, 89, 48, 11);
-          ctx.fillStyle = t.frieze;
-          for (let x = 219; x < 260; x += 6) {
-            ctx.fillRect(x, 92, 4, 1);
-            ctx.fillRect(x, 92, 1, 5);
-            ctx.fillRect(x, 96, 5, 1);
-            ctx.fillRect(x + 2, 94, 1, 2);
-          }
-          // His takings, at the end of the counter where they do not hide him.
-          ctx.drawImage(coinPicture(), 254, 78);
-          ctx.drawImage(coinPicture(), 258, 79);
-          ctx.drawImage(coinPicture(), 256, 75);
+          ctx.fillStyle = "rgba(0,0,0,0.45)";
+          ctx.fillRect(WAGON.x + 2, WAGON.foot - 1, 74, 3);
+          ctx.drawImage(wagon, WAGON.x, WAGON.foot - wagon.height + 1);
         },
       });
     }
     if (room.id === "den") {
-      const cabinet = (kind: "arcade" | "blackjack", ink: string, word: string) => {
+      const cabinet = (kind: "arcade" | "blackjack", word: string) => {
         const { x, foot } = CABINETS[kind];
-        const picture = cabinetPicture(t, ink, word);
+        const picture = cabinetPicture(t, word);
         const top = foot - picture.height + 1;
-        solids.push({ x: x - 17, y: foot - 10, w: 34, h: 11 });
+        solids.push({ x: x - 21, y: foot - 12, w: 42, h: 13 });
         items.push({
           y: foot,
           draw: (ctx, time) => {
-            ctx.fillStyle = "rgba(0,0,0,0.5)";
-            ctx.fillRect(x - 17, foot - 1, 34, 3);
-            ctx.drawImage(picture, x - 17, top);
+            ctx.fillStyle = "rgba(0,0,0,0.6)";
+            ctx.fillRect(x - 22, foot - 1, 44, 3);
+            ctx.drawImage(picture, x - 21, top);
             this.drawCabinetScreen(ctx, kind, x, top, time);
           },
         });
       };
-      cabinet("arcade", "#ff3d9e", "RUN");
-      cabinet("blackjack", "#00e0ff", "21");
+      cabinet("arcade", "DINO");
+      cabinet("blackjack", "21");
+      for (const candle of CANDLES) {
+        items.push({
+          y: candle.y,
+          draw: (ctx, time) => {
+            ctx.fillStyle = "#cfc3a4";
+            ctx.fillRect(candle.x - 1, candle.y - 5, 3, 6);
+            ctx.fillStyle = "#3d3632";
+            ctx.fillRect(candle.x - 2, candle.y, 5, 1);
+            const lick = !this.reduce && Math.floor(time * 9 + candle.x) % 2 ? 1 : 0;
+            ctx.fillStyle = "#e0852a";
+            ctx.fillRect(candle.x - 1, candle.y - 8, 3, 3);
+            ctx.fillStyle = "#ffd98a";
+            ctx.fillRect(candle.x, candle.y - 9 - lick, 1, 3 + lick);
+          },
+        });
+      }
     }
     items.sort((a, b) => a.y - b.y);
     const r = rng(room.w * 17 + room.at[0] * 5 + room.at[1] * 3 + 9);
@@ -843,7 +892,7 @@ export class CrawlEngine {
     }
     this.score.whoosh(0.05, 0.4);
     this.hooks.onRoom(to.room.id, landing.x, landing.y);
-    this.score.fire(to.room.id === "hall" ? 0.22 : to.room.id === "sanctum" ? 0.02 : 0.08);
+    this.score.fire(fireIn(to.room));
   }
 
   /** The tile of the Hall's square under the feet, if the square has spoken. */
@@ -1017,22 +1066,29 @@ export class CrawlEngine {
   private hazards(time: number) {
     const room = this.current.room;
     if (room.spikes && this.hurt <= 0) {
-      let onStrip = false;
+      // The trap is one thing: a hit sends the dinosaur back past all of it, to the side it came in
+      // from, however many strips it had got across.
+      const west = room.spikes[0]!.x;
+      const last = room.spikes[room.spikes.length - 1]!;
+      const east = last.x + last.w;
       for (const strip of room.spikes) {
-        if (this.x + 3 > strip.x && this.x - 3 < strip.x + strip.w && this.y > strip.y) {
-          onStrip = true;
-          if (this.spikesUp(strip, time) === 2) {
-            this.x = this.lastSafe.x;
-            this.y = this.lastSafe.y;
-            this.hurt = 0.9;
-            this.flashUntil = performance.now() + 160;
-            this.shake(220, 2);
-            this.score.thud();
-            this.spray(this.x, this.y, C.red, 8);
-          }
+        if (
+          this.x + 3 > strip.x &&
+          this.x - 3 < strip.x + strip.w &&
+          this.y > strip.y &&
+          this.spikesUp(strip, time) === 2
+        ) {
+          this.x = this.lastSafe.x >= east ? east + 11 : west - 11;
+          this.y = Math.max(this.lastSafe.y, strip.y + 8);
+          this.hurt = 0.9;
+          this.flashUntil = performance.now() + 160;
+          this.shake(220, 2);
+          this.score.hurt();
+          this.spray(this.x, this.y, C.red, 8);
+          break;
         }
       }
-      if (!onStrip) this.lastSafe = { x: this.x, y: this.y };
+      if (this.x + 3 <= west || this.x - 3 >= east) this.lastSafe = { x: this.x, y: this.y };
     }
     if (room.floor) {
       const col = Math.floor(this.x / TILE);
@@ -1042,12 +1098,12 @@ export class CrawlEngine {
         const id = `${col},${row}`;
         if (!this.revealed.has(id)) {
           this.revealed.add(id);
-          this.score.tick(700, 0.1);
+          this.score.reveal();
           this.spray(col * TILE + 8, row * TILE + 8, THEMES[room.theme].s6, 5);
         }
       } else if (ch === "p") {
         this.falling = FALL;
-        this.score.whoosh(0.1, 0.5);
+        this.score.fall();
         this.setPrompt(null);
       }
     }
@@ -1078,9 +1134,8 @@ export class CrawlEngine {
   /** What the fires are saying right now. */
   private fireNow(): FireNow {
     let t = performance.now() % this.cycle;
-    for (let i = 0; i < this.beats.length; i += 1) {
-      const beat = this.beats[i]!;
-      if (t < beat.ms) return { left: beat.left, right: beat.right, flare: i === 0 };
+    for (const beat of this.beats) {
+      if (t < beat.ms) return { left: beat.left, right: beat.right, flare: !!beat.flare };
       t -= beat.ms;
     }
     return { left: 0, right: 0, flare: false };
@@ -1118,7 +1173,7 @@ export class CrawlEngine {
       const cam = this.camera(this.current);
       const c = this.cssCell;
       const x = Math.round((KEEPER.x - cam.x) * c);
-      const y = Math.round((KEEPER.foot - DINO_H + 4 - cam.y) * c);
+      const y = Math.round((KEEPER.foot - 38 - cam.y) * c);
       if (`${x},${y}` !== this.keeperAt) {
         this.keeperAt = `${x},${y}`;
         this.hooks.onKeeper({ x, y });
@@ -1357,9 +1412,20 @@ export class CrawlEngine {
     if (room.id === "mural") {
       this.drawMural(now, t);
       this.drawSlab(now, t);
-      this.drawMirror(room, 58, 60, t);
     }
-    if (room.id === "shop") this.drawMirror(room, 90, 60, t);
+    if (room.id === "shop") {
+      for (const lamp of LANTERNS) {
+        ctx.fillStyle = "#2a1c10";
+        ctx.fillRect(lamp.x, lamp.y - 14, 1, 14);
+        ctx.fillRect(lamp.x - 2, lamp.y, 5, 1);
+        ctx.fillStyle = "#ffcf7a";
+        ctx.fillRect(lamp.x - 2, lamp.y + 1, 5, 6);
+        ctx.fillStyle = "#fff0c4";
+        ctx.fillRect(lamp.x - 1, lamp.y + 2, 3, 4);
+        ctx.fillStyle = "#2a1c10";
+        ctx.fillRect(lamp.x - 2, lamp.y + 7, 5, 1);
+      }
+    }
     if (room.id === "gate") this.drawMask(now, t);
     if (room.id === "hall") this.drawGreatDoor(now, t);
     if (room.id === "sanctum" && this.flags.final) {
@@ -1828,14 +1894,30 @@ export class CrawlEngine {
     const lit = this.litAt;
     if (!lit) return;
     if (lit.live.room.id === "shop") {
-      const bob = !this.reduce && Math.floor(time * 1.5) % 2 ? 1 : 0;
-      const picture = dinoFrame(0, !this.reduce && time % 5 < 0.15, true, KEEPER_LOOK);
+      // Breathing, in whole cells; the lamp on the staff swings a cell either way.
+      const bob = !this.reduce && Math.floor(time * 1.2) % 2 ? 1 : 0;
+      const swing = this.reduce ? 0 : Math.round(Math.sin(time * 1.6));
+      const picture = merchantPicture();
       this.drawLit(KEEPER.x, KEEPER.foot, time, (ctx) => {
-        ctx.drawImage(
-          picture,
-          KEEPER.x - (DINO_W - 1 - DINO_FOOT_X),
-          KEEPER.foot - DINO_H + 1 + bob,
-        );
+        const left = KEEPER.x - 18;
+        ctx.fillStyle = "rgba(0,0,0,0.45)";
+        ctx.fillRect(left + 2, KEEPER.foot - 1, 24, 3);
+        ctx.fillStyle = "#5e3f20";
+        ctx.fillRect(left - 4, KEEPER.foot - 34, 2, 35);
+        ctx.fillRect(left - 8, KEEPER.foot - 34, 5, 2);
+        // The lamp.
+        const lampX = left - 9 + swing;
+        const lampY = KEEPER.foot - 31;
+        ctx.fillStyle = "#3e2a14";
+        ctx.fillRect(lampX + 1, lampY, 1, 2);
+        ctx.fillRect(lampX - 1, lampY + 2, 5, 1);
+        ctx.fillStyle = "#ffcf7a";
+        ctx.fillRect(lampX - 1, lampY + 3, 5, 5);
+        ctx.fillStyle = "#fff0c4";
+        ctx.fillRect(lampX, lampY + 4, 3, 3);
+        ctx.fillStyle = "#3e2a14";
+        ctx.fillRect(lampX - 1, lampY + 8, 5, 1);
+        ctx.drawImage(picture, left, KEEPER.foot - picture.height + 1 + bob - 1);
       });
     }
     if (this.drop > 0) {
@@ -1852,27 +1934,29 @@ export class CrawlEngine {
     }
   }
 
-  /** A framed mirror, and the dinosaur in it once it comes close. */
-  private drawMirror(room: Room, x: number, foot: number, t: Theme) {
-    const ctx = this.ctx;
-    const left = x - 16;
-    const top = foot - 46;
-    ctx.drawImage(mirrorPicture(t), left, top);
+  /** A floor mirror leaning on the wall, and the dinosaur in it once it comes close. */
+  private drawMirror(ctx: CanvasRenderingContext2D, room: Room, x: number, foot: number) {
+    const left = x - 15;
+    const top = foot - MIRROR.h + 1;
+    ctx.drawImage(mirrorPicture(), left, top);
     if (room === this.current.room && Math.hypot(this.x - x, this.y - foot) < 70) {
       ctx.save();
       ctx.beginPath();
-      ctx.rect(left + 4, top + 6, 24, 36);
+      for (const row of MIRROR_GLASS) ctx.rect(left + row.x, top + row.y, row.w, 1);
       ctx.clip();
       ctx.globalAlpha = 0.85;
       ctx.drawImage(
         dinoFrame(0, false, this.facing > 0, this.flags.look),
-        x - 18,
-        top + 10 + Math.round(Math.min(4, Math.abs(this.x - x) / 12)),
+        x - 17,
+        top + 15 + Math.round(Math.min(4, Math.abs(this.x - x) / 12)),
       );
       ctx.restore();
     }
     ctx.fillStyle = "rgba(255,255,255,0.1)";
-    ctx.fillRect(left + 6, top + 8, 3, 30);
+    for (const row of MIRROR_GLASS) {
+      if (row.y < 37) ctx.fillRect(left + row.x + 2, top + row.y, 2, 1);
+      if (row.y < 24) ctx.fillRect(left + row.x + 6, top + row.y, 1, 1);
+    }
   }
 
   /** A cabinet's screen, alive. */
@@ -1883,35 +1967,72 @@ export class CrawlEngine {
     top: number,
     time: number,
   ) {
-    const x = cx - 13;
-    const y = top + 15;
-    const w = 26;
-    const h = 16;
+    const x = cx - 17;
+    const y = top + 21;
+    const w = 34;
+    const h = 24;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x, y, w, h);
+    ctx.clip();
     if (kind === "arcade") {
-      ctx.fillStyle = "#07040c";
+      // The game itself in small: the dinosaur, in the player's colour, clearing a column.
+      ctx.fillStyle = "#0a1020";
       ctx.fillRect(x, y, w, h);
-      ctx.fillStyle = "#b98fdc";
-      ctx.fillRect(x, y + h - 3, w, 1);
-      const run = this.reduce ? 8 : Math.floor(time * 18) % 26;
-      ctx.fillStyle = "#e7d5f7";
-      ctx.fillRect(x + 25 - run, y + h - 7, 2, 4);
-      const hop = !this.reduce && run > 13 && run < 20 ? 4 : 0;
-      ctx.fillStyle = C.green;
-      ctx.fillRect(x + 6, y + h - 8 - hop, 4, 5);
-      ctx.fillRect(x + 9, y + h - 9 - hop, 3, 2);
+      ctx.fillStyle = "#c9c4b0";
+      ctx.fillRect(x + 4, y + 3, 1, 1);
+      ctx.fillRect(x + 15, y + 6, 1, 1);
+      ctx.fillRect(x + 27, y + 2, 1, 1);
+      ctx.fillStyle = "#e8e4d0";
+      ctx.fillRect(x + 27, y + 4, 2, 4);
+      ctx.fillRect(x + 26, y + 5, 4, 2);
+      const ground = y + h - 3;
+      ctx.fillStyle = "#c9a877";
+      ctx.fillRect(x, ground, w, 1);
+      ctx.fillStyle = "#6f5636";
+      ctx.fillRect(x, ground + 1, w, 2);
+      const run = this.reduce ? 0 : Math.floor(time * 16) % 44;
+      const cx0 = x + 40 - run;
+      // A little column coming on.
+      ctx.fillStyle = "#e8e4d0";
+      ctx.fillRect(cx0, ground - 9, 5, 1);
+      ctx.fillRect(cx0 + 1, ground - 8, 3, 8);
+      ctx.fillStyle = "#a8a294";
+      ctx.fillRect(cx0 + 2, ground - 7, 1, 7);
+      ctx.fillRect(cx0, ground - 1, 5, 1);
+      // The hop: it leaves the ground as the column arrives and lands past it.
+      const u = (run - 23) / 13;
+      const hop = u > 0 && u < 1 ? Math.round(Math.sin(u * Math.PI) * 11) : 0;
+      const legs = hop ? 0 : Math.floor(time * 10) % 2;
+      ctx.drawImage(miniDino(this.flags.look.color, legs), x + 6, ground - 10 - hop);
     } else {
-      ctx.fillStyle = "#0b3a22";
+      // Two painted cards on black.
+      ctx.fillStyle = "#0a0705";
       ctx.fillRect(x, y, w, h);
-      ctx.fillStyle = "#14583a";
-      ctx.fillRect(x + 1, y + 1, w - 2, 1);
-      ctx.fillStyle = C.white;
-      ctx.fillRect(x + 6, y + 4, 6, 8);
-      ctx.fillRect(x + 14, y + 4, 6, 8);
-      ctx.fillStyle = "#c0263f";
-      ctx.fillRect(x + 8, y + 7, 2, 2);
-      ctx.fillStyle = "#141414";
-      ctx.fillRect(x + 16, y + 7, 2, 2);
+      ctx.fillStyle = "#c96f33";
+      ctx.fillRect(x, y, w, 1);
+      ctx.fillRect(x, y + h - 1, w, 1);
+      const glint = this.reduce ? 0 : Math.floor(time * 1.5) % 2;
+      for (const [cardX, cardY] of [
+        [x + 7, y + 5],
+        [x + 18, y + 6],
+      ] as const) {
+        ctx.fillStyle = "#c96f33";
+        ctx.fillRect(cardX, cardY, 10, 14);
+        ctx.fillStyle = "#14100c";
+        ctx.fillRect(cardX, cardY, 10, 1);
+        ctx.fillRect(cardX, cardY + 13, 10, 1);
+        ctx.fillRect(cardX + 3, cardY + 4, 4, 2);
+        ctx.fillRect(cardX + 2, cardY + 6, 6, 3);
+        ctx.fillRect(cardX + 4, cardY + 9, 2, 2);
+      }
+      ctx.fillStyle = glint ? "#efdbb2" : "#c96f33";
+      ctx.fillRect(x + 7, y + 5, 1, 1);
     }
+    ctx.restore();
+    // The screen's own glass.
+    ctx.fillStyle = "rgba(255,255,255,0.06)";
+    ctx.fillRect(x, y, w, 2);
   }
 
   private drawMotes(live: Live, time: number, withPlayer: boolean) {
@@ -2008,6 +2129,9 @@ export class CrawlEngine {
         pool(192, 152, 104);
         tint(192, 152, 88, THEMES.sand.s8, 0.14);
         pool(192, 50, flags.photo ? 124 : 80);
+        // What gets past the mural, enough to find the mirror and the far wall by.
+        pool(58, 78, 72);
+        pool(342, 150, 76);
         // The way out: green firelight from the Hall, once the slab has begun to move.
         if (flags.pictured && performance.now() > this.slabStart) {
           pool(372, 160, 56);
@@ -2030,16 +2154,28 @@ export class CrawlEngine {
         pool(192, 112, flags.stoneRead ? 96 : 56);
         tint(192, 112, 56, flags.stoneRead ? C.green : THEMES.bronze.frieze, 0.12);
         break;
-      case "shop":
-        pool(160, 110, 170);
-        pool(240, 70, 70);
-        tint(160, 110, 120, THEMES.sand.s8, 0.06);
+      case "shop": {
+        // Lamplight, warm and uneven.
+        for (const lamp of LANTERNS) {
+          pool(lamp.x, lamp.y + 10, 72 + flicker(lamp.x));
+          tint(lamp.x, lamp.y + 10, 72, "#e8953a", 0.1);
+        }
+        pool(KEEPER.x - 26, KEEPER.foot - 26, 72 + flicker(9));
+        tint(KEEPER.x - 26, KEEPER.foot - 26, 72, "#e8953a", 0.14);
+        pool(90, 120, 80);
+        pool(240, 140, 80);
+        tint(160, 140, 120, "#a8582a", 0.05);
         break;
+      }
       case "den":
-        pool(CABINETS.arcade.x, 40, 72);
-        tint(CABINETS.arcade.x, 40, 60, "#ff3d9e", 0.16);
-        pool(CABINETS.blackjack.x, 40, 72);
-        tint(CABINETS.blackjack.x, 40, 60, "#00e0ff", 0.14);
+        for (const candle of CANDLES) {
+          pool(candle.x, candle.y - 8, 36 + flicker(candle.x) * 1.5);
+          tint(candle.x, candle.y - 8, 28, "#e0852a", 0.1);
+        }
+        pool(CABINETS.arcade.x, 34, 48);
+        tint(CABINETS.arcade.x, 34, 40, "#7ea6d8", 0.08);
+        pool(CABINETS.blackjack.x, 34, 48);
+        tint(CABINETS.blackjack.x, 34, 40, "#c96f33", 0.1);
         break;
       case "sanctum":
         pool(160, 110, 152);
@@ -2057,7 +2193,9 @@ export class CrawlEngine {
       }
     }
     if (withPlayer) {
-      const radius = this.iris > 0 ? 84 * (1 - this.iris) + 8 : 84;
+      // In the den the dinosaur carries hardly any light of its own.
+      const reach = room.id === "den" ? 44 : 84;
+      const radius = this.iris > 0 ? reach * (1 - this.iris) + 8 : reach;
       pool(this.x, this.y - 10, radius);
     }
   }
