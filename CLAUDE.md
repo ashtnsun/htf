@@ -93,12 +93,12 @@ src/components/
                     noindex, ends at the same /oracle): world.ts (nine boxy rooms on one real map as data; shapes
                     from a grid of 8-pixel cells, doors must meet, checked in dev), art.ts (all pictures painted
                     in the browser per room stone, `THEMES`; dinoFrame dressed by a `Look`; the mask; gears redrawn
-                    cell by cell; pixel Greek capitals), cosmetics.ts (what can be worn, the nine colours; only the
-                    crown is gold; what is bought goes on at once; names and the merchant's lines must never use a family's words), engine.ts (CrawlEngine: one
+                    cell by cell; pixel Greek capitals), cosmetics.ts (what can be worn, drawn side-on on the dinosaur's own anatomy and judged worn, never alone; the nine colours; only the
+                    crown is gold; what is bought goes on at once; names must never use a family's words), engine.ts (CrawlEngine: one
                     canvas, no game library, per-frame state in the class, a door is a pan along the map,
-                    `playCine` holds the camera on big changes, characters drawn after the dark so its dither
+                    `playCine` holds the camera dead centre on what has changed, clear of its bars, characters drawn after the dark so its dither
                     never falls on them, steps its resolution down by itself on a slow machine), Crawl.tsx (the
-                    shell, HUD, map, coins, shopkeeper; `fitMural` lands the mural's picture exactly under the
+                    shell, HUD, map, coins, the hint beside the map; `fitMural` lands the mural's picture exactly under the
                     photo frame, so the photo trial happens on the wall), SwapTimer.tsx (the family's 2-minute
                     clock: silent, one big green SWAP! for half a second), trials/* (the close-ups: real DOM over the world, Esc steps away; WordGate is the
                     mask's Wordle, StoneWheels the bronze machine, Mirror the character menu, DinoRun and

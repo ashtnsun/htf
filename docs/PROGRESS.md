@@ -88,6 +88,55 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 17g — 2026-11-03 (/olympus3, Ashton's fifth notes)
+
+Ashton's notes after playing: every cosmetic looked wrong when worn, the merchant had to go, the fires'
+red flashes were too fast, the Hall needed floor stones for backspace and restart, cutscenes were being
+cut by their bars, and two trials stayed open after they were solved. They also asked for a hint after
+the mask.
+
+- **Cosmetics redrawn on the dinosaur** (`cosmetics.ts`): the old pieces were drawn as objects seen from
+  the front and placed near the body, which is why two lenses sat on the snout, a face-on mask covered the
+  head, the capes showed as a blob behind it, and snakes stood up like antennae. Everything is now side-on,
+  on the anatomy, with a map of that anatomy at the top of the file: hats sit on the skull and go no wider;
+  one lens round the eye with a bridge (so "Scholar's Eyeglass", not Spectacles); a beard off the chin, a
+  profile mask following the head's outline. Capes, cloak, shield and wings fasten at the neck and lie
+  over the body (`over: true`, a layer in `dinoFrame`). Things held pass behind the hand, drawn last, and
+  angle forward to clear the snout; cup and lyre are half their old size. Prices and names otherwise
+  unchanged. Judged worn, in four full outfits and several colours, not one by one.
+- **The merchant is gone**: no figure, speech bubble, lines or "Talk" (`merchantPicture`, `KEEPER`,
+  `onKeeper`, the `keeper` target and its CSS all removed). The camp stays: wagon, rugs, lamps. With no
+  one to refuse a sale, not having the coin thuds and the room says "Not enough coin."
+- **Fires' restart**: still three red flashes, now 240 ms on and 180 ms off (was 140 and 130), so about
+  1.3 s rather than 0.8 s.
+- **Two floor stones in the Hall** (`FLOOR_STONES`, out past the fires either side of the square): stand on
+  one and press E. The red flame restarts the signal from its flare (the fires now keep their own
+  `fireStart`) and works from the first step, since the fires do. The arrow lifts the last letter; it is
+  blank until the letters exist, and lights once there is something to lift. Backspace still works.
+- **Cutscenes dead centre**: the old zoom kept each subject wherever the clamped camera had left it, so
+  anything near the top of a room slid under the bar. A held shot now leaves the room's clamp and centres
+  on the middle of its subject (`takeCamera`; the mural, mask, machine, square and door each give their
+  own), the zoom closes in on the middle of the screen, and all of them fit between the bars at 1.5x. The
+  camera eases from and back to its normal framing, so nothing jumps. The mural's second shot, the slab at
+  the room's very edge, also draws the Hall beyond it (`beside`) rather than half a screen of black.
+- **Trials let go by themselves** (`settleAfter`): the wheels hold 3 s, for the plate to be read, then close
+  and play their moment; the seal holds 2.6 s for the crack and the clue. Esc during the hold closes at once
+  and plays the moment once. Both can be read again by going back.
+- **The first hint**: when the mask's moment ends, a parchment note to the left of the map says
+  `Remember "GYROS"... you hear gears shifting.` with its own sound (`gears()`: a ratchet slowing down over
+  a low note and two low strings). It stays until the wheels are read, hides with the map, and comes back
+  silently after a refresh.
+
+**Decisions.** "Script colors" was read as scroll colours: parchment and ink, in the Oracle's face. The note
+stays up rather than fading, because a family can need that word any time before the wheels. The hold on the
+wheels is short for reading a sentence, on purpose: the plate stays green and readable on a return.
+
+**Checked.** The whole run on Family I from the riddles answered to the door: mask to hint, wheels closing at
+3.2 s, seal at 2.8 s, the final word pressed on the floor with a slip lifted by the stone. Each cutscene's
+camera target and frame; three flare edges measured after a restart; Esc mid-hold; no coin; reduced motion;
+all 20 wares bought and auto-worn; no page errors. `pnpm typecheck`, `lint`, `build` and `a11y` pass. Frames
+in `docs/screenshots/session-17g/`. Nobody has heard `gears()` yet.
+
 ## Session 17f — 2026-11-03 (/olympus3, Ashton's fourth notes)
 
 Ashton's notes on the shop, the den, the machines and the swap clock, and the ones that came in while
