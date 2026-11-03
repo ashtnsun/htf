@@ -1,5 +1,5 @@
 /**
- * The tomb (/olympus3): seven rooms on one map, as plain data. Everything is in logical pixels (one
+ * The tomb (/olympus3): nine rooms on one map, as plain data. Everything is in logical pixels (one
  * logical pixel is one cell of the picture, drawn at a whole number of screen pixels). `at` is a
  * room's place on the map, so rooms really touch and their doors really meet: a door's `at` is
  * along the wall in the room's own coordinates, and a check below makes both sides agree.
@@ -10,12 +10,16 @@
  * Nothing here is secret: no answers, no words.
  */
 
+import { FOR_SALE } from "@/components/olympus/crawl/cosmetics";
+
 export const TILE = 16;
 export const CELL = 8;
 
 export type Side = "n" | "s" | "e" | "w";
-export type RoomId = "mural" | "hall" | "crypt" | "teeth" | "gate" | "chasm" | "sanctum";
-export type ThemeId = "sand" | "hall" | "crypt" | "rust" | "marble" | "bronze" | "gold";
+export type RoomId =
+  "mural" | "hall" | "crypt" | "teeth" | "gate" | "chasm" | "sanctum" | "shop" | "den";
+export type ThemeId =
+  "sand" | "hall" | "crypt" | "rust" | "marble" | "bronze" | "gold" | "agora" | "den";
 
 /** What the dinosaur can walk up to. */
 export type Target =
@@ -25,7 +29,12 @@ export type Target =
   | { kind: "stone" }
   | { kind: "door" }
   | { kind: "altar" }
-  | { kind: "note"; text: string };
+  | { kind: "note"; text: string }
+  | { kind: "mirror" }
+  | { kind: "item"; id: string }
+  | { kind: "keeper" }
+  | { kind: "arcade" }
+  | { kind: "blackjack" };
 
 export type Spot = {
   target: Target;
@@ -119,6 +128,11 @@ export const DOOR_HALF = 16;
 const rect = (x0: number, y0: number, x1: number, y1: number) => (x: number, y: number) =>
   x >= x0 && x < x1 && y >= y0 && y < y1;
 
+/** Where each thing for sale stands: two rows of seven, wide enough to walk between. */
+export function pedestal(i: number) {
+  return { x: 40 + (i % 7) * 40, y: i < 7 ? 124 : 160 };
+}
+
 const tablet = (index: number, x: number, floorTop: number): Spot => ({
   target: { kind: "tablet", index },
   x,
@@ -166,13 +180,15 @@ const chasmFloor = () =>
   );
 
 /*
- * The map, with the Hall in the middle and the big trials as far from each other as it allows:
+ * The map, with the Hall in the middle:
  *
  *                 Sanctum
  *                    |
- *   Mural ------- Hall ------- Teeth ------- Mask
- *                    |
- *   Mechanism --- Crypt
+ *   Mural ------- Hall -------- Mask
+ *                    |            |
+ *   Mechanism --- Crypt ------ Teeth ---- Den
+ *                                 |
+ *                               Shop
  */
 const SPECS: RoomSpec[] = [
   {
@@ -200,6 +216,7 @@ const SPECS: RoomSpec[] = [
     ],
     spots: [
       { target: { kind: "mural" }, x: 192, y: 104, r: 34, capY: 2 },
+      { target: { kind: "mirror" }, x: 58, y: 106, r: 20, capY: 2 },
       note("Someone came before you. They did not stand before the wall.", 72, 204),
       {
         ...note("It will not open for strangers.", 346, 160, 22),
@@ -222,7 +239,7 @@ const SPECS: RoomSpec[] = [
       n: { to: "sanctum", at: 192 },
       s: { to: "crypt", at: 192 },
       w: { to: "mural", at: 128 },
-      e: { to: "teeth", at: 128 },
+      e: { to: "gate", at: 128 },
     },
     fires: hallFires,
     props: [
@@ -251,6 +268,7 @@ const SPECS: RoomSpec[] = [
     doors: {
       n: { to: "hall", at: 176 },
       w: { to: "chasm", at: 160 },
+      e: { to: "teeth", at: 160 },
     },
     sconces: { left: [24, 38, 52, 66, 80], right: [262, 276, 290, 304, 318] },
     props: [
@@ -295,48 +313,52 @@ const SPECS: RoomSpec[] = [
     id: "teeth",
     title: "The Teeth",
     theme: "rust",
-    at: [384, 0],
-    w: 28,
-    h: 13,
+    at: [368, 208],
+    w: 24,
+    h: 14,
     wall: 3,
     ambient: 0.5,
-    // One long way between the Hall and the Mask, and nothing else.
-    shape: rect(16, 88, 432, 168),
+    // An L: a landing by the doors, and one long way to the far wall.
+    shape: (x, y) => rect(16, 48, 112, 208)(x, y) || rect(16, 112, 368, 208)(x, y),
     doors: {
-      w: { to: "hall", at: 128 },
-      e: { to: "gate", at: 128 },
+      w: { to: "crypt", at: 160 },
+      n: { to: "gate", at: 64 },
+      s: { to: "shop", at: 64 },
+      e: { to: "den", at: 160 },
     },
-    sconces: { left: [110, 125, 140, 155, 170], right: [230, 245, 260, 275, 290] },
+    sconces: { left: [126, 141, 156, 171, 186], right: [214, 229, 244, 259, 274] },
     props: [
-      { kind: "bones", x: 44, y: 160 },
-      { kind: "rubble", x: 410, y: 164, seed: 15 },
-      { kind: "amphora", x: 26, y: 104, seed: 7 },
+      { kind: "bones", x: 36, y: 90 },
+      { kind: "rubble", x: 350, y: 200, seed: 15 },
+      { kind: "amphora", x: 98, y: 66, seed: 7 },
     ],
     spikes: [
-      { x: 92, w: 28, y: 88, h: 80, phase: 0 },
-      { x: 148, w: 28, y: 88, h: 80, phase: 0.3 },
-      { x: 204, w: 28, y: 88, h: 80, phase: 0.6 },
-      { x: 260, w: 28, y: 88, h: 80, phase: 0.15 },
-      { x: 316, w: 28, y: 88, h: 80, phase: 0.45 },
+      { x: 124, w: 28, y: 112, h: 96, phase: 0 },
+      { x: 176, w: 28, y: 112, h: 96, phase: 0.3 },
+      { x: 228, w: 28, y: 112, h: 96, phase: 0.6 },
+      { x: 280, w: 28, y: 112, h: 96, phase: 0.15 },
     ],
-    spots: [tablet(3, 384, 88), note("He ran. He should have counted.", 44, 150, 20)],
+    spots: [tablet(3, 336, 112), note("He ran. He should have counted.", 36, 98, 20)],
   },
   {
     id: "gate",
     title: "The Mask",
     theme: "marble",
-    at: [832, 0],
+    at: [384, 0],
     w: 24,
     h: 13,
     wall: 5,
     ambient: 0.48,
     shape: rect(16, 80, 368, 192),
-    doors: { w: { to: "teeth", at: 128 } },
+    doors: {
+      w: { to: "hall", at: 128 },
+      s: { to: "teeth", at: 48 },
+    },
     sconces: { left: [40, 55, 70, 85, 100], right: [284, 299, 314, 329, 344] },
     props: [
       { kind: "column", x: 128, y: 104 },
       { kind: "column", x: 256, y: 104 },
-      { kind: "column", x: 48, y: 184 },
+      { kind: "column", x: 104, y: 184 },
       { kind: "column", x: 336, y: 184 },
       { kind: "stump", x: 300, y: 150, seed: 19 },
       { kind: "rubble", x: 150, y: 186, seed: 17 },
@@ -392,6 +414,48 @@ const SPECS: RoomSpec[] = [
       { kind: "amphora", x: 284, y: 180, seed: 2 },
     ],
     spots: [{ target: { kind: "altar" }, x: 160, y: 128, r: 28, capY: 62 }],
+  },
+  {
+    id: "shop",
+    title: "The Agora",
+    theme: "agora",
+    at: [272, 432],
+    w: 20,
+    h: 12,
+    wall: 4,
+    ambient: 0.22,
+    shape: rect(16, 64, 304, 176),
+    doors: { n: { to: "teeth", at: 160 } },
+    props: [
+      { kind: "amphora", x: 28, y: 78, seed: 1 },
+      { kind: "amphora", x: 40, y: 72, seed: 3 },
+      { kind: "amphora", x: 292, y: 74, seed: 4 },
+    ],
+    spots: [
+      { target: { kind: "mirror" }, x: 90, y: 74, r: 20, capY: 2 },
+      { target: { kind: "keeper" }, x: 240, y: 106, r: 18, capX: 204, capY: 70, label: "Talk" },
+      ...FOR_SALE.map((item, i): Spot => {
+        const { x, y } = pedestal(i);
+        return { target: { kind: "item", id: item.id }, x, y: y + 10, r: 15, capY: y - 34 };
+      }),
+    ],
+  },
+  {
+    id: "den",
+    title: "The Den",
+    theme: "den",
+    at: [752, 272],
+    w: 14,
+    h: 10,
+    wall: 3,
+    ambient: 0.42,
+    shape: rect(16, 48, 208, 144),
+    doors: { w: { to: "teeth", at: 96 } },
+    props: [{ kind: "amphora", x: 196, y: 134, seed: 2 }],
+    spots: [
+      { target: { kind: "arcade" }, x: 76, y: 78, r: 22, capY: 6, label: "Play the machine" },
+      { target: { kind: "blackjack" }, x: 150, y: 78, r: 22, capY: 6, label: "Sit at the table" },
+    ],
   },
 ];
 

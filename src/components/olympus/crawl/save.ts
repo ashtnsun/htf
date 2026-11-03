@@ -1,5 +1,6 @@
 import type { Mark } from "@/components/olympus/journey/cipher";
 import type { Face } from "@/components/olympus/journey/save";
+import { DEFAULT_LOOK, type Look } from "@/components/olympus/crawl/cosmetics";
 import type { RoomId } from "@/components/olympus/crawl/world";
 
 /** A family's place in the tomb, kept per tab: a refresh keeps it, a new tab starts over. */
@@ -22,6 +23,12 @@ export type TombSave = {
   finalWord: string | null;
   place: { room: RoomId; x: number; y: number } | null;
   visited: RoomId[];
+  coins: number;
+  /** Cosmetics bought. */
+  owned: string[];
+  look: Look;
+  /** The arcade machine's best. */
+  best: number;
 };
 
 export const emptySave = (riddles: number): TombSave => ({
@@ -40,9 +47,13 @@ export const emptySave = (riddles: number): TombSave => ({
   finalWord: null,
   place: null,
   visited: [],
+  coins: 0,
+  owned: [],
+  look: DEFAULT_LOOK,
+  best: 0,
 });
 
-const keyOf = (family: number) => `olympus3.2:${family}`;
+const keyOf = (family: number) => `olympus3.3:${family}`;
 
 export function loadSave(family: number, riddles: number): TombSave {
   try {

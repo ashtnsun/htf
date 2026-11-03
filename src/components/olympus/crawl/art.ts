@@ -1,4 +1,12 @@
 import { DINO_ARM, DINO_EYE, DINO_PIXELS } from "@/components/brand/dino-pixels";
+import {
+  cosmeticById,
+  DINO_COLORS,
+  TOGA,
+  type Cosmetic,
+  type Look,
+  DEFAULT_LOOK,
+} from "@/components/olympus/crawl/cosmetics";
 import { CELL, TILE, type Prop, type Room, type ThemeId } from "@/components/olympus/crawl/world";
 
 /**
@@ -145,6 +153,38 @@ export const THEMES: Record<ThemeId, Theme> = {
     "#b08d57",
     "#b08d57",
   ),
+  // A whitewashed market on the islands: the one cheerful room down here.
+  agora: ramp(
+    [
+      "#0f1620",
+      "#1a2533",
+      "#2a3a4e",
+      "#3d5068",
+      "#5a708a",
+      "#8097ad",
+      "#a8bccb",
+      "#cfdbe3",
+      "#f2f6f8",
+    ],
+    "#2f6fd0",
+    "#2f6fd0",
+  ),
+  // Lamp-black and plum, and machines that should not be here.
+  den: ramp(
+    [
+      "#0d0714",
+      "#170d22",
+      "#241537",
+      "#34204d",
+      "#4a2e6b",
+      "#684390",
+      "#8f63b8",
+      "#b98fdc",
+      "#e7d5f7",
+    ],
+    "#ff3d9e",
+    "#ff3d9e",
+  ),
   // The end of it.
   gold: ramp(
     [
@@ -238,43 +278,91 @@ const LEGS = [
   [".....###.##.........", ".....##...#.........", ".....#..............", ".....##............."],
 ];
 
-/** A fedora, worn over the head's top row: the brim, a green band, the crown. */
-const HAT = [
-  "....######....",
-  "...########...",
-  "...########...",
-  "...gggggggg...",
-  "##############",
-];
-const HAT_X = 8;
-const HAT_Y = -4;
-
-/** Room for the hat above the map. */
-export const DINO_TOP = 5;
-export const DINO_W = 24;
+/** Room round the map for what is worn: the body's cell (0, 0) is at (DINO_LEFT, DINO_TOP). */
+const DINO_LEFT = 6;
+export const DINO_TOP = 9;
+export const DINO_W = 36;
 export const DINO_H = 22 + DINO_TOP;
 /** The point between the feet, in the picture's cells. */
-export const DINO_FOOT_X = 9;
+export const DINO_FOOT_X = 9 + DINO_LEFT;
 
-/** One frame of the dinosaur: `step` is the walk's place (0-3), `blink` covers the eye. */
-export function dinoFrame(step: number, blink: boolean, flip: boolean) {
-  return kept(`dino:${step}:${blink}:${flip}`, () => {
+/** The shopkeeper's colour: clay, and never one of the nine. */
+const KEEPER_COLOR = { body: "#b8743a", light: "#e0a56a" };
+export const KEEPER_LOOK: Look = { ...DEFAULT_LOOK, color: "keeper", head: "laurel" };
+
+const colorOf = (id: string) =>
+  id === "keeper" ? KEEPER_COLOR : (DINO_COLORS.find((c) => c.id === id) ?? DINO_COLORS[0]);
+
+/** One frame of the dinosaur as it is dressed: `step` is the walk's place (0-3), `blink` the eye. */
+export function dinoFrame(step: number, blink: boolean, flip: boolean, look: Look = DEFAULT_LOOK) {
+  const key = `dino:${step}:${blink}:${flip}:${look.color}:${look.head}:${look.face}:${look.back}:${look.hand}`;
+  return kept(key, () => {
     const { canvas, ctx } = makeCanvas(DINO_W, DINO_H);
-    const rows = [...DINO_PIXELS.slice(0, 18), ...LEGS[step]!];
+    const color = colorOf(look.color);
     const cell = (x: number, y: number, ink: string) => {
       ctx.fillStyle = ink;
-      ctx.fillRect(flip ? DINO_W - 1 - x : x, y + DINO_TOP, 1, 1);
+      const cx = x + DINO_LEFT;
+      ctx.fillRect(flip ? DINO_W - 1 - cx : cx, y + DINO_TOP, 1, 1);
     };
+    const wear = (item: Cosmetic | undefined) =>
+      item?.rows.forEach((row, y) =>
+        [...row].forEach((ch, x) => {
+          const ink = item.inks[ch];
+          if (ink) cell(item.x + x, item.y + y, ink);
+        }),
+      );
+    wear(cosmeticById(look.back));
+    const rows = [...DINO_PIXELS.slice(0, 18), ...LEGS[step]!];
     rows.forEach((row, y) =>
       [...row].forEach((ch, x) => {
         if (ch !== "#") return;
-        cell(x, y, DINO_ARM.some(([ax, ay]) => ax === x && ay === y) ? C.mint : C.green);
+        cell(x, y, DINO_ARM.some(([ax, ay]) => ax === x && ay === y) ? color.light : color.body);
       }),
     );
-    if (blink) cell(DINO_EYE.x, DINO_EYE.y, C.green);
-    HAT.forEach((row, y) =>
+    if (blink) cell(DINO_EYE.x, DINO_EYE.y, color.body);
+    if (look.color === "keeper") wear(TOGA);
+    wear(cosmeticById(look.face));
+    wear(cosmeticById(look.head));
+    wear(cosmeticById(look.hand));
+    return canvas;
+  });
+}
+
+const DUCK = [
+  "..............##########",
+  "..............##.#######",
+  "#.............##########",
+  "##...........###########",
+  "###.....################",
+  "#################.......",
+  "################..##....",
+  ".###############........",
+  "..#############.........",
+];
+const DUCK_LEGS = [
+  ["...###.##...............", "...##...#...............", "...#....#..............."],
+  ["...###.##...............", "...##...#...............", "........#..............."],
+];
+
+/** The dinosaur low to the ground, for the runner on the arcade machine. */
+export function duckFrame(step: number, look: Look) {
+  return kept(`duck:${step}:${look.color}`, () => {
+    const color = colorOf(look.color);
+    return fromRows([...DUCK, ...DUCK_LEGS[step]!], { "#": color.body });
+  });
+}
+
+/** A cosmetic alone, cut to its own size, for a pedestal or the mirror's list. */
+export function cosmeticPicture(item: Cosmetic) {
+  return kept(`cosmetic:${item.id}`, () => {
+    const width = Math.max(...item.rows.map((r) => r.length));
+    const { canvas, ctx } = makeCanvas(width, item.rows.length);
+    item.rows.forEach((row, y) =>
       [...row].forEach((ch, x) => {
-        if (ch !== ".") cell(HAT_X + x, HAT_Y + y, ch === "g" ? C.deep : "#d9d5c8");
+        const ink = item.inks[ch];
+        if (!ink) return;
+        ctx.fillStyle = ink;
+        ctx.fillRect(x, y, 1, 1);
       }),
     );
     return canvas;
@@ -310,6 +398,16 @@ const FONT: Record<string, readonly string[]> = {
   X: ["#...#", "#...#", ".#.#.", "..#..", ".#.#.", "#...#", "#...#"],
   Y: ["#...#", "#...#", ".#.#.", "..#..", "..#..", "..#..", "..#.."],
   Z: ["#####", "....#", "...#.", "..#..", ".#...", "#....", "#####"],
+  "0": [".###.", "#...#", "#..##", "#.#.#", "##..#", "#...#", ".###."],
+  "1": ["..#..", ".##..", "..#..", "..#..", "..#..", "..#..", ".###."],
+  "2": [".###.", "#...#", "....#", "...#.", "..#..", ".#...", "#####"],
+  "3": ["####.", "....#", "....#", ".###.", "....#", "....#", "####."],
+  "4": ["...#.", "..##.", ".#.#.", "#..#.", "#####", "...#.", "...#."],
+  "5": ["#####", "#....", "####.", "....#", "....#", "#...#", ".###."],
+  "6": [".###.", "#....", "#....", "####.", "#...#", "#...#", ".###."],
+  "7": ["#####", "....#", "...#.", "..#..", ".#...", ".#...", ".#..."],
+  "8": [".###.", "#...#", "#...#", ".###.", "#...#", "#...#", ".###."],
+  "9": [".###.", "#...#", "#...#", ".####", "....#", "....#", ".###."],
 };
 
 /** The Greek capitals that do not look like ours, for what is carved on the machine. */
@@ -814,7 +912,9 @@ export function drawFlame(
  * A pool of light as a picture to cut out of the dark: alpha falling off in four dithered bands, so
  * the edge of the light is chunky like everything else.
  */
-export function lightPicture(radius: number, power = 1) {
+export function lightPicture(wanted: number, power = 1) {
+  // Never a picture of no size: that would throw in the middle of a frame.
+  const radius = wanted >= 4 ? wanted : 4;
   return kept(`light:${radius}:${power}`, () => {
     const size = radius * 2;
     const { canvas, ctx } = makeCanvas(size, size);
@@ -1291,17 +1391,73 @@ export function bronzeTexture() {
   return canvas.toDataURL("image/png");
 }
 
-/** The close-up's mask, as a data URL: every socket in its crown filled, or it would not speak. */
-export function maskCloseUp() {
-  const w = 120;
-  const canvas = maskPicture(w, 156, { top: 0.4, bottom: 0.97, half: 0.62 }, THEMES.marble);
-  const ctx = canvas.getContext("2d")!;
-  for (let i = 0; i < 5; i += 1) {
-    const x = w / 2 + (i - 2) * 16 - 5;
-    const y = 8 + Math.abs(i - 2) * 2;
-    fill(ctx, "#050507", x - 1, y - 1, 12, 12);
-    fill(ctx, C.green, x, y, 10, 10);
-    fill(ctx, C.mint, x + 1, y + 1, 4, 3);
-  }
-  return canvas.toDataURL("image/png");
+/** A coin: the thing everything in the tomb costs. */
+const COIN = [
+  "..gggg..",
+  ".gGGGGg.",
+  "gGGkkGGg",
+  "gGkGGGGg",
+  "gGkGGGGg",
+  "gGGkkGGg",
+  ".gGGGGg.",
+  "..gggg..",
+];
+export const coinPicture = () =>
+  kept("coin", () => fromRows(COIN, { g: "#a57e2a", G: "#e9c46a", k: "#7c5c1c" }));
+
+/** A plinth for what is for sale, its price on the front. */
+export function pedestalPicture(t: Theme, price: number) {
+  return kept(`pedestal:${t.s5}:${price}`, () => {
+    const { canvas, ctx } = makeCanvas(22, 16);
+    fill(ctx, t.s7, 2, 0, 18, 2);
+    fill(ctx, t.s8, 2, 0, 18, 1);
+    fill(ctx, t.s3, 3, 2, 16, 11);
+    fill(ctx, t.s6, 0, 13, 22, 3);
+    ctx.drawImage(coinPicture(), 4, 3);
+    drawLetter(ctx, String(price), 13, 4, C.gold);
+    return canvas;
+  });
+}
+
+/** A mirror on the wall: a frame of old gold round dark glass. */
+export function mirrorPicture(t: Theme) {
+  return kept(`mirror:${t.s5}`, () => {
+    const { canvas, ctx } = makeCanvas(32, 46);
+    fill(ctx, "#a57e2a", 0, 2, 32, 44);
+    fill(ctx, "#a57e2a", 4, 0, 24, 2);
+    fill(ctx, "#e9c46a", 1, 3, 30, 1);
+    fill(ctx, "#e9c46a", 1, 3, 1, 42);
+    fill(ctx, "#6d5029", 30, 4, 1, 41);
+    fill(ctx, "#6d5029", 1, 44, 30, 1);
+    fill(ctx, "#101a1e", 4, 6, 24, 36);
+    fill(ctx, "#1a2b30", 4, 6, 24, 18);
+    fill(ctx, "#e9c46a", 14, 0, 4, 3);
+    return canvas;
+  });
+}
+
+/** A coin-op cabinet: the tomb has no business having one. `ink` is its marquee. */
+export function cabinetPicture(t: Theme, ink: string, word: string) {
+  return kept(`cabinet:${word}`, () => {
+    const W = 34;
+    const H = 48;
+    const { canvas, ctx } = makeCanvas(W, H);
+    fill(ctx, t.s2, 0, 2, W, H - 2);
+    fill(ctx, t.s4, 0, 2, 1, H - 2);
+    fill(ctx, t.s0, W - 1, 2, 1, H - 2);
+    // The marquee.
+    fill(ctx, ink, 2, 0, W - 4, 11);
+    fill(ctx, "#ffffff", 2, 0, W - 4, 1);
+    drawWord(ctx, word, W / 2, 2, "#0d0714");
+    // The screen's surround and the control panel.
+    fill(ctx, t.s0, 3, 13, W - 6, 20);
+    fill(ctx, t.s5, 1, 34, W - 2, 6);
+    fill(ctx, t.s7, 1, 34, W - 2, 1);
+    fill(ctx, ink, 6, 36, 3, 2);
+    fill(ctx, "#00e0ff", 12, 36, 3, 2);
+    fill(ctx, "#e9c46a", 26, 36, 3, 2);
+    fill(ctx, t.s1, 3, 41, W - 6, 7);
+    fill(ctx, t.s4, 14, 43, 6, 2);
+    return canvas;
+  });
 }

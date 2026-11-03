@@ -2,7 +2,6 @@
 
 import { Delete } from "lucide-react";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { maskCloseUp } from "@/components/olympus/crawl/art";
 import { guessGate } from "@/app/olympus3/actions";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
 import { Colonnade } from "@/components/olympus/Colonnade";
@@ -33,11 +32,10 @@ const SAY: Record<Mark, string> = {
 export type Guess = { guess: string; marks: Mark[] };
 
 /**
- * The Mask, up close: the same Wordle as /olympus, its board set in the howling mouth of a marble
- * tragic mask, every guess a row of its teeth. Nothing says the word comes from the answers on the
- * five columns beside it. The server gives no marks until all five riddles are answered, so it
- * cannot be played instead of them; the shell keeps the mask silent until then. Six tries, then a
- * minute's silence, kept through a refresh.
+ * The Mask, up close: the same Wordle as /olympus, nothing but its grid, the five columns and the
+ * keys. Nothing says the word comes from the answers on the columns. The server gives no marks
+ * until all five riddles are answered, so it cannot be played instead of them; the shell keeps the
+ * mask silent until then. Six tries, then a minute's silence, kept through a refresh.
  */
 export function WordGate({
   family,
@@ -57,7 +55,6 @@ export function WordGate({
   onSolved: (word: string) => void;
 }) {
   const reduce = useReducedMotionSafe();
-  const [mask] = useState(maskCloseUp);
   const [letters, setLetters] = useState("");
   const [error, setError] = useState<string>();
   const [won, setWon] = useState(false);
@@ -134,17 +131,18 @@ export function WordGate({
 
   const typing = !won && !spent;
   const empty = Math.max(0, ROWS - guesses.length - (typing ? 1 : 0));
-  const tile = "crawl-tooth flex items-center justify-center font-olympus text-2xl font-semibold";
+  const tile =
+    "crawl-tile flex size-11 items-center justify-center font-olympus text-2xl font-semibold";
   const key =
     "flex h-11 min-w-0 flex-1 items-center justify-center border transition-colors hover:border-line-strong";
 
   return (
     <div className="m-auto flex w-full flex-col items-center gap-6 lg:flex-row lg:items-center lg:justify-center lg:gap-12">
-      <div className="crawl-mask journey-rise" style={{ backgroundImage: `url(${mask})` }}>
+      <div className="flex flex-col items-center">
         <ol
           aria-label={`Your guesses, ${ROWS - guesses.length} left this round`}
           data-olympus
-          className="crawl-mouth"
+          className="journey-rise flex flex-col gap-1.5"
         >
           {guesses.map(({ guess, marks }, r) => {
             const turning = r === fresh;
@@ -197,7 +195,7 @@ export function WordGate({
           {Array.from({ length: empty }, (_, r) => (
             <li key={`empty-${r}`} aria-hidden="true" className="flex gap-1.5">
               {Array.from({ length: LENGTH }, (_, i) => (
-                <span key={i} className="crawl-tooth crawl-tooth-empty" />
+                <span key={i} className="crawl-tile crawl-tile-empty size-11" />
               ))}
             </li>
           ))}

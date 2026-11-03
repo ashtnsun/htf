@@ -6,10 +6,16 @@ import { Volume2, VolumeX } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { carveStone, speakWord } from "@/app/olympus3/actions";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
-import { bronzeTexture, stoneTexture } from "@/components/olympus/crawl/art";
+import { bronzeTexture, coinPicture, stoneTexture } from "@/components/olympus/crawl/art";
+import type { Round } from "@/components/olympus/crawl/blackjack";
+import { cosmeticById, type Look } from "@/components/olympus/crawl/cosmetics";
 import { CrawlEngine, type WorldEvent } from "@/components/olympus/crawl/engine";
 import { TombSound } from "@/components/olympus/crawl/sound";
 import { loadSave, writeSave, type TombSave } from "@/components/olympus/crawl/save";
+import { SwapTimer } from "@/components/olympus/crawl/SwapTimer";
+import { Blackjack } from "@/components/olympus/crawl/trials/Blackjack";
+import { DinoRun } from "@/components/olympus/crawl/trials/DinoRun";
+import { Mirror } from "@/components/olympus/crawl/trials/Mirror";
 import { MuralTrial } from "@/components/olympus/crawl/trials/MuralTrial";
 import { RiddleTablet } from "@/components/olympus/crawl/trials/RiddleTablet";
 import { SealDoor } from "@/components/olympus/crawl/trials/SealDoor";
@@ -27,7 +33,7 @@ import {
 import { Finale } from "@/components/olympus/journey/Finale";
 import { roman } from "@/components/olympus/shared";
 
-type Open = Exclude<Target, { kind: "note" }>;
+type Open = Exclude<Target, { kind: "note" | "item" | "keeper" }>;
 
 /** Milliseconds: the close-up fading out, and the camera coming back. */
 const LEAVE = 240;
@@ -40,7 +46,39 @@ const LABELS: Record<Open["kind"], string> = {
   stone: "The mechanism",
   door: "The great door",
   altar: "The altar",
+  mirror: "The mirror",
+  arcade: "The arcade machine",
+  blackjack: "The blackjack machine",
 };
+
+/** The shopkeeper talks at you: no choices, only a bubble. Never a family's word (cosmetics.ts). */
+const KEEPER_IDLE = [
+  "Everything here is genuine. Mostly.",
+  "Solve things, earn coin. That is the whole economy down here.",
+  "That helm was worn by a hero. Briefly.",
+  "No refunds. The last one who asked is in the Crypt.",
+  "There is a mirror on the wall. Free of charge. For now.",
+  "The machines next door? Don't. Or do. I own those as well.",
+  "You have an honest face. For a lizard.",
+  "Buy something or stop breathing on the merchandise.",
+];
+const KEEPER_WELCOME = "Ah! A customer. Or a thief. Show me coin and we'll know which.";
+const KEEPER_SOLD = [
+  "Sold! It suits you. Try the mirror.",
+  "A fine choice. I was going to say that about any of them.",
+  "Pleasure. Wear it in good health. The mirror's there.",
+];
+const KEEPER_BROKE = [
+  "That costs more than you have. Come back with coin.",
+  "Coin first, little one. Solve something.",
+  "I admire the confidence. Not the purse.",
+];
+const KEEPER_BROWSE = [
+  "Ooh. Good eye.",
+  "That one's nearly new.",
+  "Go on. Touch it and it's yours. Touch it and pay, I mean.",
+];
+const pick = (lines: readonly string[]) => lines[Math.floor(Math.random() * lines.length)]!;
 
 /**
  * A family's tomb: the same trials as /olympus, walked as a game. A T-rex in a hat falls through the
@@ -55,6 +93,10 @@ const LABELS: Record<Open["kind"], string> = {
  * plate says where the letter is, the letter breaks the seal, and the seal shows the square the
  * fires have been counting on since the first step. Pressing the fires' word out on that floor
  * opens the great door by itself.
+ *
+ * Every puzzle and riddle pays a coin. Coins buy clothes from the shop (worn at either mirror) and
+ * feed the two machines in the den; none of that ever touches the chain. A clock under the map says
+ * when the family should pass the controls on.
  */
 export function Crawl({
   family,
@@ -77,6 +119,10 @@ export function Crawl({
   const [moved, setMoved] = useState(!!save.place);
   const [muted, setMuted] = useState(false);
   const [cine, setCine] = useState(false);
+  const [coinPop, setCoinPop] = useState(0);
+  const [keeperLine, setKeeperLine] = useState("");
+  const [bjRound, setBjRound] = useState<Round | null>(null);
+  const [coinSrc, setCoinSrc] = useState("");
   const [score] = useState(() => new TombSound());
   // Where this visit began: React's double mount in dev must not count as a return.
   const [opening] = useState(save);
@@ -91,6 +137,7 @@ export function Crawl({
   const openKind = useRef<Open["kind"] | null>(null);
   const settleTimer = useRef(0);
   const dotRef = useRef<SVGRectElement>(null);
+  const bubbleRef = useRef<HTMLDivElement>(null);
 
   const patch = useCallback(
     (p: Partial<TombSave> | ((s: TombSave) => Partial<TombSave>)) => {
@@ -101,6 +148,36 @@ export function Crawl({
       writeSave(family, next);
     },
     [family],
+  );
+
+  /** Coins in hand; a positive amount sounds and pops the purse. */
+  const addCoins = useCallback(
+    (n: number) => {
+      if (!n) return;
+      patch((s) => ({ coins: Math.max(0, s.coins + n) }));
+      if (n > 0) {
+        score.coin();
+        setCoinPop((p) => p + 1);
+      }
+    },
+    [patch, score],
+  );
+
+  const buy = useCallback(
+    (id: string) => {
+      const item = cosmeticById(id);
+      const s = latest.current;
+      if (!item || s.owned.includes(id)) return;
+      if (s.coins < item.price) {
+        score.thud();
+        setKeeperLine(pick(KEEPER_BROKE));
+        return;
+      }
+      patch({ coins: s.coins - item.price, owned: [...s.owned, id] });
+      score.coin();
+      setKeeperLine(pick(KEEPER_SOLD));
+    },
+    [patch, score],
   );
 
   const say = useCallback((text: string) => {
@@ -144,6 +221,8 @@ export function Crawl({
       if (!engine || closing.current) return;
       const s = latest.current;
       if (target.kind === "note") return say(target.text);
+      if (target.kind === "item") return buy(target.id);
+      if (target.kind === "keeper") return setKeeperLine(pick(KEEPER_IDLE));
       if (target.kind === "gate") {
         if (s.word) return say("It has heard you.");
         const empty = s.solved.filter((answer) => !answer).length;
@@ -177,7 +256,7 @@ export function Crawl({
       openKind.current = target.kind;
       setTrial(target);
     },
-    [riddles.length, say, score],
+    [buy, riddles.length, say, score],
   );
 
   /**
@@ -223,12 +302,13 @@ export function Crawl({
         .then((final) => {
           if (!final || latest.current.finalWord) return;
           patch({ finalWord: final });
+          addCoins(1);
           settle(openKind.current ?? "door", { kind: "door" });
           window.setTimeout(() => engineRef.current?.clearStamps(), 3200);
         })
         .catch(() => {});
     },
-    [family, patch, settle],
+    [addCoins, family, patch, settle],
   );
 
   const handlers = useRef({ openTrial, patch, pressed });
@@ -243,10 +323,14 @@ export function Crawl({
       canvas,
       signal,
       {
-        onPrompt: setPrompt,
+        onPrompt: (label) => {
+          setPrompt(label);
+          if (label?.startsWith("Buy ") && Math.random() < 0.4) setKeeperLine(pick(KEEPER_BROWSE));
+        },
         onInteract: (target) => handlers.current.openTrial(target),
         onRoom: (id, x, y) => {
           setRoom(id);
+          if (id === "shop") setKeeperLine(KEEPER_WELCOME);
           const seen = latest.current.visited.includes(id);
           if (!seen) setTitle((t) => ({ text: ROOMS[id].title, id: (t?.id ?? 0) + 1 }));
           handlers.current.patch((s) => ({
@@ -265,6 +349,10 @@ export function Crawl({
             world.dataset.cine = "";
           } else delete world.dataset.cine;
         },
+        onKeeper: (at) => {
+          const bubble = bubbleRef.current;
+          if (bubble && at) bubble.style.transform = `translate(${at.x}px, ${at.y}px)`;
+        },
         onPlace: (x, y) => {
           dotRef.current?.setAttribute("x", String(Math.round(x - 12)));
           dotRef.current?.setAttribute("y", String(Math.round(y - 12)));
@@ -273,6 +361,8 @@ export function Crawl({
       score,
       {
         pictured: start.names.length > 0,
+        look: start.look,
+        owned: start.owned,
         photo: null,
         solved: start.solved.map(Boolean),
         word: start.word,
@@ -304,6 +394,8 @@ export function Crawl({
   useEffect(() => {
     engineRef.current?.setFlags({
       pictured: save.names.length > 0,
+      look: save.look,
+      owned: save.owned,
       solved: save.solved.map(Boolean),
       word: save.word,
       carved: !!save.carved,
@@ -332,6 +424,24 @@ export function Crawl({
       stale = true;
     };
   }, [family, patch, save.carved, save.names, save.word]);
+
+  // The shopkeeper keeps talking whether anyone answers or not.
+  useEffect(() => {
+    if (room !== "shop") return;
+    const id = window.setInterval(() => setKeeperLine(pick(KEEPER_IDLE)), 7000);
+    return () => window.clearInterval(id);
+  }, [room]);
+
+  useEffect(() => {
+    if (process.env.NODE_ENV !== "development") return;
+    (window as unknown as { __give: (n: number) => void }).__give = (n) =>
+      patch((s) => ({ coins: s.coins + n }));
+  }, [patch]);
+
+  useEffect(() => {
+    const id = window.setTimeout(() => setCoinSrc(coinPicture().toDataURL("image/png")), 0);
+    return () => window.clearTimeout(id);
+  }, []);
 
   useEffect(() => {
     rootRef.current?.style.setProperty("--crawl-stone", `url(${stoneTexture()})`);
@@ -379,12 +489,45 @@ export function Crawl({
       <div aria-hidden="true" className="crawl-vignette" />
       <div aria-hidden="true" data-on={cine ? "" : undefined} className="crawl-bars" />
 
+      {/* The shopkeeper's speech, placed by the engine. */}
+      <div
+        ref={bubbleRef}
+        className="crawl-bubble-at"
+        hidden={room !== "shop" || !!trial || cine || !keeperLine}
+      >
+        <p key={keeperLine} role="status" className="crawl-bubble font-oracle">
+          {keeperLine}
+        </p>
+      </div>
+
+      {/* Always there: the map when it can be seen, and under it the family's clock. */}
+      <div className="crawl-corner">
+        <div className={trial || cine ? "crawl-corner-map crawl-hud-hidden" : "crawl-corner-map"}>
+          <TombMap room={room} visited={save.visited} solved={save} dotRef={dotRef} />
+        </div>
+        <SwapTimer paused={cine} sound={score} />
+      </div>
+
       {/* What stays on screen: whose tomb this is, the map, what the dinosaur can do right here. */}
       <div className={trial || cine ? "crawl-hud crawl-hud-hidden" : "crawl-hud"}>
         <p aria-hidden="true" className="crawl-group font-olympus">
           <span>Group</span> {roman(family)}
         </p>
-        <TombMap room={room} visited={save.visited} solved={save} dotRef={dotRef} />
+        <p aria-label={`${save.coins} coins`} className="crawl-purse font-olympus">
+          {coinSrc ? (
+            // eslint-disable-next-line @next/next/no-img-element -- drawn in the browser, a data URL
+            <img
+              src={coinSrc}
+              alt=""
+              width={24}
+              height={24}
+              style={{ imageRendering: "pixelated" }}
+            />
+          ) : null}
+          <span key={coinPop} className={coinPop ? "crawl-purse-pop" : undefined}>
+            {save.coins}
+          </span>
+        </p>
         <button
           type="button"
           onClick={() => setMuted(!score.toggle())}
@@ -463,7 +606,12 @@ export function Crawl({
           onClose={onClose}
           wide={trial.kind === "stone"}
           bare={trial.kind === "mural"}
-          plain={trial.kind === "gate"}
+          plain={
+            trial.kind === "gate" ||
+            trial.kind === "mirror" ||
+            trial.kind === "arcade" ||
+            trial.kind === "blackjack"
+          }
           bronze={trial.kind === "stone"}
         >
           {trial.kind === "tablet" ? (
@@ -475,6 +623,7 @@ export function Crawl({
               onSolved={(answer) => {
                 const index = trial.index;
                 patch((s) => ({ solved: s.solved.map((a, i) => (i === index ? answer : a)) }));
+                addCoins(1);
                 pendingEvent.current = { kind: "tablet", index };
                 settleTimer.current = window.setTimeout(() => closeTrial(), reduce ? 500 : 1500);
               }}
@@ -489,6 +638,7 @@ export function Crawl({
                 // The picture is on the wall before the frame over it fades, so nothing flickers.
                 const settleIn = () => {
                   patch({ photo: result.photo, faces: result.faces, names: result.names });
+                  addCoins(1);
                   closeTrial({ kind: "mural" });
                 };
                 if (!result.photo) return settleIn();
@@ -511,6 +661,7 @@ export function Crawl({
               onSilence={(until) => patch({ guesses: [], quietUntil: until })}
               onSolved={(word) => {
                 patch({ word });
+                addCoins(1);
                 settle("gate", { kind: "word" });
               }}
             />
@@ -523,6 +674,7 @@ export function Crawl({
               read={save.stoneRead}
               onRead={() => {
                 patch({ stoneRead: true });
+                addCoins(1);
                 pendingEvent.current = { kind: "stone" };
               }}
             />
@@ -538,14 +690,39 @@ export function Crawl({
               signal={signal}
               onBroken={({ seal, clue, square }) => {
                 patch({ seal, clue, square });
+                addCoins(1);
                 pendingEvent.current = { kind: "square" };
               }}
               onWrongWord={() => engineRef.current?.clearStamps()}
               onSpoken={(finalWord) => {
                 patch({ finalWord });
+                addCoins(1);
                 engineRef.current?.clearStamps();
                 closeTrial({ kind: "door" });
               }}
+            />
+          ) : trial.kind === "mirror" ? (
+            <Mirror
+              look={save.look}
+              owned={save.owned}
+              onChange={(look: Look) => patch({ look })}
+            />
+          ) : trial.kind === "arcade" ? (
+            <DinoRun
+              look={save.look}
+              coins={save.coins}
+              best={save.best}
+              onPay={() => addCoins(-1)}
+              onCoin={() => addCoins(1)}
+              onBest={(best) => patch({ best })}
+            />
+          ) : trial.kind === "blackjack" ? (
+            <Blackjack
+              coins={save.coins}
+              round={bjRound}
+              onRound={setBjRound}
+              onSpend={(n) => addCoins(-n)}
+              onWin={(n) => addCoins(n)}
             />
           ) : save.finalWord ? (
             <Finale word={save.finalWord} />

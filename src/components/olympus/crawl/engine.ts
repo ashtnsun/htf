@@ -3,6 +3,9 @@ import {
   brazierPicture,
   BRONZE,
   C,
+  cabinetPicture,
+  coinPicture,
+  cosmeticPicture,
   dinoFrame,
   DINO_FOOT_X,
   DINO_H,
@@ -16,12 +19,15 @@ import {
   drawWord,
   fromRows,
   gearPicture,
+  KEEPER_LOOK,
   kept,
   lightPicture,
   makeCanvas,
   maskPicture,
+  mirrorPicture,
   paintRoom,
   PATINA,
+  pedestalPicture,
   propPicture,
   rng,
   sarcophagusPicture,
@@ -29,9 +35,11 @@ import {
   tintPicture,
   type Theme,
 } from "@/components/olympus/crawl/art";
+import { cosmeticById, FOR_SALE, type Look } from "@/components/olympus/crawl/cosmetics";
 import type { TombSound } from "@/components/olympus/crawl/sound";
 import {
   OPPOSITE,
+  pedestal,
   ROOM_LIST,
   ROOMS,
   SQUARE,
@@ -68,6 +76,8 @@ export type Flags = {
   /** The square's five rows, once the seal is broken. */
   square: string[] | null;
   final: string | null;
+  look: Look;
+  owned: string[];
 };
 
 export type Hooks = {
@@ -80,6 +90,8 @@ export type Hooks = {
   onCine: (focus: { x: number; y: number } | null) => void;
   /** Where the dinosaur is on the whole map. */
   onPlace: (x: number, y: number) => void;
+  /** Where the shopkeeper's mouth is on screen, in CSS pixels; null out of his sight. */
+  onKeeper: (at: { x: number; y: number } | null) => void;
 };
 
 export type WorldEvent =
@@ -131,6 +143,10 @@ const OPEN = { top: 0.54, bottom: 0.9, half: 0.48 };
 const GREAT_DOOR = { x: 152, y: 2, w: 80, h: 62 };
 const MECHANISM = { x: 192, foot: 146 };
 
+const mirrorX = (spot: Spot) => spot.x;
+const KEEPER = { x: 240, foot: 88 };
+const CABINETS = { arcade: { x: 76, foot: 66 }, blackjack: { x: 150, foot: 66 } };
+
 /** Where the camera closes in on each thing, in room pixels. */
 function focusOf(target: Target, spot: Spot): { x: number; y: number } {
   switch (target.kind) {
@@ -144,6 +160,11 @@ function focusOf(target: Target, spot: Spot): { x: number; y: number } {
       return { x: MECHANISM.x, y: 120 };
     case "door":
       return { x: 192, y: 34 };
+    case "mirror":
+      return { x: mirrorX(spot), y: 36 };
+    case "arcade":
+    case "blackjack":
+      return { x: spot.x, y: 40 };
     default:
       return { x: spot.x, y: spot.y };
   }
@@ -166,6 +187,17 @@ export function labelOf(spot: Spot, flags: Flags): string {
       return "Take the word";
     case "note":
       return "Look";
+    case "mirror":
+      return "Look in the mirror";
+    case "keeper":
+      return "Talk";
+    case "arcade":
+    case "blackjack":
+      return "Play";
+    case "item": {
+      const item = cosmeticById(spot.target.id);
+      return item ? `Buy ${item.name}` : "Buy";
+    }
   }
 }
 
@@ -210,6 +242,10 @@ export class CrawlEngine {
   /** Where the dinosaur walks to, out of the way of a close-up that uses the room. */
   private aside: number | null = null;
   private cssCell = 3;
+  /** Where the room being drawn sits, for the things drawn after the dark. */
+  private litAt: { live: Live; ox: number; oy: number } | null = null;
+  private litLayer = makeCanvas(96, 96);
+  private keeperAt = "";
   /** The fall in through the roof, the first time. */
   private drop = 0;
   private iris = 1;
@@ -627,6 +663,77 @@ export class CrawlEngine {
       items.push({ y: 112, draw: (ctx, time) => this.drawAltar(ctx, t, 160, 112, time) });
       solids.push({ x: 138, y: 96, w: 44, h: 16 });
     }
+    if (room.id === "shop") {
+      FOR_SALE.forEach((item, i) => {
+        const { x, y } = pedestal(i);
+        const plinth = pedestalPicture(t, item.price);
+        const icon = cosmeticPicture(item);
+        solids.push({ x: x - 9, y: y - 5, w: 18, h: 6 });
+        items.push({
+          y,
+          draw: (ctx, time) => {
+            ctx.fillStyle = "rgba(0,0,0,0.35)";
+            ctx.fillRect(x - 11, y - 1, 22, 3);
+            if (this.flags.owned.includes(item.id)) {
+              // Sold: the plinth alone, no price on it.
+              ctx.drawImage(plinth, 0, 0, 22, 2, x - 11, y - 15, 22, 2);
+              ctx.fillStyle = t.s3;
+              ctx.fillRect(x - 8, y - 13, 16, 11);
+              ctx.drawImage(plinth, 0, 13, 22, 3, x - 11, y - 2, 22, 3);
+              return;
+            }
+            ctx.drawImage(plinth, x - 11, y - 15);
+            const bob = !this.reduce && Math.floor(time * 2 + i) % 2 ? 1 : 0;
+            ctx.drawImage(icon, x - Math.floor(icon.width / 2), y - 16 - icon.height + bob);
+          },
+        });
+      });
+      // The counter, and the shopkeeper's corner behind it, closed to customers.
+      solids.push({ x: 214, y: 64, w: 90, h: 36 });
+      items.push({
+        y: 100,
+        draw: (ctx) => {
+          ctx.fillStyle = "rgba(0,0,0,0.4)";
+          ctx.fillRect(214, 99, 52, 3);
+          ctx.fillStyle = t.s7;
+          ctx.fillRect(214, 86, 52, 3);
+          ctx.fillStyle = t.s8;
+          ctx.fillRect(214, 86, 52, 1);
+          ctx.fillStyle = t.s4;
+          ctx.fillRect(216, 89, 48, 11);
+          ctx.fillStyle = t.frieze;
+          for (let x = 219; x < 260; x += 6) {
+            ctx.fillRect(x, 92, 4, 1);
+            ctx.fillRect(x, 92, 1, 5);
+            ctx.fillRect(x, 96, 5, 1);
+            ctx.fillRect(x + 2, 94, 1, 2);
+          }
+          // His takings, at the end of the counter where they do not hide him.
+          ctx.drawImage(coinPicture(), 254, 78);
+          ctx.drawImage(coinPicture(), 258, 79);
+          ctx.drawImage(coinPicture(), 256, 75);
+        },
+      });
+    }
+    if (room.id === "den") {
+      const cabinet = (kind: "arcade" | "blackjack", ink: string, word: string) => {
+        const { x, foot } = CABINETS[kind];
+        const picture = cabinetPicture(t, ink, word);
+        const top = foot - picture.height + 1;
+        solids.push({ x: x - 17, y: foot - 10, w: 34, h: 11 });
+        items.push({
+          y: foot,
+          draw: (ctx, time) => {
+            ctx.fillStyle = "rgba(0,0,0,0.5)";
+            ctx.fillRect(x - 17, foot - 1, 34, 3);
+            ctx.drawImage(picture, x - 17, top);
+            this.drawCabinetScreen(ctx, kind, x, top, time);
+          },
+        });
+      };
+      cabinet("arcade", "#ff3d9e", "RUN");
+      cabinet("blackjack", "#00e0ff", "21");
+    }
     items.sort((a, b) => a.y - b.y);
     const r = rng(room.w * 17 + room.at[0] * 5 + room.at[1] * 3 + 9);
     const motes = Array.from({ length: room.id === "mural" ? 36 : 22 }, () => ({
@@ -949,6 +1056,7 @@ export class CrawlEngine {
       if (spot.target.kind === "altar" && !this.flags.final) continue;
       if (spot.target.kind === "door" && this.flags.final) continue;
       if (spot.untilPictured && this.flags.pictured) continue;
+      if (spot.target.kind === "item" && this.flags.owned.includes(spot.target.id)) continue;
       const d = Math.hypot(this.x - spot.x, (this.y - spot.y) * 1.2);
       if (d < spot.r && d < bestD) {
         best = spot;
@@ -981,7 +1089,8 @@ export class CrawlEngine {
     if (this.asleep && now - this.lastDraw < 90) return;
     this.lastDraw = now;
     this.watchFrames(now);
-    const dt = Math.min(0.05, (now - this.last) / 1000);
+    // A frame can be stamped a moment before the clock was last read.
+    const dt = Math.max(0, Math.min(0.05, (now - this.last) / 1000));
     this.last = now;
     const time = now / 1000;
     if (!this.paused) this.update(dt, time);
@@ -999,6 +1108,20 @@ export class CrawlEngine {
     if (place !== this.lastPlace) {
       this.lastPlace = place;
       this.hooks.onPlace(this.x + room.at[0], this.y + room.at[1]);
+    }
+    // The shopkeeper's speech follows him on screen.
+    if (room.id === "shop" && !this.slide) {
+      const cam = this.camera(this.current);
+      const c = this.cssCell;
+      const x = Math.round((KEEPER.x - cam.x) * c);
+      const y = Math.round((KEEPER.foot - DINO_H + 4 - cam.y) * c);
+      if (`${x},${y}` !== this.keeperAt) {
+        this.keeperAt = `${x},${y}`;
+        this.hooks.onKeeper({ x, y });
+      }
+    } else if (this.keeperAt) {
+      this.keeperAt = "";
+      this.hooks.onKeeper(null);
     }
   };
 
@@ -1033,6 +1156,7 @@ export class CrawlEngine {
     dark.globalCompositeOperation = "source-over";
     dark.clearRect(0, 0, viewW, viewH);
     this.tints.length = 0;
+    this.litAt = null;
 
     const fire = this.fireNow();
     if (this.slide) {
@@ -1072,6 +1196,9 @@ export class CrawlEngine {
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = "source-over";
 
+    this.drawCharacters(time);
+    ctx.setTransform(R, 0, 0, R, 0, 0);
+
     if (now < this.flashUntil) {
       ctx.fillStyle = "rgba(255,69,69,0.22)";
       ctx.fillRect(0, 0, viewW, viewH);
@@ -1096,21 +1223,19 @@ export class CrawlEngine {
     this.drawFloorLife(room, time, withPlayer);
     this.drawWallLife(room, now, flameTime, fire);
 
-    // Everything standing, back to front, the dinosaur among it.
-    let drewPlayer = !withPlayer;
+    // Everything standing, back to front; the dinosaur's shadow among it, its body after the dark.
+    let drewShadow = !withPlayer;
     for (const item of live.items) {
-      if (!drewPlayer && item.y > this.y) {
-        this.drawPlayer(time);
-        drewPlayer = true;
+      if (!drewShadow && item.y > this.y) {
+        this.drawPlayerShadow();
+        drewShadow = true;
       }
       item.draw(ctx, flameTime);
     }
-    if (!drewPlayer) this.drawPlayer(time);
+    if (!drewShadow) this.drawPlayerShadow();
+    if (withPlayer) this.litAt = { live, ox, oy };
 
     this.drawMotes(live, time, withPlayer);
-    if (withPlayer && !this.paused && this.here && !this.slide && this.cineLeft <= 0) {
-      this.drawKeycap(this.here, time);
-    }
     this.cutLights(live, ox, oy, flameTime, fire, withPlayer);
   }
 
@@ -1228,7 +1353,9 @@ export class CrawlEngine {
     if (room.id === "mural") {
       this.drawMural(now, t);
       this.drawSlab(now, t);
+      this.drawMirror(room, 58, 60, t);
     }
+    if (room.id === "shop") this.drawMirror(room, 90, 60, t);
     if (room.id === "gate") this.drawMask(now, t);
     if (room.id === "hall") this.drawGreatDoor(now, t);
     if (room.id === "sanctum" && this.flags.final) {
@@ -1396,15 +1523,19 @@ export class CrawlEngine {
     // Five sockets in its crown, a green stone in each riddle answered.
     const solved = this.flags.solved;
     for (let i = 0; i < 5; i += 1) {
-      const x = cx + (i - 2) * 10 - 3;
-      const y = MASK.y + 4 + Math.abs(i - 2);
+      const x = cx + (i - 2) * 13 - 6;
+      const y = MASK.y + 1 + Math.abs(i - 2);
       ctx.fillStyle = C.void;
-      ctx.fillRect(x, y, 7, 7);
+      ctx.fillRect(x, y, 12, 12);
+      ctx.fillStyle = t.s6;
+      ctx.fillRect(x, y + 12, 12, 1);
       if (solved[i]) {
+        ctx.fillStyle = C.deep;
+        ctx.fillRect(x + 1, y + 1, 10, 10);
         ctx.fillStyle = C.green;
-        ctx.fillRect(x + 1, y + 1, 5, 5);
+        ctx.fillRect(x + 2, y + 2, 8, 8);
         ctx.fillStyle = C.mint;
-        ctx.fillRect(x + 1, y + 1, 2, 2);
+        ctx.fillRect(x + 2, y + 2, 3, 3);
       }
     }
     if (solved.every(Boolean)) {
@@ -1615,8 +1746,17 @@ export class CrawlEngine {
     if (this.flags.final) drawFlame(ctx, cx, foot - 26, 7, 20, time, 3, false);
   }
 
-  private drawPlayer(time: number) {
+  /** The dinosaur's shadow lies on the floor, under the dark; the body is drawn after it. */
+  private drawPlayerShadow() {
+    if (this.drop > 0 || this.falling > 0) return;
+    if (this.hurt > 0 && !this.reduce && Math.floor(this.hurt * 12) % 2 === 0) return;
     const ctx = this.ctx;
+    ctx.fillStyle = "rgba(0,0,0,0.5)";
+    ctx.fillRect(Math.round(this.x) - 8, Math.round(this.y) - 1, 16, 3);
+  }
+
+  private drawPlayerBody(ctx: CanvasRenderingContext2D, time: number) {
+    const look = this.flags.look;
     const step = this.moving ? Math.floor(this.walked / 9) % 4 : 0;
     const bob = this.moving && !this.reduce && step % 2 === 1 ? -1 : 0;
     const blink = !this.reduce && time % 4 < 0.12;
@@ -1628,7 +1768,7 @@ export class CrawlEngine {
       // In through the roof, whole cells at a time.
       const u = this.drop / DROP;
       ctx.drawImage(
-        dinoFrame(1, false, flip),
+        dinoFrame(1, false, flip, look),
         px - footX,
         py - DINO_H + 1 - Math.round(u * u * 260),
       );
@@ -1639,16 +1779,135 @@ export class CrawlEngine {
       const down = Math.round(u * u * 40);
       ctx.save();
       ctx.beginPath();
-      ctx.rect(px - 20, py - DINO_H - 2, 40, DINO_H + 4);
+      ctx.rect(px - 22, py - DINO_H - 2, 44, DINO_H + 4);
       ctx.clip();
-      ctx.drawImage(dinoFrame(0, false, flip), px - footX, py - DINO_H + 1 + down);
+      ctx.drawImage(dinoFrame(0, false, flip, look), px - footX, py - DINO_H + 1 + down);
       ctx.restore();
       return;
     }
     if (this.hurt > 0 && !this.reduce && Math.floor(this.hurt * 12) % 2 === 0) return;
-    ctx.fillStyle = "rgba(0,0,0,0.5)";
-    ctx.fillRect(px - 8, py - 1, 16, 3);
-    ctx.drawImage(dinoFrame(step, blink, flip), px - footX, py - DINO_H + 1 + bob);
+    ctx.drawImage(dinoFrame(step, blink, flip, look), px - footX, py - DINO_H + 1 + bob);
+  }
+
+  /**
+   * Characters go on after the dark, so its dither never falls across them: they are the one thing
+   * always seen cleanly. Whatever stands in front is cut out of them first, so they still pass
+   * behind a column.
+   */
+  private drawLit(
+    cx: number,
+    footY: number,
+    time: number,
+    draw: (ctx: CanvasRenderingContext2D) => void,
+  ) {
+    const lit = this.litAt;
+    if (!lit) return;
+    const { canvas, ctx: layer } = this.litLayer;
+    const left = Math.round(cx) - 48;
+    const top = Math.round(footY) - 72;
+    layer.setTransform(1, 0, 0, 1, 0, 0);
+    layer.globalCompositeOperation = "source-over";
+    layer.clearRect(0, 0, canvas.width, canvas.height);
+    layer.setTransform(1, 0, 0, 1, -left, -top);
+    draw(layer);
+    layer.globalCompositeOperation = "destination-out";
+    for (const item of lit.live.items) {
+      if (item.y > footY) item.draw(layer, this.reduce ? 1 : time);
+    }
+    const { ctx, R } = this;
+    ctx.setTransform(R, 0, 0, R, lit.ox * R, lit.oy * R);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(canvas, left, top);
+  }
+
+  private drawCharacters(time: number) {
+    const lit = this.litAt;
+    if (!lit) return;
+    if (lit.live.room.id === "shop") {
+      const bob = !this.reduce && Math.floor(time * 1.5) % 2 ? 1 : 0;
+      const picture = dinoFrame(0, !this.reduce && time % 5 < 0.15, true, KEEPER_LOOK);
+      this.drawLit(KEEPER.x, KEEPER.foot, time, (ctx) => {
+        ctx.drawImage(
+          picture,
+          KEEPER.x - (DINO_W - 1 - DINO_FOOT_X),
+          KEEPER.foot - DINO_H + 1 + bob,
+        );
+      });
+    }
+    if (this.drop > 0) {
+      const { ctx, R } = this;
+      ctx.setTransform(R, 0, 0, R, lit.ox * R, lit.oy * R);
+      this.drawPlayerBody(ctx, time);
+    } else {
+      this.drawLit(this.x, this.y, time, (ctx) => this.drawPlayerBody(ctx, time));
+    }
+    if (this.here && !this.paused && !this.slide && this.cineLeft <= 0) {
+      const { ctx, R } = this;
+      ctx.setTransform(R, 0, 0, R, lit.ox * R, lit.oy * R);
+      this.drawKeycap(this.here, time);
+    }
+  }
+
+  /** A framed mirror, and the dinosaur in it once it comes close. */
+  private drawMirror(room: Room, x: number, foot: number, t: Theme) {
+    const ctx = this.ctx;
+    const left = x - 16;
+    const top = foot - 46;
+    ctx.drawImage(mirrorPicture(t), left, top);
+    if (room === this.current.room && Math.hypot(this.x - x, this.y - foot) < 70) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(left + 4, top + 6, 24, 36);
+      ctx.clip();
+      ctx.globalAlpha = 0.85;
+      ctx.drawImage(
+        dinoFrame(0, false, this.facing > 0, this.flags.look),
+        x - 18,
+        top + 10 + Math.round(Math.min(4, Math.abs(this.x - x) / 12)),
+      );
+      ctx.restore();
+    }
+    ctx.fillStyle = "rgba(255,255,255,0.1)";
+    ctx.fillRect(left + 6, top + 8, 3, 30);
+  }
+
+  /** A cabinet's screen, alive. */
+  private drawCabinetScreen(
+    ctx: CanvasRenderingContext2D,
+    kind: "arcade" | "blackjack",
+    cx: number,
+    top: number,
+    time: number,
+  ) {
+    const x = cx - 13;
+    const y = top + 15;
+    const w = 26;
+    const h = 16;
+    if (kind === "arcade") {
+      ctx.fillStyle = "#07040c";
+      ctx.fillRect(x, y, w, h);
+      ctx.fillStyle = "#b98fdc";
+      ctx.fillRect(x, y + h - 3, w, 1);
+      const run = this.reduce ? 8 : Math.floor(time * 18) % 26;
+      ctx.fillStyle = "#e7d5f7";
+      ctx.fillRect(x + 25 - run, y + h - 7, 2, 4);
+      const hop = !this.reduce && run > 13 && run < 20 ? 4 : 0;
+      ctx.fillStyle = C.green;
+      ctx.fillRect(x + 6, y + h - 8 - hop, 4, 5);
+      ctx.fillRect(x + 9, y + h - 9 - hop, 3, 2);
+    } else {
+      ctx.fillStyle = "#0b3a22";
+      ctx.fillRect(x, y, w, h);
+      ctx.fillStyle = "#14583a";
+      ctx.fillRect(x + 1, y + 1, w - 2, 1);
+      ctx.fillStyle = C.white;
+      ctx.fillRect(x + 6, y + 4, 6, 8);
+      ctx.fillRect(x + 14, y + 4, 6, 8);
+      ctx.fillStyle = "#c0263f";
+      ctx.fillRect(x + 8, y + 7, 2, 2);
+      ctx.fillStyle = "#141414";
+      ctx.fillRect(x + 16, y + 7, 2, 2);
+    }
   }
 
   private drawMotes(live: Live, time: number, withPlayer: boolean) {
@@ -1766,6 +2025,17 @@ export class CrawlEngine {
       case "chasm":
         pool(192, 112, flags.stoneRead ? 96 : 56);
         tint(192, 112, 56, flags.stoneRead ? C.green : THEMES.bronze.frieze, 0.12);
+        break;
+      case "shop":
+        pool(160, 110, 170);
+        pool(240, 70, 70);
+        tint(160, 110, 120, THEMES.sand.s8, 0.06);
+        break;
+      case "den":
+        pool(CABINETS.arcade.x, 40, 72);
+        tint(CABINETS.arcade.x, 40, 60, "#ff3d9e", 0.16);
+        pool(CABINETS.blackjack.x, 40, 72);
+        tint(CABINETS.blackjack.x, 40, 60, "#00e0ff", 0.14);
         break;
       case "sanctum":
         pool(160, 110, 152);

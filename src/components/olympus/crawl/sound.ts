@@ -274,6 +274,24 @@ export class TombSound {
     this.tone(784, 784, 0.045, 1.1, "triangle");
   }
 
+  /** A coin: two quick bright notes. */
+  coin() {
+    this.tone(988, 988, 0.08, 0.12, "triangle");
+    window.setTimeout(() => this.tone(1319, 1319, 0.09, 0.35, "triangle"), 80);
+  }
+
+  /** The last seconds before a swap. */
+  beep() {
+    this.tone(880, 880, 0.16, 0.14, "square");
+  }
+
+  /** Time to swap: three loud rising calls that cannot be missed in a noisy room. */
+  swap() {
+    [0, 260, 520].forEach((ms, i) => {
+      window.setTimeout(() => this.tone(660 + i * 220, 660 + i * 220, 0.3, 0.26, "square"), ms);
+    });
+  }
+
   /** Something wrong: a low dull thud. */
   thud() {
     this.tone(95, 45, 0.5, 0.35);
