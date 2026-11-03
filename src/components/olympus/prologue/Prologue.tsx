@@ -186,15 +186,18 @@ function lowerSheet(el = sheet) {
   void fade.finished.finally(() => el.remove());
 }
 
+/** One note per exec's photo as the row comes in: up the scale of E minor over two octaves. */
+const EXEC_NOTES = [64, 67, 69, 71, 74, 76, 79, 81, 83];
+
 const BEATS: readonly Beat[] = [
   // ------------------------------------------------------------ standby: a fire in the dark
   {
     bars: false,
     glow: "ember",
     cue: ({ stage, score, instant, at, place }) => {
-      score.drone(0.12);
+      score.section("standby");
       score.wind(0);
-      score.fire(0.75);
+      score.fire(0.9);
       const { dots, fire } = ember(stage.grid);
       place(dots, { duration: 1000, spread: 300, exit: "center" });
       if (instant) stage.fire(fire);
@@ -219,9 +222,9 @@ const BEATS: readonly Beat[] = [
       </div>
     ),
     cue: ({ stage, score, instant }) => {
+      score.section("mountain");
       score.fire(0, 2);
-      score.wind(0.6, 4);
-      score.drone(0.4, 6);
+      score.wind(0.7, 4);
       const { dots, rock } = climb(stage.grid);
       if (instant) {
         stage.set(dots);
@@ -256,14 +259,17 @@ const BEATS: readonly Beat[] = [
         stage.set(dots);
         stage.backdrop(rock, { instant: true });
       };
-      score.drone(0.45);
       score.fire(0);
-      score.wind(0.35);
+      score.wind(0.3);
       if (instant) {
+        score.section("title");
         light();
         setPhase(1);
         return;
       }
+      // The music drops out for the breath before the strike, which is what makes it land.
+      score.section("hush");
+      score.riser(1);
       at(120, () => flash(0.16, 260));
       at(1000, () => {
         light();
@@ -271,8 +277,9 @@ const BEATS: readonly Beat[] = [
         stage.strike(x, 0, y);
         stage.shake(600, 2);
         flash(1, 800);
+        score.section("title");
         score.thunder();
-        score.swell(7, 0.08);
+        score.braam(1);
         setPhase(1);
       });
     },
@@ -293,11 +300,13 @@ const BEATS: readonly Beat[] = [
       </div>
     ),
     cue: ({ stage, score, instant, at, place }) => {
-      score.drone(0.3);
+      score.section("execs");
       score.wind(0.12);
       place(execBands(stage), { duration: 1200, spread: 400, exit: "fall" });
-      // A soft tick for each photo as it comes in (the delays in ExecRow).
-      if (!instant) for (let i = 0; i < 9; i += 1) at(450 + i * 110, () => score.tick(760, 0.1));
+      // A note for each photo as it comes in (the delays in ExecRow), climbing the scale.
+      if (!instant) {
+        EXEC_NOTES.forEach((midi, i) => at(450 + i * 110, () => score.pluck(midi, 0.9)));
+      }
     },
   },
 
@@ -322,21 +331,23 @@ const BEATS: readonly Beat[] = [
     cue: ({ stage, score, instant, at, setPhase, place, flash }) => {
       place(execBands(stage));
       if (instant) {
+        score.section("question");
         setPhase(DARK);
         return;
       }
-      score.drone(0.35);
+      score.section("roulette");
       for (const { card, ms } of ROULETTE) {
         at(900 + ms, () => {
           setPhase(card + 1);
-          score.tick(1500, 0.16);
+          score.tick(2100, 0.5);
         });
       }
       at(900 + ROULETTE_END, () => {
         setPhase(DARK);
         flash(0.25, 400);
         stage.shake(240, 1);
-        score.hit(1);
+        score.section("question");
+        score.braam(0.8);
       });
     },
   },
@@ -357,28 +368,30 @@ const BEATS: readonly Beat[] = [
       </div>
     ),
     cue: ({ stage, score, instant, at, place, flash }) => {
-      score.drone(0.35);
       score.wind(0);
       const { dots, links, fire } = chain(stage.grid);
       place(dots, { order: "given", duration: 500, spread: FORGE, burn: "#03c652" });
       if (instant) {
+        score.section("forged");
         stage.fire(fire);
-        score.fire(0.35);
+        score.fire(0.4);
         return;
       }
+      score.section("forge");
       // Each link lands on a hammer blow, then the fire catches at the end of the chain.
       links.forEach(({ x, y }, i) => {
         at(((i + 1) / (links.length + 1)) * FORGE + 520, () => {
-          score.clang();
+          score.clang(i);
           stage.shake(130, 1);
           stage.sparks(x, y);
         });
       });
       at(FORGE + 520, () => {
         stage.fire(fire, { grow: 700 });
-        score.whoosh(0.4, 1.4);
-        score.hit(0.6);
-        score.fire(0.35);
+        score.section("forged");
+        score.whoosh(0.7, 1.4);
+        score.braam(0.65);
+        score.fire(0.4);
         flash(0.12, 500);
       });
     },
@@ -397,7 +410,7 @@ const BEATS: readonly Beat[] = [
       </div>
     ),
     cue: ({ stage, score, at, place, instant }) => {
-      score.drone(0.2);
+      score.section("setup");
       score.fire(0);
       place(laptop(stage.grid), { duration: 1000, spread: 500, burn: "#03c652" });
       if (!instant) at(900, () => score.stone());
@@ -421,6 +434,7 @@ const BEATS: readonly Beat[] = [
       </div>
     ),
     cue: ({ stage, score, instant, at, setPhase, place }) => {
+      score.section("setup");
       place(browser(stage.grid), { duration: 900, spread: 350, burn: "#03c652" });
       if (instant) {
         setPhase(SITE.length);
@@ -430,7 +444,7 @@ const BEATS: readonly Beat[] = [
       for (let i = 1; i <= SITE.length; i += 1) {
         at(800 + i * 70, () => {
           setPhase(i);
-          score.tick(1900, 0.07);
+          score.tick(2600, 0.4);
         });
       }
     },
@@ -450,6 +464,7 @@ const BEATS: readonly Beat[] = [
       </div>
     ),
     cue: ({ stage, score, at, place, instant }) => {
+      score.section("setup");
       place(temple(stage.grid, { sweep: true, top: 16 }), {
         duration: 1100,
         spread: 900,
@@ -472,10 +487,10 @@ const BEATS: readonly Beat[] = [
         </In>
       </div>
     ),
-    cue: ({ stage, score, place, instant, at }) => {
-      score.drone(0.4);
-      score.wind(0.3);
-      if (!instant) at(500, () => score.swell(8, 0.1));
+    cue: ({ stage, score, place, instant }) => {
+      score.section("goodLuck");
+      score.wind(0.2);
+      if (!instant) score.braam(0.7);
       const { dots, rock } = climb(stage.grid, { lit: true });
       place(dots, { duration: 1600, spread: 900, order: "up", burn: "#03c652" });
       stage.backdrop(rock, { instant });
@@ -494,8 +509,8 @@ const BEATS: readonly Beat[] = [
       </div>
     ),
     cue: ({ stage, score, at, place, instant, leave }) => {
-      score.drone(0.45, 3);
-      score.wind(0.12);
+      score.section("oracle");
+      score.wind(0.1);
       const { dots, fire } = oracleFire(stage.grid);
       place(dots, {
         duration: 1300,
@@ -511,7 +526,7 @@ const BEATS: readonly Beat[] = [
       }
       at(900, () => {
         stage.fire(fire, { grow: 1800 });
-        score.whoosh(0.35, 1.6);
+        score.whoosh(0.6, 1.6);
         score.fire(0.8, 2.5);
       });
       at(ORACLE_HOLD, leave);
@@ -532,8 +547,8 @@ const BEATS: readonly Beat[] = [
  * sprites or content/olympus.ts), and no trial is explained.
  *
  * Next: click, Space, Enter, → or Page Down (what clickers send). Back: ← or Page Up, which lands
- * on the finished beat. F full screen, S mutes (the first press is what wakes the sound), B black. The place is kept in the URL's hash, so a
- * refresh resumes it.
+ * on the finished beat. F full screen, S mutes (the first press is what wakes the sound), B black.
+ * The place is kept in the URL's hash, so a refresh resumes it.
  */
 export function Prologue({ execs }: { execs: readonly PrologueExec[] }) {
   const router = useRouter();
@@ -573,15 +588,13 @@ export function Prologue({ execs }: { execs: readonly PrologueExec[] }) {
   // `data-leaving`) and the sound falls with it, and /oracle comes up out of that dark.
   const leave = useCallback(() => {
     if (leaving) return;
+    // The last chord rings on over /oracle and fades there.
+    score.finale();
     if (reduce || !stage) {
       router.push("/oracle");
       return;
     }
     setLeaving(true);
-    score.fire(0, 1.2);
-    score.wind(0, 1.2);
-    score.drone(0, 1.8);
-    score.whoosh(0.16, 2);
     stage.morph([], { duration: LEAVE, spread: 300, exit: "rise" });
     window.setTimeout(() => {
       raiseSheet();
@@ -626,7 +639,7 @@ export function Prologue({ execs }: { execs: readonly PrologueExec[] }) {
     const at = (ms: number, fn: () => void) => void timers.push(window.setTimeout(fn, ms));
     const now = instant || reduce;
     at(0, () => {
-      if (!now && index > 0) score.whoosh(0.14, 1);
+      if (!now && index > 0) score.whoosh(0.32, 1);
       BEATS[index]!.cue({
         stage,
         score,
