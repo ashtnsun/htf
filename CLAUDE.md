@@ -90,20 +90,24 @@ src/components/
                     The address on screen is the constant `SITE` (htfpurdue.org): families scroll down
                     the home page, so home/olympus/OlympusSection has to be back on it for the day
   crawl/            /olympus3, the family reveal as a game (an event page like /olympus: no site chrome,
-                    noindex, ends at the same /oracle): world.ts (seven boxy rooms on one real map as data, a
-                    tree round the Hall with the big trials far apart; shapes from a grid of 8-pixel cells, doors
-                    must meet, checked in dev), art.ts (all pictures painted in the browser per room stone,
-                    `THEMES`; the mask; gears redrawn cell by cell; pixel Greek capitals), engine.ts (CrawlEngine:
-                    one canvas, no game library, per-frame state in the class, a door is a pan along the map,
-                    `playCine` holds the camera on big changes, steps its resolution down by itself on a slow
-                    machine), Crawl.tsx (the shell, HUD and map; `fitMural` lands the mural's picture exactly
-                    under the photo frame, so the photo trial happens on the wall, no page of its own),
-                    trials/* (the close-ups: real DOM over the world, Esc steps away; WordGate is the mask,
-                    StoneWheels the bronze machine), square.ts (the fires' square, keyed by the seal word because
-                    the fires burn from the first step), save.ts (per tab), sound.ts (tones and drips, no
-                    continuous noise). The first room's door stays shut until the photo; after that every trial
-                    is open and app/olympus3/actions.ts holds the order by asking each step for proof of the
-                    last, so never trust the client's order there. `window.__crawl` exists in dev only
+                    noindex, ends at the same /oracle): world.ts (nine boxy rooms on one real map as data; shapes
+                    from a grid of 8-pixel cells, doors must meet, checked in dev), art.ts (all pictures painted
+                    in the browser per room stone, `THEMES`; dinoFrame dressed by a `Look`; the mask; gears redrawn
+                    cell by cell; pixel Greek capitals), cosmetics.ts (what can be worn, the nine colours; names
+                    and the shopkeeper's lines must never use a family's words), engine.ts (CrawlEngine: one
+                    canvas, no game library, per-frame state in the class, a door is a pan along the map,
+                    `playCine` holds the camera on big changes, characters drawn after the dark so its dither
+                    never falls on them, steps its resolution down by itself on a slow machine), Crawl.tsx (the
+                    shell, HUD, map, coins, shopkeeper; `fitMural` lands the mural's picture exactly under the
+                    photo frame, so the photo trial happens on the wall), SwapTimer.tsx (the family's 2-minute
+                    clock), trials/* (the close-ups: real DOM over the world, Esc steps away; WordGate is the
+                    mask's Wordle, StoneWheels the bronze machine, Mirror the character menu, DinoRun and
+                    Blackjack the den's machines, blackjack.ts the rules), square.ts (the fires' square, keyed by
+                    the seal word because the fires burn from the first step), save.ts (per tab), sound.ts (tones
+                    and drips, no continuous noise). The first room's door stays shut until the photo; after that
+                    every trial is open and app/olympus3/actions.ts holds the order by asking each step for proof
+                    of the last, so never trust the client's order there; coins are client-side and never touch
+                    the chain. `window.__crawl`, `__give(n)`, `__swap(s)` and `__run` exist in dev only
                     (`debugGo(room)` jumps rooms)
   apply/            ApplyForm (client): the Google Form in a frame tall enough that no
                     section scrolls inside it — two measured heights, the first section and

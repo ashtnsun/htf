@@ -88,6 +88,35 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 17d — 2026-11-03 (/olympus3: coins, shop, mirrors, machines, the swap clock)
+
+**Asked:** the old L-shaped spike room back to the right of the Crypt, joined up to the Mask, with the Mask moved east of the Hall. A small shop room below with a Greek dino shopkeeper (speech bubbles, no dialogue options) selling cosmetics Isaac-style, paid with a coin per puzzle or riddle. Mirrors in the shop and the first room for a character menu (bought cosmetics, nine colours). A very small room to the right of the spike room with an arcade machine (the Chrome dino game with their own character; a coin to play, a coin back every 5 seconds, 100 score a second, hard very fast) and a blackjack machine (bets in coins, normal rules). A permanent 2-minute swap timer under the map, very obvious, not pausing the game, held during long cutscenes. Bigger sockets on the mask, no mask styling in the Wordle overlay. No dither texture on the player.
+
+**Built:**
+
+- The map (`world.ts`): Sanctum over Hall; Mural, Hall, Mask along the top; Mechanism, Crypt, Teeth, Den along the middle, with the Teeth under the Mask; the Agora under the Teeth. Nine rooms.
+- The Agora (shop): fourteen cosmetics on pedestals with their prices, E buys. The shopkeeper is a clay-coloured T-rex in a toga and laurel behind a counter, talking in a speech bubble on a timer and at what the player does. No choices.
+- `cosmetics.ts`: fedora (free) plus wreath, winged cap, owl, bronze helm, crown, spectacles, eye patch, beard, cape, shield, wings, torch, lyre, trident, one per slot (head, face, back, hand). Nine colours.
+- `trials/Mirror.tsx`: colour, wardrobe by slot, live preview, every change kept at once. Mirrors show the dinosaur's reflection when it comes close.
+- Coins: 1 per riddle, photo, word, stone, seal and final word, so 10 from the chain. Purse under the group name.
+- The Den: `trials/DinoRun.tsx` (space jumps, down ducks, columns and bats for the cacti and birds, speed goes from 170 to 540 in about 15 seconds) and `trials/Blackjack.tsx` + `blackjack.ts`.
+- `SwapTimer.tsx`: 2:00 in the corner, beeps in the last 5 seconds, then three loud calls, a screen-wide SWAP! with a flashing frame for 6 seconds, and it starts again. The game plays on. It holds in cutscenes and survives a refresh.
+- The dinosaur and the shopkeeper are drawn after the dark layer, so its dither no longer falls on them; whatever stands in front is cut out of them first, so they still pass behind things.
+
+**Decisions (mine, for Ashton to overrule):**
+
+1. "Below" was read as below the spike room, reached from its landing without crossing the spikes. The Den is past the spikes, and the Mask is reachable from the Hall or from the Teeth.
+2. Blackjack: six decks, dealer stands on all 17s, natural pays 3:2 rounded up to whole coins, double on any two, one split, no insurance. Stepping away mid-hand keeps the hand.
+3. The arcade's obstacles are columns and bats, not cacti and birds, for the theme.
+4. Prices run 1 to 6 coins, 39 for everything; the chain pays 10, so a whole wardrobe means the machines. The swap clock also runs during close-ups, since it should not care what you are doing.
+5. Coins never affect the puzzles. The shop and machines are a side-show, which means a family can lose time to them: worth watching.
+
+**Bugs found by playing it:** a frame stamped just before the clock was read made the time step negative, which crashed the walk animation (fixed in the engine and the runner). The swap banner was first caged in the timer's corner.
+
+**Verified:** typecheck, lint, build clean. A full playthrough with real keys and a fake camera: every door on the new map, photo, all riddles, Mask, Mechanism, seal, the door opening by itself, Sanctum; 0 errors. Coins added up exactly at every step. A bot played the runner for 26 s: score 2618 at t = 26.19 (100 a second), 5 coins back, speed capped at 540. Blackjack: 26 rule tests pass; 200,000 simulated hands return 84.2% always standing and 94% mimicking the dealer (the known figures); suits are fair; six live hands balanced the purse. The swap fired, the game kept moving under it, the clock held through a cutscene (1:40 before and after), look and coins survived a refresh. Production, headless, no GPU: 60 fps at 1366x657 and 1920x1080; CPU slowed 4x, 14 fps then 43 after the step-down. axe 0 violations on /olympus3 and /olympus3/1 at 1440 and 390, with the mirror, arcade, blackjack (bet and hand), shop bubble and swap banner up. No word or seal in the page or chunks. Screenshots: `docs/screenshots/session-17d/`.
+
+**Not tested:** how hard the runner is for a person (only a bot played it), the new sounds by ear, a real webcam, a real family's pacing.
+
 ## Session 17c — 2026-11-02 (/olympus3, Ashton's second notes)
 
 **Asked:** the family photo in the game, not on separate pages. The first room less circular, room shapes less creative and boxy (the circular ones were bad and messed up the entrances), though rooms should stay different from each other. The Mechanism not right beside the Mask: the big trials further apart. Greek writing on the machine's screen instead of blank. The ambience sounded like white noise.
