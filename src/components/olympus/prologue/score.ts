@@ -1,8 +1,11 @@
 /**
  * The Prologue's sound: ambience and effects, no music (the soundtrack that was tried is stored in
  * soundtrack.ts). Synthesised in the browser, so there are no audio files to license or load.
- * Under the deck, a bed that never quite stops: a fire (roar, hiss, crackle) where a fire is on
- * screen, and wind or moving air elsewhere. On cue: thunder, iron, whooshes, stones, ticks.
+ *
+ * Each stretch of the deck has its own place to be in (AMBIENCES), a mix of a few beds (a fire,
+ * wind, a stone hall, a quiet room) and of things that happen now and then in it (a drip, a chain
+ * shifting, thunder a long way off, someone at a keyboard). On cue, over that: thunder, iron,
+ * whooshes, stones, ticks.
  *
  * On by default, S mutes; a browser plays nothing before the presenter's first key or click, so the
  * first press is what wakes it (`arm`). The energy sits between 200 Hz and 5 kHz, because laptops
@@ -11,6 +14,38 @@
 const MASTER = 1;
 /** How long the sound lasts after the deck has been left, before it closes. */
 const FINALE = 3.5;
+/** How often the scattered sounds get their chance. */
+const SCATTER_MS = 200;
+
+type Bed = "fire" | "wind" | "hall" | "room";
+/** Each is how many a second, on average. */
+type Scatter = "drips" | "chains" | "farThunder" | "keys";
+type Mix = Partial<Record<Bed | Scatter, number>>;
+
+const BEDS: readonly Bed[] = ["fire", "wind", "hall", "room"];
+
+export const AMBIENCES = {
+  /** Standby: a fire in the dark and nothing else. */
+  hearth: { fire: 0.8 },
+  /** The climb: wind on the rock, thunder somewhere behind it. */
+  mountain: { wind: 0.85, farThunder: 0.14 },
+  /** The top: less wind, the braziers close by. */
+  summit: { wind: 0.35, fire: 0.2, farThunder: 0.05 },
+  /** The execs: a big stone room with water in it and torches on the wall. */
+  hall: { hall: 0.9, fire: 0.1, drips: 0.55 },
+  /** The chain before it is finished: the room, and iron shifting. */
+  forge: { hall: 0.6, chains: 0.7 },
+  /** The fire has caught. */
+  forged: { hall: 0.45, fire: 0.45, chains: 0.45 },
+  /** The practical slides: a quiet room with people in it, someone typing. */
+  study: { room: 0.9, keys: 1.1 },
+  /** The column: back in the stone, a breath of air through it. */
+  temple: { hall: 0.8, wind: 0.12, drips: 0.3 },
+  /** The Oracle: the fire in that same stone room. */
+  oracle: { fire: 0.8, hall: 0.5 },
+} satisfies Record<string, Mix>;
+
+export type Ambience = keyof typeof AMBIENCES;
 
 /** A soft clipper's curve: linear when quiet, leaning over near full scale, never past it. */
 function softClip() {
@@ -27,13 +62,12 @@ export class Score {
   private ctx: AudioContext | null = null;
   private mix: GainNode | null = null;
   private wet: GainNode | null = null;
-  private fireGain: GainNode | null = null;
-  private windGain: GainNode | null = null;
+  private beds: Partial<Record<Bed, GainNode>> = {};
   private noise: AudioBuffer | null = null;
   private brown: AudioBuffer | null = null;
-  private fireLevel = 0;
-  private windLevel = 0;
+  private current: Mix = {};
   private crackling = 0;
+  private scattering = 0;
   private ending = false;
   on = true;
 
@@ -47,6 +81,19 @@ export class Score {
     if (this.on) this.wake();
     this.mix?.gain.setTargetAtTime(this.on ? MASTER : 0, this.now, 0.1);
     return this.on;
+  }
+
+  /** Crossfades to a place over `seconds`. */
+  ambience(name: Ambience, seconds = 1.5) {
+    this.current = AMBIENCES[name];
+    this.applyBeds(seconds);
+  }
+
+  private applyBeds(seconds: number) {
+    for (const bed of BEDS) {
+      this.beds[bed]?.gain.setTargetAtTime(this.current[bed] ?? 0, this.now, seconds / 3);
+    }
+    if ((this.current.fire ?? 0) > 0.01 && !this.crackling) this.crackle();
   }
 
   private get now() {
@@ -90,7 +137,7 @@ export class Score {
         return last * 3.5;
       });
 
-      // A small stone room, so the effects sit somewhere and do not click in from nowhere.
+      // A stone room, so the effects sit somewhere and do not click in from nowhere.
       const room = ctx.createConvolver();
       room.buffer = this.roomImpulse(ctx);
       this.wet = ctx.createGain();
@@ -100,11 +147,12 @@ export class Score {
 
       this.buildFire(ctx);
       this.buildWind(ctx);
+      this.buildHall(ctx);
+      this.buildRoom(ctx);
+      this.scattering = window.setInterval(this.scatter, SCATTER_MS);
     }
     void this.ctx.resume();
-    this.fireGain?.gain.setTargetAtTime(this.fireLevel, this.now, 0.5);
-    this.windGain?.gain.setTargetAtTime(this.windLevel, this.now, 0.5);
-    this.crackle();
+    this.applyBeds(1.5);
   }
 
   private buffer(seconds: number, sample: () => number) {
@@ -152,19 +200,24 @@ export class Score {
     lfo.start();
   }
 
+  private bed(ctx: AudioContext, name: Bed) {
+    const gain = ctx.createGain();
+    gain.gain.value = 0;
+    gain.connect(this.mix!);
+    this.beds[name] = gain;
+    return gain;
+  }
+
   /** The fire's bed: a roar that swells at no fixed rate, spread wide, and a hiss over it. */
   private buildFire(ctx: AudioContext) {
-    this.fireGain = ctx.createGain();
-    this.fireGain.gain.value = 0;
-    this.fireGain.connect(this.mix!);
-
+    const out = this.bed(ctx, "fire");
     const roarFilter = ctx.createBiquadFilter();
     roarFilter.type = "lowpass";
     roarFilter.frequency.value = 900;
     const roar = ctx.createGain();
     roar.gain.value = 0.3;
     roarFilter.connect(roar);
-    roar.connect(this.fireGain);
+    roar.connect(out);
     for (const side of [-0.6, 0.6]) {
       const pan = ctx.createStereoPanner();
       pan.pan.value = side;
@@ -182,16 +235,14 @@ export class Score {
     const hiss = ctx.createGain();
     hiss.gain.value = 0.022;
     hissFilter.connect(hiss);
-    hiss.connect(this.fireGain);
+    hiss.connect(out);
     this.loop(ctx, this.noise!, hissFilter);
     this.sway(ctx, 0.47, 0.008, hiss.gain);
   }
 
   /** Wind: noise through resonant bands that slide slowly up and down, a different one each ear. */
   private buildWind(ctx: AudioContext) {
-    this.windGain = ctx.createGain();
-    this.windGain.gain.value = 0;
-    this.windGain.connect(this.mix!);
+    const out = this.bed(ctx, "wind");
     for (const [side, centre, slow, fast] of [
       [-0.7, 560, 0.07, 0.17],
       [0.7, 700, 0.053, 0.13],
@@ -206,7 +257,7 @@ export class Score {
       pan.pan.value = side;
       band.connect(gust);
       gust.connect(pan);
-      pan.connect(this.windGain);
+      pan.connect(out);
       this.loop(ctx, this.noise!, band);
       this.sway(ctx, slow, 280, band.frequency);
       this.sway(ctx, fast, 130, band.frequency);
@@ -214,31 +265,168 @@ export class Score {
     }
   }
 
+  /**
+   * A big stone room with nothing happening in it: a dark, still, low air, with none of the wind's
+   * movement. Two resonances the size of a hall, breathing very slowly.
+   */
+  private buildHall(ctx: AudioContext) {
+    const out = this.bed(ctx, "hall");
+    for (const [side, centre, q, level, rate] of [
+      [-0.5, 210, 2.2, 0.5, 0.041],
+      [0.5, 340, 2.6, 0.36, 0.067],
+    ] as const) {
+      const band = ctx.createBiquadFilter();
+      band.type = "bandpass";
+      band.frequency.value = centre;
+      band.Q.value = q;
+      const gain = ctx.createGain();
+      gain.gain.value = level;
+      const pan = ctx.createStereoPanner();
+      pan.pan.value = side;
+      band.connect(gain);
+      gain.connect(pan);
+      pan.connect(out);
+      this.loop(ctx, this.brown!, band);
+      this.sway(ctx, rate, level * 0.3, gain.gain);
+    }
+  }
+
+  /** A quiet room: the even rush of air and machines, higher and steadier than the hall. */
+  private buildRoom(ctx: AudioContext) {
+    const out = this.bed(ctx, "room");
+    // A loop in each ear, from different places: a room is wide.
+    for (const side of [-0.7, 0.7]) {
+      const low = ctx.createBiquadFilter();
+      low.type = "lowpass";
+      low.frequency.value = 2200;
+      const high = ctx.createBiquadFilter();
+      high.type = "highpass";
+      high.frequency.value = 260;
+      const gain = ctx.createGain();
+      gain.gain.value = 0.05;
+      const pan = ctx.createStereoPanner();
+      pan.pan.value = side;
+      low.connect(high);
+      high.connect(gain);
+      gain.connect(pan);
+      pan.connect(out);
+      this.loop(ctx, this.noise!, low);
+      this.sway(ctx, side < 0 ? 0.09 : 0.067, 0.008, gain.gain);
+    }
+  }
+
   /** Pops at random times, mostly tiny, now and then a knot of wood going. */
   private crackle = () => {
     window.clearTimeout(this.crackling);
     this.crackling = 0;
-    if (!this.ctx || this.fireLevel <= 0.01) return;
+    const level = this.current.fire ?? 0;
+    if (!this.ctx || level <= 0.01) return;
     const big = Math.random() < 0.1;
     const freq = big ? 500 + Math.random() * 900 : 1800 + Math.random() * 3600;
-    const peak = (big ? 0.55 : 0.2) * this.fireLevel * (0.35 + Math.random() * 0.65);
+    const peak = (big ? 0.55 : 0.2) * level * (0.35 + Math.random() * 0.65);
     this.burst(this.noise!, "bandpass", freq, peak, big ? 0.07 : 0.022);
     // Exponential gaps are what make them read as random and not as a rhythm.
     const gap = 25 - Math.log(1 - Math.random()) * 120;
     this.crackling = window.setTimeout(this.crackle, gap);
   };
 
-  /** The fire's level, 0 to 1. */
-  fire(level: number, seconds = 1.5) {
-    this.fireLevel = level;
-    this.fireGain?.gain.setTargetAtTime(level, this.now, seconds / 3);
-    if (level > 0.01 && !this.crackling) this.crackle();
+  /** Gives each of this place's scattered sounds its chance. */
+  private scatter = () => {
+    if (!this.ctx || this.ending) return;
+    const chance = (rate = 0) => Math.random() < (rate * SCATTER_MS) / 1000;
+    if (chance(this.current.drips)) this.drip();
+    if (chance(this.current.chains)) this.chainShift();
+    if (chance(this.current.farThunder)) this.farThunder();
+    if (chance(this.current.keys)) this.keyTap();
+  };
+
+  /** Water falling on stone, somewhere off in the room: a little rising bloop, mostly echo. */
+  private drip() {
+    const ctx = this.ctx!;
+    const t = ctx.currentTime;
+    const start = 700 + Math.random() * 800;
+    const osc = ctx.createOscillator();
+    osc.frequency.setValueAtTime(start, t);
+    osc.frequency.exponentialRampToValueAtTime(start * 1.7, t + 0.06);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(0.13, t + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+    const pan = ctx.createStereoPanner();
+    pan.pan.value = Math.random() * 1.6 - 0.8;
+    osc.connect(gain);
+    gain.connect(pan);
+    pan.connect(this.mix!);
+    const send = ctx.createGain();
+    send.gain.value = 1.4;
+    gain.connect(send);
+    send.connect(this.wet!);
+    osc.start(t);
+    osc.stop(t + 0.1);
   }
 
-  /** The wind's level, 0 to 1. */
-  wind(level: number, seconds = 3) {
-    this.windLevel = level;
-    this.windGain?.gain.setTargetAtTime(level, this.now, seconds / 3);
+  /** A heavy chain shifting: two or three small high knocks of iron on iron. */
+  private chainShift() {
+    const ctx = this.ctx!;
+    const knocks = 2 + Math.floor(Math.random() * 2);
+    const pan = ctx.createStereoPanner();
+    pan.pan.value = Math.random() * 1.2 - 0.6;
+    pan.connect(this.mix!);
+    pan.connect(this.wet!);
+    for (let k = 0; k < knocks; k += 1) {
+      const t = ctx.currentTime + k * (0.09 + Math.random() * 0.1);
+      const root = 1500 + Math.random() * 900;
+      for (const [ratio, level, decay] of [
+        [1, 0.07, 0.16],
+        [1.83, 0.045, 0.1],
+      ] as const) {
+        const osc = ctx.createOscillator();
+        osc.frequency.value = root * ratio;
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(level, t);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + decay);
+        osc.connect(gain);
+        gain.connect(pan);
+        osc.start(t);
+        osc.stop(t + decay + 0.02);
+      }
+    }
+  }
+
+  /** Thunder a long way off: no crack, only a slow low roll you notice after it has started. */
+  private farThunder() {
+    const ctx = this.ctx!;
+    const t = ctx.currentTime;
+    const seconds = 3.5 + Math.random() * 2;
+    const src = ctx.createBufferSource();
+    src.buffer = this.brown;
+    const filter = ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.value = 520;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(0.32, t + seconds * 0.3);
+    gain.gain.exponentialRampToValueAtTime(0.14, t + seconds * 0.55);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + seconds);
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.mix!);
+    gain.connect(this.wet!);
+    src.start(t, Math.random() * 2, seconds);
+  }
+
+  /** Someone typing across the room: a short run of quiet, uneven key taps. */
+  private keyTap() {
+    const taps = 2 + Math.floor(Math.random() * 5);
+    let delay = 0;
+    for (let k = 0; k < taps; k += 1) {
+      window.setTimeout(() => {
+        if (!this.ctx) return;
+        const level = 0.05 + Math.random() * 0.05;
+        this.burst(this.noise!, "bandpass", 1500 + Math.random() * 1400, level, 0.03, 0.2);
+      }, delay);
+      delay += 90 + Math.random() * 130;
+    }
   }
 
   private burst(
@@ -376,13 +564,12 @@ export class Score {
     src.start(t, Math.random() * (this.noise!.duration - seconds), seconds);
   }
 
-  /** The deck is being left: the fire and the air fall away over /oracle, then the sound closes. */
+  /** The deck is being left: everything falls away over /oracle, then the sound closes. */
   finale() {
-    const ctx = this.ctx;
-    if (!ctx || this.ending) return;
+    if (!this.ctx || this.ending) return;
     this.ending = true;
-    this.fire(0, 1.8);
-    this.wind(0, 1.8);
+    this.current = {};
+    this.applyBeds(1.8);
     this.whoosh(0.12, 1.8);
     window.setTimeout(() => this.shut(), FINALE * 1000);
   }
@@ -390,6 +577,8 @@ export class Score {
   private shut() {
     window.clearTimeout(this.crackling);
     this.crackling = 0;
+    window.clearInterval(this.scattering);
+    this.scattering = 0;
     void this.ctx?.close();
     this.ctx = null;
   }

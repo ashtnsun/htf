@@ -37,8 +37,6 @@ type Cue = {
   setPhase: (phase: number) => void;
   /** Morphs, or sets when instant. */
   place: (dots: readonly Dot[], options?: MorphOptions) => void;
-  /** Leaves the deck for /oracle without a press (only the last beat does). */
-  leave: () => void;
 };
 
 type Beat = {
@@ -147,8 +145,6 @@ function execBands(stage: CellStage) {
 
 /** Milliseconds over which the chain is forged, first link to fire. */
 const FORGE = 4200;
-/** How long the Oracle's line holds before the fire takes the screen. */
-const ORACLE_HOLD = 7000;
 /** Milliseconds from the fire being let go to /oracle starting to come up. */
 const LEAVE = 1100;
 /** How long /oracle takes to come up once it has rendered. */
@@ -191,13 +187,9 @@ const BEATS: readonly Beat[] = [
   {
     bars: false,
     glow: "ember",
-    cue: ({ stage, score, instant, at, place }) => {
-      score.wind(0);
-      score.fire(0.8);
-      const { dots, fire } = ember(stage.grid);
-      place(dots, { duration: 1000, spread: 300, exit: "center" });
-      if (instant) stage.fire(fire);
-      else at(700, () => stage.fire(fire, { grow: 3200 }));
+    cue: ({ stage, score, place }) => {
+      score.ambience("hearth");
+      place(ember(stage.grid), { duration: 1000, spread: 300, exit: "center" });
     },
   },
 
@@ -218,8 +210,7 @@ const BEATS: readonly Beat[] = [
       </div>
     ),
     cue: ({ stage, score, instant }) => {
-      score.fire(0, 2);
-      score.wind(0.9, 4);
+      score.ambience("mountain", 4);
       const { dots, rock } = climb(stage.grid);
       if (instant) {
         stage.set(dots);
@@ -254,8 +245,7 @@ const BEATS: readonly Beat[] = [
         stage.set(dots);
         stage.backdrop(rock, { instant: true });
       };
-      score.fire(0);
-      score.wind(0.3);
+      score.ambience("summit");
       if (instant) {
         light();
         setPhase(1);
@@ -289,7 +279,7 @@ const BEATS: readonly Beat[] = [
       </div>
     ),
     cue: ({ stage, score, instant, at, place }) => {
-      score.wind(0.4);
+      score.ambience("hall");
       place(execBands(stage), { duration: 1200, spread: 400, exit: "fall" });
       // A soft tick for each photo as it comes in (the delays in ExecRow).
       if (!instant) for (let i = 0; i < 9; i += 1) at(450 + i * 110, () => score.tick(900, 0.16));
@@ -315,6 +305,7 @@ const BEATS: readonly Beat[] = [
       </div>
     ),
     cue: ({ stage, score, instant, at, setPhase, place, flash }) => {
+      score.ambience("hall");
       place(execBands(stage));
       if (instant) {
         setPhase(DARK);
@@ -353,14 +344,13 @@ const BEATS: readonly Beat[] = [
       </div>
     ),
     cue: ({ stage, score, instant, at, place, flash }) => {
-      score.wind(0);
       const { dots, links, fire } = chain(stage.grid);
       place(dots, { order: "given", duration: 500, spread: FORGE, burn: "#03c652" });
       if (instant) {
-        stage.fire(fire);
-        score.fire(0.4);
+        score.ambience("forged");
         return;
       }
+      score.ambience("forge");
       // Each link lands on a hammer blow, then the fire catches at the end of the chain.
       links.forEach(({ x, y }, i) => {
         at(((i + 1) / (links.length + 1)) * FORGE + 520, () => {
@@ -370,9 +360,9 @@ const BEATS: readonly Beat[] = [
         });
       });
       at(FORGE + 520, () => {
-        stage.fire(fire, { grow: 700 });
+        stage.sparks(fire.x, fire.y, 60);
         score.whoosh(0.3, 1.4);
-        score.fire(0.4);
+        score.ambience("forged");
         flash(0.12, 500);
       });
     },
@@ -391,8 +381,7 @@ const BEATS: readonly Beat[] = [
       </div>
     ),
     cue: ({ stage, score, at, place, instant }) => {
-      score.fire(0);
-      score.wind(0.3);
+      score.ambience("study");
       place(laptop(stage.grid), { duration: 1000, spread: 500, burn: "#03c652" });
       if (!instant) at(900, () => score.stone());
     },
@@ -415,7 +404,7 @@ const BEATS: readonly Beat[] = [
       </div>
     ),
     cue: ({ stage, score, instant, at, setPhase, place }) => {
-      score.wind(0.3);
+      score.ambience("study");
       place(browser(stage.grid), { duration: 900, spread: 350, burn: "#03c652" });
       if (instant) {
         setPhase(SITE.length);
@@ -445,7 +434,7 @@ const BEATS: readonly Beat[] = [
       </div>
     ),
     cue: ({ stage, score, at, place, instant }) => {
-      score.wind(0.3);
+      score.ambience("temple");
       place(temple(stage.grid, { sweep: true, top: 16 }), {
         duration: 1100,
         spread: 900,
@@ -456,7 +445,31 @@ const BEATS: readonly Beat[] = [
     },
   },
 
-  // ------------------------------------------------------------ good luck, back on the summit
+  // ------------------------------------------------------------ where the final word goes
+  {
+    bars: true,
+    glow: "fire",
+    view: () => (
+      <div className="pro-oracle">
+        <In d={1300} className="pro-head">
+          Bring your final word to the <span className="text-green">Oracle.</span>
+        </In>
+      </div>
+    ),
+    cue: ({ stage, score, at, place, instant }) => {
+      score.ambience("oracle", 2.5);
+      place(oracleFire(stage.grid), {
+        duration: 1300,
+        spread: 1000,
+        order: "up",
+        exit: "fall",
+        burn: "#03c652",
+      });
+      if (!instant) at(900, () => score.whoosh(0.28, 1.6));
+    },
+  },
+
+  // ------------------------------------------------------------ good luck, on the summit: the last press leaves for /oracle
   {
     bars: true,
     glow: "summit",
@@ -469,45 +482,10 @@ const BEATS: readonly Beat[] = [
       </div>
     ),
     cue: ({ stage, score, place, instant }) => {
-      score.wind(0.5);
+      score.ambience("summit");
       const { dots, rock } = climb(stage.grid, { lit: true });
       place(dots, { duration: 1600, spread: 900, order: "up", burn: "#03c652" });
       stage.backdrop(rock, { instant });
-    },
-  },
-
-  // ------------------------------------------------------------ on to the Oracle, unprompted
-  {
-    bars: true,
-    glow: "fire",
-    view: () => (
-      <div className="pro-oracle">
-        <In d={1300} className="pro-head">
-          Bring your final word to the <span className="text-green">Oracle.</span>
-        </In>
-      </div>
-    ),
-    cue: ({ stage, score, at, place, instant, leave }) => {
-      score.wind(0.1);
-      const { dots, fire } = oracleFire(stage.grid);
-      place(dots, {
-        duration: 1300,
-        spread: 1000,
-        order: "up",
-        exit: "fall",
-        burn: "#03c652",
-      });
-      if (instant) {
-        stage.fire(fire);
-        score.fire(0.8);
-        return;
-      }
-      at(900, () => {
-        stage.fire(fire, { grow: 1800 });
-        score.whoosh(0.28, 1.6);
-        score.fire(0.8, 2.5);
-      });
-      at(ORACLE_HOLD, leave);
     },
   },
 ];
@@ -516,10 +494,10 @@ const BEATS: readonly Beat[] = [
  * The Prologue (/prologue): the slides for the family reveal, presented from the site by the exec
  * at the projectors. Each press plays one beat. The picture is one field of cells that reshapes
  * itself from scene to scene (stage.ts, formations.ts); the type sits over it, scaled like a
- * slide (`--u` is one pixel of a 1920 × 1080 slide). It starts on a small flame so it can sit on
- * the projectors while the room settles. "Good luck" is the last press: the Oracle's fire rises and
- * says where the final word goes, then burns out, the scene lifting away and everything easing to
- * dark as /oracle comes up out of it, ready for the first family's word.
+ * slide (`--u` is one pixel of a 1920 × 1080 slide). It starts on a fire so it can sit on
+ * the projectors while the room settles. The last slides say where the final word goes, then "Good
+ * luck"; its press lets the scene lift away, everything easing to dark as /oracle comes up out of
+ * it, ready for the first family's word.
  *
  * It sets the families off and stops there: no god is named or drawn (nothing here imports their
  * sprites or content/olympus.ts), and no trial is explained.
@@ -626,12 +604,11 @@ export function Prologue({ execs }: { execs: readonly PrologueExec[] }) {
         flash,
         setPhase: (value) => setProgress({ of: index, value }),
         place: (dots, options) => (now ? stage.set(dots) : stage.morph(dots, options)),
-        leave,
       });
     });
     history.replaceState(null, "", index ? `#${index}` : location.pathname);
     return () => timers.forEach((t) => window.clearTimeout(t));
-  }, [stage, index, instant, reduce, resized, leaving, score, flash, leave]);
+  }, [stage, index, instant, reduce, resized, leaving, score, flash]);
 
   const go = useCallback(
     (delta: number) => {
