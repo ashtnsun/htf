@@ -323,14 +323,16 @@ const BEATS: readonly Beat[] = [
       for (const { card, ms } of ROULETTE) {
         at(900 + ms, () => {
           setPhase(card + 1);
-          score.tick(2100, 0.26);
+          // A bright click with some body under it, so each stop lands in a big room.
+          score.tick(2100, 0.75);
+          score.tick(850, 0.6);
         });
       }
       at(900 + ROULETTE_END, () => {
         setPhase(DARK);
         flash(0.25, 400);
         stage.shake(240, 1);
-        score.thud(1);
+        score.thud(1.5);
       });
     },
   },

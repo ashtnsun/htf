@@ -143,6 +143,8 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 **Verified (production build):** typecheck, lint, `pnpm build`; the whole deck to /oracle with no console errors; S to silence and back; axe 0 violations on /prologue and /oracle at 1440 and 390; no god's name in anything /prologue fetches.
 
+**Then:** Ashton asked for louder effects on the roulette slide ("Your group belongs to one of them"): tick peaks from 0.25 to 0.65, a second, lower click under each, and a heavier thud on the question (peak 0.54 to 0.68). Recorded in dev; nothing at full scale.
+
 **Not verified:** how it sounds by ear, and a real room's speakers.
 
 **Next session starts with:** Ashton's listen, then whether it ships. Still open: the Olympus section back on the home page for the day, and the /oracle line (Session 16o).
