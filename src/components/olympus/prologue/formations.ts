@@ -1,4 +1,5 @@
 import { DINO_PIXELS } from "@/components/brand/dino-pixels";
+import type { BlazeSpec } from "@/components/olympus/prologue/blaze";
 import { FX, type Dot, type Grid, type Span } from "@/components/olympus/prologue/stage";
 
 /**
@@ -102,9 +103,35 @@ function flame(cx: number, baseY: number, height: number, seed = 1, layer = 2) {
   return dots;
 }
 
-/** Standby: one small flame alone in the dark. */
-export function ember(g: Grid) {
-  return flame(Math.floor(g.cols / 2), Math.floor(g.rows / 2) + 5, 11, 3);
+/** The Oracle's brazier: a wide stone bowl on a fluted stem and a stepped foot. */
+function brazier(cx: number, bowl: number, half: number) {
+  const dots: Dot[] = [
+    // The rim overhangs; the bowl narrows in whole steps, lit from above.
+    ...rect(cx - half, bowl, half * 2 + 1, 2, WHITE),
+    ...rect(cx - half + 3, bowl + 2, half * 2 - 5, 2, WHITE),
+    ...rect(cx - half + 6, bowl + 4, half * 2 - 11, 2, LIGHT),
+    ...rect(cx - half + 10, bowl + 6, half * 2 - 19, 2, STONE),
+    ...rect(cx - 7, bowl + 8, 15, 2, LIGHT),
+    // The fluted stem.
+    ...rect(cx - 3, bowl + 10, 2, 12, WHITE),
+    ...rect(cx, bowl + 10, 2, 12, LIGHT),
+    ...rect(cx + 3, bowl + 10, 1, 12, STONE),
+    // The foot.
+    ...rect(cx - 8, bowl + 22, 17, 2, WHITE),
+    ...rect(cx - 12, bowl + 24, 25, 2, LIGHT),
+    ...rect(cx - 16, bowl + 26, 33, 2, STONE),
+  ];
+  return dots;
+}
+
+/** Standby: the brazier alone in the dark, its fire lit over it by the stage. */
+export function ember(g: Grid): { dots: Dot[]; fire: BlazeSpec } {
+  const cx = Math.floor(g.cols / 2);
+  const bowl = Math.round(g.rows * 0.68);
+  return {
+    dots: brazier(cx, bowl, 25),
+    fire: { x: cx, base: bowl - 1, w: 56, h: 74 },
+  };
 }
 
 // ---------------------------------------------------------------- the temple
@@ -450,7 +477,7 @@ function edgeLink(x0: number, y0: number, w: number, order: number) {
  * The chain of trials: one great link for each trial, numbered as the families' own title cards
  * number them, bolted to a column at the left and sagging under its own weight to the fire at the
  * right, which is the Oracle. `order` forges it link by link, left to right. Returns the middle of
- * each link and the fire's foot, for the sparks.
+ * each link for the sparks, and the fire for the stage to light.
  */
 export function chain(g: Grid) {
   const cy = Math.round(g.rows * 0.5);
@@ -514,8 +541,7 @@ export function chain(g: Grid) {
   dots.push(...rect(bowlX - 11, cy + 3, 23, 2, WHITE, done));
   dots.push(...rect(bowlX - 7, cy + 5, 15, 2, LIGHT, done));
   dots.push(...rect(bowlX - 1, cy + 7, 3, g.rows - cy - 7, LIGHT, done));
-  dots.push(...flame(bowlX, cy, 42, 9).map((d) => ({ ...d, ...done })));
-  return { dots, links, fire: { x: bowlX, y: cy } };
+  return { dots, links, fire: { x: bowlX, base: cy, w: 32, h: 46 } };
 }
 
 // ---------------------------------------------------------------- the setup
@@ -562,44 +588,12 @@ export function browser(g: Grid) {
 
 // ---------------------------------------------------------------- the Oracle
 
-/** The Oracle's fire: a great green flame on a tripod, under the line that names it. */
-export function oracleFire(g: Grid) {
+/** The Oracle's fire, under the line that names it: the brazier again, and the night behind it. */
+export function oracleFire(g: Grid): { dots: Dot[]; fire: BlazeSpec } {
   const cx = Math.floor(g.cols / 2);
-  const bowl = g.rows - 34;
-  const dots: Dot[] = [
-    ...sky(g, 21, 1).map((d) => ({ ...d, layer: 2 })),
-    ...flame(cx, bowl - 1, 58, 4),
-    ...rect(cx - 16, bowl, 33, 2, WHITE),
-    ...rect(cx - 13, bowl + 2, 27, 2, WHITE),
-    ...rect(cx - 9, bowl + 4, 19, 2, LIGHT),
-    ...rect(cx - 1, bowl + 6, 3, 12, LIGHT),
-  ];
-  for (let dy = 0; dy < g.rows - bowl - 18; dy += 1) {
-    const out = Math.round(dy * 0.55);
-    dots.push(
-      { x: cx - out - 1, y: bowl + 18 + dy, ink: STONE },
-      { x: cx + out + 1, y: bowl + 18 + dy, ink: STONE },
-    );
-  }
-  return dots;
-}
-
-/** The fire taking the whole screen, white at the root and green at the licking tips. */
-export function inferno(g: Grid) {
-  const dots: Dot[] = [];
-  for (let x = 0; x < g.cols; x += 1) {
-    const height =
-      g.rows * 1.02 + Math.sin(x * 0.11) * 7 + Math.sin(x * 0.29 + 1) * 5 + Math.sin(x * 0.73) * 3;
-    for (let y = 0; y < g.rows; y += 1) {
-      const u = (g.rows - y) / height;
-      if (u > 1) continue;
-      dots.push({
-        x,
-        y,
-        ink: u < 0.45 ? WHITE : u < 0.78 ? MINT : GREEN,
-        fx: u > 0.3 ? FX.FLAME : 0,
-      });
-    }
-  }
-  return dots;
+  const bowl = g.rows - 44;
+  return {
+    dots: [...sky(g, 21, 1).map((d) => ({ ...d, layer: 2 })), ...brazier(cx, bowl, 25)],
+    fire: { x: cx, base: bowl - 1, w: 52, h: 58 },
+  };
 }

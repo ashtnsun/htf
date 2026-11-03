@@ -1138,6 +1138,11 @@ img[data-media]:not([data-loaded]) {
 ::view-transition-new(root) {
   animation: page-fade-in var(--page-enter-fade-ms) var(--ease-smooth) var(--page-enter-delay) both;
 }
+/* The Prologue leaving for /oracle fades its own sheet instead (olympus/prologue/Prologue). */
+:root[data-pro-leaving]::view-transition-old(*),
+:root[data-pro-leaving]::view-transition-new(*) {
+  animation: none;
+}
 @keyframes page-fade-out {
   to {
     opacity: 0;

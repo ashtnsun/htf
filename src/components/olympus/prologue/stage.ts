@@ -1,3 +1,5 @@
+import { Blaze, type BlazeSpec } from "@/components/olympus/prologue/blaze";
+
 /**
  * The Prologue's picture (/prologue): one full-screen canvas of solid cells that never cuts. Every
  * scene is a list of cells (formations.ts), and going to the next scene flies the cells already
@@ -44,7 +46,7 @@ export type MorphOptions = {
   /** The colour of a cell in flight. */
   burn?: string;
   /** Where the surplus old cells go. */
-  exit?: "scatter" | "fall" | "center";
+  exit?: "scatter" | "fall" | "center" | "rise";
 };
 
 /** How far each layer moves with the camera: far sky, far cloud, the world, near cloud. */
@@ -57,6 +59,10 @@ const CAPACITY = 60000;
 const BOLT_LIFE = 320;
 /** Cells a second squared, pulling a spark down. */
 const SPARK_FALL = 70;
+/** An ember dims through these as it climbs. */
+const EMBER_INKS = ["#8df7c6", "#00eb88", "#03c652", "#277d4a", "#1a5c36"];
+/** The chance of an ember per step of a fire, per cell of its width. */
+const EMBER_RATE = 0.006;
 
 const easeInOut = (u: number) => (u < 0.5 ? 4 * u ** 3 : 1 - (-2 * u + 2) ** 3 / 2);
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
@@ -107,8 +113,12 @@ export class CellStage {
     vy: number;
     start: number;
     life: number;
-    ink: string;
+    /** A spark's one colour, or null for an ember, which dims with age and sways as it climbs. */
+    ink: string | null;
+    fall: number;
+    phase: number;
   }[] = [];
+  private blazes: { fire: Blaze; w: number }[] = [];
   private sweepOn = false;
   private back: (Backdrop & { start: number; leaving: boolean }) | null = null;
 
@@ -177,6 +187,8 @@ export class CellStage {
     this.cam = { from: camY, to: camY, start: 0, dur: 0 };
     this.bolts = [];
     this.back = null;
+    this.blazes = [];
+    this.sparkles = [];
     this.wake();
   }
 
@@ -267,6 +279,9 @@ export class CellStage {
       } else if (exit === "center") {
         toX = cx;
         toY = cy;
+      } else if (exit === "rise") {
+        toX = oldX[s]! + (Math.random() - 0.5) * 16;
+        toY = -6 - Math.random() * 40;
       }
       this.write(
         total,
@@ -287,6 +302,7 @@ export class CellStage {
     this.morphStart = now;
     this.morphEnd = now + spread + duration * 1.25;
     this.cam = { from: 0, to: 0, start: 0, dur: 0 };
+    for (const { fire } of this.blazes) fire.die();
     if (this.back) this.back = { ...this.back, start: now, leaving: true };
     this.wake();
   }
@@ -366,6 +382,15 @@ export class CellStage {
     this.wake();
   }
 
+  /**
+   * Lights a fire (blaze.ts) over this scene's cells, growing to full over `grow` milliseconds; 0
+   * has it burning already. The next morph lets it burn out by itself.
+   */
+  fire(spec: BlazeSpec, { grow = 0 }: { grow?: number } = {}) {
+    this.blazes.push({ fire: new Blaze(spec, this.still ? 0 : grow), w: spec.w });
+    this.wake();
+  }
+
   /** A burst of single cells off a hammer blow, falling and gone in half a second. */
   sparks(x: number, y: number, n = 26) {
     if (this.still) return;
@@ -381,6 +406,8 @@ export class CellStage {
         start,
         life: 260 + Math.random() * 340,
         ink: Math.random() < 0.35 ? "#f5f5f5" : "#03c652",
+        fall: SPARK_FALL,
+        phase: 0,
       });
     }
     this.wake();
@@ -493,14 +520,41 @@ export class CellStage {
       }
     }
 
+    if (this.blazes.length) {
+      this.blazes = this.blazes.filter(({ fire }) => !fire.out);
+      for (const { fire, w } of this.blazes) {
+        if (!this.still) {
+          const steps = fire.advance(now);
+          for (let i = 0; i < steps; i += 1) {
+            if (Math.random() >= EMBER_RATE * w) continue;
+            const { x: ex, y: ey } = fire.emberAt();
+            this.sparkles.push({
+              x: ex,
+              y: ey,
+              vx: (Math.random() - 0.5) * 3,
+              vy: -9 - Math.random() * 11,
+              start: now,
+              life: 1400 + Math.random() * 2000,
+              ink: null,
+              fall: -1,
+              phase: Math.random() * 6.28,
+            });
+          }
+        }
+        fire.draw(ctx, cell, shakeX, shakeY, cols, rows);
+      }
+    }
+
     if (this.sparkles.length) {
       this.sparkles = this.sparkles.filter((s) => now - s.start < s.life);
       for (const s of this.sparkles) {
         const age = (now - s.start) / 1000;
-        ctx.fillStyle = s.ink;
+        const swing = s.ink ? 0 : Math.sin(age * 2.4 + s.phase) * 1.6;
+        const stage = Math.floor(((now - s.start) / s.life) * EMBER_INKS.length);
+        ctx.fillStyle = s.ink ?? EMBER_INKS[stage]!;
         ctx.fillRect(
-          Math.round(s.x + s.vx * age) * cell,
-          Math.round(s.y + s.vy * age + SPARK_FALL * age * age) * cell,
+          Math.round(s.x + s.vx * age + swing) * cell,
+          Math.round(s.y + s.vy * age + s.fall * age * age) * cell,
           cell,
           cell,
         );

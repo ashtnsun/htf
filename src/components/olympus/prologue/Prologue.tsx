@@ -13,7 +13,6 @@ import {
   CLIMB_FROM,
   ember,
   frieze,
-  inferno,
   laptop,
   oracleFire,
   summitPoint,
@@ -45,7 +44,7 @@ type Cue = {
 type Beat = {
   /** Letterbox bars with the Greek key: narrative scenes yes, the practical setup no. */
   bars: boolean;
-  glow?: "summit" | "fire";
+  glow?: "summit" | "fire" | "ember";
   view?: (props: ViewProps) => ReactNode;
   cue: (cue: Cue) => void;
 };
@@ -150,14 +149,56 @@ function execBands(stage: CellStage) {
 const FORGE = 4200;
 /** How long the Oracle's line holds before the fire takes the screen. */
 const ORACLE_HOLD = 7000;
+/** Milliseconds from the fire being let go to /oracle starting to come up. */
+const LEAVE = 1100;
+/** How long /oracle takes to come up once it has rendered. */
+const ARRIVE = 1100;
+
+/**
+ * One dark sheet over the route change. The site's page transition crossfades two full-screen
+ * snapshots, the one step of this ending that dropped frames, and here the old page is already
+ * plain dark: so the sheet goes up (the screen does not change), the page transition is switched
+ * off for this one change (`data-pro-leaving` in globals.css), and the sheet fades off the real
+ * /oracle from the moment it has rendered, however long that took.
+ */
+let sheet: HTMLElement | null = null;
+
+function raiseSheet() {
+  const el = document.createElement("div");
+  el.setAttribute("aria-hidden", "true");
+  el.style.cssText = "position:fixed;inset:0;z-index:100;background:var(--bg);pointer-events:none";
+  document.body.append(el);
+  document.documentElement.setAttribute("data-pro-leaving", "");
+  sheet = el;
+  // Should the route never arrive, the presenter must not be left in front of a blank screen.
+  window.setTimeout(() => lowerSheet(el), 8000);
+}
+
+function lowerSheet(el = sheet) {
+  if (!el || el !== sheet) return;
+  sheet = null;
+  document.documentElement.removeAttribute("data-pro-leaving");
+  const fade = el.animate([{ opacity: 1 }, { opacity: 0 }], {
+    duration: ARRIVE,
+    easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+    fill: "forwards",
+  });
+  void fade.finished.finally(() => el.remove());
+}
 
 const BEATS: readonly Beat[] = [
-  // ------------------------------------------------------------ standby: one flame in the dark
+  // ------------------------------------------------------------ standby: a fire in the dark
   {
     bars: false,
-    cue: ({ stage, score, place }) => {
-      score.drone(0);
-      place(ember(stage.grid), { duration: 1000, spread: 200, exit: "center" });
+    glow: "ember",
+    cue: ({ stage, score, instant, at, place }) => {
+      score.drone(0.12);
+      score.wind(0);
+      score.fire(0.75);
+      const { dots, fire } = ember(stage.grid);
+      place(dots, { duration: 1000, spread: 300, exit: "center" });
+      if (instant) stage.fire(fire);
+      else at(700, () => stage.fire(fire, { grow: 3200 }));
     },
   },
 
@@ -178,6 +219,8 @@ const BEATS: readonly Beat[] = [
       </div>
     ),
     cue: ({ stage, score, instant }) => {
+      score.fire(0, 2);
+      score.wind(0.6, 4);
       score.drone(0.4, 6);
       const { dots, rock } = climb(stage.grid);
       if (instant) {
@@ -214,6 +257,8 @@ const BEATS: readonly Beat[] = [
         stage.backdrop(rock, { instant: true });
       };
       score.drone(0.45);
+      score.fire(0);
+      score.wind(0.35);
       if (instant) {
         light();
         setPhase(1);
@@ -227,6 +272,7 @@ const BEATS: readonly Beat[] = [
         stage.shake(600, 2);
         flash(1, 800);
         score.thunder();
+        score.swell(7, 0.08);
         setPhase(1);
       });
     },
@@ -246,9 +292,12 @@ const BEATS: readonly Beat[] = [
         </In>
       </div>
     ),
-    cue: ({ stage, score, place }) => {
+    cue: ({ stage, score, instant, at, place }) => {
       score.drone(0.3);
+      score.wind(0.12);
       place(execBands(stage), { duration: 1200, spread: 400, exit: "fall" });
+      // A soft tick for each photo as it comes in (the delays in ExecRow).
+      if (!instant) for (let i = 0; i < 9; i += 1) at(450 + i * 110, () => score.tick(760, 0.1));
     },
   },
 
@@ -304,29 +353,33 @@ const BEATS: readonly Beat[] = [
           <In d={3000} className="pro-voice">
             Six trials. Each answer is the key to the next.
           </In>
-          <In d={5400} className="pro-voice pro-voice-strong">
-            No trial explains itself.
-          </In>
         </div>
       </div>
     ),
     cue: ({ stage, score, instant, at, place, flash }) => {
       score.drone(0.35);
+      score.wind(0);
       const { dots, links, fire } = chain(stage.grid);
       place(dots, { order: "given", duration: 500, spread: FORGE, burn: "#03c652" });
-      if (instant) return;
+      if (instant) {
+        stage.fire(fire);
+        score.fire(0.35);
+        return;
+      }
       // Each link lands on a hammer blow, then the fire catches at the end of the chain.
       links.forEach(({ x, y }, i) => {
         at(((i + 1) / (links.length + 1)) * FORGE + 520, () => {
-          score.stone();
+          score.clang();
           stage.shake(130, 1);
           stage.sparks(x, y);
         });
       });
       at(FORGE + 520, () => {
-        score.hit(0.8);
-        stage.sparks(fire.x, fire.y, 60);
-        flash(0.18, 360);
+        stage.fire(fire, { grow: 700 });
+        score.whoosh(0.4, 1.4);
+        score.hit(0.6);
+        score.fire(0.35);
+        flash(0.12, 500);
       });
     },
   },
@@ -341,13 +394,11 @@ const BEATS: readonly Beat[] = [
           <br />
           <span className="text-green">One laptop.</span>
         </In>
-        <In d={900} className="pro-body">
-          Choose it now. Everyone else gathers round it.
-        </In>
       </div>
     ),
     cue: ({ stage, score, at, place, instant }) => {
       score.drone(0.2);
+      score.fire(0);
       place(laptop(stage.grid), { duration: 1000, spread: 500, burn: "#03c652" });
       if (!instant) at(900, () => score.stone());
     },
@@ -421,8 +472,10 @@ const BEATS: readonly Beat[] = [
         </In>
       </div>
     ),
-    cue: ({ stage, score, place, instant }) => {
+    cue: ({ stage, score, place, instant, at }) => {
       score.drone(0.4);
+      score.wind(0.3);
+      if (!instant) at(500, () => score.swell(8, 0.1));
       const { dots, rock } = climb(stage.grid, { lit: true });
       place(dots, { duration: 1600, spread: 900, order: "up", burn: "#03c652" });
       stage.backdrop(rock, { instant });
@@ -436,24 +489,31 @@ const BEATS: readonly Beat[] = [
     view: () => (
       <div className="pro-oracle">
         <In d={1300} className="pro-head">
-          Bring your final word
-        </In>
-        <In d={2300} className="pro-head">
-          to the <span className="text-green">Oracle.</span>
+          Bring your final word to the <span className="text-green">Oracle.</span>
         </In>
       </div>
     ),
     cue: ({ stage, score, at, place, instant, leave }) => {
-      score.drone(0.5, 3);
-      place(oracleFire(stage.grid), {
+      score.drone(0.45, 3);
+      score.wind(0.12);
+      const { dots, fire } = oracleFire(stage.grid);
+      place(dots, {
         duration: 1300,
         spread: 1000,
         order: "up",
         exit: "fall",
         burn: "#03c652",
       });
-      if (instant) return;
-      at(1200, () => score.stone());
+      if (instant) {
+        stage.fire(fire);
+        score.fire(0.8);
+        return;
+      }
+      at(900, () => {
+        stage.fire(fire, { grow: 1800 });
+        score.whoosh(0.35, 1.6);
+        score.fire(0.8, 2.5);
+      });
       at(ORACLE_HOLD, leave);
     },
   },
@@ -464,15 +524,15 @@ const BEATS: readonly Beat[] = [
  * at the projectors. Each press plays one beat. The picture is one field of cells that reshapes
  * itself from scene to scene (stage.ts, formations.ts); the type sits over it, scaled like a
  * slide (`--u` is one pixel of a 1920 × 1080 slide). It starts on a small flame so it can sit on
- * the projectors while the room settles. "Good luck" is the last press: the Oracle's fire rises,
- * says where the final word goes, takes the whole screen and burns through to /oracle, ready for
- * the first family's word.
+ * the projectors while the room settles. "Good luck" is the last press: the Oracle's fire rises and
+ * says where the final word goes, then burns out, the scene lifting away and everything easing to
+ * dark as /oracle comes up out of it, ready for the first family's word.
  *
  * It sets the families off and stops there: no god is named or drawn (nothing here imports their
  * sprites or content/olympus.ts), and no trial is explained.
  *
  * Next: click, Space, Enter, → or Page Down (what clickers send). Back: ← or Page Up, which lands
- * on the finished beat. F full screen, S sound, B black. The place is kept in the URL's hash, so a
+ * on the finished beat. F full screen, S mutes (the first press is what wakes the sound), B black. The place is kept in the URL's hash, so a
  * refresh resumes it.
  */
 export function Prologue({ execs }: { execs: readonly PrologueExec[] }) {
@@ -509,7 +569,8 @@ export function Prologue({ execs }: { execs: readonly PrologueExec[] }) {
     [reduce],
   );
 
-  // The fire rises through the whole screen, the letterbox opening for it, and burns out on /oracle.
+  // Nothing cuts: the fire burns out, the scene lifts away as it all eases to dark (prologue.css,
+  // `data-leaving`) and the sound falls with it, and /oracle comes up out of that dark.
   const leave = useCallback(() => {
     if (leaving) return;
     if (reduce || !stage) {
@@ -517,22 +578,16 @@ export function Prologue({ execs }: { execs: readonly PrologueExec[] }) {
       return;
     }
     setLeaving(true);
-    score.rise(1.7);
-    stage.morph(inferno(stage.grid), {
-      duration: 800,
-      spread: 900,
-      order: "up",
-      burn: "#00eb88",
-    });
-    stage.shake(1700, 1);
+    score.fire(0, 1.2);
+    score.wind(0, 1.2);
+    score.drone(0, 1.8);
+    score.whoosh(0.16, 2);
+    stage.morph([], { duration: LEAVE, spread: 300, exit: "rise" });
     window.setTimeout(() => {
-      flash(1, 1000);
-      score.drone(0, 0.3);
-      score.thunder();
-      stage.set([]);
+      raiseSheet();
       router.push("/oracle");
-    }, 1700);
-  }, [flash, leaving, reduce, router, score, stage]);
+    }, LEAVE);
+  }, [leaving, reduce, router, score, stage]);
 
   // The stage, for the life of the page.
   useEffect(() => {
@@ -544,8 +599,14 @@ export function Prologue({ execs }: { execs: readonly PrologueExec[] }) {
     };
   }, [reduce]);
 
-  // The sound stops with the page.
-  useEffect(() => () => score.close(), [score]);
+  // The sound stops with the page, and /oracle, having rendered, comes up from under the sheet.
+  useEffect(
+    () => () => {
+      score.close();
+      lowerSheet();
+    },
+    [score],
+  );
 
   // On a resize the grid changes: redraw this beat as finished.
   useEffect(() => {
@@ -565,6 +626,7 @@ export function Prologue({ execs }: { execs: readonly PrologueExec[] }) {
     const at = (ms: number, fn: () => void) => void timers.push(window.setTimeout(fn, ms));
     const now = instant || reduce;
     at(0, () => {
+      if (!now && index > 0) score.whoosh(0.14, 1);
       BEATS[index]!.cue({
         stage,
         score,
@@ -594,6 +656,17 @@ export function Prologue({ execs }: { execs: readonly PrologueExec[] }) {
   useEffect(() => {
     router.prefetch("/oracle");
   }, [router]);
+
+  // A browser lets sound start on the first key or click, so that is what wakes it.
+  useEffect(() => {
+    const arm = () => score.arm();
+    window.addEventListener("keydown", arm, { capture: true, once: true });
+    window.addEventListener("pointerdown", arm, { capture: true, once: true });
+    return () => {
+      window.removeEventListener("keydown", arm, { capture: true });
+      window.removeEventListener("pointerdown", arm, { capture: true });
+    };
+  }, [score]);
 
   // The keys, and the cursor hiding when it has been still for two seconds.
   useEffect(() => {
@@ -647,6 +720,7 @@ export function Prologue({ execs }: { execs: readonly PrologueExec[] }) {
       data-instant={instant || reduce || undefined}
       data-bars={(beat.bars && !leaving) || undefined}
       data-glow={leaving ? undefined : beat.glow}
+      data-leaving={leaving || undefined}
       onClick={() => go(1)}
     >
       <canvas ref={canvasRef} aria-hidden="true" className="pro-canvas" />
@@ -662,13 +736,12 @@ export function Prologue({ execs }: { execs: readonly PrologueExec[] }) {
 
       <h1 className="sr-only">Olympus: the prologue to the family reveal</h1>
       <div key={index} className="pro-text" aria-live="polite">
-        {leaving || !beat.view ? null : beat.view({ phase, execs })}
+        {beat.view?.({ phase, execs })}
       </div>
 
       {index === 0 && !leaving ? (
         <p className="pro-hint">
-          Space or click to go on. Left arrow to go back. F for full screen. S for sound. B for
-          black.
+          Space or click to go on. Left arrow to go back. F for full screen. S to mute. B for black.
         </p>
       ) : null}
 

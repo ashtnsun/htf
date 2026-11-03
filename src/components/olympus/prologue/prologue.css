@@ -37,6 +37,29 @@
 .pro-root[data-glow] .pro-glow {
   opacity: 1;
 }
+/* The light of the standby fire, never quite steady. */
+.pro-root[data-glow="ember"] .pro-glow {
+  background: radial-gradient(circle at 50% 46%, rgb(3 198 82 / 0.26), transparent 42%);
+  animation: pro-firelight 3.7s ease-in-out infinite;
+}
+@keyframes pro-firelight {
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+  22% {
+    opacity: 1;
+  }
+  38% {
+    opacity: 0.72;
+  }
+  61% {
+    opacity: 0.96;
+  }
+  79% {
+    opacity: 0.76;
+  }
+}
 .pro-root[data-glow="summit"] .pro-glow {
   background: radial-gradient(circle at 50% 54%, rgb(3 198 82 / 0.2), transparent 26%);
 }
@@ -71,6 +94,23 @@
   z-index: 3;
   pointer-events: none;
 }
+
+/* Leaving for /oracle: the picture and the line ease to the page's own dark, so the route change
+   underneath has nothing left on screen to cut. */
+.pro-canvas,
+.pro-text {
+  transition: opacity 1500ms var(--ease-smooth);
+}
+.pro-root[data-leaving] .pro-canvas {
+  opacity: 0;
+  transition-duration: 1000ms;
+  transition-delay: 100ms;
+}
+.pro-root[data-leaving] .pro-text {
+  opacity: 0;
+  transition-duration: 800ms;
+  transition-delay: 100ms;
+}
 .pro-flash {
   position: absolute;
   inset: 0;
@@ -93,6 +133,13 @@
   text-align: center;
   font-size: max(13px, calc(var(--u) * 18));
   color: var(--muted);
+  /* For the presenter: gone before the room is looking. */
+  animation: pro-hint-out 900ms var(--ease-smooth) 7s both;
+}
+@keyframes pro-hint-out {
+  to {
+    opacity: 0;
+  }
 }
 .pro-note {
   position: absolute;
@@ -121,9 +168,6 @@
   line-height: 1.2;
   color: var(--text);
   text-shadow: 0 0 calc(var(--u) * 24) var(--bg);
-}
-.pro-voice-strong {
-  color: var(--green);
 }
 .pro-head {
   font-family: var(--font-cinzel), serif;
@@ -413,7 +457,8 @@
   text-align: center;
 }
 .pro-oracle .pro-head {
-  font-size: calc(var(--u) * 84);
+  font-size: calc(var(--u) * 80);
+  white-space: nowrap;
 }
 
 /* Good luck: the summit, the address still up while the families set off. */
@@ -449,7 +494,12 @@
     animation: none;
   }
   .pro-bar,
-  .pro-glow {
+  .pro-glow,
+  .pro-canvas,
+  .pro-text {
     transition: none;
+  }
+  .pro-root[data-glow="ember"] .pro-glow {
+    animation: none;
   }
 }
