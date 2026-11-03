@@ -1,5 +1,5 @@
 /**
- * The Prologue's music, as data for the score's sequencer (score.ts): E minor with the flat second
+ * STORED, NOT USED: see soundtrack.ts. The music, as data for its sequencer: E minor with the flat second
  * for the ancient colour, 100 beats a minute, four beats a bar. Each section is what plays under
  * one stretch of the deck, and starts the moment that slide does, as a cut in a film does.
  *
