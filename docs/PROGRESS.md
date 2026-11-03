@@ -88,6 +88,47 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 17 — 2026-11-02 (/olympus3, the family reveal as a game)
+
+**Asked:** a new variant of the family reveal at /olympus3: the same trials as a 2D top-down dungeon crawler in the pixel style, the dino as the player, every trial open at once so working out the order is part of it, the puzzles tweaked so none can be skipped, and the trials as things in the world (the photo a mural that really updates, riddles carved on walls, fires as real braziers), Indiana Jones in feel. /olympus stays as it was.
+
+**Built:**
+
+- `components/olympus/crawl/`: one canvas with no game library. `world.ts` (nine rooms as data), `art.ts` (everything painted in the browser), `engine.ts` (the loop, collisions, dithered light cut out of a dark layer, green firelight, traps), `Crawl.tsx` (the shell and HUD), `trials/*` (the close-ups, real DOM over the world), `square.ts`, `save.ts`, `sound.ts`.
+- Routes: `/olympus3` (the same temple and Passage), `/olympus3/[family]`, `app/olympus3/actions.ts`. Noindex, no site chrome. It ends at the same `/oracle` with the same words.
+- Rooms: Antechamber, Hall of Fires (the hub), Mural, Gallery, Crypt, the Teeth (spikes), Word Gate, the Chasm (a hidden path, like the leap of faith, with the stone across it), Sanctum. Walk with WASD or arrows, E to interact, Space or Shift to dash, M for sound.
+- When a trial is solved the camera comes back and the world has changed: the photo replaces the faceless relief on the mural cell by cell, a green stone drops into a socket on the gate, the word comes up on the gate, the stone's carving lights, letters rise tile by tile from the Hall floor, the great door slides open onto stairs, and the family's word is carved huge on the Sanctum wall.
+
+**How the order is held without locking anything (server-checked, `app/olympus3/actions.ts`):**
+
+| Trial                              | What it needs                         | Without it                                                                                                                             |
+| ---------------------------------- | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Riddles (five walls in four rooms) | nothing                               |                                                                                                                                        |
+| Mural                              | nothing                               |                                                                                                                                        |
+| Word Gate (Wordle)                 | all five answers                      | five sockets, no marks from the server                                                                                                 |
+| Stone                              | the word and the names                | blank, but the wheels' counts can be read, which is how a family learns it needs the photo                                             |
+| Seal on the great door             | the stone's key and the letter's word | "the seal holds", even with the right word                                                                                             |
+| Fires                              | the seal                              | they burn from the first step, in every room, but on a square keyed by the seal word, so even someone who knows Polybius reads nothing |
+| Final word                         | the seal word                         |                                                                                                                                        |
+
+**Decisions (mine, for Ashton to overrule):**
+
+1. No combat. The trials are the game, and an action skill check would slow families unevenly. Traps instead, with no deaths or lives: spikes throw you back, the chasm drops you at its edge. Easy to add enemies later if the game feels empty.
+2. The fires are keyed by each family's existing seal word, so the printed letters do not change. This is the one real change to a puzzle's content. The fires' counts are public from the start but mean nothing without it.
+3. The herald's letter stays physical (hidden in the room, the stone says where). The stone's line is still `HIDING_TODO` in `content/olympus.ts`, shared with /olympus.
+4. The word can be pressed out on the Hall's letter tiles (Indy's Last Crusade floor) or typed at the door; both go through the door. Backspace lifts a letter.
+5. The mural's photo is drawn smooth, not pixelated, per the standing note. Names are in the close-up, not on the wall.
+6. Keyboard only: one laptop per family. No touch controls, so it cannot be played on a phone, and a screen reader cannot walk the canvas. The trials themselves are real, labelled DOM, but reaching them needs the walking.
+7. Sound is its own small `crawl/sound.ts`, deliberately quiet with nine laptops in a room, on by default, M mutes. It does not share the Prologue's score, which another session was rewriting at the time.
+
+**Found by playing it with real key presses:** E was ignored forever (the intro timer went a hair negative, which is truthy); no door could fire (the trigger sat past where collision lets you walk); E typed an "e" into the trial it opened (`DRACHMAE`). All fixed.
+
+**Shared files touched, additively:** `journey/parts.tsx` (`unnumbered`), `journey/Portrait.tsx` (`unnumbered`, `doneLabel`, both defaulting to what /olympus had), `journey/Seal.tsx` (exports `SEAL`, `CRACK`), `layout/SiteChrome.tsx`.
+
+**Verified:** typecheck, lint and build clean. A full playthrough with real keys and a fake camera (Group I): every room walked, all five riddles, gate shut with a socket empty, stone blank and wheels disabled before the photo, seal held with the right word before the stone was read, another family's seal rejected, wrong final word clears the pressed letters, stepping away during a solved trial's timer still counts, spikes and the fall, door, Sanctum, refresh keeps the place, 0 console errors. /oracle accepts DRACHMA and offers REVEAL. Production, headless with no GPU: 60 fps at 1366×657 and 1920×1080 walking and in the Hall; with the CPU slowed 4×, 17 fps until it steps its resolution down by itself, then 55 fps. axe 0 violations on /olympus3 and /olympus3/1 at 1440 and 390, and with a riddle open. Reduced motion and a 2× screen loaded without errors (screenshots looked at, not played through). No answer, word, seal or god appears in the /olympus3/1 page; none of the words appear in the shipped chunks. Screenshots: `docs/screenshots/session-17/`.
+
+**Not tested:** a real webcam with real faces (the fake camera has none, so faces were marked by hand; the finder is the same code as /olympus); audio by ear (nothing here can listen); a real low-end laptop; a family actually playing it, so difficulty and pacing are unproven.
+
 ## Session 16q — 2026-11-02 (the Prologue: ambience, not a soundtrack)
 
 **Asked:** the soundtrack is too much and a little too loud: keep it stored, take it off the Prologue, just ambience and sound effects.

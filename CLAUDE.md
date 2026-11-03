@@ -87,6 +87,16 @@ src/components/
                     (it never imports content/olympus.ts or the gods' sprites) and explains no trial.
                     The address on screen is the constant `SITE` (htfpurdue.org): families scroll down
                     the home page, so home/olympus/OlympusSection has to be back on it for the day
+  crawl/            /olympus3, the family reveal as a game (an event page like /olympus: no site chrome,
+                    noindex, ends at the same /oracle): world.ts (nine rooms as data), art.ts (all pictures
+                    painted in the browser, string maps, the 5 x 7 letters, dithered light), engine.ts
+                    (CrawlEngine: one canvas, no game library, per-frame state in the class, steps its
+                    resolution down by itself on a slow machine), Crawl.tsx (the shell and HUD), trials/*
+                    (the close-ups: real DOM over the world, Esc steps away), square.ts (the fires' square,
+                    keyed by the seal word because the fires burn from the first step), save.ts (per tab),
+                    sound.ts. Every trial is open at once; app/olympus3/actions.ts holds the order by asking
+                    each step for proof of the last, so never trust the client's order there. `window.__crawl`
+                    exists in dev only (`debugGo(room)` jumps rooms)
   apply/            ApplyForm (client): the Google Form in a frame tall enough that no
                     section scrolls inside it — two measured heights, the first section and
                     the rest (`scripts/measure-apply-form.mjs`), never a count of sections,
@@ -285,7 +295,7 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
 - Every list renders `li` as the direct child of `ul`/`ol` (put `Reveal` inside the `li`,
   or around the whole list when the cards share rows through `grid-rows-subgrid`, which
   needs the direct grid → `li` → children chain).
-- Every CTA is a `SplitButton` (except on /olympus and /oracle: `olympus/OlympusButton`) (primary: green label, green arrow cell, 1.5px black divider;
+- Every CTA is a `SplitButton` (except on /olympus, /olympus3 and /oracle: `olympus/OlympusButton`) (primary: green label, green arrow cell, 1.5px black divider;
   secondary: outlined, white arrow that turns black on the green hover fill; on hover the
   label rolls up into a copy and the arrow glyph nudges, since 2026-09-08; `presentational`
   renders a span for a button inside a card that is itself the link);
