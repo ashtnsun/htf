@@ -88,6 +88,27 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 16p — 2026-11-02 (the Prologue gets a soundtrack)
+
+**Asked:** the sound has to be better, louder, more distinct and part of the experience, "almost like a video", with no awkward silence while people watch.
+
+**Why it felt silent:** the old sound's energy sat around 40 to 80 Hz, which laptops and most projector speakers barely play, so the level meter read fine while the room heard little. And it was ambience, not music.
+
+**Built:** a score synthesised in the browser (`prologue/score.ts`), written as data in `prologue/cuesheet.ts`: E minor with the flat second, 100 BPM, an original horn theme over Em C G D Em C Am B.
+
+- Voices: strings, a formant choir, horns, low pulse, a big driven drum, a shaker and a plucked lyre (Karplus-Strong), all in one generated hall reverb, in stereo.
+- A section for each stretch of the deck, cut to the moment the slide starts: the fire and a stray lyre on standby; an 11-second swell up the mountain; a one-second breath and riser, then thunder, a low brass blast and the theme on OLYMPUS; a lyre figure under the execs with a rising note per photo; sixteenths climbing through the roulette, then a blast and a heartbeat under an unresolved chord on "Whose family are you in?"; an iron ring rising per chain link, then the theme again as the fire catches; a light groove running across the three setup slides, kept under the presenter's voice; the theme lifted into the major on "Good luck."; voices over the fire on the Oracle.
+- The last chord rings on over /oracle for about 8 seconds, then the sound closes.
+- The mix: a low shelf takes the deep bass down, a compressor, then a soft clipper and a ceiling, so it runs loud.
+
+**Measured** on a recording of the production deck's output (`docs/screenshots/session-16p/soundtrack-spectrogram.png`, one column per moment, low notes at the bottom): loudest slides about -10.5 dB RMS, setup slides about -16, standby -16; no half second inside a slide under -19.4 dB; the band speakers can play (200 Hz to 5 kHz) above the sub band on every slide. 8 samples in 96 seconds reach the ceiling.
+
+**Verified (production build):** typecheck and lint on these files, `pnpm build`. The whole deck to /oracle with no console errors, 60 fps on every slide with the full band playing, and no frame over 50 ms through the ending at 1920. S goes to silence and back; a resume starts the right section on the first key; back cuts to that slide's section. axe 0 violations on /prologue and /oracle at 1440 and 390. No god's name in anything /prologue fetches.
+
+**Not verified:** how it sounds. I can read levels, pitches and timing but cannot hear it, so whether the theme is good is Ashton's call. Also a real room, projector, clicker and speakers.
+
+**Next session starts with:** Ashton's listen, then notes on the music, then whether it ships. Still open from before: the Olympus section back on the home page for the day, and the /oracle line (Session 16o).
+
 ## Session 16o — 2026-11-02 (the Prologue, Ashton's second notes)
 
 **Asked:** a cooler starting fire, sound effects and ambience if possible, "No trial explains itself." off the chain slide, "Choose it now..." off the laptop slide, and a smoother last transition to /oracle.
