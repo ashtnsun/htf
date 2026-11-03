@@ -88,6 +88,28 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 17e — 2026-11-03 (/olympus3, from the temple into the game)
+
+**Asked:** keep the transition after a group is chosen, but the game takes a moment to load on a new page; an intro into the game itself that is more seamless.
+
+**Found:** on this machine's production build, loading was only a small part of it. The game mounted about 1.8 s after the click while the card stayed up until about 3.5 s, so the 0.8 s fall and the fade-in played unseen behind it, and the card lifted on a lit room with the HUD already up. `Passage` was also preloading `/olympus`'s code, not the game's.
+
+**Built:**
+
+- `Passage`: fetches the right code 2.5 s after the list page opens and again on the click; the route change moved from 1.4 s to 2.15 s, after the ring, so the mount's stall cannot stutter it. New `whenPassageLifts(then)`: a page can wait behind the card and run as the cells start to open. Temple, burst and card look the same.
+- `Crawl`: behind the card the engine is paused at a slow draw and the audio starts, its stall hidden there (the column's click counts as the gesture). 500 ms after the cells start, the world resumes with a whoosh.
+- `engine`: the fall accelerates, the shake is heavier, the light comes up from the landing (1.4 s, was 1.8 s and began with the fall), and a new `onLanded` hook.
+- The HUD, map, coins and swap clock arrive with the landing, and the clock holds until then; "The Mural" is said at the landing.
+- Return visits resume the same way with no fall. Direct links fall straight away with the HUD held back. Reduced motion is unchanged.
+
+**Decisions (mine, for Ashton to overrule):** the half-second beat on the dark room before the fall; the 1.4 s light; control arrives about 5 s after the click.
+
+**Verified:** typecheck and lint in the main tree, with session 17d's work in. Production build of HEAD plus these four files, with webpack, in a copy outside the repo (see below): first visit, return visit, direct link, reduced motion and the plain /olympus route, 0 console errors (headless GL's one informational log on /olympus). Keys under the card do not move the dinosaur (the map's marker holds), and they do after the landing. The AudioContext is `running` with no click after the column. The stalls under normal CPU are under the card (one of 154-219 ms at about 2.25 s, none after). axe 0 violations on /olympus3 and /olympus3/1 at 1440 and 390. Frames: `docs/screenshots/session-17e/`.
+
+**Not tested:** the sound by ear, a real low-end laptop. With the CPU slowed 4x, headless with no GPU, stalls of 170-300 ms remain as the cells start to open. `pnpm build` was not run in the main tree, because other sessions' servers on 3003-3008 serve from its `.next`; a Turbopack production build of the copy failed on the Google font loader, so only webpack was built.
+
+**Next session starts with:** Ashton's look at the intro, and the pace of the beat and the light.
+
 ## Session 17d — 2026-11-03 (/olympus3: coins, shop, mirrors, machines, the swap clock)
 
 **Asked:** the old L-shaped spike room back to the right of the Crypt, joined up to the Mask, with the Mask moved east of the Hall. A small shop room below with a Greek dino shopkeeper (speech bubbles, no dialogue options) selling cosmetics Isaac-style, paid with a coin per puzzle or riddle. Mirrors in the shop and the first room for a character menu (bought cosmetics, nine colours). A very small room to the right of the spike room with an arcade machine (the Chrome dino game with their own character; a coin to play, a coin back every 5 seconds, 100 score a second, hard very fast) and a blackjack machine (bets in coins, normal rules). A permanent 2-minute swap timer under the map, very obvious, not pausing the game, held during long cutscenes. Bigger sockets on the mask, no mask styling in the Wordle overlay. No dither texture on the player.
