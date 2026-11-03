@@ -14,6 +14,40 @@
 .crawl-world[data-zoom] {
   transform: scale(2.6);
 }
+/* A moment: the camera leans in on what has changed, slowly, and the bars come in. */
+.crawl-world[data-cine] {
+  transform: scale(1.5);
+  transition:
+    transform 1100ms var(--ease-in-out-soft),
+    transform-origin 1100ms var(--ease-in-out-soft);
+}
+.crawl-bars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.crawl-bars::before,
+.crawl-bars::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 11%;
+  background: #000;
+  transition: transform 700ms var(--ease-in-out-soft);
+}
+.crawl-bars::before {
+  top: 0;
+  transform: translateY(-100%);
+}
+.crawl-bars::after {
+  bottom: 0;
+  transform: translateY(100%);
+}
+.crawl-bars[data-on]::before,
+.crawl-bars[data-on]::after {
+  transform: none;
+}
 
 .crawl-vignette {
   position: absolute;
@@ -50,9 +84,13 @@
 
 .crawl-map {
   position: absolute;
-  top: 1rem;
+  top: 0.875rem;
   right: 1.25rem;
-  overflow: visible;
+  width: clamp(14rem, 24vw, 22rem);
+  height: auto;
+  padding: 0.5rem;
+  background: rgb(4 4 4 / 0.82);
+  outline: 1px solid var(--line-strong);
 }
 
 .crawl-sound {
@@ -199,6 +237,11 @@
   align-items: center;
   gap: 0.2rem;
 }
+.crawl-legend i {
+  margin-inline: 0.3rem;
+  font-style: normal;
+  color: var(--muted);
+}
 .crawl-legend kbd:last-of-type {
   margin-right: 0.35rem;
 }
@@ -333,6 +376,99 @@
   );
 }
 
+/* The mask: a face as tall as the screen allows, its mouth holding the board. The picture is a data
+   URL (art.ts), 120 x 156 cells, drawn at three pixels a cell. */
+.crawl-mask {
+  position: relative;
+  flex: none;
+  width: 360px;
+  height: 468px;
+  background-size: 100% 100%;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 0 40px rgb(120 110 200 / 0.25));
+}
+.crawl-mouth {
+  position: absolute;
+  left: 50%;
+  top: 43%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 196px;
+  transform: translateX(-50%);
+  image-rendering: auto;
+}
+.crawl-tooth {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border: 2px solid #aca7c3;
+  background: #dfdcec;
+  color: #14131f;
+}
+.crawl-tooth-empty {
+  display: block;
+  border-color: #3d3a55;
+  background: #1e1c2e;
+}
+@media (max-height: 640px) {
+  .crawl-trial {
+    align-items: flex-start;
+  }
+}
+
+/* The mechanism: a plate of old bronze, gone green in patches. */
+.crawl-slab-bronze {
+  background-color: #6d5029;
+}
+.crawl-slab-bronze .crawl-slab-inner {
+  background-color: #2c2115;
+  background-image: var(--crawl-bronze);
+  box-shadow:
+    inset 0 2px 0 #a57e45,
+    inset 0 -2px 0 #1a130b;
+}
+.crawl-plate {
+  border-block: 2px solid #6d5029;
+  background: rgb(10 8 5 / 0.55);
+}
+.crawl-gear {
+  position: relative;
+  width: 128px;
+  height: 128px;
+  flex: none;
+}
+.crawl-gear canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+.crawl-gear input {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  background: #120d07;
+  border: 2px solid #6d5029;
+  color: var(--text);
+  text-align: center;
+}
+.crawl-gear input:focus {
+  border-color: var(--green);
+  outline: none;
+}
+.crawl-gear input:disabled {
+  color: var(--muted);
+}
+.crawl-gear[data-awake] input {
+  border-color: var(--green);
+  color: var(--green);
+}
+
 /* The mural's photo step fills the screen: no logo bar here. */
 .crawl-portrait {
   width: 100%;
@@ -361,7 +497,8 @@
     transition: none;
     animation-duration: 1ms;
   }
-  .crawl-world[data-zoom] {
+  .crawl-world[data-zoom],
+  .crawl-world[data-cine] {
     transform: none;
   }
   .crawl-title {

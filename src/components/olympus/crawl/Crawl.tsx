@@ -4,9 +4,9 @@ import "@/components/olympus/journey/journey.css";
 import "@/components/olympus/crawl/crawl.css";
 import { Volume2, VolumeX } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { carveStone } from "@/app/olympus3/actions";
+import { carveStone, speakWord } from "@/app/olympus3/actions";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
-import { stoneTexture } from "@/components/olympus/crawl/art";
+import { bronzeTexture, stoneTexture } from "@/components/olympus/crawl/art";
 import { CrawlEngine, type WorldEvent } from "@/components/olympus/crawl/engine";
 import { TombSound } from "@/components/olympus/crawl/sound";
 import { loadSave, writeSave, type TombSave } from "@/components/olympus/crawl/save";
@@ -16,7 +16,14 @@ import { SealDoor } from "@/components/olympus/crawl/trials/SealDoor";
 import { TrialShell } from "@/components/olympus/crawl/trials/Shell";
 import { StoneWheels } from "@/components/olympus/crawl/trials/StoneWheels";
 import { WordGate } from "@/components/olympus/crawl/trials/WordGate";
-import { ROOM_LIST, ROOMS, type RoomId, type Target } from "@/components/olympus/crawl/world";
+import {
+  CELL,
+  ROOM_LIST,
+  ROOMS,
+  type Room,
+  type RoomId,
+  type Target,
+} from "@/components/olympus/crawl/world";
 import { Finale } from "@/components/olympus/journey/Finale";
 import { roman } from "@/components/olympus/shared";
 
@@ -27,25 +34,27 @@ const LEAVE = 240;
 const RETURN = 620;
 
 const LABELS: Record<Open["kind"], string> = {
-  tablet: "A riddle on the wall",
+  tablet: "A riddle",
   mural: "The mural",
-  gate: "The Word Gate",
-  stone: "The stone",
+  gate: "The mask",
+  stone: "The mechanism",
   door: "The great door",
   altar: "The altar",
 };
 
 /**
- * A family's tomb: the same trials as /olympus, walked as a game. A T-rex in a hat, nine rooms,
- * every trial open from the first step, and nothing that says which comes first. The canvas
- * (engine.ts) is the world; pressing E on something closes the camera in on it and its close-up
- * opens over the world (trials/*). When a trial is solved the camera comes back and the world has
- * changed: the photo on the mural, a stone in the gate, letters rising in the floor.
+ * A family's tomb: the same trials as /olympus, walked as a game. A T-rex in a hat falls through the
+ * roof into the Mural; the doors open once the family has stood before it, and from there every
+ * trial is open, with nothing that says which comes first. The canvas (engine.ts) is the world;
+ * pressing E on something closes the camera in on it and its close-up opens over the world
+ * (trials/*). When a trial is solved the camera comes back and the world has changed, and the big
+ * changes get a moment: the camera holds, the bars come in, the controls wait.
  *
  * The chain itself holds the order, checked on the server (app/olympus3/actions.ts): the five
- * riddles fill the gate, the gate's word and the family's names carve the stone, the stone says
- * where the letter is, the letter breaks the seal, and the seal shows the square the fires have
- * been counting on since the first step.
+ * riddles fill the mask's crown, its word and the family's names carve the mechanism's plate, the
+ * plate says where the letter is, the letter breaks the seal, and the seal shows the square the
+ * fires have been counting on since the first step. Pressing the fires' word out on that floor
+ * opens the great door by itself.
  */
 export function Crawl({
   family,
@@ -63,10 +72,11 @@ export function Crawl({
   const [prompt, setPrompt] = useState<string | null>(null);
   const [bark, setBark] = useState<{ text: string; id: number } | null>(null);
   const [title, setTitle] = useState<{ text: string; id: number } | null>(null);
-  const [room, setRoom] = useState<RoomId>(save.place?.room ?? "ante");
+  const [room, setRoom] = useState<RoomId>(save.place?.room ?? "mural");
   const [stamped, setStamped] = useState("");
   const [moved, setMoved] = useState(!!save.place);
   const [muted, setMuted] = useState(false);
+  const [cine, setCine] = useState(false);
   const [score] = useState(() => new TombSound());
   // Where this visit began: React's double mount in dev must not count as a return.
   const [opening] = useState(save);
@@ -80,6 +90,7 @@ export function Crawl({
   const pendingEvent = useRef<WorldEvent | null>(null);
   const openKind = useRef<Open["kind"] | null>(null);
   const settleTimer = useRef(0);
+  const dotRef = useRef<SVGRectElement>(null);
 
   const patch = useCallback(
     (p: Partial<TombSave> | ((s: TombSave) => Partial<TombSave>)) => {
@@ -168,9 +179,30 @@ export function Crawl({
   );
 
   // The engine calls these; they always see the latest closures.
-  const handlers = useRef({ openTrial, patch });
+  /**
+   * Letters pressed on the floor. The server is asked after every press, so the door opens the
+   * moment the word is whole; nothing answers for a wrong one, so length gives nothing away.
+   */
+  const pressed = useCallback(
+    (letters: string) => {
+      setStamped(letters);
+      const { seal, finalWord } = latest.current;
+      if (!seal || finalWord || letters.length < 3) return;
+      void speakWord(family, seal, letters)
+        .then((final) => {
+          if (!final || latest.current.finalWord) return;
+          patch({ finalWord: final });
+          settle(openKind.current ?? "door", { kind: "door" });
+          window.setTimeout(() => engineRef.current?.clearStamps(), 3200);
+        })
+        .catch(() => {});
+    },
+    [family, patch, settle],
+  );
+
+  const handlers = useRef({ openTrial, patch, pressed });
   useEffect(() => {
-    handlers.current = { openTrial, patch };
+    handlers.current = { openTrial, patch, pressed };
   });
 
   useEffect(() => {
@@ -191,11 +223,25 @@ export function Crawl({
             visited: seen ? s.visited : [...s.visited, id],
           }));
         },
-        onStamp: setStamped,
+        onStamp: (letters) => handlers.current.pressed(letters),
         onFirstMove: () => setMoved(true),
+        onCine: (focus) => {
+          const world = worldRef.current;
+          if (!world) return;
+          setCine(!!focus);
+          if (focus) {
+            world.style.transformOrigin = `${focus.x * 100}% ${focus.y * 100}%`;
+            world.dataset.cine = "";
+          } else delete world.dataset.cine;
+        },
+        onPlace: (x, y) => {
+          dotRef.current?.setAttribute("x", String(Math.round(x - 12)));
+          dotRef.current?.setAttribute("y", String(Math.round(y - 12)));
+        },
       },
       score,
       {
+        pictured: start.names.length > 0,
         photo: null,
         solved: start.solved.map(Boolean),
         word: start.word,
@@ -226,6 +272,7 @@ export function Crawl({
   // The world follows the save.
   useEffect(() => {
     engineRef.current?.setFlags({
+      pictured: save.names.length > 0,
       solved: save.solved.map(Boolean),
       word: save.word,
       carved: !!save.carved,
@@ -257,6 +304,7 @@ export function Crawl({
 
   useEffect(() => {
     rootRef.current?.style.setProperty("--crawl-stone", `url(${stoneTexture()})`);
+    rootRef.current?.style.setProperty("--crawl-bronze", `url(${bronzeTexture()})`);
     rootRef.current?.focus();
   }, []);
 
@@ -291,20 +339,21 @@ export function Crawl({
       onPointerDown={() => score.arm()}
     >
       <p className="sr-only">
-        A game seen from above. Arrow keys or W A S D move, E looks at what is nearby, Space dashes,
-        M turns the sound off.
+        A game seen from above. Arrow keys or W A S D move, E looks at what is nearby, M turns the
+        sound off.
       </p>
       <div ref={worldRef} className="crawl-world">
         <canvas ref={canvasRef} aria-hidden="true" className="crawl-canvas block" />
       </div>
       <div aria-hidden="true" className="crawl-vignette" />
+      <div aria-hidden="true" data-on={cine ? "" : undefined} className="crawl-bars" />
 
       {/* What stays on screen: whose tomb this is, the map, what the dinosaur can do right here. */}
-      <div className={trial ? "crawl-hud crawl-hud-hidden" : "crawl-hud"}>
+      <div className={trial || cine ? "crawl-hud crawl-hud-hidden" : "crawl-hud"}>
         <p aria-hidden="true" className="crawl-group font-olympus">
           <span>Group</span> {roman(family)}
         </p>
-        <TombMap room={room} visited={save.visited} solved={save} />
+        <TombMap room={room} visited={save.visited} solved={save} dotRef={dotRef} />
         <button
           type="button"
           onClick={() => setMuted(!score.toggle())}
@@ -361,10 +410,12 @@ export function Crawl({
             <kbd className="crawl-key">W</kbd>
             <kbd className="crawl-key">A</kbd>
             <kbd className="crawl-key">S</kbd>
-            <kbd className="crawl-key">D</kbd> Walk
-          </span>
-          <span>
-            <kbd className="crawl-key">Space</kbd> Dash
+            <kbd className="crawl-key">D</kbd>
+            <i>or</i>
+            <kbd className="crawl-key">←</kbd>
+            <kbd className="crawl-key">↑</kbd>
+            <kbd className="crawl-key">↓</kbd>
+            <kbd className="crawl-key">→</kbd> Move
           </span>
           {stamped && room === "hall" ? (
             <span>
@@ -379,8 +430,10 @@ export function Crawl({
           label={LABELS[trial.kind]}
           leaving={leaving}
           onClose={onClose}
-          wide={trial.kind === "gate" || trial.kind === "stone"}
+          wide={trial.kind === "stone"}
           bare={trial.kind === "mural"}
+          plain={trial.kind === "gate"}
+          bronze={trial.kind === "stone"}
         >
           {trial.kind === "tablet" ? (
             <RiddleTablet
@@ -460,64 +513,91 @@ export function Crawl({
   );
 }
 
-/** The map in the corner: rooms seen, and the doors out of them, like any dungeon's. */
-function TombMap({ room, visited, solved }: { room: RoomId; visited: RoomId[]; solved: TombSave }) {
-  const CELL_W = 16;
-  const CELL_H = 11;
-  const GAP = 3;
-  const cols = ROOM_LIST.map((r) => r.at[0]);
-  const rows = ROOM_LIST.map((r) => r.at[1]);
-  const minCol = Math.min(...cols);
-  const minRow = Math.min(...rows);
-  const W = (Math.max(...cols) - minCol + 1) * (CELL_W + GAP) - GAP;
-  const H = (Math.max(...rows) - minRow + 1) * (CELL_H + GAP) - GAP;
+/** A room's floor as a path, for the map: its true shape, a run of cells at a time. */
+function shapePath(room: Room) {
+  let d = "";
+  for (let r = 0; r < room.rows; r += 1) {
+    let run = -1;
+    for (let c = 0; c <= room.cols; c += 1) {
+      const on = c < room.cols && room.grid[c + r * room.cols];
+      if (on && run < 0) run = c;
+      if (!on && run >= 0) {
+        d += `M${room.at[0] + run * CELL} ${room.at[1] + r * CELL}h${(c - run) * CELL}v${CELL}h${(run - c) * CELL}z`;
+        run = -1;
+      }
+    }
+  }
+  return d;
+}
+
+const MAP_BOX = (() => {
+  const x0 = Math.min(...ROOM_LIST.map((r) => r.at[0]));
+  const y0 = Math.min(...ROOM_LIST.map((r) => r.at[1]));
+  const x1 = Math.max(...ROOM_LIST.map((r) => r.at[0] + r.W));
+  const y1 = Math.max(...ROOM_LIST.map((r) => r.at[1] + r.H));
+  return { x0, y0, w: x1 - x0, h: y1 - y0 };
+})();
+const MAP_PATHS = Object.fromEntries(ROOM_LIST.map((r) => [r.id, shapePath(r)])) as Record<
+  RoomId,
+  string
+>;
+
+/** The map in the corner: every room in its true shape, once seen; the doors out of them, faint. */
+function TombMap({
+  room,
+  visited,
+  solved,
+  dotRef,
+}: {
+  room: RoomId;
+  visited: RoomId[];
+  solved: TombSave;
+  dotRef: React.RefObject<SVGRectElement | null>;
+}) {
   const seen = new Set(visited);
   const known = new Set<RoomId>(visited);
   for (const id of visited) {
+    if (id === "mural" && !solved.names.length) continue;
     for (const door of Object.values(ROOMS[id].doors)) known.add(door.to);
   }
   const done: Partial<Record<RoomId, boolean>> = {
-    mural: !!solved.photo,
+    mural: !!solved.names.length,
     gate: !!solved.word,
     chasm: solved.stoneRead,
-    hall: !!solved.finalWord,
+    hall: !!solved.square,
+    sanctum: !!solved.finalWord,
   };
   return (
     <svg
       aria-hidden="true"
       className="crawl-map"
-      width={W}
-      height={H}
-      viewBox={`0 0 ${W} ${H}`}
+      viewBox={`${MAP_BOX.x0} ${MAP_BOX.y0} ${MAP_BOX.w} ${MAP_BOX.h}`}
       shapeRendering="crispEdges"
     >
-      {ROOM_LIST.filter((r) => known.has(r.id)).map((r) => {
-        const x = (r.at[0] - minCol) * (CELL_W + GAP);
-        const y = (r.at[1] - minRow) * (CELL_H + GAP);
-        const here = r.id === room;
-        return (
-          <g key={r.id}>
+      {ROOM_LIST.filter((r) => known.has(r.id)).map((r) => (
+        <g key={r.id}>
+          <path
+            d={MAP_PATHS[r.id]}
+            fill={
+              r.id === room
+                ? "var(--green-deep)"
+                : seen.has(r.id)
+                  ? "rgb(255 255 255 / 0.32)"
+                  : "rgb(255 255 255 / 0.1)"
+            }
+          />
+          {done[r.id] && r.id !== room ? (
             <rect
-              x={x}
-              y={y}
-              width={CELL_W}
-              height={CELL_H}
-              fill={here ? "var(--green)" : seen.has(r.id) ? "var(--line-strong)" : "transparent"}
-              stroke={here ? "var(--green)" : "var(--line-strong)"}
-              strokeWidth={1}
+              x={r.at[0] + r.W / 2 - 20}
+              y={r.at[1] + r.H / 2 - 20}
+              width={40}
+              height={40}
+              fill="var(--green)"
             />
-            {done[r.id] ? (
-              <rect
-                x={x + 6}
-                y={y + 4}
-                width={4}
-                height={3}
-                fill={here ? "var(--bg)" : "var(--green)"}
-              />
-            ) : null}
-          </g>
-        );
-      })}
+          ) : null}
+        </g>
+      ))}
+      <rect ref={dotRef} width={24} height={24} fill="var(--text)" />
     </svg>
   );
 }

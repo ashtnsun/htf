@@ -15,6 +15,8 @@ export function TrialShell({
   leaving,
   wide = false,
   bare = false,
+  plain = false,
+  bronze = false,
   children,
 }: {
   label: string;
@@ -23,6 +25,10 @@ export function TrialShell({
   wide?: boolean;
   /** No slab: the mural's photo stage is its own frame. */
   bare?: boolean;
+  /** No slab, the same frame: the mask is its own stone. */
+  plain?: boolean;
+  /** The mechanism's plate instead of stone. */
+  bronze?: boolean;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -55,10 +61,10 @@ export function TrialShell({
           Step away
         </OlympusButton>
       </div>
-      {bare ? (
+      {bare || plain ? (
         children
       ) : (
-        <div className={cn("crawl-slab", wide && "crawl-slab-wide")}>
+        <div className={cn("crawl-slab", wide && "crawl-slab-wide", bronze && "crawl-slab-bronze")}>
           <div className="crawl-slab-inner">{children}</div>
         </div>
       )}

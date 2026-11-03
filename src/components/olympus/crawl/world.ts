@@ -1,17 +1,21 @@
 /**
- * The tomb (/olympus3): nine rooms on a map, as plain data. Everything is in logical pixels (one
- * logical pixel is one cell of the picture, drawn at a whole number of screen pixels); rooms are
- * built on 16-pixel tiles. `x` and `y` on anything standing on the floor are its feet.
+ * The tomb (/olympus3): seven rooms on one map, as plain data. Everything is in logical pixels (one
+ * logical pixel is one cell of the picture, drawn at a whole number of screen pixels). `at` is a
+ * room's place on the map, so rooms really touch and their doors really meet: a door's `at` is
+ * along the wall in the room's own coordinates, and a check below makes both sides agree.
  *
- * Nothing here is secret: no answers, no words. Every trial is open from the first step, and what
- * each one needs is only found by trying it.
+ * A room's shape is a test on a grid of 8-pixel cells: floor (1), the short passage cut through the
+ * rock to a door (2), or rock (0). The walls, the shade and the map in the corner all follow it.
+ *
+ * Nothing here is secret: no answers, no words.
  */
 
 export const TILE = 16;
+export const CELL = 8;
 
 export type Side = "n" | "s" | "e" | "w";
-export type RoomId =
-  "ante" | "hall" | "mural" | "gallery" | "crypt" | "teeth" | "gate" | "chasm" | "sanctum";
+export type RoomId = "mural" | "hall" | "crypt" | "teeth" | "gate" | "chasm" | "sanctum";
+export type ThemeId = "sand" | "hall" | "crypt" | "rust" | "marble" | "bronze" | "gold";
 
 /** What the dinosaur can walk up to. */
 export type Target =
@@ -23,61 +27,114 @@ export type Target =
   | { kind: "altar" }
   | { kind: "note"; text: string };
 
-export type Spot = { target: Target; x: number; y: number; r: number; capY: number };
+export type Spot = {
+  target: Target;
+  x: number;
+  y: number;
+  r: number;
+  capY: number;
+  /** Where the E floats, when not over the spot's own x. */
+  capX?: number;
+  /** A carved tablet on the wall: where its top is. */
+  ty?: number;
+  /** Overrides the usual prompt. */
+  label?: string;
+  /** Gone once the family has taken their photo. */
+  untilPictured?: boolean;
+};
 
 export type PropKind =
-  "column" | "stump" | "amphora" | "statue" | "sarcophagus" | "bones" | "rubble" | "plinth";
+  "column" | "stump" | "amphora" | "statue" | "sarcophagus" | "bones" | "rubble" | "coins";
 
-export type Prop = { kind: PropKind; x: number; y: number; flip?: boolean; seed?: number };
+export type Prop = {
+  kind: PropKind;
+  x: number;
+  y: number;
+  flip?: boolean;
+  seed?: number;
+  /** A sarcophagus with a riddle on its lid: which one. Answered, the lid slides off. */
+  riddle?: number;
+};
 
 /** One fire of the ten: `side` L counts the row, R the column; `i` is its place in the five. */
 export type Fire = { x: number; y: number; side: "L" | "R"; i: number; big?: boolean };
 
-export type Door = { to: RoomId; at: number };
+export type Door = {
+  to: RoomId;
+  /** Along the wall, in the room's own pixels. */
+  at: number;
+  /** Past this line (y for n and s, x for e and w) the dinosaur has left. */
+  line: number;
+  /** Where the dinosaur stands on coming in through this door. */
+  landing: { x: number; y: number };
+};
 
-export type Room = {
+export type Spikes = { x: number; w: number; y: number; h: number; phase: number };
+
+type RoomSpec = {
   id: RoomId;
   title: string;
-  /** Column and row on the map in the corner. */
+  theme: ThemeId;
+  /** Top left corner on the map, in pixels. */
   at: [number, number];
-  /** In tiles, walls included. */
+  /** In tiles. */
   w: number;
   h: number;
-  /** The north wall's height in tiles, the south and side walls are one tile. */
+  /** How tall a wall stands, in tiles. */
   wall: number;
-  doors: Partial<Record<Side, Door>>;
+  /** How dark the room is away from any fire. */
+  ambient: number;
+  shape: (x: number, y: number) => boolean;
+  doors: Partial<Record<Side, { to: RoomId; at: number }>>;
   props: Prop[];
-  fires: Fire[];
+  /** The five and five along the wall, by x: their height comes from the wall itself. */
+  sconces?: { left: number[]; right: number[] };
+  fires?: Fire[];
   spots: Spot[];
-  /** Vertical strips of spikes: from x to x + w, each rising on its own clock. */
-  spikes?: { x: number; w: number; phase: number }[];
-  /** The floor as rows of tiles from the wall's foot: `p` a pit, `h` a hidden stone over one. */
+  spikes?: Spikes[];
+  /** The floor as rows of tiles: `p` a pit, `h` a hidden stone over one, anything else floor. */
   floor?: string[];
-  /** Where the dinosaur stands again after falling. */
   safe?: { x: number; y: number };
 };
 
-/** A row of five wall fires on each side, the same in every room, burning the same signal. */
-const sconces = (lx: number, rx: number, y = 34, gap = 15): Fire[] =>
-  Array.from({ length: 5 }, (_, i) => [
-    { x: lx + i * gap, y, side: "L" as const, i },
-    { x: rx + i * gap, y, side: "R" as const, i },
-  ]).flat();
+export type Room = Omit<RoomSpec, "doors" | "sconces" | "fires"> & {
+  W: number;
+  H: number;
+  cols: number;
+  rows: number;
+  grid: Uint8Array;
+  doors: Partial<Record<Side, Door>>;
+  fires: Fire[];
+  /** The cell's value at a pixel; rock outside the room. */
+  cell: (x: number, y: number) => number;
+  /** The first floor below the wall in this column, in pixels. */
+  floorTop: (x: number) => number;
+};
 
-/** The square on the Hall's floor: 5 × 5 tiles of TILE_S pixels, from (SQUARE.x, SQUARE.y). */
+/** The square on the Hall's floor: 5 × 5 tiles of `tile` pixels, from (x, y). */
 export const SQUARE = { x: 142, y: 78, tile: 20 };
+/** How far a door's opening runs either side of its middle. */
+export const DOOR_HALF = 16;
 
-const hallFires: Fire[] = Array.from({ length: 5 }, (_, i) => [
-  { x: 122, y: SQUARE.y + 14 + i * 20, side: "L" as const, i, big: true },
-  { x: 262, y: SQUARE.y + 14 + i * 20, side: "R" as const, i, big: true },
-]).flat();
+const rect = (x0: number, y0: number, x1: number, y1: number) => (x: number, y: number) =>
+  x >= x0 && x < x1 && y >= y0 && y < y1;
 
-const tablet = (index: number, x: number, y: number): Spot => ({
+/** A rectangle with its corners cut off at 45°, in whole steps. */
+const octagon =
+  (x0: number, y0: number, x1: number, y1: number, cut: number) => (x: number, y: number) => {
+    if (x < x0 || x >= x1 || y < y0 || y >= y1) return false;
+    const dx = Math.min(x - x0, x1 - x);
+    const dy = Math.min(y - y0, y1 - y);
+    return dx + dy >= cut;
+  };
+
+const tablet = (index: number, x: number, floorTop: number): Spot => ({
   target: { kind: "tablet", index },
   x,
-  y,
+  y: floorTop + 10,
   r: 26,
-  capY: y - 50,
+  ty: floorTop - 36,
+  capY: floorTop - 48,
 });
 
 const note = (text: string, x: number, y: number, r = 24): Spot => ({
@@ -88,47 +145,85 @@ const note = (text: string, x: number, y: number, r = 24): Spot => ({
   capY: y - 26,
 });
 
-export const ROOMS: Record<RoomId, Room> = {
-  ante: {
-    id: "ante",
-    title: "The Antechamber",
-    at: [1, 2],
-    w: 22,
-    h: 13,
-    wall: 3,
-    doors: {
-      n: { to: "hall", at: 176 },
-      w: { to: "crypt", at: 120 },
-      e: { to: "teeth", at: 120 },
-    },
-    fires: sconces(24, 264),
+const hallFires: Fire[] = Array.from({ length: 5 }, (_, i) => [
+  { x: 122, y: SQUARE.y + 14 + i * 20, side: "L" as const, i, big: true },
+  { x: 262, y: SQUARE.y + 14 + i * 20, side: "R" as const, i, big: true },
+]).flat();
+
+/** The Mechanism's room: a round drop around an island, a hidden way across it. */
+const CHASM = { cx: 192, cy: 128, rx: 176, ry: 96, island: 0.3, ledge: 0.72 };
+const CHASM_PATH = new Set(
+  [
+    [4, 7],
+    [5, 7],
+    [6, 7],
+    [6, 6],
+    [6, 5],
+    [7, 5],
+    [8, 5],
+    [9, 5],
+    [9, 6],
+  ].map(([c, r]) => `${c},${r}`),
+);
+const chasmFloor = () =>
+  Array.from({ length: 15 }, (_, row) =>
+    Array.from({ length: 24 }, (_, col) => {
+      const d = Math.hypot(
+        (col * TILE + 8 - CHASM.cx) / CHASM.rx,
+        (row * TILE + 8 - CHASM.cy) / CHASM.ry,
+      );
+      if (d <= CHASM.island || d >= CHASM.ledge) return ".";
+      return CHASM_PATH.has(`${col},${row}`) ? "h" : "p";
+    }).join(""),
+  );
+
+const SPECS: RoomSpec[] = [
+  {
+    id: "mural",
+    title: "The Mural",
+    theme: "sand",
+    at: [-384, -32],
+    w: 24,
+    h: 14,
+    wall: 6,
+    ambient: 0.4,
+    shape: octagon(16, 96, 368, 208, 40),
+    doors: { e: { to: "hall", at: 160 } },
+    sconces: { left: [30, 42, 54, 66, 78], right: [306, 318, 330, 342, 354] },
     props: [
-      { kind: "column", x: 64, y: 88 },
-      { kind: "column", x: 288, y: 88 },
-      { kind: "stump", x: 64, y: 160, seed: 3 },
-      { kind: "amphora", x: 300, y: 172, seed: 1 },
-      { kind: "amphora", x: 316, y: 180, seed: 2 },
-      { kind: "bones", x: 232, y: 164 },
-      { kind: "rubble", x: 176, y: 186, seed: 4 },
-      { kind: "rubble", x: 150, y: 188, seed: 5 },
-      { kind: "rubble", x: 206, y: 188, seed: 6 },
+      { kind: "statue", x: 100, y: 110 },
+      { kind: "statue", x: 284, y: 110, flip: true },
+      { kind: "rubble", x: 142, y: 196, seed: 4 },
+      { kind: "rubble", x: 246, y: 196, seed: 5 },
+      { kind: "rubble", x: 196, y: 204, seed: 6 },
+      { kind: "stump", x: 60, y: 176, seed: 3 },
+      { kind: "column", x: 330, y: 136 },
+      { kind: "amphora", x: 312, y: 190, seed: 1 },
+      { kind: "bones", x: 88, y: 190 },
     ],
     spots: [
-      tablet(0, 126, 58),
-      note("Someone came before you. They did not read the walls.", 232, 172),
-      note("The way you came is gone.", 176, 188, 13),
+      { target: { kind: "mural" }, x: 192, y: 104, r: 34, capY: 2 },
+      note("Someone came before you. They did not stand before the wall.", 88, 198),
+      {
+        ...note("It will not open for strangers.", 346, 160, 22),
+        capY: 132,
+        untilPictured: true,
+      },
     ],
   },
-  hall: {
+  {
     id: "hall",
     title: "The Hall of Fires",
-    at: [1, 1],
+    theme: "hall",
+    at: [0, 0],
     w: 24,
     h: 13,
     wall: 4,
+    ambient: 0.46,
+    shape: rect(16, 64, 368, 192),
     doors: {
       n: { to: "sanctum", at: 192 },
-      s: { to: "ante", at: 192 },
+      s: { to: "crypt", at: 192 },
       w: { to: "mural", at: 128 },
       e: { to: "gate", at: 128 },
     },
@@ -143,216 +238,284 @@ export const ROOMS: Record<RoomId, Room> = {
       { kind: "amphora", x: 84, y: 180, seed: 3 },
       { kind: "rubble", x: 300, y: 184, seed: 7 },
     ],
-    spots: [{ target: { kind: "door" }, x: 192, y: 72, r: 22, capY: 8 }],
+    spots: [{ target: { kind: "door" }, x: 192, y: 72, r: 22, capY: 8 }, tablet(4, 90, 64)],
   },
-  mural: {
-    id: "mural",
-    title: "The Mural",
-    at: [0, 1],
-    w: 22,
-    h: 13,
-    wall: 6,
-    doors: {
-      e: { to: "hall", at: 144 },
-      w: { to: "gallery", at: 144 },
-      s: { to: "crypt", at: 176 },
-    },
-    fires: sconces(24, 264, 52),
-    props: [
-      { kind: "stump", x: 48, y: 180, seed: 9 },
-      { kind: "statue", x: 84, y: 112 },
-      { kind: "statue", x: 268, y: 112, flip: true },
-      { kind: "amphora", x: 306, y: 182, seed: 4 },
-    ],
-    spots: [{ target: { kind: "mural" }, x: 176, y: 104, r: 34, capY: 4 }],
-  },
-  gallery: {
-    id: "gallery",
-    title: "The Gallery",
-    at: [-1, 1],
-    w: 22,
-    h: 13,
-    wall: 3,
-    doors: { e: { to: "mural", at: 120 } },
-    fires: sconces(24, 264),
-    props: [
-      { kind: "column", x: 96, y: 104 },
-      { kind: "column", x: 256, y: 104 },
-      { kind: "column", x: 96, y: 170 },
-      { kind: "column", x: 256, y: 170 },
-      { kind: "statue", x: 176, y: 182 },
-      { kind: "rubble", x: 40, y: 180, seed: 11 },
-      { kind: "amphora", x: 44, y: 110, seed: 5 },
-    ],
-    spots: [tablet(1, 128, 58), tablet(2, 224, 58)],
-  },
-  crypt: {
+  {
     id: "crypt",
     title: "The Crypt",
-    at: [0, 2],
+    theme: "crypt",
+    at: [16, 208],
     w: 22,
-    h: 13,
+    h: 14,
     wall: 3,
+    ambient: 0.5,
+    // A cross: a long nave and two arms.
+    shape: (x, y) => rect(112, 48, 240, 208)(x, y) || rect(16, 104, 336, 184)(x, y),
     doors: {
-      n: { to: "mural", at: 232 },
-      e: { to: "ante", at: 120 },
+      n: { to: "hall", at: 176 },
+      e: { to: "teeth", at: 160 },
     },
-    fires: sconces(24, 264),
+    sconces: { left: [24, 38, 52, 66, 80], right: [262, 276, 290, 304, 318] },
     props: [
-      { kind: "sarcophagus", x: 72, y: 110 },
-      { kind: "sarcophagus", x: 72, y: 176 },
-      { kind: "sarcophagus", x: 136, y: 176 },
-      { kind: "sarcophagus", x: 200, y: 176 },
-      { kind: "bones", x: 152, y: 96 },
-      { kind: "rubble", x: 288, y: 176, seed: 13 },
-      { kind: "amphora", x: 300, y: 70, seed: 6 },
+      { kind: "sarcophagus", x: 62, y: 148, riddle: 0 },
+      { kind: "sarcophagus", x: 276, y: 136, riddle: 1 },
+      { kind: "sarcophagus", x: 176, y: 204, riddle: 2 },
+      { kind: "bones", x: 142, y: 92 },
+      { kind: "rubble", x: 32, y: 178, seed: 13 },
+      { kind: "amphora", x: 226, y: 66, seed: 6 },
+      { kind: "amphora", x: 124, y: 62, seed: 2 },
     ],
     spots: [
-      tablet(3, 150, 58),
-      note("It is lighter than it should be.", 72, 180, 22),
-      note("This one was opened from inside.", 200, 180, 22),
+      {
+        target: { kind: "tablet", index: 0 },
+        x: 62,
+        y: 162,
+        r: 28,
+        capY: 104,
+        label: "Read the lid",
+      },
+      {
+        target: { kind: "tablet", index: 1 },
+        x: 276,
+        y: 150,
+        r: 28,
+        capY: 92,
+        label: "Read the lid",
+      },
+      {
+        target: { kind: "tablet", index: 2 },
+        x: 176,
+        y: 182,
+        r: 34,
+        capX: 212,
+        capY: 158,
+        label: "Read the lid",
+      },
+      note("He got out. Most of him.", 142, 100, 22),
     ],
   },
-  teeth: {
+  {
     id: "teeth",
     title: "The Teeth",
-    at: [2, 2],
+    theme: "rust",
+    at: [368, 208],
     w: 24,
-    h: 13,
+    h: 14,
     wall: 3,
+    ambient: 0.5,
+    // An L: a landing by the doors, and one long way to the far wall.
+    shape: (x, y) => rect(16, 48, 112, 208)(x, y) || rect(16, 112, 368, 208)(x, y),
     doors: {
-      w: { to: "ante", at: 120 },
-      n: { to: "gate", at: 40 },
+      w: { to: "crypt", at: 160 },
+      n: { to: "gate", at: 64 },
     },
-    fires: sconces(72, 184),
+    sconces: { left: [126, 141, 156, 171, 186], right: [214, 229, 244, 259, 274] },
     props: [
-      { kind: "rubble", x: 352, y: 176, seed: 15 },
-      { kind: "bones", x: 56, y: 180 },
-      { kind: "amphora", x: 348, y: 72, seed: 7 },
+      { kind: "bones", x: 36, y: 90 },
+      { kind: "rubble", x: 350, y: 196, seed: 15 },
+      { kind: "amphora", x: 98, y: 66, seed: 7 },
     ],
     spikes: [
-      { x: 96, w: 32, phase: 0 },
-      { x: 152, w: 32, phase: 0.3 },
-      { x: 208, w: 32, phase: 0.6 },
-      { x: 264, w: 32, phase: 0.15 },
+      { x: 124, w: 28, y: 112, h: 96, phase: 0 },
+      { x: 176, w: 28, y: 112, h: 96, phase: 0.3 },
+      { x: 228, w: 28, y: 112, h: 96, phase: 0.6 },
+      { x: 280, w: 28, y: 112, h: 96, phase: 0.15 },
     ],
-    spots: [tablet(4, 332, 58)],
+    spots: [tablet(3, 336, 112), note("He ran. He should have counted.", 36, 98, 20)],
   },
-  gate: {
+  {
     id: "gate",
-    title: "The Word Gate",
-    at: [2, 1],
-    w: 22,
-    h: 13,
-    wall: 5,
-    doors: {
-      w: { to: "hall", at: 136 },
-      e: { to: "chasm", at: 120 },
-      s: { to: "teeth", at: 56 },
-    },
-    fires: sconces(24, 264, 44),
-    props: [
-      { kind: "statue", x: 108, y: 90 },
-      { kind: "statue", x: 244, y: 90, flip: true },
-      { kind: "column", x: 40, y: 104 },
-      { kind: "column", x: 312, y: 104 },
-      { kind: "rubble", x: 296, y: 186, seed: 17 },
-      { kind: "stump", x: 176, y: 182, seed: 19 },
-    ],
-    spots: [{ target: { kind: "gate" }, x: 176, y: 90, r: 30, capY: 2 }],
-  },
-  chasm: {
-    id: "chasm",
-    title: "The Chasm",
-    at: [3, 1],
+    title: "The Mask",
+    theme: "marble",
+    at: [384, 0],
     w: 24,
     h: 13,
-    wall: 3,
-    doors: { w: { to: "gate", at: 120 } },
-    fires: sconces(30, 140),
+    wall: 5,
+    ambient: 0.48,
+    // A half-round theatre, its back to the mask.
+    shape: (x, y) => y < 192 && Math.hypot((x - 192) / 176, (y - 192) / 112) <= 1,
+    doors: {
+      w: { to: "hall", at: 128 },
+      e: { to: "chasm", at: 128 },
+      s: { to: "teeth", at: 48 },
+    },
+    sconces: { left: [52, 66, 80, 94, 108], right: [276, 290, 304, 318, 332] },
     props: [
-      { kind: "column", x: 48, y: 82 },
-      { kind: "stump", x: 44, y: 180, seed: 21 },
-      { kind: "column", x: 352, y: 82 },
-      { kind: "column", x: 352, y: 180 },
-      { kind: "amphora", x: 288, y: 182, seed: 8 },
+      { kind: "column", x: 128, y: 112 },
+      { kind: "column", x: 256, y: 112 },
+      { kind: "stump", x: 300, y: 176, seed: 19 },
+      { kind: "rubble", x: 150, y: 186, seed: 17 },
     ],
-    floor: [
-      "....pppppppppppp......",
-      "....pppppppppppp......",
-      "....ppphhhhhhhpp......",
-      "....ppphppppphpp......",
-      "....hhhhppppphpp......",
-      "....ppppppppphpp......",
-      "....ppppppppphhh......",
-      "....pppppppppppp......",
-      "....pppppppppppp......",
-    ],
-    safe: { x: 60, y: 120 },
-    spots: [{ target: { kind: "stone" }, x: 320, y: 128, r: 28, capY: 42 }],
+    spots: [{ target: { kind: "gate" }, x: 192, y: 92, r: 30, capX: 240, capY: 30 }],
   },
-  sanctum: {
+  {
+    id: "chasm",
+    title: "The Mechanism",
+    theme: "bronze",
+    at: [768, 0],
+    w: 24,
+    h: 15,
+    wall: 2,
+    ambient: 0.5,
+    shape: (x, y) => Math.hypot((x - CHASM.cx) / CHASM.rx, (y - CHASM.cy) / CHASM.ry) <= 1,
+    doors: { w: { to: "gate", at: 128 } },
+    sconces: { left: [64, 80, 96, 112, 128], right: [256, 272, 288, 304, 320] },
+    props: [
+      { kind: "stump", x: 42, y: 92, seed: 21 },
+      { kind: "column", x: 40, y: 168 },
+      { kind: "column", x: 344, y: 168 },
+      { kind: "column", x: 344, y: 96 },
+    ],
+    floor: chasmFloor(),
+    safe: { x: 40, y: 128 },
+    spots: [{ target: { kind: "stone" }, x: 192, y: 146, r: 48, capY: 60 }],
+  },
+  {
     id: "sanctum",
     title: "The Sanctum",
-    at: [1, 0],
+    theme: "gold",
+    at: [32, -208],
     w: 20,
     h: 13,
     wall: 4,
+    ambient: 0.14,
+    shape: octagon(16, 64, 304, 192, 32),
     doors: { s: { to: "hall", at: 160 } },
-    fires: sconces(20, 240, 44),
     props: [
       { kind: "column", x: 72, y: 96 },
       { kind: "column", x: 248, y: 96 },
-      { kind: "column", x: 72, y: 150 },
-      { kind: "column", x: 248, y: 150 },
+      { kind: "column", x: 72, y: 156 },
+      { kind: "column", x: 248, y: 156 },
       { kind: "statue", x: 118, y: 100 },
       { kind: "statue", x: 202, y: 100, flip: true },
+      { kind: "coins", x: 48, y: 130, seed: 1 },
+      { kind: "coins", x: 272, y: 128, seed: 2 },
+      { kind: "coins", x: 106, y: 170, seed: 3 },
+      { kind: "coins", x: 216, y: 174, seed: 4 },
+      { kind: "amphora", x: 44, y: 170, seed: 1 },
+      { kind: "amphora", x: 278, y: 168, seed: 2 },
     ],
-    spots: [{ target: { kind: "altar" }, x: 160, y: 128, r: 28, capY: 96 }],
+    spots: [{ target: { kind: "altar" }, x: 160, y: 128, r: 28, capY: 62 }],
   },
-};
+];
 
-export const ROOM_LIST = Object.values(ROOMS);
+function build(spec: RoomSpec): Room {
+  const W = spec.w * TILE;
+  const H = spec.h * TILE;
+  const cols = W / CELL;
+  const rows = H / CELL;
+  const grid = new Uint8Array(cols * rows);
+  for (let r = 0; r < rows; r += 1) {
+    for (let c = 0; c < cols; c += 1) {
+      if (spec.shape(c * CELL + 4, r * CELL + 4)) grid[c + r * cols] = 1;
+    }
+  }
+  const get = (c: number, r: number) =>
+    c < 0 || r < 0 || c >= cols || r >= rows ? 0 : grid[c + r * cols]!;
+  const floorTop = (x: number) => {
+    const c = Math.floor(x / CELL);
+    for (let r = 0; r < rows; r += 1) if (get(c, r) === 1) return r * CELL;
+    return H;
+  };
 
-/** The room's interior, in pixels: where feet can stand. */
-export function interior(room: Room) {
+  const doors: Partial<Record<Side, Door>> = {};
+  for (const [side, door] of Object.entries(spec.doors) as [Side, { to: RoomId; at: number }][]) {
+    const first = Math.floor((door.at - DOOR_HALF) / CELL);
+    const span = [first, first + 1, first + 2, first + 3];
+    if (side === "w" || side === "e") {
+      // Cut through from the edge of the room's box to its floor.
+      let reach = 0;
+      for (const r of span) {
+        if (side === "w") {
+          let c = 0;
+          while (c < cols && get(c, r) !== 1) {
+            grid[c + r * cols] = 2;
+            c += 1;
+          }
+          reach = Math.max(reach, c * CELL);
+        } else {
+          let c = cols - 1;
+          while (c >= 0 && get(c, r) !== 1) {
+            grid[c + r * cols] = 2;
+            c -= 1;
+          }
+          reach = Math.max(reach, W - (c + 1) * CELL);
+        }
+      }
+      doors[side] =
+        side === "w"
+          ? { ...door, line: 8, landing: { x: reach + 12, y: door.at } }
+          : { ...door, line: W - 8, landing: { x: W - reach - 12, y: door.at } };
+    } else if (side === "s") {
+      let reach = 0;
+      for (const c of span) {
+        let r = rows - 1;
+        while (r >= 0 && get(c, r) !== 1) {
+          grid[c + r * cols] = 2;
+          r -= 1;
+        }
+        reach = Math.max(reach, H - (r + 1) * CELL);
+      }
+      doors[side] = { ...door, line: H - 8, landing: { x: door.at, y: H - reach - 10 } };
+    } else {
+      // North: into the wall's foot, under the arch the painter draws.
+      const top = floorTop(door.at);
+      for (const c of span) {
+        for (const r of [top / CELL - 1, top / CELL - 2]) grid[c + r * cols] = 2;
+      }
+      doors[side] = { ...door, line: top - 8, landing: { x: door.at, y: top + 12 } };
+    }
+  }
+
+  const fires = [...(spec.fires ?? [])];
+  if (spec.sconces) {
+    const onWall = (xs: number[], side: "L" | "R") =>
+      xs.map((x, i) => ({ x, y: floorTop(x) - 14, side, i }));
+    fires.push(...onWall(spec.sconces.left, "L"), ...onWall(spec.sconces.right, "R"));
+  }
   return {
-    left: TILE,
-    right: (room.w - 1) * TILE,
-    top: room.wall * TILE,
-    bottom: (room.h - 1) * TILE,
+    ...spec,
+    W,
+    H,
+    cols,
+    rows,
+    grid,
+    doors,
+    fires,
+    floorTop,
+    cell: (x, y) => get(Math.floor(x / CELL), Math.floor(y / CELL)),
   };
 }
 
-/** The opening of a door: half its width. */
-export const DOOR_HALF = 16;
-
-/** Where a dinosaur coming through `side` of `room` stands. */
-export function arrival(room: Room, side: Side) {
-  const door = room.doors[side];
-  const box = interior(room);
-  const at = door?.at ?? 0;
-  if (side === "n") return { x: at, y: box.top + 12 };
-  if (side === "s") return { x: at, y: box.bottom - 10 };
-  if (side === "w") return { x: box.left + 12, y: at };
-  return { x: box.right - 12, y: at };
-}
+export const ROOMS = Object.fromEntries(SPECS.map((s) => [s.id, build(s)])) as Record<RoomId, Room>;
+export const ROOM_LIST = Object.values(ROOMS);
 
 export const OPPOSITE: Record<Side, Side> = { n: "s", s: "n", e: "w", w: "e" };
+
+/** Doors meet on the map: a mistake here is a door that jumps, so it fails loudly in dev. */
+if (process.env.NODE_ENV === "development") {
+  for (const room of ROOM_LIST) {
+    for (const [side, door] of Object.entries(room.doors) as [Side, Door][]) {
+      const other = ROOMS[door.to];
+      const back = other.doors[OPPOSITE[side]];
+      const along = side === "n" || side === "s" ? 0 : 1;
+      if (back?.to !== room.id || room.at[along] + door.at !== other.at[along] + back.at) {
+        throw new Error(`The ${side} door of ${room.id} does not meet ${door.to}`);
+      }
+    }
+  }
+}
 
 /** The solid part of a prop, as a box around its feet; null when it can be walked over. */
 export function solidOf(prop: Prop): { x: number; y: number; w: number; h: number } | null {
   switch (prop.kind) {
     case "column":
-      return { x: prop.x - 6, y: prop.y - 5, w: 12, h: 6 };
     case "stump":
       return { x: prop.x - 6, y: prop.y - 5, w: 12, h: 6 };
     case "amphora":
       return { x: prop.x - 4, y: prop.y - 3, w: 8, h: 4 };
     case "statue":
       return { x: prop.x - 11, y: prop.y - 7, w: 22, h: 8 };
-    case "plinth":
-      return { x: prop.x - 9, y: prop.y - 6, w: 18, h: 7 };
     case "sarcophagus":
       return { x: prop.x - 21, y: prop.y - 18, w: 42, h: 20 };
     default:

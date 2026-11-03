@@ -2,6 +2,7 @@
 
 import { Delete } from "lucide-react";
 import { useEffect, useRef, useState, useTransition } from "react";
+import { maskCloseUp } from "@/components/olympus/crawl/art";
 import { guessGate } from "@/app/olympus3/actions";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
 import { Colonnade } from "@/components/olympus/Colonnade";
@@ -32,10 +33,11 @@ const SAY: Record<Mark, string> = {
 export type Guess = { guess: string; marks: Mark[] };
 
 /**
- * The Word Gate, up close: the same Wordle as /olympus, on the gate's own stones. Nothing says the
- * word comes from the answers standing on the five columns beside it. The server gives no marks
- * until all five riddles are answered, so it cannot be played instead of them; the shell keeps the
- * gate shut until then. Six tries, then a minute's silence, kept through a refresh.
+ * The Mask, up close: the same Wordle as /olympus, its board set in the howling mouth of a marble
+ * tragic mask, every guess a row of its teeth. Nothing says the word comes from the answers on the
+ * five columns beside it. The server gives no marks until all five riddles are answered, so it
+ * cannot be played instead of them; the shell keeps the mask silent until then. Six tries, then a
+ * minute's silence, kept through a refresh.
  */
 export function WordGate({
   family,
@@ -55,6 +57,7 @@ export function WordGate({
   onSolved: (word: string) => void;
 }) {
   const reduce = useReducedMotionSafe();
+  const [mask] = useState(maskCloseUp);
   const [letters, setLetters] = useState("");
   const [error, setError] = useState<string>();
   const [won, setWon] = useState(false);
@@ -131,18 +134,17 @@ export function WordGate({
 
   const typing = !won && !spent;
   const empty = Math.max(0, ROWS - guesses.length - (typing ? 1 : 0));
-  const tile =
-    "crawl-tile flex size-11 items-center justify-center font-olympus text-2xl font-semibold";
+  const tile = "crawl-tooth flex items-center justify-center font-olympus text-2xl font-semibold";
   const key =
     "flex h-11 min-w-0 flex-1 items-center justify-center border transition-colors hover:border-line-strong";
 
   return (
-    <div className="flex w-full flex-col items-center gap-8 lg:flex-row lg:items-center lg:justify-center lg:gap-14">
-      <div className="flex flex-col items-center">
+    <div className="m-auto flex w-full flex-col items-center gap-6 lg:flex-row lg:items-center lg:justify-center lg:gap-12">
+      <div className="crawl-mask journey-rise" style={{ backgroundImage: `url(${mask})` }}>
         <ol
           aria-label={`Your guesses, ${ROWS - guesses.length} left this round`}
           data-olympus
-          className="journey-rise flex flex-col gap-1.5"
+          className="crawl-mouth"
         >
           {guesses.map(({ guess, marks }, r) => {
             const turning = r === fresh;
@@ -195,23 +197,23 @@ export function WordGate({
           {Array.from({ length: empty }, (_, r) => (
             <li key={`empty-${r}`} aria-hidden="true" className="flex gap-1.5">
               {Array.from({ length: LENGTH }, (_, i) => (
-                <span key={i} className="crawl-tile crawl-tile-empty size-11" />
+                <span key={i} className="crawl-tooth crawl-tooth-empty" />
               ))}
             </li>
           ))}
         </ol>
-        <div className="mt-3 flex min-h-7 items-center">
+      </div>
+
+      <div className="flex w-full max-w-md flex-col items-center gap-6">
+        <div className="flex min-h-7 items-center">
           {quiet > 0 ? (
-            <Silence seconds={quiet} line="The gate has gone cold." />
+            <Silence seconds={quiet} line="The mask has gone cold." />
           ) : (
             <p role="status" className={error === OFFLINE ? "text-sm text-cyan" : "sr-only"}>
               {error}
             </p>
           )}
         </div>
-      </div>
-
-      <div className="flex w-full max-w-md flex-col items-center gap-6">
         <div className="journey-rise w-full" style={{ "--d": "150ms" } as React.CSSProperties}>
           <Colonnade total={answers.length} words={answers} scramble />
         </div>

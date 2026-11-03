@@ -42,7 +42,7 @@ export const emptySave = (riddles: number): TombSave => ({
   visited: [],
 });
 
-const keyOf = (family: number) => `olympus3:${family}`;
+const keyOf = (family: number) => `olympus3.2:${family}`;
 
 export function loadSave(family: number, riddles: number): TombSave {
   try {

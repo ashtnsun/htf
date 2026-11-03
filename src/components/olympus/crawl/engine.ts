@@ -1,10 +1,12 @@
 import { CRACK, SEAL } from "@/components/olympus/journey/Seal";
 import {
   brazierPicture,
+  BRONZE,
   C,
   dinoFrame,
   DINO_FOOT_X,
   DINO_H,
+  DINO_W,
   drawFlame,
   drawGlyphs,
   drawLetter,
@@ -12,19 +14,22 @@ import {
   drawSquareTile,
   drawWord,
   fromRows,
+  gearPicture,
   kept,
   lightPicture,
-  tintPicture,
   makeCanvas,
+  maskPicture,
   paintRoom,
+  PATINA,
   propPicture,
   rng,
+  sarcophagusPicture,
+  THEMES,
+  tintPicture,
+  type Theme,
 } from "@/components/olympus/crawl/art";
 import type { TombSound } from "@/components/olympus/crawl/sound";
 import {
-  arrival,
-  DOOR_HALF,
-  interior,
   OPPOSITE,
   ROOM_LIST,
   ROOMS,
@@ -32,23 +37,28 @@ import {
   solidOf,
   solidOfFire,
   TILE,
+  type Door,
   type Fire,
   type Room,
   type RoomId,
   type Side,
+  type Spikes,
   type Spot,
   type Target,
 } from "@/components/olympus/crawl/world";
 
 /**
  * The tomb's game loop: one canvas drawn with `fillRect` and small pictures at a whole number of
- * screen pixels per cell, so everything stays on its grid. Rooms are painted once; each frame draws
- * the room, what moves, then a small dark layer with pools of light cut out of it (dithered, no
- * blur). Nothing here touches React: the shell (Crawl.tsx) hears about prompts, rooms and
- * interactions through `Hooks` and tells the world what has changed through `setFlags`.
+ * pixels per cell, so everything stays on its grid. Rooms are painted once; each frame draws the
+ * room, what moves, then a small dark layer with pools of light cut out of it (dithered, no blur).
+ * Rooms really touch on the map, so going through a door is the camera panning from one to the next
+ * while the dinosaur walks through. Nothing here touches React: the shell (Crawl.tsx) hears about
+ * prompts, rooms and interactions through `Hooks` and says what has changed through `setFlags`.
  */
 
 export type Flags = {
+  /** The photo has been taken: the first room's door opens. */
+  pictured: boolean;
   photo: HTMLImageElement | null;
   solved: boolean[];
   word: string | null;
@@ -65,6 +75,10 @@ export type Hooks = {
   onRoom: (room: RoomId, x: number, y: number) => void;
   onStamp: (letters: string) => void;
   onFirstMove: () => void;
+  /** A moment the camera holds on, as fractions of the screen; null when it lets go. */
+  onCine: (focus: { x: number; y: number } | null) => void;
+  /** Where the dinosaur is on the whole map. */
+  onPlace: (x: number, y: number) => void;
 };
 
 export type WorldEvent =
@@ -76,16 +90,12 @@ export type WorldEvent =
   | { kind: "door" };
 
 const SPEED = 104;
-const DASH_SPEED = 300;
-const DASH_TIME = 0.16;
-const DASH_REST = 0.5;
-const SLIDE = 0.42;
+const SLIDE = 0.62;
 const FALL = 0.6;
+const DROP = 0.8;
 const SPIKE_PERIOD = 2.6;
 /** The fires' clock, in milliseconds: as on /olympus. */
 const BEAT = { FLARE: 900, AFTER_FLARE: 1400, LIT: 2000, DARK: 700, END: 3200 };
-/** How dark a room is away from any fire. */
-const AMBIENT = 0.46;
 
 type Beat = { left: number; right: number; ms: number };
 
@@ -101,10 +111,9 @@ function beatsOf(signal: readonly [number, number][]): Beat[] {
   ];
 }
 
+type FireNow = { left: number; right: number; flare: boolean };
 type Mote = { x: number; y: number; vx: number; vy: number; life: number; ink: string };
-
 type Item = { y: number; draw: (ctx: CanvasRenderingContext2D, time: number) => void };
-
 type Live = {
   room: Room;
   bg: HTMLCanvasElement;
@@ -112,22 +121,26 @@ type Live = {
   solids: { x: number; y: number; w: number; h: number }[];
   motes: { x: number; y: number; s: number; p: number }[];
 };
+type Cine = { x: number; y: number; ms: number; start?: () => void };
 
-const MURAL = { x: 104, y: 4, w: 144, h: 88, ix: 112, iy: 12, iw: 128, ih: 72 };
-const GATE = { x: 128, y: 6, w: 96, h: 74 };
+const MURAL = { x: 120, y: 4, w: 144, h: 88, ix: 128, iy: 12, iw: 128, ih: 72 };
+const MASK = { x: 156, y: 2, w: 72, h: 78 };
+const SHUT = { top: 0.62, bottom: 0.68, half: 0.3 };
+const OPEN = { top: 0.54, bottom: 0.9, half: 0.48 };
 const GREAT_DOOR = { x: 152, y: 2, w: 80, h: 62 };
+const MECHANISM = { x: 192, foot: 130 };
 
 /** Where the camera closes in on each thing, in room pixels. */
 function focusOf(target: Target, spot: Spot): { x: number; y: number } {
   switch (target.kind) {
     case "tablet":
-      return { x: spot.x, y: 30 };
+      return { x: spot.x, y: spot.ty != null ? spot.ty + 16 : spot.y - 20 };
     case "mural":
       return { x: MURAL.ix + MURAL.iw / 2, y: MURAL.iy + MURAL.ih / 2 };
     case "gate":
-      return { x: GATE.x + GATE.w / 2, y: 40 };
+      return { x: MASK.x + MASK.w / 2, y: 44 };
     case "stone":
-      return { x: spot.x, y: 84 };
+      return { x: MECHANISM.x, y: 104 };
     case "door":
       return { x: 192, y: 34 };
     default:
@@ -135,14 +148,15 @@ function focusOf(target: Target, spot: Spot): { x: number; y: number } {
   }
 }
 
-export function labelOf(target: Target, flags: Flags): string {
-  switch (target.kind) {
+export function labelOf(spot: Spot, flags: Flags): string {
+  if (spot.label) return spot.label;
+  switch (spot.target.kind) {
     case "tablet":
       return "Read the wall";
     case "mural":
-      return flags.photo ? "Look" : "Stand before the wall";
+      return flags.pictured ? "Look" : "Stand before the wall";
     case "gate":
-      return "Touch the gate";
+      return "Face the mask";
     case "stone":
       return "Turn the wheels";
     case "door":
@@ -153,6 +167,9 @@ export function labelOf(target: Target, flags: Flags): string {
       return "Look";
   }
 }
+
+const lerp = (a: number, b: number, u: number) => a + (b - a) * u;
+const easeInOut = (u: number) => (u < 0.5 ? 2 * u * u : 1 - (-2 * u + 2) ** 2 / 2);
 
 export class CrawlEngine {
   private ctx: CanvasRenderingContext2D;
@@ -181,25 +198,25 @@ export class CrawlEngine {
   private walked = 0;
   private moving = false;
   private lastStepSound = 0;
-  private dashLeft = 0;
-  private dashRest = 0;
-  private dashX = 0;
-  private dashY = 0;
   private hurt = 0;
   private lastSafe: { x: number; y: number };
-  private ghosts: { x: number; y: number; step: number; flip: boolean; life: number }[] = [];
   private motes: Mote[] = [];
   private movedOnce = false;
   private paused = false;
   private asleep = false;
-  private intro: number;
+  /** The fall in through the roof, the first time. */
+  private drop = 0;
   private iris = 1;
   private slide: {
     from: Live;
     to: Live;
-    fromCam: { x: number; y: number };
+    camFrom: { x: number; y: number };
+    camTo: { x: number; y: number };
+    sx: number;
+    sy: number;
+    ex: number;
+    ey: number;
     t: number;
-    side: Side;
   } | null = null;
   private falling = 0;
   private revealed = new Set<string>();
@@ -212,13 +229,21 @@ export class CrawlEngine {
   private stamps: { r: number; c: number }[] = [];
   private flags: Flags;
   private muralStart = -1;
+  private slabStart = -1;
   private squareStart = -1;
   private doorStart = -1;
   private tabletPulse = new Map<number, number>();
   private wordPulse = -1;
   private stonePulse = -1;
+  private cine: Cine[] = [];
+  private cineLeft = 0;
+  /** What the camera is looking at: the dinosaur, unless a moment has taken it elsewhere. */
+  private look = { x: 0, y: 0 };
+  private lookTarget: { x: number; y: number } | null = null;
+  private lookAway = false;
+  private lastPlace = "";
   private reduce: boolean;
-  private tints: { x: number; y: number; r: number; flare: boolean }[] = [];
+  private tints: { x: number; y: number; r: number; ink: string; alpha: number }[] = [];
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -236,10 +261,11 @@ export class CrawlEngine {
     this.flags = flags;
     this.reduce = reduce;
     for (const room of ROOM_LIST) this.live.set(room.id, this.build(room));
-    this.current = this.live.get(start?.room ?? "ante")!;
-    this.x = start?.x ?? 176;
-    this.y = start?.y ?? 188;
-    this.intro = start || reduce ? 0 : 1.1;
+    const known = start && ROOMS[start.room] ? start : null;
+    this.current = this.live.get(known?.room ?? "mural")!;
+    this.x = known?.x ?? 192;
+    this.y = known?.y ?? 154;
+    this.drop = known || reduce ? 0 : DROP;
     this.iris = reduce ? 0 : 1;
     this.lastSafe = { x: this.x, y: this.y };
   }
@@ -294,8 +320,12 @@ export class CrawlEngine {
     const spot = this.current.room.spots.find((s) => sameTarget(s.target, target));
     if (!spot) return { x: 0.5, y: 0.5 };
     const at = focusOf(target, spot);
+    return this.onScreen(at.x, at.y);
+  }
+
+  private onScreen(x: number, y: number) {
     const cam = this.camera(this.current);
-    return { x: (at.x - cam.x) / this.viewW, y: (at.y - cam.y) / this.viewH };
+    return { x: (x - cam.x) / this.viewW, y: (y - cam.y) / this.viewH };
   }
 
   /** Forget the pressed letters: the fires said otherwise, or the word was spoken. */
@@ -304,53 +334,95 @@ export class CrawlEngine {
     this.hooks.onStamp("");
   }
 
-  /** Something in the world has just changed: show it. */
+  /** Something in the world has just changed: show it, and hold on the big ones. */
   play(event: WorldEvent) {
     const now = performance.now();
     switch (event.kind) {
       case "mural":
-        this.muralStart = now + 250;
-        this.shake(900, 1);
+        this.muralStart = now + 450;
+        this.slabStart = now + 3100;
         this.score.chime();
-        this.score.stone();
+        this.playCine([
+          { x: 192, y: 48, ms: 2900 },
+          {
+            x: 356,
+            y: 160,
+            ms: 2000,
+            start: () => {
+              this.shake(1400, 2);
+              this.score.rumble(0.8);
+            },
+          },
+        ]);
         break;
       case "tablet":
         this.tabletPulse.set(event.index, now);
         this.score.chime();
         break;
       case "word":
-        this.wordPulse = now;
-        this.shake(700, 2);
+        this.wordPulse = now + 300;
+        this.shake(900, 2);
         this.score.rumble(0.6);
         this.score.chime();
+        this.playCine([{ x: 192, y: 48, ms: 2400 }]);
         break;
       case "stone":
         this.stonePulse = now;
         this.score.chime();
+        this.playCine([{ x: 192, y: 100, ms: 2000 }]);
         break;
       case "square":
-        this.squareStart = now + 300;
+        this.squareStart = now + 500;
         this.shake(1800, 2);
         this.score.rumble(0.8);
         this.score.whoosh(0.15, 1.4);
+        this.playCine([{ x: 192, y: 118, ms: 2800 }]);
         break;
       case "door":
-        this.doorStart = now + 300;
+        this.doorStart = now + 500;
         this.shake(2000, 2);
         this.score.rumble(1);
         this.score.chime();
+        this.playCine([{ x: 192, y: 40, ms: 3000 }]);
         break;
     }
+  }
+
+  private playCine(beats: Cine[]) {
+    if (this.reduce) {
+      beats.forEach((b) => b.start?.());
+      return;
+    }
+    this.cine = beats;
+    this.cineLeft = 0;
+    this.nextCine();
+  }
+
+  private nextCine() {
+    const beat = this.cine.shift();
+    if (!beat) {
+      this.cineLeft = 0;
+      this.lookTarget = null;
+      this.hooks.onCine(null);
+      return;
+    }
+    this.cineLeft = beat.ms / 1000;
+    beat.start?.();
+    this.lookTarget = { x: beat.x, y: beat.y };
+    if (!this.lookAway) this.look = { x: this.x, y: this.y };
+    this.lookAway = true;
+    const cam = this.cameraAt(this.current, beat.x, beat.y);
+    this.hooks.onCine({ x: (beat.x - cam.x) / this.viewW, y: (beat.y - cam.y) / this.viewH });
   }
 
   /** Dev only: jump to a room, for the screenshots. */
   debugGo(room: RoomId, x?: number, y?: number) {
     this.current = this.live.get(room)!;
-    const box = interior(this.current.room);
-    this.x = x ?? (box.left + box.right) / 2;
-    this.y = y ?? (box.top + box.bottom) / 2;
+    const landing = Object.values(this.current.room.doors)[0]?.landing ?? { x: 100, y: 100 };
+    this.x = x ?? landing.x;
+    this.y = y ?? landing.y;
     this.lastSafe = { x: this.x, y: this.y };
-    this.intro = 0;
+    this.drop = 0;
     this.iris = 0;
     this.slide = null;
     this.hooks.onRoom(room, this.x, this.y);
@@ -412,14 +484,10 @@ export class CrawlEngine {
     if (this.paused || event.metaKey || event.ctrlKey || event.altKey) return;
     const code = event.code;
     // E and Enter too: the close-up they open takes the focus before the key's letter lands.
-    if (code.startsWith("Arrow") || ["Space", "KeyE", "Enter"].includes(code)) {
-      event.preventDefault();
-    }
+    if (code.startsWith("Arrow") || ["KeyE", "Enter"].includes(code)) event.preventDefault();
     if (event.repeat) return;
     this.keys.add(code);
     if (code === "KeyE" || code === "Enter") this.interact();
-    if ((code === "Space" || code === "ShiftLeft" || code === "ShiftRight") && !this.intro)
-      this.dash();
     if (code === "Backspace" && this.stamps.length && this.current.room.id === "hall") {
       this.stamps.pop();
       this.emitStamps();
@@ -437,7 +505,7 @@ export class CrawlEngine {
   }
 
   private interact() {
-    if (this.intro || this.slide || this.falling) return;
+    if (this.drop > 0 || this.slide || this.falling || this.cineLeft > 0) return;
     if (this.here) {
       this.hooks.onInteract(this.here.target);
       return;
@@ -450,30 +518,34 @@ export class CrawlEngine {
     }
   }
 
-  private dash() {
-    if (this.dashRest > 0 || this.slide || this.falling) return;
-    let dx = 0;
-    let dy = 0;
-    if (this.keys.has("KeyA") || this.keys.has("ArrowLeft")) dx -= 1;
-    if (this.keys.has("KeyD") || this.keys.has("ArrowRight")) dx += 1;
-    if (this.keys.has("KeyW") || this.keys.has("ArrowUp")) dy -= 1;
-    if (this.keys.has("KeyS") || this.keys.has("ArrowDown")) dy += 1;
-    if (!dx && !dy) dx = this.facing;
-    const len = Math.hypot(dx, dy);
-    this.dashX = dx / len;
-    this.dashY = dy / len;
-    this.dashLeft = DASH_TIME;
-    this.dashRest = DASH_REST;
-    this.score.whoosh(0.08, 0.25);
-  }
-
   /* ---------------------------------------------------------------- building */
 
   private build(room: Room): Live {
     const items: Item[] = [];
     const solids: Live["solids"] = [];
+    const t = THEMES[room.theme];
     for (const prop of room.props) {
-      const picture = propPicture(prop);
+      const solid = solidOf(prop);
+      if (solid) solids.push(solid);
+      if (prop.riddle != null) {
+        const riddle = prop.riddle;
+        items.push({
+          y: prop.y,
+          draw: (ctx) => {
+            const open = !!this.flags.solved[riddle];
+            ctx.fillStyle = "rgba(0,0,0,0.45)";
+            ctx.fillRect(prop.x - 22, prop.y - 1, 44, 3);
+            ctx.drawImage(sarcophagusPicture(t, open), prop.x - 22, prop.y - 33);
+            const age = performance.now() - (this.tabletPulse.get(riddle) ?? -1e9);
+            if (age < 900) {
+              ctx.fillStyle = `rgba(0,235,136,${0.6 * (1 - age / 900)})`;
+              ctx.fillRect(prop.x - 21, prop.y - 29, 42, 18);
+            }
+          },
+        });
+        continue;
+      }
+      const picture = propPicture(prop, room.theme);
       const left = Math.round(prop.x - picture.width / 2);
       const top = prop.y - picture.height + 1;
       const shadowW = Math.round(picture.width * 0.9);
@@ -485,30 +557,30 @@ export class CrawlEngine {
           ctx.drawImage(picture, left, top);
         },
       });
-      const solid = solidOf(prop);
-      if (solid) solids.push(solid);
     }
     for (const fire of room.fires) {
-      if (fire.big) {
-        const solid = solidOfFire(fire);
-        if (solid) solids.push(solid);
-        items.push({ y: fire.y, draw: (ctx, time) => this.drawFire(ctx, fire, time) });
-      }
+      if (!fire.big) continue;
+      const solid = solidOfFire(fire);
+      if (solid) solids.push(solid);
+      items.push({ y: fire.y, draw: (ctx, time) => this.drawFire(ctx, room, fire, time) });
     }
     if (room.id === "chasm") {
-      items.push({ y: 108, draw: (ctx) => this.drawStele(ctx, 320, 108) });
-      solids.push({ x: 298, y: 90, w: 44, h: 18 });
+      items.push({
+        y: MECHANISM.foot,
+        draw: (ctx, time) => this.drawMechanism(ctx, t, time),
+      });
+      // Tall enough that nothing can get behind it and vanish.
+      solids.push({ x: MECHANISM.x - 34, y: MECHANISM.foot - 40, w: 68, h: 40 });
     }
     if (room.id === "sanctum") {
-      items.push({ y: 112, draw: (ctx, time) => this.drawAltar(ctx, 160, 112, time) });
+      items.push({ y: 112, draw: (ctx, time) => this.drawAltar(ctx, t, 160, 112, time) });
       solids.push({ x: 138, y: 96, w: 44, h: 16 });
     }
     items.sort((a, b) => a.y - b.y);
     const r = rng(room.w * 17 + room.at[0] * 5 + room.at[1] * 3 + 9);
-    const box = interior(room);
-    const motes = Array.from({ length: 22 }, () => ({
-      x: box.left + r() * (box.right - box.left),
-      y: box.top - 10 + r() * (box.bottom - box.top + 10),
+    const motes = Array.from({ length: room.id === "mural" ? 36 : 22 }, () => ({
+      x: r() * room.W,
+      y: 40 + r() * (room.H - 50),
       s: 2 + r() * 5,
       p: r() * 6.28,
     }));
@@ -517,19 +589,18 @@ export class CrawlEngine {
 
   /* ---------------------------------------------------------------- the world's rules */
 
-  private free(x: number, y: number) {
-    const room = this.current.room;
-    const box = interior(room);
-    const { n, s, e, w } = room.doors;
-    const inside = x >= box.left && x <= box.right && y >= box.top && y <= box.bottom;
-    if (inside) return true;
-    if (n && Math.abs(x - n.at) < DOOR_HALF && y >= box.top - 16 && y <= box.top) {
-      return room.id !== "hall" || !!this.flags.final;
-    }
-    if (s && Math.abs(x - s.at) < DOOR_HALF && y >= box.bottom && y <= box.bottom + 16) return true;
-    if (w && Math.abs(y - w.at) < DOOR_HALF && x <= box.left && x >= box.left - 16) return true;
-    if (e && Math.abs(y - e.at) < DOOR_HALF && x >= box.right && x <= box.right + 16) return true;
+  /** Doors that will not open yet. */
+  private sealed(x: number, y: number) {
+    const { id } = this.current.room;
+    if (id === "mural") return !this.flags.pictured && x >= 368;
+    if (id === "hall") return !this.flags.final && y < 64;
     return false;
+  }
+
+  private free(x: number, y: number) {
+    const v = this.current.room.cell(x, y);
+    if (!v) return false;
+    return v === 1 || !this.sealed(x, y);
   }
 
   private blocked(x: number, y: number) {
@@ -547,18 +618,32 @@ export class CrawlEngine {
     return false;
   }
 
-  private camera(live: Live) {
-    const rw = live.room.w * TILE;
-    const rh = live.room.h * TILE;
+  /** The camera's corner when looking at a point of a room, in the room's own pixels. */
+  private cameraAt(live: Live, x: number, y: number) {
     const axis = (view: number, size: number, at: number) =>
       size <= view
         ? -Math.floor((view - size) / 2)
         : Math.round(Math.min(size - view, Math.max(0, at - view / 2)));
-    const atPlayer = live === this.current;
-    return {
-      x: axis(this.viewW, rw, atPlayer ? this.x : rw / 2),
-      y: axis(this.viewH, rh, atPlayer ? this.y : rh / 2),
-    };
+    return { x: axis(this.viewW, live.room.W, x), y: axis(this.viewH, live.room.H, y) };
+  }
+
+  private camera(live: Live) {
+    if (live !== this.current) return this.cameraAt(live, live.room.W / 2, live.room.H / 2);
+    return this.lookAway
+      ? this.cameraAt(live, this.look.x, this.look.y)
+      : this.cameraAt(live, this.x, this.y);
+  }
+
+  /** The camera drifts to what a moment shows, and back to the dinosaur when it is over. */
+  private stepLook(dt: number) {
+    if (!this.lookAway) return;
+    const target = this.lookTarget ?? { x: this.x, y: this.y };
+    const k = Math.min(1, dt * 3);
+    this.look.x += (target.x - this.look.x) * k;
+    this.look.y += (target.y - this.look.y) * k;
+    if (!this.lookTarget && Math.hypot(target.x - this.look.x, target.y - this.look.y) < 1) {
+      this.lookAway = false;
+    }
   }
 
   private setPrompt(label: string | null) {
@@ -567,22 +652,38 @@ export class CrawlEngine {
     this.hooks.onPrompt(label);
   }
 
-  private enter(side: Side) {
-    const door = this.current.room.doors[side];
-    if (!door) return;
+  /** Through a door: the camera pans along the map while the dinosaur walks to the far side. */
+  private enter(side: Side, door: Door) {
     const from = this.current;
-    const fromCam = this.camera(from);
+    const cam = this.camera(from);
+    const camFrom = { x: cam.x + from.room.at[0], y: cam.y + from.room.at[1] };
     const to = this.live.get(door.to)!;
-    const landing = arrival(to.room, OPPOSITE[side]);
+    const landing = to.room.doors[OPPOSITE[side]]!.landing;
+    const sx = this.x + from.room.at[0] - to.room.at[0];
+    const sy = this.y + from.room.at[1] - to.room.at[1];
     this.current = to;
     this.x = landing.x;
     this.y = landing.y;
     this.lastSafe = { ...landing };
-    this.dashLeft = 0;
-    this.slide = this.reduce ? null : { from, to, fromCam, t: 0, side };
-    this.score.whoosh(0.05, 0.3);
-    this.hooks.onRoom(to.room.id, this.x, this.y);
-    this.score.fire(to.room.id === "hall" ? 0.22 : 0.08);
+    const camEnd = this.camera(to);
+    if (!this.reduce) {
+      this.slide = {
+        from,
+        to,
+        camFrom,
+        camTo: { x: camEnd.x + to.room.at[0], y: camEnd.y + to.room.at[1] },
+        sx,
+        sy,
+        ex: landing.x,
+        ey: landing.y,
+        t: 0,
+      };
+      this.x = sx;
+      this.y = sy;
+    }
+    this.score.whoosh(0.05, 0.4);
+    this.hooks.onRoom(to.room.id, landing.x, landing.y);
+    this.score.fire(to.room.id === "hall" ? 0.22 : to.room.id === "sanctum" ? 0.02 : 0.08);
   }
 
   /** The tile of the Hall's square under the feet, if the square has spoken. */
@@ -595,7 +696,7 @@ export class CrawlEngine {
     return letter ? { r, c, letter } : null;
   }
 
-  private spikesUp(strip: { phase: number }, time: number) {
+  private spikesUp(strip: Spikes, time: number) {
     const p = (time / SPIKE_PERIOD + strip.phase) % 1;
     return p < 0.55 ? 0 : p < 0.68 ? 1 : 2;
   }
@@ -619,11 +720,31 @@ export class CrawlEngine {
   private update(dt: number, time: number) {
     if (this.iris > 0) this.iris = Math.max(0, this.iris - dt / 1.8);
     this.hurt = Math.max(0, this.hurt - dt);
-    this.dashRest = Math.max(0, this.dashRest - dt);
 
     if (this.slide) {
-      this.slide.t += dt / SLIDE;
-      if (this.slide.t >= 1) this.slide = null;
+      const s = this.slide;
+      s.t += dt / SLIDE;
+      const prevX = this.x;
+      this.x = lerp(s.sx, s.ex, Math.min(1, s.t));
+      this.y = lerp(s.sy, s.ey, Math.min(1, s.t));
+      if (Math.abs(this.x - prevX) > 0.01) this.facing = Math.sign(this.x - prevX);
+      this.moving = true;
+      this.walked += SPEED * dt;
+      if (s.t >= 1) {
+        this.x = s.ex;
+        this.y = s.ey;
+        this.slide = null;
+      }
+      return;
+    }
+
+    if (this.drop > 0) {
+      this.drop = Math.max(0, this.drop - dt);
+      if (this.drop === 0) {
+        this.shake(350, 2);
+        this.score.stone();
+        for (let i = 0; i < 3; i += 1) this.spray(this.x, this.y, THEMES.sand.s7, 8);
+      }
       return;
     }
 
@@ -640,55 +761,41 @@ export class CrawlEngine {
       return;
     }
 
+    if (this.cineLeft > 0) {
+      this.moving = false;
+      this.setPrompt(null);
+      this.cineLeft -= dt;
+      if (this.cineLeft <= 0) this.nextCine();
+      this.throwEmbers(dt);
+      return;
+    }
+
     let dx = 0;
     let dy = 0;
-    if (this.intro > 0) {
-      this.intro = Math.max(0, this.intro - dt);
-      dy = -0.55;
-    } else {
-      if (this.keys.has("KeyA") || this.keys.has("ArrowLeft")) dx -= 1;
-      if (this.keys.has("KeyD") || this.keys.has("ArrowRight")) dx += 1;
-      if (this.keys.has("KeyW") || this.keys.has("ArrowUp")) dy -= 1;
-      if (this.keys.has("KeyS") || this.keys.has("ArrowDown")) dy += 1;
-    }
+    if (this.keys.has("KeyA") || this.keys.has("ArrowLeft")) dx -= 1;
+    if (this.keys.has("KeyD") || this.keys.has("ArrowRight")) dx += 1;
+    if (this.keys.has("KeyW") || this.keys.has("ArrowUp")) dy -= 1;
+    if (this.keys.has("KeyS") || this.keys.has("ArrowDown")) dy += 1;
     if (dx || dy) {
-      if (!this.movedOnce && this.intro <= 0) {
+      if (!this.movedOnce) {
         this.movedOnce = true;
         this.hooks.onFirstMove();
       }
       if (dx) this.facing = dx;
-      const len = Math.max(1, Math.hypot(dx, dy));
+      const len = Math.hypot(dx, dy);
       dx /= len;
       dy /= len;
     }
 
-    let vx = dx * SPEED;
-    let vy = dy * SPEED;
-    if (this.dashLeft > 0) {
-      this.dashLeft -= dt;
-      vx = this.dashX * DASH_SPEED;
-      vy = this.dashY * DASH_SPEED;
-      if (this.dashX) this.facing = Math.sign(this.dashX);
-      if (!this.reduce) {
-        this.ghosts.push({
-          x: this.x,
-          y: this.y,
-          step: Math.floor(this.walked / 7) % 4,
-          flip: this.facing < 0,
-          life: 0.22,
-        });
-      }
-    }
-
-    const nx = this.x + vx * dt;
+    const nx = this.x + dx * SPEED * dt;
     if (!this.blocked(nx, this.y)) this.x = nx;
-    const ny = this.y + vy * dt;
+    const ny = this.y + dy * SPEED * dt;
     if (!this.blocked(this.x, ny)) this.y = ny;
 
-    this.moving = !!(vx || vy);
+    this.moving = !!(dx || dy);
     if (this.moving) {
-      this.walked += Math.hypot(vx, vy) * dt;
-      if (time - this.lastStepSound > 0.27 && this.dashLeft <= 0) {
+      this.walked += SPEED * dt;
+      if (time - this.lastStepSound > 0.27) {
         this.lastStepSound = time;
         this.score.tick(240 + Math.random() * 90, 0.045);
         if (!this.reduce && this.motes.length < 60) {
@@ -698,51 +805,59 @@ export class CrawlEngine {
             vx: -this.facing * 8,
             vy: -6,
             life: 0.3,
-            ink: C.s5,
+            ink: THEMES[this.current.room.theme].s5,
           });
         }
       }
     }
 
     // Through a door.
-    const box = interior(this.current.room);
-    if (this.y < box.top - 6) this.enter("n");
-    else if (this.y > box.bottom + 9) this.enter("s");
-    else if (this.x < box.left - 8) this.enter("w");
-    else if (this.x > box.right + 8) this.enter("e");
-    if (this.slide) {
-      this.setPrompt(null);
-      return;
+    for (const [side, door] of Object.entries(this.current.room.doors) as [Side, Door][]) {
+      const across = side === "n" || side === "s" ? this.x : this.y;
+      if (Math.abs(across - door.at) > 20) continue;
+      const past =
+        side === "n"
+          ? this.y < door.line
+          : side === "s"
+            ? this.y > door.line
+            : side === "w"
+              ? this.x < door.line
+              : this.x > door.line;
+      if (past) {
+        this.setPrompt(null);
+        this.enter(side, door);
+        return;
+      }
     }
 
     this.hazards(time);
     this.findSpot();
+    this.throwEmbers(dt);
+  }
 
-    // Fire throws embers.
-    if (!this.reduce && this.motes.length < 70) {
-      const now = this.fireNow();
-      for (const fire of this.current.room.fires) {
-        if (fire.i < (fire.side === "L" ? now.left : now.right) && Math.random() < dt * 1.4) {
-          this.motes.push({
-            x: fire.x + (Math.random() - 0.5) * 6,
-            y: fire.y - (fire.big ? 20 : 10),
-            vx: (Math.random() - 0.5) * 10,
-            vy: -16 - Math.random() * 18,
-            life: 0.7 + Math.random() * 0.8,
-            ink: now.flare ? C.red : Math.random() < 0.4 ? C.mint : C.green,
-          });
-        }
+  private throwEmbers(dt: number) {
+    if (this.reduce || this.motes.length >= 70) return;
+    const now = this.fireNow();
+    for (const fire of this.current.room.fires) {
+      if (fire.i < (fire.side === "L" ? now.left : now.right) && Math.random() < dt * 1.4) {
+        this.motes.push({
+          x: fire.x + (Math.random() - 0.5) * 6,
+          y: fire.y - (fire.big ? 20 : 10),
+          vx: (Math.random() - 0.5) * 10,
+          vy: -16 - Math.random() * 18,
+          life: 0.7 + Math.random() * 0.8,
+          ink: now.flare ? C.red : Math.random() < 0.4 ? C.mint : C.green,
+        });
       }
     }
   }
 
   private hazards(time: number) {
     const room = this.current.room;
-    const box = interior(room);
     if (room.spikes && this.hurt <= 0) {
       let onStrip = false;
       for (const strip of room.spikes) {
-        if (this.x + 3 > strip.x && this.x - 3 < strip.x + strip.w && this.y > box.top) {
+        if (this.x + 3 > strip.x && this.x - 3 < strip.x + strip.w && this.y > strip.y) {
           onStrip = true;
           if (this.spikesUp(strip, time) === 2) {
             this.x = this.lastSafe.x;
@@ -758,19 +873,18 @@ export class CrawlEngine {
       if (!onStrip) this.lastSafe = { x: this.x, y: this.y };
     }
     if (room.floor) {
-      const col = Math.floor((this.x - box.left) / TILE);
-      const row = Math.floor((this.y - 2 - box.top) / TILE);
+      const col = Math.floor(this.x / TILE);
+      const row = Math.floor((this.y - 2) / TILE);
       const ch = room.floor[row]?.[col];
       if (ch === "h") {
         const id = `${col},${row}`;
         if (!this.revealed.has(id)) {
           this.revealed.add(id);
           this.score.tick(700, 0.1);
-          this.spray(box.left + col * TILE + 8, box.top + row * TILE + 8, C.s6, 5);
+          this.spray(col * TILE + 8, row * TILE + 8, THEMES[room.theme].s6, 5);
         }
       } else if (ch === "p") {
         this.falling = FALL;
-        this.dashLeft = 0;
         this.score.whoosh(0.1, 0.5);
         this.setPrompt(null);
       }
@@ -783,6 +897,7 @@ export class CrawlEngine {
     for (const spot of this.current.room.spots) {
       if (spot.target.kind === "altar" && !this.flags.final) continue;
       if (spot.target.kind === "door" && this.flags.final) continue;
+      if (spot.untilPictured && this.flags.pictured) continue;
       const d = Math.hypot(this.x - spot.x, (this.y - spot.y) * 1.2);
       if (d < spot.r && d < bestD) {
         best = spot;
@@ -791,14 +906,14 @@ export class CrawlEngine {
     }
     this.here = best;
     this.tile = this.flags.final || best ? null : this.tileUnderFoot();
-    if (best) this.setPrompt(labelOf(best.target, this.flags));
+    if (best) this.setPrompt(labelOf(best, this.flags));
     else if (this.tile) {
       this.setPrompt(`Press ${this.tile.letter === "I" ? "I / J" : this.tile.letter}`);
     } else this.setPrompt(null);
   }
 
   /** What the fires are saying right now. */
-  private fireNow() {
+  private fireNow(): FireNow {
     let t = performance.now() % this.cycle;
     for (let i = 0; i < this.beats.length; i += 1) {
       const beat = this.beats[i]!;
@@ -821,9 +936,20 @@ export class CrawlEngine {
     this.last = now;
     const time = now / 1000;
     if (!this.paused) this.update(dt, time);
-    else if (this.slide) this.slide = null;
+    else if (this.cineLeft > 0) {
+      // A moment that began as the close-up was closing keeps its own clock.
+      this.cineLeft -= dt;
+      if (this.cineLeft <= 0) this.nextCine();
+    }
+    this.stepLook(dt);
     this.stepMotes(dt);
     this.render(now, time);
+    const room = this.current.room;
+    const place = `${Math.round(this.x + room.at[0])},${Math.round(this.y + room.at[1])}`;
+    if (place !== this.lastPlace) {
+      this.lastPlace = place;
+      this.hooks.onPlace(this.x + room.at[0], this.y + room.at[1]);
+    }
   };
 
   private stepMotes(dt: number) {
@@ -837,14 +963,6 @@ export class CrawlEngine {
       n += 1;
     }
     this.motes.length = n;
-    let g = 0;
-    for (const ghost of this.ghosts) {
-      ghost.life -= dt;
-      if (ghost.life <= 0) continue;
-      this.ghosts[g] = ghost;
-      g += 1;
-    }
-    this.ghosts.length = g;
   }
 
   private render(now: number, time: number) {
@@ -854,63 +972,52 @@ export class CrawlEngine {
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    let ox = 0;
-    let oy = 0;
+    let sx = 0;
+    let sy = 0;
     if (now < this.shakeUntil) {
-      ox = Math.round((Math.random() - 0.5) * 2 * this.shakeAmp);
-      oy = Math.round((Math.random() - 0.5) * 2 * this.shakeAmp);
+      sx = Math.round((Math.random() - 0.5) * 2 * this.shakeAmp);
+      sy = Math.round((Math.random() - 0.5) * 2 * this.shakeAmp);
     }
 
-    const darkCtx = this.dark.ctx;
-    darkCtx.globalCompositeOperation = "source-over";
-    darkCtx.clearRect(0, 0, viewW, viewH);
-    const ambient = AMBIENT + (1 - AMBIENT) * Math.min(1, this.iris * 1.4);
-    darkCtx.fillStyle = `rgba(2,5,4,${ambient})`;
-    darkCtx.fillRect(0, 0, viewW, viewH);
-    darkCtx.globalCompositeOperation = "destination-out";
+    const dark = this.dark.ctx;
+    dark.globalCompositeOperation = "source-over";
+    dark.clearRect(0, 0, viewW, viewH);
+    this.tints.length = 0;
 
     const fire = this.fireNow();
-    this.tints.length = 0;
     if (this.slide) {
-      const p = easeInOut(Math.min(1, this.slide.t));
-      const dir = { n: [0, -1], s: [0, 1], e: [1, 0], w: [-1, 0] }[this.slide.side];
-      const sx = dir[0]! * viewW;
-      const sy = dir[1]! * viewH;
-      const cam = this.camera(this.slide.to);
-      this.drawRoom(
-        this.slide.from,
-        Math.round(-this.slide.fromCam.x - sx * p) + ox,
-        Math.round(-this.slide.fromCam.y - sy * p) + oy,
-        now,
-        time,
-        flameTime,
-        fire,
-        false,
-      );
-      this.drawRoom(
-        this.slide.to,
-        Math.round(-cam.x + sx * (1 - p)) + ox,
-        Math.round(-cam.y + sy * (1 - p)) + oy,
-        now,
-        time,
-        flameTime,
-        fire,
-        false,
-      );
+      const s = this.slide;
+      const u = easeInOut(Math.min(1, s.t));
+      const camX = lerp(s.camFrom.x, s.camTo.x, u);
+      const camY = lerp(s.camFrom.y, s.camTo.y, u);
+      const at = (live: Live) => ({
+        x: Math.round(live.room.at[0] - camX) + sx,
+        y: Math.round(live.room.at[1] - camY) + sy,
+      });
+      const a = at(s.from);
+      const b = at(s.to);
+      this.drawRoom(s.from, a.x, a.y, now, time, flameTime, fire, false);
+      this.drawRoom(s.to, b.x, b.y, now, time, flameTime, fire, true);
+      // The room left behind sinks into the dark, the one ahead comes out of it.
+      dark.globalCompositeOperation = "source-over";
+      dark.fillStyle = `rgba(0,0,0,${u})`;
+      dark.fillRect(a.x, a.y, s.from.room.W, s.from.room.H);
+      dark.fillStyle = `rgba(0,0,0,${1 - u})`;
+      dark.fillRect(b.x, b.y, s.to.room.W, s.to.room.H);
     } else {
       const cam = this.camera(this.current);
-      this.drawRoom(this.current, -cam.x + ox, -cam.y + oy, now, time, flameTime, fire, true);
+      this.drawRoom(this.current, -cam.x + sx, -cam.y + sy, now, time, flameTime, fire, true);
     }
 
     ctx.setTransform(R, 0, 0, R, 0, 0);
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(this.dark.canvas, 0, 0);
 
-    // Firelight colours what it falls on.
+    // Light colours what it falls on.
     ctx.globalCompositeOperation = "lighter";
     for (const t of this.tints) {
-      ctx.globalAlpha = t.flare ? 0.2 : 0.13;
-      ctx.drawImage(tintPicture(t.r, t.flare), t.x - t.r, t.y - t.r);
+      ctx.globalAlpha = t.alpha;
+      ctx.drawImage(tintPicture(t.r, t.ink), t.x - t.r, t.y - t.r);
     }
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = "source-over";
@@ -928,7 +1035,7 @@ export class CrawlEngine {
     now: number,
     time: number,
     flameTime: number,
-    fire: { left: number; right: number; flare: boolean },
+    fire: FireNow,
     withPlayer: boolean,
   ) {
     const { ctx, R } = this;
@@ -951,28 +1058,29 @@ export class CrawlEngine {
     if (!drewPlayer) this.drawPlayer(time);
 
     this.drawMotes(live, time, withPlayer);
-    if (withPlayer && !this.paused && this.here && !this.slide) this.drawKeycap(this.here, time);
-
-    this.cutLights(live, ox, oy, flameTime, fire, withPlayer, now);
+    if (withPlayer && !this.paused && this.here && !this.slide && this.cineLeft <= 0) {
+      this.drawKeycap(this.here, time);
+    }
+    this.cutLights(live, ox, oy, flameTime, fire, withPlayer);
   }
 
   private drawFloorLife(room: Room, time: number, withPlayer: boolean) {
     const ctx = this.ctx;
-    const box = interior(room);
-    if (room.id === "hall") this.drawSquare(performance.now());
+    const t = THEMES[room.theme];
+    if (room.id === "hall") this.drawSquare(performance.now(), t);
     if (room.spikes) {
       for (const strip of room.spikes) {
         const state = this.spikesUp(strip, time);
         if (state === 0) continue;
-        for (let y = box.top + 3; y < box.bottom; y += 8) {
+        for (let y = strip.y + 3; y < strip.y + strip.h; y += 8) {
           for (let x = strip.x + 3; x < strip.x + strip.w; x += 8) {
             if (state === 1) {
-              ctx.fillStyle = C.s6;
+              ctx.fillStyle = t.s7;
               ctx.fillRect(x + 1, y, 1, 1);
             } else {
-              ctx.fillStyle = C.s6;
+              ctx.fillStyle = t.s6;
               ctx.fillRect(x, y - 2, 3, 3);
-              ctx.fillStyle = C.s8;
+              ctx.fillStyle = t.s8;
               ctx.fillRect(x + 1, y - 5, 1, 4);
             }
           }
@@ -983,13 +1091,13 @@ export class CrawlEngine {
       room.floor.forEach((rowText, row) =>
         [...rowText].forEach((ch, col) => {
           if (ch !== "h") return;
-          const x = box.left + col * TILE;
-          const y = box.top + row * TILE;
+          const x = col * TILE;
+          const y = row * TILE;
           if (this.revealed.has(`${col},${row}`)) {
-            drawPathStone(ctx, x, y);
+            drawPathStone(ctx, x, y, t);
           } else if (withPlayer && Math.hypot(this.x - x - 8, this.y - y - 8) < 30) {
             // The lantern catches the edge of a stone that should not be there.
-            ctx.fillStyle = C.s4;
+            ctx.fillStyle = t.s5;
             ctx.fillRect(x + 1, y + 1, 3, 1);
             ctx.fillRect(x + 1, y + 1, 1, 3);
             ctx.fillRect(x + 12, y + 14, 3, 1);
@@ -1000,7 +1108,7 @@ export class CrawlEngine {
     }
   }
 
-  private drawSquare(now: number) {
+  private drawSquare(now: number, th: Theme) {
     const rows = this.flags.square;
     if (!rows) return;
     const ctx = this.ctx;
@@ -1010,11 +1118,11 @@ export class CrawlEngine {
         [...row].forEach((letter, col) => {
           const x = col * SQUARE.tile;
           const y = r * SQUARE.tile;
-          drawSquareTile(c, x, y, SQUARE.tile);
+          drawSquareTile(c, x, y, SQUARE.tile, th);
           if (letter === "I") {
-            drawLetter(c, "I", x + 4, y + 6, C.s8);
-            drawLetter(c, "J", x + 10, y + 6, C.s6);
-          } else drawLetter(c, letter, x + 8, y + 6, C.s8);
+            drawLetter(c, "I", x + 4, y + 6, th.s8);
+            drawLetter(c, "J", x + 10, y + 6, th.s6);
+          } else drawLetter(c, letter, x + 8, y + 6, th.s8);
         }),
       );
       return canvas;
@@ -1024,8 +1132,7 @@ export class CrawlEngine {
     for (let r = 0; r < 5; r += 1) {
       for (let c = 0; c < 5; c += 1) {
         // Tile by tile out from the middle.
-        const delay = (Math.abs(r - 2) + Math.abs(c - 2)) * 130;
-        const age = u - delay;
+        const age = u - (Math.abs(r - 2) + Math.abs(c - 2)) * 130;
         if (age < 0) continue;
         ctx.drawImage(picture, c * t, r * t, t, t, SQUARE.x + c * t, SQUARE.y + r * t, t, t);
         if (age < 500) {
@@ -1034,15 +1141,14 @@ export class CrawlEngine {
         }
       }
     }
-    const pressed = new Map<string, number>();
-    this.stamps.forEach(({ r, c }) => pressed.set(`${r},${c}`, 1));
-    for (const id of pressed.keys()) {
+    const pressed = new Set(this.stamps.map(({ r, c }) => `${r},${c}`));
+    for (const id of pressed) {
       const [r, c] = id.split(",").map(Number) as [number, number];
       const x = SQUARE.x + c * t;
       const y = SQUARE.y + r * t;
-      ctx.fillStyle = C.moss;
+      ctx.fillStyle = th.moss;
       ctx.fillRect(x + 1, y + 1, t - 2, t - 2);
-      ctx.fillStyle = C.s0;
+      ctx.fillStyle = th.s0;
       ctx.fillRect(x + 1, y + 1, t - 2, 2);
       const letter = rows[r]![c]!;
       if (letter === "I") {
@@ -1061,28 +1167,35 @@ export class CrawlEngine {
     }
   }
 
-  private drawWallLife(
-    room: Room,
-    now: number,
-    flameTime: number,
-    fire: { left: number; right: number; flare: boolean },
-  ) {
+  private drawWallLife(room: Room, now: number, flameTime: number, fire: FireNow) {
     const ctx = this.ctx;
+    const t = THEMES[room.theme];
     for (const spot of room.spots) {
-      if (spot.target.kind === "tablet") this.drawTablet(spot.target.index, spot.x, now);
+      if (spot.target.kind === "tablet" && spot.ty != null) {
+        this.drawTablet(spot.target.index, spot.x, spot.ty, now, t);
+      }
     }
-    if (room.id === "mural") this.drawMural(now);
-    if (room.id === "gate") this.drawGate(now);
-    if (room.id === "hall") this.drawGreatDoor(now);
+    if (room.id === "mural") {
+      this.drawMural(now, t);
+      this.drawSlab(now, t);
+    }
+    if (room.id === "gate") this.drawMask(now, t);
+    if (room.id === "hall") this.drawGreatDoor(now, t);
     if (room.id === "sanctum" && this.flags.final) {
-      drawWord(ctx, this.flags.final, 160, 20, C.deep, 3);
-      drawWord(ctx, this.flags.final, 160, 19, C.green, 3);
+      drawWord(ctx, this.flags.final, 160, 21, t.s3, 3);
+      drawWord(ctx, this.flags.final, 160, 19, t.s8, 3);
     }
-    for (const f of room.fires) if (!f.big) this.drawFire(ctx, f, flameTime, fire);
+    for (const f of room.fires) if (!f.big) this.drawFire(ctx, room, f, flameTime, fire);
   }
 
-  private drawFire(ctx: CanvasRenderingContext2D, fire: Fire, time: number, now = this.fireNow()) {
-    const picture = brazierPicture(!!fire.big);
+  private drawFire(
+    ctx: CanvasRenderingContext2D,
+    room: Room,
+    fire: Fire,
+    time: number,
+    now = this.fireNow(),
+  ) {
+    const picture = brazierPicture(!!fire.big, room.theme);
     const left = fire.x - Math.floor(picture.width / 2);
     const top = fire.y - picture.height + 1;
     if (fire.big) {
@@ -1102,46 +1215,46 @@ export class CrawlEngine {
     }
   }
 
-  private drawTablet(index: number, cx: number, now: number) {
+  private drawTablet(index: number, cx: number, ty: number, now: number, t: Theme) {
     const ctx = this.ctx;
-    const solved = this.flags.solved[index];
-    const picture = kept(`tablet:${index}:${!!solved}`, () => {
+    const solved = !!this.flags.solved[index];
+    const picture = kept(`tablet:${t.s5}:${index}:${solved}`, () => {
       const { canvas, ctx: c } = makeCanvas(30, 34);
-      c.fillStyle = C.s1;
+      c.fillStyle = t.s1;
       c.fillRect(2, 1, 28, 33);
-      c.fillStyle = solved ? C.s5 : C.s5;
+      c.fillStyle = t.s5;
       c.fillRect(2, 2, 26, 30);
       c.fillRect(4, 0, 22, 2);
-      c.fillStyle = C.s7;
+      c.fillStyle = t.s7;
       c.fillRect(4, 0, 22, 1);
       c.fillRect(2, 2, 1, 30);
-      c.fillStyle = C.s3;
+      c.fillStyle = t.s3;
       c.fillRect(5, 5, 20, 24);
-      drawGlyphs(c, 7, 7, 17, 4, solved ? C.green : C.s6, index * 13 + 5);
-      c.fillStyle = solved ? C.green : C.s4;
+      drawGlyphs(c, 7, 7, 17, 4, solved ? C.green : t.s6, index * 13 + 5);
+      c.fillStyle = solved ? C.green : t.s4;
       c.fillRect(7, 27, 16, 1);
       return canvas;
     });
-    ctx.drawImage(picture, cx - 15, 13);
+    ctx.drawImage(picture, cx - 15, ty);
     const age = now - (this.tabletPulse.get(index) ?? -1e9);
     if (age < 900) {
       ctx.fillStyle = `rgba(0,235,136,${0.6 * (1 - age / 900)})`;
-      ctx.fillRect(cx - 13, 15, 26, 30);
+      ctx.fillRect(cx - 13, ty + 2, 26, 30);
     }
   }
 
-  private drawMural(now: number) {
+  private drawMural(now: number, t: Theme) {
     const ctx = this.ctx;
     const frame = kept("mural:frame", () => {
       const { canvas, ctx: c } = makeCanvas(MURAL.w, MURAL.h);
-      c.fillStyle = C.s1;
+      c.fillStyle = t.s1;
       c.fillRect(0, 0, MURAL.w, MURAL.h);
-      c.fillStyle = C.s5;
+      c.fillStyle = t.s5;
       c.fillRect(1, 1, MURAL.w - 2, MURAL.h - 2);
-      c.fillStyle = C.s7;
+      c.fillStyle = t.s7;
       c.fillRect(1, 1, MURAL.w - 2, 1);
       c.fillRect(1, 1, 1, MURAL.h - 2);
-      c.fillStyle = C.s4;
+      c.fillStyle = t.s3;
       for (let x = 3; x < MURAL.w - 4; x += 6) {
         c.fillRect(x, 3, 4, 1);
         c.fillRect(x, 3, 1, 4);
@@ -1153,11 +1266,11 @@ export class CrawlEngine {
     });
     const relief = kept("mural:relief", () => {
       const { canvas, ctx: c } = makeCanvas(MURAL.iw, MURAL.ih);
-      c.fillStyle = C.s3;
+      c.fillStyle = t.s3;
       c.fillRect(0, 0, MURAL.iw, MURAL.ih);
       const r = rng(5);
       for (let i = 0; i < 300; i += 1) {
-        c.fillStyle = r() < 0.5 ? "#26251f" : "#33322c";
+        c.fillStyle = r() < 0.5 ? t.s2 : t.s4;
         c.fillRect(Math.floor(r() * MURAL.iw), Math.floor(r() * MURAL.ih), 1, 1);
       }
       // A line of figures with no faces.
@@ -1165,16 +1278,16 @@ export class CrawlEngine {
         const cx = 11 + i * 18;
         const base = i % 2 ? 66 : 70;
         const head = base - 42;
-        c.fillStyle = C.s5;
+        c.fillStyle = t.s5;
         c.fillRect(cx - 5, head + 1, 11, 11);
         c.fillRect(cx - 4, head, 9, 13);
         c.fillRect(cx - 2, head + 13, 5, 3);
         c.fillRect(cx - 8, head + 16, 17, base - head - 16 + 6);
         c.fillRect(cx - 6, head + 15, 13, 2);
-        c.fillStyle = C.s6;
+        c.fillStyle = t.s6;
         c.fillRect(cx - 4, head, 9, 1);
         c.fillRect(cx - 8, head + 16, 1, base - head - 10);
-        c.fillStyle = C.s3;
+        c.fillStyle = t.s3;
         c.fillRect(cx - 3, head + 3, 7, 8);
       }
       return canvas;
@@ -1189,15 +1302,15 @@ export class CrawlEngine {
     ctx.drawImage(photo, MURAL.ix, MURAL.iy, MURAL.iw, MURAL.ih);
     ctx.imageSmoothingEnabled = false;
     const u = this.muralStart < 0 ? 1e9 : now - this.muralStart;
-    if (u < 1800) {
+    if (u < 2000) {
       // The relief falls away cell by cell.
       const cell = 8;
       for (let y = 0; y < MURAL.ih; y += cell) {
         for (let x = 0; x < MURAL.iw; x += cell) {
           const order = ((x * 7919 + y * 104729) % 97) / 97;
-          if (u < order * 1600) {
+          if (u < order * 1800) {
             ctx.drawImage(relief, x, y, cell, cell, MURAL.ix + x, MURAL.iy + y, cell, cell);
-          } else if (u < order * 1600 + 200) {
+          } else if (u < order * 1800 + 200) {
             ctx.fillStyle = C.mint;
             ctx.fillRect(MURAL.ix + x, MURAL.iy + y, cell, cell);
           }
@@ -1206,78 +1319,78 @@ export class CrawlEngine {
     }
   }
 
-  private drawGate(now: number) {
+  /** The stone that shuts the first room until they have stood before the wall. */
+  private drawSlab(now: number, t: Theme) {
+    const u = !this.flags.pictured
+      ? 0
+      : this.slabStart < 0
+        ? 1
+        : Math.min(1, Math.max(0, (now - this.slabStart) / 1500));
+    if (u >= 1) return;
+    const ctx = this.ctx;
+    const h = Math.round(36 * (1 - u));
+    ctx.fillStyle = t.s5;
+    ctx.fillRect(368, 142, 16, h);
+    ctx.fillStyle = t.s7;
+    ctx.fillRect(368, 142, 1, h);
+    ctx.fillStyle = t.s3;
+    for (let y = 148; y < 142 + h; y += 8) ctx.fillRect(369, y, 15, 2);
+  }
+
+  private drawMask(now: number, t: Theme) {
     const ctx = this.ctx;
     const word = this.flags.word;
-    const picture = kept(`gate:${word ? "open" : "shut"}`, () => {
-      const { canvas, ctx: c } = makeCanvas(GATE.w, GATE.h);
-      c.fillStyle = C.s1;
-      c.fillRect(0, 0, GATE.w, GATE.h);
-      // Posts and lintel.
-      c.fillStyle = C.s5;
-      c.fillRect(1, 1, 12, GATE.h - 1);
-      c.fillRect(GATE.w - 13, 1, 12, GATE.h - 1);
-      c.fillRect(1, 1, GATE.w - 2, 20);
-      c.fillStyle = C.s7;
-      c.fillRect(1, 1, GATE.w - 2, 1);
-      c.fillRect(1, 1, 1, GATE.h - 1);
-      c.fillStyle = C.s4;
-      c.fillRect(12, 21, 1, GATE.h - 21);
-      c.fillRect(GATE.w - 13, 21, 1, GATE.h - 21);
-      c.fillRect(1, 20, GATE.w - 2, 1);
-      // The leaves.
-      for (const x of [14, GATE.w / 2 + 1]) {
-        c.fillStyle = C.s3;
-        c.fillRect(x, 22, GATE.w / 2 - 15, GATE.h - 22);
-        c.fillStyle = C.s4;
-        c.fillRect(x + 2, 25, GATE.w / 2 - 19, 1);
-        c.fillRect(x + 2, 25, 1, GATE.h - 28);
-        c.fillStyle = C.s2;
-        c.fillRect(x + 5, 29, GATE.w / 2 - 25, GATE.h - 36);
-        drawGlyphs(c, x + 7, 31, GATE.w / 2 - 29, 6, word ? C.deep : C.s4, x);
-      }
-      c.fillStyle = C.void;
-      c.fillRect(GATE.w / 2, 22, 1, GATE.h - 22);
-      return canvas;
-    });
-    ctx.drawImage(picture, GATE.x, GATE.y);
-    // Five sockets in the lintel, a stone in each riddle answered.
+    const age = now - this.wordPulse;
+    const open = !!word && (this.wordPulse < 0 || age > 0);
+    const picture = kept(`mask:${open}`, () => maskPicture(MASK.w, MASK.h, open ? OPEN : SHUT, t));
+    ctx.drawImage(picture, MASK.x, MASK.y);
+    const cx = MASK.x + MASK.w / 2;
+    // Five sockets in its crown, a green stone in each riddle answered.
     const solved = this.flags.solved;
     for (let i = 0; i < 5; i += 1) {
-      const x = GATE.x + 16 + i * 14;
-      const y = GATE.y + 6;
+      const x = cx + (i - 2) * 10 - 3;
+      const y = MASK.y + 4 + Math.abs(i - 2);
       ctx.fillStyle = C.void;
-      ctx.fillRect(x, y, 8, 9);
+      ctx.fillRect(x, y, 7, 7);
       if (solved[i]) {
         ctx.fillStyle = C.green;
-        ctx.fillRect(x + 1, y + 1, 6, 7);
+        ctx.fillRect(x + 1, y + 1, 5, 5);
         ctx.fillStyle = C.mint;
-        ctx.fillRect(x + 2, y + 2, 2, 2);
+        ctx.fillRect(x + 1, y + 1, 2, 2);
       }
     }
-    if (word) {
-      const age = now - this.wordPulse;
-      // The word comes up over the sockets, on the leaves.
-      ctx.fillStyle = C.s0;
-      ctx.fillRect(GATE.x + 26, GATE.y + 42, 44, 15);
-      drawWord(ctx, word, GATE.x + GATE.w / 2, GATE.y + 46, age < 900 ? C.white : C.green);
+    if (solved.every(Boolean)) {
+      // All five, and something behind the eyes.
+      ctx.fillStyle = word ? C.mint : C.green;
+      const ey = MASK.y + Math.round(MASK.h * 0.32);
+      ctx.fillRect(cx - 18, ey, 9, 3);
+      ctx.fillRect(cx + 9, ey, 9, 3);
+    }
+    if (open && word) {
+      drawWord(
+        ctx,
+        word,
+        cx,
+        MASK.y + Math.round(MASK.h * 0.66),
+        age > 0 && age < 900 ? C.white : C.green,
+      );
     }
   }
 
-  private doorLeaves(broken: boolean) {
+  private doorLeaves(broken: boolean, t: Theme) {
     return kept(`door:${broken}`, () => {
       const { canvas, ctx: c } = makeCanvas(GREAT_DOOR.w - 16, GREAT_DOOR.h - 8);
       const W = canvas.width;
       const H = canvas.height;
-      c.fillStyle = C.s3;
+      c.fillStyle = t.s3;
       c.fillRect(0, 0, W, H);
       for (const x of [0, W / 2]) {
-        c.fillStyle = C.s4;
+        c.fillStyle = t.s4;
         c.fillRect(x + 2, 2, W / 2 - 4, 1);
         c.fillRect(x + 2, 2, 1, H - 4);
-        c.fillStyle = C.s2;
+        c.fillStyle = t.s2;
         c.fillRect(x + 4, 5, W / 2 - 8, H - 10);
-        c.fillStyle = C.s4;
+        c.fillStyle = t.s4;
         for (let y = 8; y < H - 8; y += 7) c.fillRect(x + 6, y, W / 2 - 12, 1);
       }
       c.fillStyle = C.void;
@@ -1285,8 +1398,8 @@ export class CrawlEngine {
       // The wax, across the join.
       const inks: Record<string, string> = {
         o: broken ? C.deep : C.green,
-        d: broken ? C.moss : C.deep,
-        s: broken ? C.moss : C.deep,
+        d: broken ? t.moss : C.deep,
+        s: broken ? t.moss : C.deep,
         w: broken ? C.green : C.mint,
       };
       const sx = W / 2 - 10;
@@ -1304,18 +1417,18 @@ export class CrawlEngine {
     });
   }
 
-  private drawGreatDoor(now: number) {
+  private drawGreatDoor(now: number, t: Theme) {
     const ctx = this.ctx;
     const d = GREAT_DOOR;
     const frame = kept("door:frame", () => {
       const { canvas, ctx: c } = makeCanvas(d.w, d.h);
-      c.fillStyle = C.s1;
+      c.fillStyle = t.s1;
       c.fillRect(0, 0, d.w, d.h);
-      c.fillStyle = C.s6;
+      c.fillStyle = t.s6;
       c.fillRect(1, 1, 7, d.h - 1);
       c.fillRect(d.w - 8, 1, 7, d.h - 1);
       c.fillRect(1, 1, d.w - 2, 7);
-      c.fillStyle = C.s7;
+      c.fillStyle = t.s7;
       c.fillRect(1, 1, d.w - 2, 1);
       c.fillRect(1, 1, 1, d.h - 1);
       c.fillStyle = C.deep;
@@ -1327,7 +1440,7 @@ export class CrawlEngine {
       return canvas;
     });
     ctx.drawImage(frame, d.x, d.y);
-    const leaves = this.doorLeaves(!!this.flags.square);
+    const leaves = this.doorLeaves(!!this.flags.square, t);
     const W = leaves.width;
     const H = leaves.height;
     const ix = d.x + 8;
@@ -1341,22 +1454,20 @@ export class CrawlEngine {
       ctx.drawImage(leaves, ix, iy);
       return;
     }
-    // Open: stairs going up into the dark, green light at their head, the leaves drawn apart.
+    // Open: stairs going up into gold, the leaves drawn apart.
+    const g = THEMES.gold;
     ctx.fillStyle = C.void;
     ctx.fillRect(ix, iy, W, H);
-    const stairs = [C.s4, C.s3, C.s3, C.s2, C.s2, C.s1, C.s1];
-    stairs.forEach((ink, i) => {
+    [t.s4, t.s3, t.s3, g.s2, g.s3, g.s4, g.s5].forEach((ink, i) => {
       const inset = 2 + i * 3;
       const y = iy + H - 6 - i * 5;
       ctx.fillStyle = ink;
       ctx.fillRect(ix + inset, y, W - inset * 2, 4);
-      ctx.fillStyle = C.s0;
+      ctx.fillStyle = t.s0;
       ctx.fillRect(ix + inset, y + 4, W - inset * 2, 1);
     });
-    ctx.fillStyle = C.deep;
-    ctx.fillRect(ix + W / 2 - 5, iy + H - 44, 10, 3);
-    ctx.fillStyle = C.green;
-    ctx.fillRect(ix + W / 2 - 2, iy + H - 44, 4, 3);
+    ctx.fillStyle = g.s7;
+    ctx.fillRect(ix + W / 2 - 6, iy + H - 44, 12, 3);
     const slide = Math.round(u * (W / 2));
     const left = W / 2 - slide;
     if (left > 0) {
@@ -1365,79 +1476,92 @@ export class CrawlEngine {
     }
   }
 
-  private drawStele(ctx: CanvasRenderingContext2D, cx: number, foot: number) {
+  /** The bronze machine on its island: geared wheels that turn once there is something to read. */
+  private drawMechanism(ctx: CanvasRenderingContext2D, t: Theme, time: number) {
     const { carved, stoneRead } = this.flags;
-    const key = `stele:${carved}:${stoneRead}`;
-    const picture = kept(key, () => {
-      const W = 44;
-      const H = 66;
+    const { x: cx, foot } = MECHANISM;
+    const picture = kept(`mechanism:${carved}:${stoneRead}`, () => {
+      const W = 72;
+      const H = 58;
       const { canvas, ctx: c } = makeCanvas(W, H);
-      c.fillStyle = C.s4;
-      c.fillRect(6, 4, 32, 50);
-      c.fillRect(8, 2, 28, 2);
-      c.fillRect(11, 0, 22, 2);
-      c.fillStyle = C.s6;
-      c.fillRect(6, 4, 1, 50);
-      c.fillRect(8, 2, 3, 2);
-      c.fillRect(11, 0, 22, 1);
-      c.fillStyle = C.s3;
-      c.fillRect(35, 4, 3, 50);
-      c.fillStyle = C.s2;
-      c.fillRect(10, 9, 24, 34);
-      if (carved) drawGlyphs(c, 12, 11, 20, 6, stoneRead ? C.green : C.s7, 3);
-      // Five wheels at its foot.
-      for (let i = 0; i < 5; i += 1) {
-        const x = 2 + i * 8 + 1;
-        c.fillStyle = C.s6;
-        c.fillRect(x, 46, 7, 10);
-        c.fillStyle = C.s4;
-        c.fillRect(x, 48, 7, 1);
-        c.fillRect(x, 51, 7, 1);
-        c.fillRect(x, 54, 7, 1);
-        c.fillStyle = stoneRead ? C.green : C.s8;
-        c.fillRect(x + 3, 49, 1, 2);
-      }
-      c.fillStyle = C.s5;
-      c.fillRect(0, 56, W, 4);
-      c.fillStyle = C.s7;
-      c.fillRect(0, 56, W, 1);
-      c.fillStyle = C.s3;
-      c.fillRect(0, 60, W, 6);
-      c.fillStyle = C.s4;
-      c.fillRect(1, 60, W - 2, 1);
+      const b = stoneRead ? PATINA : BRONZE;
+      // The plate that will carry the message.
+      c.fillStyle = b.shade;
+      c.fillRect(21, 0, 30, 26);
+      c.fillStyle = b.rim;
+      c.fillRect(21, 0, 30, 1);
+      c.fillRect(21, 0, 1, 26);
+      c.fillStyle = b.dark;
+      c.fillRect(24, 3, 24, 20);
+      if (carved) drawGlyphs(c, 26, 5, 20, 4, stoneRead ? C.green : b.rim, 3);
+      // The case.
+      c.fillStyle = b.face;
+      c.fillRect(2, 26, 68, 22);
+      c.fillStyle = b.rim;
+      c.fillRect(2, 26, 68, 1);
+      c.fillRect(2, 26, 1, 22);
+      c.fillStyle = b.shade;
+      c.fillRect(66, 27, 4, 21);
+      c.fillStyle = b.dark;
+      c.fillRect(5, 29, 62, 16);
+      // The stone it stands on.
+      c.fillStyle = t.s6;
+      c.fillRect(0, 48, W, 4);
+      c.fillStyle = t.s7;
+      c.fillRect(0, 48, W, 1);
+      c.fillStyle = t.s4;
+      c.fillRect(0, 52, W, 6);
       return canvas;
     });
-    ctx.fillStyle = "rgba(0,0,0,0.45)";
-    ctx.fillRect(cx - 22, foot - 1, 44, 3);
-    ctx.drawImage(picture, cx - 22, foot - picture.height + 1);
+    ctx.fillStyle = "rgba(0,0,0,0.5)";
+    ctx.fillRect(cx - 36, foot - 1, 72, 3);
+    const top = foot - picture.height + 1;
+    const inks = stoneRead ? PATINA : BRONZE;
+    const speed = this.reduce ? 0 : stoneRead ? 10 : carved ? 4 : 0;
+    const step = Math.floor(time * speed);
+    const turn = (dir: number) => (((step * dir) % 16) + 16) % 16;
+    // Two great drive wheels behind the case, either side of the plate.
+    ctx.drawImage(gearPicture(23, 10, turn(1), inks), cx - 35, top + 5);
+    ctx.drawImage(gearPicture(23, 10, turn(-1), inks), cx + 12, top + 5);
+    ctx.drawImage(picture, cx - 36, top);
+    // Five wheels across the case, each turning against the next.
+    for (let i = 0; i < 5; i += 1) {
+      ctx.drawImage(gearPicture(13, 8, turn(i % 2 ? 1 : -1), inks), cx - 31 + i * 12, top + 31);
+    }
     const age = performance.now() - this.stonePulse;
     if (age < 1400) {
       ctx.fillStyle = `rgba(0,235,136,${0.5 * (1 - age / 1400)})`;
-      ctx.fillRect(cx - 12, foot - 56, 24, 34);
+      ctx.fillRect(cx - 12, top + 3, 24, 20);
     }
   }
 
-  private drawAltar(ctx: CanvasRenderingContext2D, cx: number, foot: number, time: number) {
+  private drawAltar(
+    ctx: CanvasRenderingContext2D,
+    t: Theme,
+    cx: number,
+    foot: number,
+    time: number,
+  ) {
     const picture = kept("altar", () => {
       const { canvas, ctx: c } = makeCanvas(44, 26);
-      c.fillStyle = C.s7;
+      c.fillStyle = t.s8;
       c.fillRect(0, 0, 44, 3);
-      c.fillStyle = C.s5;
+      c.fillStyle = t.s6;
       c.fillRect(3, 3, 38, 18);
-      c.fillStyle = C.s4;
+      c.fillStyle = t.s4;
       c.fillRect(28, 3, 13, 18);
-      c.fillStyle = C.deep;
+      c.fillStyle = t.s2;
       for (let x = 6; x < 36; x += 6) {
         c.fillRect(x, 8, 4, 1);
         c.fillRect(x, 8, 1, 6);
         c.fillRect(x, 14, 5, 1);
         c.fillRect(x + 2, 11, 1, 2);
       }
-      c.fillStyle = C.s6;
+      c.fillStyle = t.s7;
       c.fillRect(0, 21, 44, 5);
       return canvas;
     });
-    ctx.fillStyle = "rgba(0,0,0,0.45)";
+    ctx.fillStyle = "rgba(40,20,0,0.45)";
     ctx.fillRect(cx - 22, foot - 1, 44, 3);
     ctx.drawImage(picture, cx - 22, foot - 25);
     if (this.flags.final) drawFlame(ctx, cx, foot - 26, 7, 20, time, 3, false);
@@ -1445,32 +1569,31 @@ export class CrawlEngine {
 
   private drawPlayer(time: number) {
     const ctx = this.ctx;
-    const steps = Math.floor(this.walked / 9) % 4;
-    const step = this.moving ? steps : 0;
+    const step = this.moving ? Math.floor(this.walked / 9) % 4 : 0;
     const bob = this.moving && !this.reduce && step % 2 === 1 ? -1 : 0;
     const blink = !this.reduce && time % 4 < 0.12;
     const flip = this.facing < 0;
-    const footX = flip ? 24 - 1 - DINO_FOOT_X : DINO_FOOT_X;
-    for (const ghost of this.ghosts) {
-      ctx.globalAlpha = (ghost.life / 0.22) * 0.45;
-      ctx.drawImage(
-        dinoFrame(ghost.step, false, ghost.flip, C.deep),
-        Math.round(ghost.x) - (ghost.flip ? 24 - 1 - DINO_FOOT_X : DINO_FOOT_X),
-        Math.round(ghost.y) - DINO_H + 1,
-      );
-    }
-    ctx.globalAlpha = 1;
+    const footX = flip ? DINO_W - 1 - DINO_FOOT_X : DINO_FOOT_X;
     const px = Math.round(this.x);
     const py = Math.round(this.y);
+    if (this.drop > 0) {
+      // In through the roof, whole cells at a time.
+      const u = this.drop / DROP;
+      ctx.drawImage(
+        dinoFrame(1, false, flip),
+        px - footX,
+        py - DINO_H + 1 - Math.round(u * u * 260),
+      );
+      return;
+    }
     if (this.falling > 0) {
-      // Down into the dark, whole cells at a time.
       const u = 1 - this.falling / FALL;
-      const drop = Math.round(u * u * 40);
+      const down = Math.round(u * u * 40);
       ctx.save();
       ctx.beginPath();
       ctx.rect(px - 20, py - DINO_H - 2, 40, DINO_H + 4);
       ctx.clip();
-      ctx.drawImage(dinoFrame(0, false, flip), px - footX, py - DINO_H + 1 + drop);
+      ctx.drawImage(dinoFrame(0, false, flip), px - footX, py - DINO_H + 1 + down);
       ctx.restore();
       return;
     }
@@ -1483,11 +1606,15 @@ export class CrawlEngine {
   private drawMotes(live: Live, time: number, withPlayer: boolean) {
     const ctx = this.ctx;
     if (!this.reduce) {
-      ctx.fillStyle = "rgba(190,200,190,0.28)";
+      const sunlit = live.room.id === "mural" || live.room.id === "sanctum";
+      ctx.fillStyle = sunlit ? "rgba(255,240,200,0.5)" : "rgba(190,200,190,0.28)";
       for (const m of live.motes) {
         const x = Math.round(m.x + Math.sin(time * 0.25 + m.p) * m.s * 3);
-        const y = Math.round(m.y + Math.cos(time * 0.18 + m.p) * m.s * 2);
-        ctx.fillRect(x, y, 1, 1);
+        // In the first room the dust falls, through the light from the hole they came by.
+        const y = sunlit
+          ? 40 + ((m.y + time * (3 + m.s)) % (live.room.H - 50))
+          : Math.round(m.y + Math.cos(time * 0.18 + m.p) * m.s * 2);
+        if (live.room.cell(x, Math.round(y))) ctx.fillRect(x, Math.round(y), 1, 1);
       }
     }
     if (!withPlayer) return;
@@ -1514,10 +1641,10 @@ export class CrawlEngine {
           ".#########.",
           ".---------.",
         ],
-        { "#": C.s8, "-": C.s5 },
+        { "#": "#d9d5c8", "-": "#57544b" },
       ),
     );
-    ctx.drawImage(cap, spot.x - 5, spot.capY + bob);
+    ctx.drawImage(cap, (spot.capX ?? spot.x) - 5, spot.capY + bob);
   }
 
   private cutLights(
@@ -1525,18 +1652,34 @@ export class CrawlEngine {
     ox: number,
     oy: number,
     flameTime: number,
-    fire: { left: number; right: number; flare: boolean },
+    fire: FireNow,
     withPlayer: boolean,
-    now: number,
   ) {
     const dark = this.dark.ctx;
+    const room = live.room;
+    // This room's own dark: the first and last rooms are brighter than the rest.
+    dark.globalCompositeOperation = "source-over";
+    const ambient = room.ambient + (1 - room.ambient) * Math.min(1, this.iris * 1.4);
+    dark.fillStyle = `rgba(2,5,4,${ambient})`;
+    dark.fillRect(ox, oy, room.W, room.H);
+    dark.globalCompositeOperation = "destination-out";
+
     const pool = (x: number, y: number, radius: number) => {
       const r = Math.round(radius / 4) * 4;
       dark.drawImage(lightPicture(r), Math.round(x + ox - r), Math.round(y + oy - r));
     };
-    const room = live.room;
+    const tint = (x: number, y: number, radius: number, ink: string, alpha: number) => {
+      this.tints.push({
+        x: Math.round(x + ox),
+        y: Math.round(y + oy),
+        r: Math.round(radius / 4) * 4,
+        ink,
+        alpha,
+      });
+    };
     const flicker = (seed: number) =>
       this.reduce ? 0 : Math.sin(flameTime * 8 + seed) * 2 + Math.sin(flameTime * 13.7 + seed) * 2;
+    const flareInk = fire.flare ? C.red : C.green;
     for (const f of room.fires) {
       const lit = f.i < (f.side === "L" ? fire.left : fire.right);
       const seed = f.x * 0.37 + f.i * 2.1;
@@ -1544,41 +1687,52 @@ export class CrawlEngine {
       if (lit) {
         const radius = (f.big ? 76 : 64) + flicker(seed);
         pool(f.x, high, radius);
-        this.tints.push({
-          x: Math.round(f.x + ox),
-          y: Math.round(high + oy),
-          r: Math.round(radius / 4) * 4,
-          flare: fire.flare,
-        });
+        tint(f.x, high, radius, flareInk, fire.flare ? 0.2 : 0.13);
       } else pool(f.x, high, 12);
     }
-    if (room.id === "mural" && this.flags.photo) pool(176, 48, 112);
-    else if (room.id === "mural") pool(176, 60, 76);
-    if (room.id === "gate") {
-      pool(176, 60, this.flags.word ? 112 : 56 + 6 * this.flags.solved.filter(Boolean).length);
-    }
-    if (room.id === "hall") {
-      pool(192, 36, 52);
-      if (this.flags.square) pool(192, 128, 84);
-      if (this.flags.final) pool(192, 44, 96);
-    }
-    if (room.id === "chasm") pool(320, 76, this.flags.stoneRead ? 84 : 44);
-    if (room.id === "sanctum") {
-      pool(160, 90, 150);
-      pool(160, 30, 110);
+    const { flags } = this;
+    switch (room.id) {
+      case "mural":
+        // Daylight from the hole in the roof, on the mosaic where they landed.
+        pool(192, 152, 104);
+        tint(192, 152, 88, THEMES.sand.s8, 0.14);
+        pool(192, 50, flags.photo ? 124 : 80);
+        break;
+      case "gate":
+        pool(192, 50, flags.word ? 112 : 60 + 6 * flags.solved.filter(Boolean).length);
+        if (flags.solved.every(Boolean)) tint(192, 40, 56, C.green, 0.12);
+        break;
+      case "hall":
+        pool(192, 36, 52);
+        if (flags.square) pool(192, 128, 84);
+        if (flags.final) {
+          pool(192, 44, 96);
+          tint(192, 40, 56, THEMES.gold.s7, 0.2);
+        }
+        break;
+      case "chasm":
+        pool(192, 96, flags.stoneRead ? 96 : 56);
+        tint(192, 96, 56, flags.stoneRead ? C.green : THEMES.bronze.frieze, 0.12);
+        break;
+      case "sanctum":
+        pool(160, 100, 152);
+        pool(160, 30, 112);
+        tint(160, 100, 140, THEMES.gold.s7, 0.05);
+        break;
+      default:
+        break;
     }
     for (const spot of room.spots) {
       if (spot.target.kind === "tablet") {
-        pool(spot.x, 34, this.flags.solved[spot.target.index] ? 40 : 28);
+        const lit = flags.solved[spot.target.index];
+        pool(spot.x, spot.ty != null ? spot.ty + 18 : spot.y - 24, lit ? 40 : 28);
+        if (lit) tint(spot.x, spot.ty != null ? spot.ty + 18 : spot.y - 24, 32, C.green, 0.12);
       }
     }
-    if (withPlayer && !this.slide) {
+    if (withPlayer) {
       const radius = this.iris > 0 ? 84 * (1 - this.iris) + 8 : 84;
       pool(this.x, this.y - 10, radius);
-    } else if (this.slide && live === this.slide.to) {
-      pool(this.x, this.y - 10, 84);
     }
-    void now;
   }
 }
 
@@ -1588,10 +1742,6 @@ function sameTarget(a: Target, b: Target) {
     (a.kind !== "tablet" || a.index === (b as { index: number }).index) &&
     (a.kind !== "note" || a.text === (b as { text: string }).text)
   );
-}
-
-function easeInOut(u: number) {
-  return u < 0.5 ? 2 * u * u : 1 - (-2 * u + 2) ** 2 / 2;
 }
 
 export { ROOMS };
