@@ -57,7 +57,16 @@ function still(video: HTMLVideoElement, width = Infinity) {
  * holds the middle of the screen whatever it shows, the heading above it and the controls
  * under it change in place, so the photo replaces the preview under the flash and nothing moves.
  */
-export function Portrait({ onDone }: { onDone: (result: PortraitResult) => void }) {
+export function Portrait({
+  onDone,
+  unnumbered = false,
+  doneLabel = "Begin the riddles",
+}: {
+  onDone: (result: PortraitResult) => void;
+  /** /olympus3: no step numeral, and the last button says what it does there. */
+  unnumbered?: boolean;
+  doneLabel?: string;
+}) {
   const reduce = useReducedMotionSafe();
   const [phase, setPhase] = useState<Phase>("intro");
   const [photo, setPhoto] = useState<string | null>(null);
@@ -120,7 +129,7 @@ export function Portrait({ onDone }: { onDone: (result: PortraitResult) => void 
   if (phase === "intro") {
     return (
       <div className="flex w-full flex-col items-center">
-        <StageHeading stage="mural" title="Family Photo" />
+        <StageHeading stage="mural" title="Family Photo" unnumbered={unnumbered} />
         <div className="journey-rise mt-10 flex flex-col items-center gap-6" style={rise(500)}>
           <OlympusButton
             onClick={() => {
@@ -165,7 +174,7 @@ export function Portrait({ onDone }: { onDone: (result: PortraitResult) => void 
   return (
     <div className="portrait-stage">
       <div className="self-end pb-6">
-        <StageHeading stage="mural" steady {...heading} />
+        <StageHeading stage="mural" steady unnumbered={unnumbered} {...heading} />
       </div>
 
       <div className="journey-rise w-full border border-line-strong p-2" style={rise(200)}>
@@ -266,7 +275,7 @@ export function Portrait({ onDone }: { onDone: (result: PortraitResult) => void 
               Change a name
             </OlympusButton>
             <OlympusButton onClick={() => onDone({ photo, faces, names })}>
-              Begin the riddles
+              {doneLabel}
             </OlympusButton>
           </div>
         ) : (

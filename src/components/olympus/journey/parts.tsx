@@ -67,19 +67,24 @@ export function StageHeading({
   title,
   line,
   steady = false,
+  unnumbered = false,
 }: {
   stage: Stage;
   title: string;
   line?: string;
   steady?: boolean;
+  /** No numeral over the title: /olympus3, where the order is the family's to find. */
+  unnumbered?: boolean;
 }) {
   return (
     <div className="flex flex-col items-center text-center">
-      <p className="journey-rise font-olympus text-sm font-semibold tracking-[0.15em] text-green uppercase">
-        {roman(STAGES.indexOf(stage) + 1)} · {STAGE_TITLES[stage].title.replace(/^The /, "")}
-      </p>
+      {unnumbered ? null : (
+        <p className="journey-rise mb-4 font-olympus text-sm font-semibold tracking-[0.15em] text-green uppercase">
+          {roman(STAGES.indexOf(stage) + 1)} · {STAGE_TITLES[stage].title.replace(/^The /, "")}
+        </p>
+      )}
       <h2
-        className="journey-rise mt-4 font-olympus text-h3 leading-tight font-semibold text-balance"
+        className="journey-rise font-olympus text-h3 leading-tight font-semibold text-balance"
         style={{ "--d": "100ms" } as React.CSSProperties}
       >
         <span key={title} className="journey-fade block">

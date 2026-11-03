@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
  * glint. Mono (the printed letters) draws wax, shade and glint in `currentColor` and leaves the
  * pressed cells as paper.
  */
-const SEAL = [
+export const SEAL = [
   "..........ooo........",
   "........oooooooo.....",
   ".....owoooooooooo....",
@@ -36,7 +36,7 @@ const SEAL = [
 const SIZE = SEAL.length;
 
 /** Where the seal cracks: one column per row, a jagged line down the middle. */
-const CRACK = [10, 10, 11, 11, 10, 9, 9, 10, 11, 11, 10, 10, 9, 9, 10, 11, 11, 10, 10, 9, 9];
+export const CRACK = [10, 10, 11, 11, 10, 9, 9, 10, 11, 11, 10, 10, 9, 9, 10, 11, 11, 10, 10, 9, 9];
 
 /** How far each half moves apart when the seal breaks, in cells. */
 const APART = 1;
