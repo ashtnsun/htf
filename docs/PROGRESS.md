@@ -88,6 +88,24 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 17c — 2026-11-02 (/olympus3, Ashton's second notes)
+
+**Asked:** the family photo in the game, not on separate pages. The first room less circular, room shapes less creative and boxy (the circular ones were bad and messed up the entrances), though rooms should stay different from each other. The Mechanism not right beside the Mask: the big trials further apart. Greek writing on the machine's screen instead of blank. The ambience sounded like white noise.
+
+**Built:**
+
+- The mural is the camera. `MuralTrial`'s frame sits exactly over the mural's picture in the world: `Crawl.fitMural` works out the one scale and origin that land it there. The bare carving shows through, then the live feed, the flash, the photo with faces marked and the names asked for, all in the wall, with the room dimmed round it and the fires still burning (about 11 frames a second while the camera runs). The dinosaur walks aside when the mural wakes so nothing stands behind the controls. No dissolve afterwards, since the photo is already there; the frame flashes green, then the cutscene goes to the door. `Portrait` got an `inWorld` prop; /olympus is unchanged.
+- Boxes: the Mural, the Mask, the Mechanism and the Sanctum are rectangles, and their round floor patterns became square (a key-border mosaic, square theatre tiers, a square pit and island, a checkered gold field). The Crypt stays a cross. The Teeth is now one straight corridor.
+- The map is a tree round the Hall: Mural to the west, Sanctum north, the Teeth then the Mask far east, the Crypt south, then the Mechanism far south-west. The Mask and the Mechanism are as far apart as the map allows, and the Teeth now has to be crossed to reach the Mask.
+- The machine's plate shows rows of pixel Greek capitals in the room and up close before it has anything to say. They mean nothing; the real cipher replaces them once the word and names are known.
+- New ambience in `sound.ts`, with no continuous noise at all: a soft low hum of a few notes that breathe, a faint top note that wanders, water drips with a stone-room echo, the odd far-off settling, and fire as separate crackles. Door and heavy-stone sounds were made lower and shorter too.
+
+**Decisions (mine, for Ashton to overrule):** the Crypt's cross stays, since it is boxy and its doors are straight; the Mask is now a dead end at the far east, and the Mechanism one at the far south-west, so there are no loops and a family walks back through the Hall between them.
+
+**Verified:** typecheck, lint, build clean. A full playthrough on the new map with real keys and a fake camera: door sealed until the photo, photo steps all in the frame, all five riddles, the skip checks, the machine, seal, floor and the door opening by itself, Sanctum, 0 console errors. The frame measures the same before and after the camera starts; the alignment was checked by eye at 1440x810, 1366x657 and under reduced motion. Sound: the output runs, peak 0.26, and the measured spectrum across 60 Hz to 8 kHz shows tones, not spread noise. Production, headless with no GPU: 60 fps at 1366x657 and 1920x1080; CPU slowed 4x, 14 fps until it steps down, then 45 fps; 33 fps with the live camera and face finder at 1366x657, with stalls up to 200 ms while it searches. axe 0 violations on /olympus3 and /olympus3/1 at 1440 and 390, and with the mural asking and live. No word or seal in the page or chunks. Screenshots: `docs/screenshots/session-17c/`.
+
+**Not tested:** how the new sound actually sounds (only measured), a real webcam with real faces, a real low-end laptop, a real family's pacing.
+
 ## Session 17b — 2026-11-02 (/olympus3, Ashton's first notes)
 
 **Asked:** no combat, no dash, arrow keys, "Move" not "Walk", a bigger map. The first room more special and holding the mural, every other room locked until the photo is taken. One or two rooms fewer, none without a point, rooms that look different and aren't all rectangles, a final room that feels like the end. Doors that line up, a better transition. Wordle and the wheels more distinct (Wordle looked like a door that never opened). The great door opening by itself when the word is pressed out on the floor. Cutscenes as an idea; separating the seal from the fires was raised, then withdrawn, so they stay together in the Hall.
