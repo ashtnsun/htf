@@ -77,11 +77,12 @@ src/components/
                     scene, snapped to the grid, plus the camera, the rock's flat spans and the sparks),
                     blaze (the live fire: heat averaged upward through a climbing noise, drawn on the
                     stage's cells), formations (the pictures as cell lists; `TRIALS` links in the chain,
-                    one per step of journey/save's STAGES less the last), score (a full soundtrack synthesised in
-                    the browser: strings, choir, horns, drums, a lyre in one reverb, fire and wind; on by
-                    default, S mutes, it wakes on the presenter's first key or click) and cuesheet (the
-                    music as data: one section per stretch of the deck, cut to as the slide starts; keep
-                    its energy between 200 Hz and 5 kHz, the room's speakers cannot play below that).
+                    one per step of journey/save's STAGES less the last), score (ambience and effects synthesised
+                    in the browser, no music: fire, wind, thunder, iron, whooshes; on by default, S mutes,
+                    it wakes on the presenter's first key or click; keep its energy between 200 Hz and
+                    5 kHz, the room's speakers cannot play below that). soundtrack and cuesheet are a full
+                    synthesised score Ashton took off as too much (2026-11-02): stored, imported by
+                    nothing, so neither ships.
                     It sets the families off and stops there: it names and draws no god
                     (it never imports content/olympus.ts or the gods' sprites) and explains no trial.
                     The address on screen is the constant `SITE` (htfpurdue.org): families scroll down

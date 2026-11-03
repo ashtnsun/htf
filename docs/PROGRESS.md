@@ -88,6 +88,24 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 16q — 2026-11-02 (the Prologue: ambience, not a soundtrack)
+
+**Asked:** the soundtrack is too much and a little too loud: keep it stored, take it off the Prologue, just ambience and sound effects.
+
+**Built:** the score from Session 16p moved to `prologue/soundtrack.ts` (class `Soundtrack`) beside `cuesheet.ts`, marked stored and imported by nothing, so neither ships (none of it in `.next/static`). A new `prologue/score.ts` has no music, drums or tuned notes:
+
+- Bed: the fire (roar, hiss, crackle) wherever a fire is on screen, wide stereo wind on the mountain, and softer moving air everywhere else, so no slide is dead silent.
+- Effects: thunder on the strike, a whoosh on each forward slide, a soft tick per exec photo and for the roulette and typing, a thud on "Whose family are you in?", iron and a thud per chain link, a whoosh as the fire catches, a stone per setup slide.
+- Leaving: the fire and air fall away over about 2 seconds into /oracle, then the sound closes.
+
+**Measured** on a recording of the production deck: fire slides about -25 dB RMS, wind on the mountain -27, the other slides -32 to -34 (the soundtrack ran -10 to -16). Biggest hit (thunder) peaks 0.76, nothing at full scale. The levels to change are `score.wind()` and `score.fire()` in each cue, and the peaks in score.ts.
+
+**Verified (production build):** typecheck, lint, `pnpm build`; the whole deck to /oracle with no console errors; S to silence and back; axe 0 violations on /prologue and /oracle at 1440 and 390; no god's name in anything /prologue fetches.
+
+**Not verified:** how it sounds by ear, and a real room's speakers.
+
+**Next session starts with:** Ashton's listen, then whether it ships. Still open: the Olympus section back on the home page for the day, and the /oracle line (Session 16o).
+
 ## Session 16p — 2026-11-02 (the Prologue gets a soundtrack)
 
 **Asked:** the sound has to be better, louder, more distinct and part of the experience, "almost like a video", with no awkward silence while people watch.
