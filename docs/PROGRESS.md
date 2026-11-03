@@ -88,6 +88,67 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 17f — 2026-11-03 (/olympus3, Ashton's fourth notes)
+
+Ashton's notes on the shop, the den, the machines and the swap clock, and the ones that came in while
+it was being done: wear what you buy, sounds "similar to legend of zelda sound effects", far more
+variety in the cosmetics, a floor mirror, no fires where they land, a louder reset on the fires, and a
+spike hit going back to the near side of the whole trap.
+
+- **The Caravan** (was The Agora): the shop is a merchant's camp pitched in the ruin. Warm umber stone
+  and lamplight, three woven rugs instead of two rows of plinths, wares on cushions with their prices
+  in front (hats on the red rug, faces on the plum, things to wear on the back and carry on the blue), a
+  striped covered wagon, crates, sacks, rolled carpets, bunting and hung lamps.
+- **The merchant** is a new sprite (`art.ts` `MERCHANT`), not a T-rex in a toga: a hooded old dinosaur
+  under a pack, in a wine robe, a lamp swinging from a staff. New lines to suit; speech is on parchment.
+- **The Den** is nearly black stone lit by a few candles; the pink and cyan are gone. The machines are
+  little stone temples with a bronze name plate: DINO and 21. The DINO screen is now the game in small
+  (the player's colour, hopping a column under a moon), the 21 screen two painted cards.
+- **Dino Game**, by that name: a Greek shore at night, whole and broken columns, jars and helms to jump,
+  owls and javelins overhead (low ones are jumped, high ones ducked). Same rates as before.
+- **Blackjack** has no green table: black glaze with a terracotta key round the rim, jars either side.
+  Cards are fired clay or white ground off a painted pot, with black key bands and four pixel suits (owl,
+  helm, jar, lyre); the dealer is The Fates. The rules did not change.
+- **Swap**: no sound (the beeps are gone from `sound.ts`), no sentence, no flashing frame. A big green
+  SWAP! for half a second (measured 504-515ms), and the clock starts again.
+- **What you buy goes straight on**, in its slot; the mirror still changes anything.
+- **Cosmetics**: 21 pieces (20 for sale, up from 14), and only the crown is gold. New: Red Wool Cap, Vine
+  Crown, Bull Horns, Serpent Locks, Theatre Mask, Sea Cloak, Wine Cup. Old ones recoloured (brown fedora,
+  olive wreath, teal winged cap, cobalt shield, verdigris trident, orange torch). Capes and the shield
+  moved out from behind the body, where they barely showed.
+- **Sound**: what happens in the game is played on instruments. A plucked lyre (a Karplus-Strong string
+  model rendered once per note), a breathy ocarina, coins as struck metal partials. Phrases are this
+  game's own, in the spirit of Zelda, none copied: `secret` (a sweep up the lyre), `fanfare`, `solved`,
+  `buy` (coins, then a rising phrase), `hurt`, `thud`, `reveal`, `fall`, `menu`, `talk`, and `press`, a
+  note that climbs with each letter on the Hall's floor. The runner hops, the cards flick.
+- **The mirror** stands on the floor and leans on the wall (narrowing and tipping in whole cells), in
+  the Mural and the Caravan, sorted with everything else so the dinosaur passes in front of it.
+- **The Mural room has no fires** now, and no crackle; its light is the daylight and what gets past the
+  mural. Rooms with no fires are silent of fire everywhere (`fireIn`).
+- **The fires' restart** in /olympus3 flashes red three times, fast (140ms on, 130 off), then goes dark;
+  under reduced motion it is one steady red. /olympus keeps its single flare: `journey/Torches.tsx` has
+  someone else's uncommitted work in it, so it was left alone.
+- **Spikes**: a hit sends the dinosaur back past the whole trap to the side it came in from, however
+  many strips it had crossed. Tested from both ends (hit at x 190 from the west lands at 113; hit at x
+  261 from the den side lands at 319).
+
+### Decisions
+
+- The jingles are original on purpose: the feel of Zelda, not its melodies.
+- Family-word rule held in the new text: a suit is "jars" and the sprites say nothing of the words.
+
+### Checks
+
+Typecheck, lint and build pass; `pnpm a11y` clean; axe clean on the camp, Dino Game and a blackjack hand.
+Production at 60fps in the camp, den, Hall and Mural. Scripted run in dev: all 20 wares reached and
+bought and each worn at once, the runner bot past 14s with all six obstacle kinds met across runs, every
+sound and every world event played with no page errors. **Not re-run this round:** the full chain from
+photo to /oracle (no server action or trial logic changed). **Not heard:** nobody has listened to the
+sounds; they were checked as code running, not by ear.
+
+**Next session starts with:** Ashton's listen to the new sounds, and their look at the camp, the merchant
+and the cosmetics.
+
 ## Session 17e — 2026-11-03 (/olympus3, from the temple into the game)
 
 **Asked:** keep the transition after a group is chosen, but the game takes a moment to load on a new page; an intro into the game itself that is more seamless.
