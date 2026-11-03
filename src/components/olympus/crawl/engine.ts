@@ -9,6 +9,7 @@ import {
   DINO_W,
   drawFlame,
   drawGlyphs,
+  drawGreek,
   drawLetter,
   drawPathStone,
   drawSquareTile,
@@ -128,7 +129,7 @@ const MASK = { x: 156, y: 2, w: 72, h: 78 };
 const SHUT = { top: 0.62, bottom: 0.68, half: 0.3 };
 const OPEN = { top: 0.54, bottom: 0.9, half: 0.48 };
 const GREAT_DOOR = { x: 152, y: 2, w: 80, h: 62 };
-const MECHANISM = { x: 192, foot: 130 };
+const MECHANISM = { x: 192, foot: 146 };
 
 /** Where the camera closes in on each thing, in room pixels. */
 function focusOf(target: Target, spot: Spot): { x: number; y: number } {
@@ -140,7 +141,7 @@ function focusOf(target: Target, spot: Spot): { x: number; y: number } {
     case "gate":
       return { x: MASK.x + MASK.w / 2, y: 44 };
     case "stone":
-      return { x: MECHANISM.x, y: 104 };
+      return { x: MECHANISM.x, y: 120 };
     case "door":
       return { x: 192, y: 34 };
     default:
@@ -203,7 +204,12 @@ export class CrawlEngine {
   private motes: Mote[] = [];
   private movedOnce = false;
   private paused = false;
+  /** Behind the camera: the world still burns, at a few frames a second. */
   private asleep = false;
+  private lastDraw = 0;
+  /** Where the dinosaur walks to, out of the way of a close-up that uses the room. */
+  private aside: number | null = null;
+  private cssCell = 3;
   /** The fall in through the roof, the first time. */
   private drop = 0;
   private iris = 1;
@@ -297,7 +303,7 @@ export class CrawlEngine {
     this.reduce = reduce;
   }
 
-  /** The world stops for a close-up; `sleep` also stops drawing (the camera's busy then). */
+  /** The world stops for a close-up; `sleep` also draws it slowly (the camera's busy then). */
   pause(sleep = false) {
     this.paused = true;
     this.asleep = sleep;
@@ -323,6 +329,49 @@ export class CrawlEngine {
     return this.onScreen(at.x, at.y);
   }
 
+  /** The mural wakes: the camera settles square on it and the dinosaur steps out of the way. */
+  faceMural() {
+    this.lookTarget = { x: MURAL.ix + MURAL.iw / 2, y: 104 };
+    if (!this.lookAway) this.look = { x: this.x, y: this.y };
+    this.lookAway = true;
+    this.aside = 132;
+  }
+
+  /** The camera goes back to following the dinosaur. */
+  releaseLook() {
+    this.lookTarget = null;
+    this.aside = null;
+    this.moving = false;
+  }
+
+  private stepAside(dt: number) {
+    if (this.aside === null) return;
+    const d = this.aside - this.x;
+    if (Math.abs(d) < 1.5) {
+      this.moving = false;
+      return;
+    }
+    this.moving = true;
+    this.facing = Math.sign(d);
+    const step = SPEED * dt;
+    this.x += Math.sign(d) * Math.min(step, Math.abs(d));
+    this.walked += step;
+  }
+
+  /** The mural's picture on screen once the camera has settled, in CSS pixels; its stone's width. */
+  muralRect() {
+    const at = this.lookTarget ?? { x: this.x, y: this.y };
+    const cam = this.cameraAt(this.current, at.x, at.y);
+    const c = this.cssCell;
+    return {
+      x: (MURAL.ix - cam.x) * c,
+      y: (MURAL.iy - cam.y) * c,
+      w: MURAL.iw * c,
+      h: MURAL.ih * c,
+      stone: (MURAL.iy - MURAL.y) * c,
+    };
+  }
+
   private onScreen(x: number, y: number) {
     const cam = this.camera(this.current);
     return { x: (x - cam.x) / this.viewW, y: (y - cam.y) / this.viewH };
@@ -339,18 +388,19 @@ export class CrawlEngine {
     const now = performance.now();
     switch (event.kind) {
       case "mural":
-        this.muralStart = now + 450;
-        this.slabStart = now + 3100;
+        this.muralStart = now;
+        this.slabStart = now + 1900;
         this.score.chime();
         this.playCine([
-          { x: 192, y: 48, ms: 2900 },
+          { x: 192, y: 56, ms: 1700 },
           {
-            x: 356,
+            x: 384,
             y: 160,
-            ms: 2000,
+            ms: 2400,
             start: () => {
               this.shake(1400, 2);
               this.score.rumble(0.8);
+              for (let i = 0; i < 4; i += 1) this.spray(372, 150 + i * 7, THEMES.sand.s7, 6);
             },
           },
         ]);
@@ -369,7 +419,7 @@ export class CrawlEngine {
       case "stone":
         this.stonePulse = now;
         this.score.chime();
-        this.playCine([{ x: 192, y: 100, ms: 2000 }]);
+        this.playCine([{ x: 192, y: 116, ms: 2000 }]);
         break;
       case "square":
         this.squareStart = now + 500;
@@ -443,6 +493,7 @@ export class CrawlEngine {
     const W = Math.round(css.w * k);
     const H = Math.round(css.h * k);
     this.S = Math.max(1, Math.floor(Math.min(W / 352, H / 200)));
+    this.cssCell = this.S / k;
     this.viewW = Math.ceil(W / this.S);
     this.viewH = Math.ceil(H / this.S);
     this.R = [this.S, Math.ceil(this.S / 2), 1][this.stepsDown]!;
@@ -927,10 +978,8 @@ export class CrawlEngine {
 
   private frame = (now: number) => {
     this.raf = requestAnimationFrame(this.frame);
-    if (this.asleep) {
-      this.last = now;
-      return;
-    }
+    if (this.asleep && now - this.lastDraw < 90) return;
+    this.lastDraw = now;
     this.watchFrames(now);
     const dt = Math.min(0.05, (now - this.last) / 1000);
     this.last = now;
@@ -941,6 +990,7 @@ export class CrawlEngine {
       this.cineLeft -= dt;
       if (this.cineLeft <= 0) this.nextCine();
     }
+    this.stepAside(dt);
     this.stepLook(dt);
     this.stepMotes(dt);
     this.render(now, time);
@@ -1301,21 +1351,19 @@ export class CrawlEngine {
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(photo, MURAL.ix, MURAL.iy, MURAL.iw, MURAL.ih);
     ctx.imageSmoothingEnabled = false;
-    const u = this.muralStart < 0 ? 1e9 : now - this.muralStart;
-    if (u < 2000) {
-      // The relief falls away cell by cell.
-      const cell = 8;
-      for (let y = 0; y < MURAL.ih; y += cell) {
-        for (let x = 0; x < MURAL.iw; x += cell) {
-          const order = ((x * 7919 + y * 104729) % 97) / 97;
-          if (u < order * 1800) {
-            ctx.drawImage(relief, x, y, cell, cell, MURAL.ix + x, MURAL.iy + y, cell, cell);
-          } else if (u < order * 1800 + 200) {
-            ctx.fillStyle = C.mint;
-            ctx.fillRect(MURAL.ix + x, MURAL.iy + y, cell, cell);
-          }
-        }
-      }
+    // The photo has just been set: the frame takes it, in a flash round its edge.
+    const age = this.muralStart < 0 ? 1e9 : now - this.muralStart;
+    if (age < 800) {
+      ctx.fillStyle = `rgba(0,235,136,${0.7 * (1 - age / 800)})`;
+      ctx.fillRect(MURAL.x, MURAL.y, MURAL.w, MURAL.iy - MURAL.y);
+      ctx.fillRect(MURAL.x, MURAL.iy + MURAL.ih, MURAL.w, MURAL.y + MURAL.h - MURAL.iy - MURAL.ih);
+      ctx.fillRect(MURAL.x, MURAL.iy, MURAL.ix - MURAL.x, MURAL.ih);
+      ctx.fillRect(
+        MURAL.ix + MURAL.iw,
+        MURAL.iy,
+        MURAL.x + MURAL.w - MURAL.ix - MURAL.iw,
+        MURAL.ih,
+      );
     }
   }
 
@@ -1329,9 +1377,9 @@ export class CrawlEngine {
     if (u >= 1) return;
     const ctx = this.ctx;
     const h = Math.round(36 * (1 - u));
-    ctx.fillStyle = t.s5;
+    ctx.fillStyle = t.s6;
     ctx.fillRect(368, 142, 16, h);
-    ctx.fillStyle = t.s7;
+    ctx.fillStyle = t.s8;
     ctx.fillRect(368, 142, 1, h);
     ctx.fillStyle = t.s3;
     for (let y = 148; y < 142 + h; y += 8) ctx.fillRect(369, y, 15, 2);
@@ -1493,7 +1541,7 @@ export class CrawlEngine {
       c.fillRect(21, 0, 1, 26);
       c.fillStyle = b.dark;
       c.fillRect(24, 3, 24, 20);
-      if (carved) drawGlyphs(c, 26, 5, 20, 4, stoneRead ? C.green : b.rim, 3);
+      drawGreek(c, 25, 5, 4, 2, stoneRead ? C.green : carved ? b.rim : b.shade, 3);
       // The case.
       c.fillStyle = b.face;
       c.fillRect(2, 26, 68, 22);
@@ -1697,6 +1745,11 @@ export class CrawlEngine {
         pool(192, 152, 104);
         tint(192, 152, 88, THEMES.sand.s8, 0.14);
         pool(192, 50, flags.photo ? 124 : 80);
+        // The way out: green firelight from the Hall, once the slab has begun to move.
+        if (flags.pictured && performance.now() > this.slabStart) {
+          pool(372, 160, 56);
+          tint(372, 160, 48, C.green, 0.16);
+        }
         break;
       case "gate":
         pool(192, 50, flags.word ? 112 : 60 + 6 * flags.solved.filter(Boolean).length);
@@ -1711,11 +1764,11 @@ export class CrawlEngine {
         }
         break;
       case "chasm":
-        pool(192, 96, flags.stoneRead ? 96 : 56);
-        tint(192, 96, 56, flags.stoneRead ? C.green : THEMES.bronze.frieze, 0.12);
+        pool(192, 112, flags.stoneRead ? 96 : 56);
+        tint(192, 112, 56, flags.stoneRead ? C.green : THEMES.bronze.frieze, 0.12);
         break;
       case "sanctum":
-        pool(160, 100, 152);
+        pool(160, 110, 152);
         pool(160, 30, 112);
         tint(160, 100, 140, THEMES.gold.s7, 0.05);
         break;

@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { readInscription } from "@/app/olympus/actions";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
-import { BRONZE, PATINA, paintGear } from "@/components/olympus/crawl/art";
+import { BRONZE, drawGreek, makeCanvas, PATINA, paintGear } from "@/components/olympus/crawl/art";
 import {
   inscriptionKey,
   KEY_STEPS,
@@ -18,8 +18,6 @@ import { cn } from "@/lib/utils";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const UNSET = "·";
-/** How wide a blank plate looks: a few rows of scratches, no count of letters. */
-const BLANK_ROWS = [34, 28, 31];
 /** Cells across a gear, drawn at two screen pixels each; a whole number of teeth per letter. */
 const GEAR_CELLS = 64;
 const TEETH = 13;
@@ -62,10 +60,31 @@ function Gear({ letter, awake, reduce }: { letter: string; awake: boolean; reduc
   return <canvas ref={ref} width={GEAR_CELLS} height={GEAR_CELLS} aria-hidden="true" />;
 }
 
+/** The plate before it has anything to say: rows of Greek capitals, cut in the bronze, meaningless. */
+function GreekPlate() {
+  const [src] = useState(() => {
+    const cols = 30;
+    const rows = 3;
+    const { canvas, ctx } = makeCanvas(cols * 6, rows * 9);
+    drawGreek(ctx, 0, 1, cols, rows, "#2b2014", 11);
+    drawGreek(ctx, 0, 0, cols, rows, "#a57e45", 11);
+    return canvas.toDataURL("image/png");
+  });
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- drawn in the browser, a data URL
+    <img
+      src={src}
+      alt=""
+      className="mx-auto my-6 block w-full max-w-[45rem]"
+      style={{ imageRendering: "pixelated" }}
+    />
+  );
+}
+
 /**
  * The Mechanism, up close: a Greek machine of old bronze, five geared wheels under a plate carved in
  * a Vigenère cipher, as on /olympus (each wheel turns every fifth letter; the counts under them are
- * never explained). The plate stays blank until the family has both the word and their names,
+ * never explained). The plate says nothing but old Greek until the family has both the word and their names,
  * because it is carved from them. The counts are readable from the start: they are how a family
  * learns what else they need. The wheels start on the word once they have it. Read, the machine goes
  * green and stays that way for the next visit.
@@ -164,15 +183,7 @@ export function StoneWheels({
             </p>
           </>
         ) : (
-          <div aria-hidden="true" className="flex flex-col items-center gap-4 py-7">
-            {BLANK_ROWS.map((w) => (
-              <span
-                key={w}
-                className="crawl-worn h-2"
-                style={{ width: `${w}rem`, maxWidth: "100%" }}
-              />
-            ))}
-          </div>
+          <GreekPlate />
         )}
       </div>
 

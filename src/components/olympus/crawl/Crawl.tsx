@@ -122,6 +122,7 @@ export function Crawl({
         setTrial(null);
         setLeaving(false);
         engine?.wake();
+        engine?.releaseLook();
         if (worldRef.current) delete worldRef.current.dataset.zoom;
         if (settled) engine?.play(settled);
         rootRef.current?.focus();
@@ -154,20 +155,50 @@ export function Crawl({
           );
         }
       }
-      const at = engine.focus(target);
-      if (worldRef.current) {
+      // The mural lines itself up under its frame instead, once the frame exists (`fitMural`).
+      if (worldRef.current && target.kind !== "mural") {
+        const at = engine.focus(target);
+        worldRef.current.style.removeProperty("--zoom");
         worldRef.current.style.transformOrigin = `${at.x * 100}% ${at.y * 100}%`;
         worldRef.current.dataset.zoom = "";
       }
       setBark(null);
-      // The camera and the face finder need the machine: the world stops drawing behind them.
-      engine.pause(target.kind === "mural" && !s.photo);
+      engine.pause();
+      if (target.kind === "mural") {
+        engine.faceMural();
+        // The camera and the face finder need the machine: once settled, the world burns slowly.
+        if (!s.photo) {
+          window.setTimeout(() => {
+            if (openKind.current === "mural") engine.pause(true);
+          }, 1000);
+        }
+      }
       score.whoosh(0.06, 0.5);
       openKind.current = target.kind;
       setTrial(target);
     },
     [riddles.length, say, score],
   );
+
+  /**
+   * Moves the camera so the mural's picture lands exactly under the frame on screen: the scale that
+   * makes their widths match, and the one origin that scale leaves the frame's middle fixed on.
+   */
+  const fitMural = useCallback((frame: DOMRect) => {
+    const world = worldRef.current;
+    const engine = engineRef.current;
+    if (!world || !engine) return;
+    const m = engine.muralRect();
+    let k = frame.width / m.w;
+    if (Math.abs(k - 1) < 0.01) k = 1.01;
+    const origin = (from: number, to: number) => (k * from - to) / (k - 1);
+    const x = origin(m.x + m.w / 2, frame.x + frame.width / 2);
+    const y = origin(m.y + m.h / 2, frame.y + frame.height / 2);
+    world.style.transformOrigin = `${x}px ${y}px`;
+    world.style.setProperty("--zoom", String(k));
+    world.dataset.zoom = "";
+    rootRef.current?.style.setProperty("--stone", `${m.stone * k}px`);
+  }, []);
 
   /** A trial solved after a delay: it may have been stepped away from in the meantime. */
   const settle = useCallback(
@@ -453,9 +484,21 @@ export function Crawl({
               photo={save.photo}
               faces={save.faces}
               names={save.names}
+              onFrame={fitMural}
               onDone={(result) => {
-                patch({ photo: result.photo, faces: result.faces, names: result.names });
-                closeTrial({ kind: "mural" });
+                // The picture is on the wall before the frame over it fades, so nothing flickers.
+                const settleIn = () => {
+                  patch({ photo: result.photo, faces: result.faces, names: result.names });
+                  closeTrial({ kind: "mural" });
+                };
+                if (!result.photo) return settleIn();
+                const image = new Image();
+                image.onload = () => {
+                  engineRef.current?.setFlags({ photo: image });
+                  settleIn();
+                };
+                image.onerror = settleIn;
+                image.src = result.photo;
               }}
             />
           ) : trial.kind === "gate" ? (

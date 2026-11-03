@@ -119,15 +119,6 @@ export const DOOR_HALF = 16;
 const rect = (x0: number, y0: number, x1: number, y1: number) => (x: number, y: number) =>
   x >= x0 && x < x1 && y >= y0 && y < y1;
 
-/** A rectangle with its corners cut off at 45°, in whole steps. */
-const octagon =
-  (x0: number, y0: number, x1: number, y1: number, cut: number) => (x: number, y: number) => {
-    if (x < x0 || x >= x1 || y < y0 || y >= y1) return false;
-    const dx = Math.min(x - x0, x1 - x);
-    const dy = Math.min(y - y0, y1 - y);
-    return dx + dy >= cut;
-  };
-
 const tablet = (index: number, x: number, floorTop: number): Spot => ({
   target: { kind: "tablet", index },
   x,
@@ -150,33 +141,39 @@ const hallFires: Fire[] = Array.from({ length: 5 }, (_, i) => [
   { x: 262, y: SQUARE.y + 14 + i * 20, side: "R" as const, i, big: true },
 ]).flat();
 
-/** The Mechanism's room: a round drop around an island, a hidden way across it. */
-const CHASM = { cx: 192, cy: 128, rx: 176, ry: 96, island: 0.3, ledge: 0.72 };
+/** The Mechanism's room: a square drop around a square island, a hidden way across it. */
 const CHASM_PATH = new Set(
   [
-    [4, 7],
-    [5, 7],
-    [6, 7],
-    [6, 6],
-    [6, 5],
-    [7, 5],
-    [8, 5],
-    [9, 5],
-    [9, 6],
+    [19, 8],
+    [18, 8],
+    [18, 9],
+    [18, 10],
+    [17, 10],
+    [16, 10],
+    [16, 9],
+    [16, 8],
+    [15, 8],
   ].map(([c, r]) => `${c},${r}`),
 );
 const chasmFloor = () =>
   Array.from({ length: 15 }, (_, row) =>
     Array.from({ length: 24 }, (_, col) => {
-      const d = Math.hypot(
-        (col * TILE + 8 - CHASM.cx) / CHASM.rx,
-        (row * TILE + 8 - CHASM.cy) / CHASM.ry,
-      );
-      if (d <= CHASM.island || d >= CHASM.ledge) return ".";
+      const pit = col >= 4 && col <= 19 && row >= 4 && row <= 12;
+      const island = col >= 9 && col <= 14 && row >= 7 && row <= 10;
+      if (!pit || island) return ".";
       return CHASM_PATH.has(`${col},${row}`) ? "h" : "p";
     }).join(""),
   );
 
+/*
+ * The map, with the Hall in the middle and the big trials as far from each other as it allows:
+ *
+ *                 Sanctum
+ *                    |
+ *   Mural ------- Hall ------- Teeth ------- Mask
+ *                    |
+ *   Mechanism --- Crypt
+ */
 const SPECS: RoomSpec[] = [
   {
     id: "mural",
@@ -187,23 +184,23 @@ const SPECS: RoomSpec[] = [
     h: 14,
     wall: 6,
     ambient: 0.4,
-    shape: octagon(16, 96, 368, 208, 40),
+    shape: rect(16, 96, 368, 208),
     doors: { e: { to: "hall", at: 160 } },
-    sconces: { left: [30, 42, 54, 66, 78], right: [306, 318, 330, 342, 354] },
+    sconces: { left: [28, 43, 58, 73, 88], right: [296, 311, 326, 341, 356] },
     props: [
-      { kind: "statue", x: 100, y: 110 },
-      { kind: "statue", x: 284, y: 110, flip: true },
+      { kind: "statue", x: 104, y: 112 },
+      { kind: "statue", x: 280, y: 112, flip: true },
       { kind: "rubble", x: 142, y: 196, seed: 4 },
       { kind: "rubble", x: 246, y: 196, seed: 5 },
       { kind: "rubble", x: 196, y: 204, seed: 6 },
-      { kind: "stump", x: 60, y: 176, seed: 3 },
-      { kind: "column", x: 330, y: 136 },
-      { kind: "amphora", x: 312, y: 190, seed: 1 },
-      { kind: "bones", x: 88, y: 190 },
+      { kind: "stump", x: 44, y: 176, seed: 3 },
+      { kind: "column", x: 330, y: 120 },
+      { kind: "amphora", x: 340, y: 196, seed: 1 },
+      { kind: "bones", x: 72, y: 196 },
     ],
     spots: [
       { target: { kind: "mural" }, x: 192, y: 104, r: 34, capY: 2 },
-      note("Someone came before you. They did not stand before the wall.", 88, 198),
+      note("Someone came before you. They did not stand before the wall.", 72, 204),
       {
         ...note("It will not open for strangers.", 346, 160, 22),
         capY: 132,
@@ -225,7 +222,7 @@ const SPECS: RoomSpec[] = [
       n: { to: "sanctum", at: 192 },
       s: { to: "crypt", at: 192 },
       w: { to: "mural", at: 128 },
-      e: { to: "gate", at: 128 },
+      e: { to: "teeth", at: 128 },
     },
     fires: hallFires,
     props: [
@@ -253,15 +250,15 @@ const SPECS: RoomSpec[] = [
     shape: (x, y) => rect(112, 48, 240, 208)(x, y) || rect(16, 104, 336, 184)(x, y),
     doors: {
       n: { to: "hall", at: 176 },
-      e: { to: "teeth", at: 160 },
+      w: { to: "chasm", at: 160 },
     },
     sconces: { left: [24, 38, 52, 66, 80], right: [262, 276, 290, 304, 318] },
     props: [
-      { kind: "sarcophagus", x: 62, y: 148, riddle: 0 },
+      { kind: "sarcophagus", x: 62, y: 136, riddle: 0 },
       { kind: "sarcophagus", x: 276, y: 136, riddle: 1 },
       { kind: "sarcophagus", x: 176, y: 204, riddle: 2 },
       { kind: "bones", x: 142, y: 92 },
-      { kind: "rubble", x: 32, y: 178, seed: 13 },
+      { kind: "rubble", x: 310, y: 178, seed: 13 },
       { kind: "amphora", x: 226, y: 66, seed: 6 },
       { kind: "amphora", x: 124, y: 62, seed: 2 },
     ],
@@ -269,9 +266,9 @@ const SPECS: RoomSpec[] = [
       {
         target: { kind: "tablet", index: 0 },
         x: 62,
-        y: 162,
+        y: 150,
         r: 28,
-        capY: 104,
+        capY: 92,
         label: "Read the lid",
       },
       {
@@ -298,52 +295,50 @@ const SPECS: RoomSpec[] = [
     id: "teeth",
     title: "The Teeth",
     theme: "rust",
-    at: [368, 208],
-    w: 24,
-    h: 14,
+    at: [384, 0],
+    w: 28,
+    h: 13,
     wall: 3,
     ambient: 0.5,
-    // An L: a landing by the doors, and one long way to the far wall.
-    shape: (x, y) => rect(16, 48, 112, 208)(x, y) || rect(16, 112, 368, 208)(x, y),
+    // One long way between the Hall and the Mask, and nothing else.
+    shape: rect(16, 88, 432, 168),
     doors: {
-      w: { to: "crypt", at: 160 },
-      n: { to: "gate", at: 64 },
+      w: { to: "hall", at: 128 },
+      e: { to: "gate", at: 128 },
     },
-    sconces: { left: [126, 141, 156, 171, 186], right: [214, 229, 244, 259, 274] },
+    sconces: { left: [110, 125, 140, 155, 170], right: [230, 245, 260, 275, 290] },
     props: [
-      { kind: "bones", x: 36, y: 90 },
-      { kind: "rubble", x: 350, y: 196, seed: 15 },
-      { kind: "amphora", x: 98, y: 66, seed: 7 },
+      { kind: "bones", x: 44, y: 160 },
+      { kind: "rubble", x: 410, y: 164, seed: 15 },
+      { kind: "amphora", x: 26, y: 104, seed: 7 },
     ],
     spikes: [
-      { x: 124, w: 28, y: 112, h: 96, phase: 0 },
-      { x: 176, w: 28, y: 112, h: 96, phase: 0.3 },
-      { x: 228, w: 28, y: 112, h: 96, phase: 0.6 },
-      { x: 280, w: 28, y: 112, h: 96, phase: 0.15 },
+      { x: 92, w: 28, y: 88, h: 80, phase: 0 },
+      { x: 148, w: 28, y: 88, h: 80, phase: 0.3 },
+      { x: 204, w: 28, y: 88, h: 80, phase: 0.6 },
+      { x: 260, w: 28, y: 88, h: 80, phase: 0.15 },
+      { x: 316, w: 28, y: 88, h: 80, phase: 0.45 },
     ],
-    spots: [tablet(3, 336, 112), note("He ran. He should have counted.", 36, 98, 20)],
+    spots: [tablet(3, 384, 88), note("He ran. He should have counted.", 44, 150, 20)],
   },
   {
     id: "gate",
     title: "The Mask",
     theme: "marble",
-    at: [384, 0],
+    at: [832, 0],
     w: 24,
     h: 13,
     wall: 5,
     ambient: 0.48,
-    // A half-round theatre, its back to the mask.
-    shape: (x, y) => y < 192 && Math.hypot((x - 192) / 176, (y - 192) / 112) <= 1,
-    doors: {
-      w: { to: "hall", at: 128 },
-      e: { to: "chasm", at: 128 },
-      s: { to: "teeth", at: 48 },
-    },
-    sconces: { left: [52, 66, 80, 94, 108], right: [276, 290, 304, 318, 332] },
+    shape: rect(16, 80, 368, 192),
+    doors: { w: { to: "teeth", at: 128 } },
+    sconces: { left: [40, 55, 70, 85, 100], right: [284, 299, 314, 329, 344] },
     props: [
-      { kind: "column", x: 128, y: 112 },
-      { kind: "column", x: 256, y: 112 },
-      { kind: "stump", x: 300, y: 176, seed: 19 },
+      { kind: "column", x: 128, y: 104 },
+      { kind: "column", x: 256, y: 104 },
+      { kind: "column", x: 48, y: 184 },
+      { kind: "column", x: 336, y: 184 },
+      { kind: "stump", x: 300, y: 150, seed: 19 },
       { kind: "rubble", x: 150, y: 186, seed: 17 },
     ],
     spots: [{ target: { kind: "gate" }, x: 192, y: 92, r: 30, capX: 240, capY: 30 }],
@@ -352,23 +347,24 @@ const SPECS: RoomSpec[] = [
     id: "chasm",
     title: "The Mechanism",
     theme: "bronze",
-    at: [768, 0],
+    at: [-368, 240],
     w: 24,
     h: 15,
-    wall: 2,
+    wall: 3,
     ambient: 0.5,
-    shape: (x, y) => Math.hypot((x - CHASM.cx) / CHASM.rx, (y - CHASM.cy) / CHASM.ry) <= 1,
-    doors: { w: { to: "gate", at: 128 } },
-    sconces: { left: [64, 80, 96, 112, 128], right: [256, 272, 288, 304, 320] },
+    shape: rect(16, 48, 368, 224),
+    doors: { e: { to: "crypt", at: 128 } },
+    sconces: { left: [60, 75, 90, 105, 120], right: [264, 279, 294, 309, 324] },
     props: [
-      { kind: "stump", x: 42, y: 92, seed: 21 },
-      { kind: "column", x: 40, y: 168 },
-      { kind: "column", x: 344, y: 168 },
-      { kind: "column", x: 344, y: 96 },
+      { kind: "column", x: 40, y: 84 },
+      { kind: "column", x: 40, y: 200 },
+      { kind: "column", x: 344, y: 84 },
+      { kind: "column", x: 344, y: 200 },
+      { kind: "stump", x: 44, y: 140, seed: 21 },
     ],
     floor: chasmFloor(),
-    safe: { x: 40, y: 128 },
-    spots: [{ target: { kind: "stone" }, x: 192, y: 146, r: 48, capY: 60 }],
+    safe: { x: 344, y: 128 },
+    spots: [{ target: { kind: "stone" }, x: 192, y: 162, r: 50, capY: 76 }],
   },
   {
     id: "sanctum",
@@ -379,7 +375,7 @@ const SPECS: RoomSpec[] = [
     h: 13,
     wall: 4,
     ambient: 0.14,
-    shape: octagon(16, 64, 304, 192, 32),
+    shape: rect(16, 64, 304, 192),
     doors: { s: { to: "hall", at: 160 } },
     props: [
       { kind: "column", x: 72, y: 96 },
@@ -388,12 +384,12 @@ const SPECS: RoomSpec[] = [
       { kind: "column", x: 248, y: 156 },
       { kind: "statue", x: 118, y: 100 },
       { kind: "statue", x: 202, y: 100, flip: true },
-      { kind: "coins", x: 48, y: 130, seed: 1 },
-      { kind: "coins", x: 272, y: 128, seed: 2 },
-      { kind: "coins", x: 106, y: 170, seed: 3 },
-      { kind: "coins", x: 216, y: 174, seed: 4 },
-      { kind: "amphora", x: 44, y: 170, seed: 1 },
-      { kind: "amphora", x: 278, y: 168, seed: 2 },
+      { kind: "coins", x: 40, y: 130, seed: 1 },
+      { kind: "coins", x: 280, y: 128, seed: 2 },
+      { kind: "coins", x: 106, y: 180, seed: 3 },
+      { kind: "coins", x: 216, y: 182, seed: 4 },
+      { kind: "amphora", x: 36, y: 180, seed: 1 },
+      { kind: "amphora", x: 284, y: 180, seed: 2 },
     ],
     spots: [{ target: { kind: "altar" }, x: 160, y: 128, r: 28, capY: 62 }],
   },

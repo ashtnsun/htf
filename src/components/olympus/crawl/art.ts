@@ -312,6 +312,41 @@ const FONT: Record<string, readonly string[]> = {
   Z: ["#####", "....#", "...#.", "..#..", ".#...", "#....", "#####"],
 };
 
+/** The Greek capitals that do not look like ours, for what is carved on the machine. */
+const GREEK: Record<string, readonly string[]> = {
+  Γ: ["#####", "#....", "#....", "#....", "#....", "#....", "#...."],
+  Δ: ["..#..", "..#..", ".#.#.", ".#.#.", "#...#", "#...#", "#####"],
+  Θ: [".###.", "#...#", "#...#", "#.#.#", "#...#", "#...#", ".###."],
+  Λ: ["..#..", "..#..", ".#.#.", ".#.#.", "#...#", "#...#", "#...#"],
+  Ξ: ["#####", ".....", ".....", ".###.", ".....", ".....", "#####"],
+  Π: ["#####", "#...#", "#...#", "#...#", "#...#", "#...#", "#...#"],
+  Σ: ["#####", "#....", ".#...", "..#..", ".#...", "#....", "#####"],
+  Φ: ["..#..", ".###.", "#.#.#", "#.#.#", ".###.", "..#..", "..#.."],
+  Ψ: ["#.#.#", "#.#.#", "#.#.#", ".###.", "..#..", "..#..", "..#.."],
+  Ω: [".###.", "#...#", "#...#", "#...#", ".#.#.", ".#.#.", "##.##"],
+};
+Object.assign(FONT, GREEK);
+const GREEK_LETTERS = "ΓΔΘΛΞΠΣΦΨΩABEHKMNOPTXYZ";
+
+/** Rows of Greek capitals that say nothing: what the machine shows before it has anything to say. */
+export function drawGreek(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  cols: number,
+  rows: number,
+  ink: string,
+  seed: number,
+) {
+  const r = rng(seed);
+  for (let row = 0; row < rows; row += 1) {
+    for (let col = 0; col < cols; col += 1) {
+      const letter = GREEK_LETTERS[Math.floor(r() * GREEK_LETTERS.length)]!;
+      drawLetter(ctx, letter, x + col * 6, y + row * 9, ink);
+    }
+  }
+}
+
 /** One letter, 5 × 7 cells at `size` pixels a cell. */
 export function drawLetter(
   ctx: CanvasRenderingContext2D,
@@ -877,38 +912,33 @@ function paintFloor(ctx: CanvasRenderingContext2D, room: Room, t: Theme, r: () =
   }
 }
 
-/** The first room's floor: a Greek mosaic, a sun in a ring of the key, where they land. */
+/** The first room's floor: a square Greek mosaic, the key round a checkered field. */
 function paintMosaic(ctx: CanvasRenderingContext2D, t: Theme) {
+  const KEY = ["#####.", "#...#.", "#.#.#.", "#.###.", "#.....", "######"];
   const cx = 192;
   const cy = 152;
-  for (let y = -52; y < 52; y += 2) {
+  for (let y = -48; y < 48; y += 2) {
     for (let x = -72; x < 72; x += 2) {
-      const d = Math.hypot(x / 70, y / 50);
-      if (d > 1) continue;
-      const a = Math.atan2(y / 50, x / 70);
+      const d = Math.max(Math.abs(x + 1) / 72, Math.abs(y + 1) / 48);
       let ink: string;
-      if (d > 0.93) ink = t.s6;
-      else if (d > 0.74) {
-        // The key, as blocks round the ring.
-        const turn = Math.floor(((a + Math.PI) / (Math.PI * 2)) * 32);
-        ink = (turn % 2 === 0) === d > 0.84 ? C.deep : t.s4;
-      } else if (d > 0.68) ink = t.s6;
-      else if (d > 0.3) {
-        const ray = Math.cos(a * 12) > 0;
-        ink = ray ? (d < 0.52 ? t.s6 : t.s5) : t.s3;
-      } else if (d > 0.24) ink = t.s7;
+      if (d > 0.95) ink = t.s6;
+      else if (d > 0.7) {
+        const row = KEY[(((y + 48) / 2) | 0) % 6]!;
+        ink = row[(((x + 72) / 2) | 0) % 6] === "#" ? C.deep : t.s4;
+      } else if (d > 0.64) ink = t.s7;
+      else if (d > 0.24) ink = ((x + 72) >> 3) % 2 === ((y + 48) >> 3) % 2 ? t.s5 : t.s3;
+      else if (d > 0.18) ink = t.s7;
       else ink = C.deep;
       fill(ctx, ink, cx + x, cy + y, 2, 2);
     }
   }
 }
 
-/** The Mask's floor: the tiers of a theatre, rising away from the stage. */
+/** The Mask's floor: the tiers of a theatre, in square steps, rising away from the stage. */
 function paintTiers(ctx: CanvasRenderingContext2D, t: Theme) {
   for (let y = 80; y < 192; y += 2) {
-    for (let x = 0; x < 384; x += 2) {
-      const d = Math.hypot((x - 192) / 176, (y - 192) / 112);
-      if (d > 1) continue;
+    for (let x = 16; x < 368; x += 2) {
+      const d = Math.max(Math.abs(x + 1 - 192) / 176, (192 - y - 1) / 112);
       if (d < 0.28) {
         if (d > 0.26) fill(ctx, t.s6, x, y, 2, 2);
         continue;
@@ -922,14 +952,14 @@ function paintTiers(ctx: CanvasRenderingContext2D, t: Theme) {
   }
 }
 
-/** The Sanctum's floor: a gold sun under the altar. */
+/** The Sanctum's floor: a square gold field under the altar. */
 function paintSanctumFloor(ctx: CanvasRenderingContext2D, t: Theme) {
-  for (let y = -44; y < 44; y += 2) {
-    for (let x = -66; x < 66; x += 2) {
-      const d = Math.hypot(x / 66, y / 44);
-      if (d > 1) continue;
-      const a = Math.atan2(y / 44, x / 66);
-      fill(ctx, Math.cos(a * 10) > 0 ? t.s5 : t.s4, 160 + x, 116 + y, 2, 2);
+  for (let y = -40; y < 40; y += 2) {
+    for (let x = -64; x < 64; x += 2) {
+      const d = Math.max(Math.abs(x + 1) / 64, Math.abs(y + 1) / 40);
+      const edge = d > 0.92;
+      const check = ((x + 64) >> 3) % 2 === ((y + 40) >> 3) % 2;
+      fill(ctx, edge ? t.s7 : check ? t.s5 : t.s4, 160 + x, 120 + y, 2, 2);
     }
   }
 }

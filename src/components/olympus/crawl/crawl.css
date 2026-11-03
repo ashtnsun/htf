@@ -12,7 +12,7 @@
   transition: transform 620ms var(--ease-in-out-soft);
 }
 .crawl-world[data-zoom] {
-  transform: scale(2.6);
+  transform: scale(var(--zoom, 2.6));
 }
 /* A moment: the camera leans in on what has changed, slowly, and the bars come in. */
 .crawl-world[data-cine] {
@@ -277,13 +277,11 @@
     opacity: 0;
   }
 }
+/* The mural has no slab and no page: the room stays on screen, only dimmed round the mural. */
 .crawl-trial-bare {
   display: block;
   padding: 0;
-  background:
-    radial-gradient(ellipse at center, rgb(6 6 6 / 0.72), rgb(4 4 4 / 0.96) 70%),
-    var(--crawl-stone) 0 0 / 192px #060606;
-  image-rendering: pixelated;
+  background: none;
 }
 
 .crawl-away {
@@ -364,16 +362,6 @@
 .crawl-tile-empty {
   border-color: var(--line);
   background: rgb(0 0 0 / 0.25);
-}
-
-.crawl-worn {
-  background: repeating-linear-gradient(
-    90deg,
-    #2d2c27 0 6px,
-    transparent 6px 10px,
-    #24231f 10px 18px,
-    transparent 18px 22px
-  );
 }
 
 /* The mask: a face as tall as the screen allows, its mouth holding the board. The picture is a data
@@ -469,25 +457,49 @@
   color: var(--green);
 }
 
-/* The mural's photo step fills the screen: no logo bar here. */
-.crawl-portrait {
-  width: 100%;
-  min-height: 100%;
-  display: flex;
-  justify-content: center;
-}
+/* The mural's photo step, on the wall itself. The frame is exactly over the mural's picture
+   (Crawl.fitMural): no border of its own, the stone is the frame; `--stone` is that stone's width on
+   screen, so the heading and the controls clear it. The shadow dims the room round the mural. */
 .crawl-portrait .portrait-stage {
   --bar: 0px;
+  --frame-w: min(56rem, calc(100vw - 4rem), max(20rem, calc((100dvh - 25rem) * 16 / 9)));
+  --frame-h: calc(var(--frame-w) * 9 / 16);
+  width: var(--frame-w);
+  margin-inline: auto;
   margin-block: 0;
   min-height: 100dvh;
 }
-.crawl-trial-bare:has(.crawl-mural-view) {
-  display: flex;
-  background: rgb(3 5 4 / 0.82);
+.crawl-portrait .portrait-stage > :first-child {
+  position: relative;
+  z-index: 1;
+  padding-bottom: calc(var(--stone, 2rem) + 0.5rem);
 }
-.crawl-mural-view {
-  width: min(64rem, calc(100vw - 2rem), calc((100dvh - 8rem) * 16 / 9));
-  margin: auto;
+.crawl-portrait .portrait-stage > :last-child {
+  position: relative;
+  z-index: 1;
+  padding-top: calc(var(--stone, 2rem) + 0.5rem);
+}
+.crawl-portrait h2,
+.crawl-portrait h2 + p {
+  text-shadow:
+    0 2px 0 #000,
+    0 0 18px rgb(0 0 0 / 0.95);
+}
+.crawl-portrait [data-frame] {
+  position: relative;
+  padding: 0;
+  border: 0;
+  animation: none;
+}
+.crawl-portrait [data-frame]::before {
+  content: "";
+  position: absolute;
+  inset: calc(var(--stone, 2rem) * -1);
+  pointer-events: none;
+  box-shadow: 0 0 0 200vmax rgb(3 5 4 / 0.55);
+}
+.crawl-portrait [data-frame] > div {
+  background: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -497,7 +509,6 @@
     transition: none;
     animation-duration: 1ms;
   }
-  .crawl-world[data-zoom],
   .crawl-world[data-cine] {
     transform: none;
   }

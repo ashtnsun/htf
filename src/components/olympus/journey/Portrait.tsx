@@ -61,11 +61,17 @@ export function Portrait({
   onDone,
   unnumbered = false,
   doneLabel = "Begin the riddles",
+  inWorld = false,
 }: {
   onDone: (result: PortraitResult) => void;
   /** /olympus3: no step numeral, and the last button says what it does there. */
   unnumbered?: boolean;
   doneLabel?: string;
+  /**
+   * /olympus3: the frame is the mural on the tomb's wall, from before the camera is even asked
+   * for, so there is no first screen of its own: the bare wall shows through the empty frame.
+   */
+  inWorld?: boolean;
 }) {
   const reduce = useReducedMotionSafe();
   const [phase, setPhase] = useState<Phase>("intro");
@@ -126,7 +132,7 @@ export function Portrait({
     setFaces([...faces, face].sort((a, b) => a.x + a.w / 2 - (b.x + b.w / 2)));
   }
 
-  if (phase === "intro") {
+  if (phase === "intro" && !inWorld) {
     return (
       <div className="flex w-full flex-col items-center">
         <StageHeading stage="mural" title="Family Photo" unnumbered={unnumbered} />
@@ -150,25 +156,30 @@ export function Portrait({
   }
 
   const heading =
-    phase === "camera"
-      ? {
-          title: camera.seen.length
-            ? `${roman(camera.seen.length)} in the frame`
-            : "Into the frame",
-          line: "Make sure all members are in frame.",
-        }
-      : phase === "carving"
-        ? { title: "Finding every face", line: "Hold still." }
-        : phase === "review"
-          ? faces.length
-            ? { title: `${roman(faces.length)} faces in the stone` }
-            : {
-                title: "Mark every face",
-                line: "The stone found no one. Tap each face to mark it.",
-              }
-          : phase === "naming"
-            ? { title: "Who is this?", line: `Face ${roman(focus + 1)} of ${roman(faces.length)}` }
-            : { title: "Remember these names" };
+    phase === "intro"
+      ? { title: "Family Photo" }
+      : phase === "camera"
+        ? {
+            title: camera.seen.length
+              ? `${roman(camera.seen.length)} in the frame`
+              : "Into the frame",
+            line: "Make sure all members are in frame.",
+          }
+        : phase === "carving"
+          ? { title: "Finding every face", line: "Hold still." }
+          : phase === "review"
+            ? faces.length
+              ? { title: `${roman(faces.length)} faces in the stone` }
+              : {
+                  title: "Mark every face",
+                  line: "The stone found no one. Tap each face to mark it.",
+                }
+            : phase === "naming"
+              ? {
+                  title: "Who is this?",
+                  line: `Face ${roman(focus + 1)} of ${roman(faces.length)}`,
+                }
+              : { title: "Remember these names" };
 
   const named = names.filter(Boolean).length;
   return (
@@ -177,9 +188,13 @@ export function Portrait({
         <StageHeading stage="mural" steady unnumbered={unnumbered} {...heading} />
       </div>
 
-      <div className="journey-rise w-full border border-line-strong p-2" style={rise(200)}>
+      <div
+        data-frame
+        className="journey-rise w-full border border-line-strong p-2"
+        style={rise(200)}
+      >
         <div className="relative aspect-video w-full overflow-hidden bg-surface">
-          {phase === "camera" ? (
+          {phase === "intro" ? null : phase === "camera" ? (
             <CameraView
               videoRef={videoRef}
               ready={camera.ready}
@@ -239,7 +254,23 @@ export function Portrait({
         className="journey-fade flex w-[min(28rem,calc(100vw-2rem))] justify-center self-start pt-8"
         style={phase === "named" ? rise(400 + named * 120) : undefined}
       >
-        {phase === "camera" ? (
+        {phase === "intro" ? (
+          <div className="flex flex-col items-center gap-4">
+            <OlympusButton
+              onClick={() => {
+                setError(undefined);
+                setPhase("camera");
+              }}
+            >
+              Allow camera
+            </OlympusButton>
+            {error ? (
+              <p role="alert" className="max-w-md text-center text-sm text-cyan">
+                {error}
+              </p>
+            ) : null}
+          </div>
+        ) : phase === "camera" ? (
           <Shutter disabled={!camera.ready || camera.count !== null} onClick={camera.countdown} />
         ) : phase === "review" ? (
           <div className="flex flex-wrap justify-center gap-4">
