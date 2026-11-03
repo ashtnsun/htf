@@ -71,12 +71,15 @@ src/components/
                     column per group, built on load by TempleBuild), RevealGate (hold to reveal); the gods' sprites are dino/reveal.ts; content/olympus.ts is server only (answers);
                     prologue/ is /prologue, the slides that open the event (noindex, no site chrome,
                     client only): Prologue (the beats, one per press; keys in its comment; "Good luck"'s
-                    press raises the Oracle's fire, which takes the screen and burns through to /oracle
-                    by itself), stage (one canvas of solid cells that fly from scene to
+                    press raises the Oracle's fire, which burns out and eases through dark to /oracle by
+                    itself, a dark sheet fading off the new page in place of the site's page transition),
+                    stage (one canvas of solid cells that fly from scene to
                     scene, snapped to the grid, plus the camera, the rock's flat spans and the sparks),
-                    formations (the pictures as cell lists; `TRIALS` links in the chain, one per step of
-                    journey/save's STAGES less the last), score (sound synthesised in the browser,
-                    off until S). It sets the families off and stops there: it names and draws no god
+                    blaze (the live fire: heat averaged upward through a climbing noise, drawn on the
+                    stage's cells), formations (the pictures as cell lists; `TRIALS` links in the chain,
+                    one per step of journey/save's STAGES less the last), score (sound synthesised in the
+                    browser, on by default, S mutes; it wakes on the presenter's first key or click).
+                    It sets the families off and stops there: it names and draws no god
                     (it never imports content/olympus.ts or the gods' sprites) and explains no trial.
                     The address on screen is the constant `SITE` (htfpurdue.org): families scroll down
                     the home page, so home/olympus/OlympusSection has to be back on it for the day

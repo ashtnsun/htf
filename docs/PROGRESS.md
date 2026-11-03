@@ -88,6 +88,31 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 16o — 2026-11-02 (the Prologue, Ashton's second notes)
+
+**Asked:** a cooler starting fire, sound effects and ambience if possible, "No trial explains itself." off the chain slide, "Choose it now..." off the laptop slide, and a smoother last transition to /oracle.
+
+**Built:**
+
+- A live fire (`prologue/blaze.ts`): a grid of heat fed from the bottom row, each cell the average of those under it, cooled by a smooth noise that climbs with the flame. It runs on the stage's cells through a stepped ramp of the greens. The first try, the classic Doom fire, read as sand; the second, too blended, as a lava lamp.
+- Standby is now a stone brazier whose fire kindles up from low over about 3 seconds, embers rising and firelight breathing round it. The presenter's key hint fades after 7 seconds. The chain's and the Oracle's fires are the same fire.
+- Sound on by default, S mutes. A browser plays nothing before a user gesture, so the first key or click wakes it (F for full screen is enough). New: a fire bed (low roar, hiss, random crackle), wind on the mountain, a whoosh on each forward beat, an iron ring on each chain link, a tick per exec photo and a slow warm swell on the title and on "Good luck."
+- The ending has no flash, shake, thunder or full-screen fire any more. The fire is let go and burns out, the scene lifts away, the line and picture ease to dark and the letterbox opens, then /oracle comes up.
+- The two lines are gone from the chain and laptop slides.
+
+**Decisions (mine, for Ashton to overrule):**
+
+- For this one route change the site's page transition is off (`data-pro-leaving` in globals.css): a single dark sheet goes up over the already-dark screen and fades off /oracle once it has rendered. The crossfade of two full-screen snapshots was the only part of the ending dropping frames.
+- "Bring your final word to the Oracle." now sits on one line.
+
+**Not mine:** the "Bring your final word" line on /oracle (committed in 2875b3f) has been removed from `Oracle.tsx` in the working copy, uncommitted, by someone else. I left that alone and did not commit it: HEAD still has the line, and a push of HEAD would show it, until that change is committed.
+
+**Verified (production build):** typecheck, lint, build clean. The whole deck at 1920×1080, ending on /oracle, no console errors. Sound through a tap on the output: peak 0.88 at worst (the thunder), nothing clipping, the bed running from the first key. Frames across the ending, with nothing else running: slow frames (over 34 ms) at 1920 down from 22 to 2, at 1366 from 9 to 0, headless with no GPU. Back during the hold cancels the ending, a resume on the beat waits for a press, a press skips the hold, back to standby relights the fire; reduced motion walks every beat, shows a lit still fire and leaves only on a press. The chain, laptop, standby and Oracle slides at 1366×768, 1280×800 and 1024×768. axe 0 violations on /prologue and /oracle at 1440 and 390. No god's name in anything /prologue fetches. Screenshots: `docs/screenshots/session-16o/`.
+
+**Not verified:** the sound by ear (only levels are measured, so whether it sounds good is Ashton's call), a real projector, clicker or speakers, and how the ending feels on a machine with a GPU.
+
+**Next session starts with:** Ashton's listen to the sound and third look at /prologue, then whether it ships. The home page's Olympus section still has to go back for the day (Session 16n).
+
 ## Session 16n — 2026-11-02 (the Prologue, Ashton's first notes)
 
 **Asked:** no god named or drawn after the Olympus title, straight to the execs. More room between the Greek key bands and the exec photos. A chain that shows the real number of trials and looks better. No numerals before the setup headings, "One laptop." in green. The site is htfpurdue.org, then scroll to the Olympus section on the home page. After the column, a good luck slide and no instructions for the trials, then an animated transition to /oracle with an instruction to bring the final word.
