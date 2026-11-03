@@ -86,6 +86,8 @@ export type Hooks = {
   onRoom: (room: RoomId, x: number, y: number) => void;
   onStamp: (letters: string) => void;
   onFirstMove: () => void;
+  /** The fall in through the roof is over. */
+  onLanded: () => void;
   /** A moment the camera holds on, as fractions of the screen; null when it lets go. */
   onCine: (focus: { x: number; y: number } | null) => void;
   /** Where the dinosaur is on the whole map. */
@@ -876,7 +878,8 @@ export class CrawlEngine {
   }
 
   private update(dt: number, time: number) {
-    if (this.iris > 0) this.iris = Math.max(0, this.iris - dt / 1.8);
+    // The room stays dark round the falling dinosaur; the light comes up from where it lands.
+    if (this.iris > 0 && this.drop <= 0) this.iris = Math.max(0, this.iris - dt / 1.4);
     this.hurt = Math.max(0, this.hurt - dt);
 
     if (this.slide) {
@@ -899,8 +902,9 @@ export class CrawlEngine {
     if (this.drop > 0) {
       this.drop = Math.max(0, this.drop - dt);
       if (this.drop === 0) {
-        this.shake(350, 2);
+        this.shake(450, 3);
         this.score.stone();
+        this.hooks.onLanded();
         for (let i = 0; i < 3; i += 1) this.spray(this.x, this.y, THEMES.sand.s7, 8);
       }
       return;
@@ -1766,11 +1770,11 @@ export class CrawlEngine {
     const py = Math.round(this.y);
     if (this.drop > 0) {
       // In through the roof, whole cells at a time.
-      const u = this.drop / DROP;
+      const u = 1 - (1 - this.drop / DROP) ** 2;
       ctx.drawImage(
         dinoFrame(1, false, flip, look),
         px - footX,
-        py - DINO_H + 1 - Math.round(u * u * 260),
+        py - DINO_H + 1 - Math.round(u * 260),
       );
       return;
     }

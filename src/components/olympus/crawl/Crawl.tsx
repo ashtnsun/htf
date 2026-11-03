@@ -31,6 +31,7 @@ import {
   type Target,
 } from "@/components/olympus/crawl/world";
 import { Finale } from "@/components/olympus/journey/Finale";
+import { whenPassageLifts } from "@/components/olympus/Passage";
 import { roman } from "@/components/olympus/shared";
 
 type Open = Exclude<Target, { kind: "note" | "item" | "keeper" }>;
@@ -38,6 +39,8 @@ type Open = Exclude<Target, { kind: "note" | "item" | "keeper" }>;
 /** Milliseconds: the close-up fading out, and the camera coming back. */
 const LEAVE = 240;
 const RETURN = 620;
+/** Milliseconds from the passage's cells starting to open to the world starting to move. */
+const OPENING_BEAT = 500;
 
 const LABELS: Record<Open["kind"], string> = {
   tablet: "A riddle",
@@ -126,6 +129,10 @@ export function Crawl({
   const [score] = useState(() => new TombSound());
   // Where this visit began: React's double mount in dev must not count as a return.
   const [opening] = useState(save);
+  // A first visit falls in with the screen to itself; the HUD arrives with the landing.
+  const [falling, setFalling] = useState(
+    () => !save.place && !matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
 
   const rootRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
@@ -340,6 +347,11 @@ export function Crawl({
         },
         onStamp: (letters) => handlers.current.pressed(letters),
         onFirstMove: () => setMoved(true),
+        onLanded: () => {
+          setFalling(false);
+          // Its name was said behind the passage's card, so say it again for the room to hear.
+          setTitle((t) => ({ text: ROOMS.mural.title, id: (t?.id ?? 0) + 1 }));
+        },
         onCine: (focus) => {
           const world = worldRef.current;
           if (!world) return;
@@ -379,7 +391,24 @@ export function Crawl({
       (window as unknown as { __crawl: CrawlEngine }).__crawl = engine;
     }
     engine.start();
+    // Behind the passage's card the world waits, so its opening is seen.
+    let beat = 0;
+    const cancel = whenPassageLifts(() => {
+      engine.wake();
+      beat = window.setTimeout(() => {
+        engine.resume();
+        if (!start.place) score.whoosh(0.1, 0.8);
+      }, OPENING_BEAT);
+    });
+    if (cancel) {
+      engine.pause(true);
+      // The column's click counts as the gesture audio asks for, and starting it costs a stall
+      // that only goes unseen here, under the card.
+      score.arm();
+    }
     return () => {
+      cancel?.();
+      window.clearTimeout(beat);
       engine.stop();
       engineRef.current = null;
       score.close();
@@ -500,16 +529,16 @@ export function Crawl({
         </p>
       </div>
 
-      {/* Always there: the map when it can be seen, and under it the family's clock. */}
-      <div className="crawl-corner">
+      {/* There from the landing on: the map when it can be seen, under it the family's clock. */}
+      <div className={falling ? "crawl-corner crawl-hud-hidden" : "crawl-corner"}>
         <div className={trial || cine ? "crawl-corner-map crawl-hud-hidden" : "crawl-corner-map"}>
           <TombMap room={room} visited={save.visited} solved={save} dotRef={dotRef} />
         </div>
-        <SwapTimer paused={cine} sound={score} />
+        <SwapTimer paused={cine || falling} sound={score} />
       </div>
 
       {/* What stays on screen: whose tomb this is, the map, what the dinosaur can do right here. */}
-      <div className={trial || cine ? "crawl-hud crawl-hud-hidden" : "crawl-hud"}>
+      <div className={trial || cine || falling ? "crawl-hud crawl-hud-hidden" : "crawl-hud"}>
         <p aria-hidden="true" className="crawl-group font-olympus">
           <span>Group</span> {roman(family)}
         </p>

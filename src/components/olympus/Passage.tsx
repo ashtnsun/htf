@@ -9,13 +9,14 @@ import { roman } from "@/components/olympus/shared";
  * Milliseconds from the click. The temple falls away roof first, leaving the chosen column lit
  * (until DISSOLVE); the column gathers light, then bursts (BURST): its cells scatter, a ring of
  * light sweeps the screen and the column's numeral flies to the middle as the title card. The
- * trial loads behind the card (NAV) and is uncovered cell by cell from REVEAL, once it is on
- * screen: the card fades, then the cells open over OPEN.
+ * trial mounts behind the card once the burst is over (NAV), so whatever it costs the main thread
+ * cannot stutter the ring, and is uncovered cell by cell from REVEAL, once it is on screen: the
+ * card fades, then the cells open over OPEN.
  */
 const T = {
   DISSOLVE: 650,
   BURST: 1000,
-  NAV: 1400,
+  NAV: 2150,
   REVEAL: 3400,
   RING: 1100,
   SCATTER: 900,
@@ -25,6 +26,8 @@ const T = {
 };
 /** The longest the card waits for a slow trial before it opens anyway. */
 const CAP = 8000;
+/** The list page has been built by now (TempleBuild), so fetching the code cannot jank it. */
+const PRELOAD_AFTER = 2500;
 
 const BG = "#0B0B0B";
 const GREEN = "#03C652";
@@ -34,6 +37,32 @@ const WHITE = "#F5F5F5";
 type Run = { n: number; href: string; link: Element };
 
 let begin: ((link: Element) => void) | null = null;
+
+/** The code behind a column, fetched ahead so that nothing waits for it behind the card. */
+const preload = (path: string) =>
+  path.startsWith("/olympus3")
+    ? import("@/components/olympus/crawl/Crawl")
+    : import("@/components/olympus/Trial");
+
+/** Who is waiting behind the card; null when no card is up. */
+let behindCard: Set<() => void> | null = null;
+
+function liftCard() {
+  const waiting = behindCard;
+  behindCard = null;
+  waiting?.forEach((then) => then());
+}
+
+/**
+ * For a page that has an opening of its own to save: runs `then` as the cells start to open over
+ * it. Null when no card is up, so the page opens straight away; otherwise a function to cancel.
+ */
+export function whenPassageLifts(then: () => void) {
+  const waiting = behindCard;
+  if (!waiting) return null;
+  waiting.add(then);
+  return () => waiting.delete(then);
+}
 
 /**
  * Plays the passage from a temple column (components/olympus/Temple) into its trial. False when
@@ -72,6 +101,11 @@ export function Passage() {
   }, []);
 
   useEffect(() => {
+    const id = window.setTimeout(() => void preload(window.location.pathname), PRELOAD_AFTER);
+    return () => window.clearTimeout(id);
+  }, []);
+
+  useEffect(() => {
     if (!run) return;
     const root = rootRef.current!;
     const canvas = canvasRef.current!;
@@ -82,7 +116,8 @@ export function Passage() {
     temple?.setAttribute("data-leaving", "");
     run.link.setAttribute("data-chosen", "");
     router.prefetch(run.href);
-    void import("@/components/olympus/Trial");
+    void preload(run.href);
+    behindCard = new Set();
 
     const w = window.innerWidth;
     const h = window.innerHeight;
@@ -226,6 +261,7 @@ export function Passage() {
     let pushed = false;
     let titled = false;
     let revealAt = 0;
+    let lifted = false;
     let raf = 0;
     const start = performance.now();
     const clock = () => performance.now() - start + skip;
@@ -277,6 +313,10 @@ export function Passage() {
         revealAt = t;
         root.dataset.phase = "reveal";
       }
+      if (revealAt && !lifted && t - revealAt >= T.HUSH) {
+        lifted = true;
+        liftCard();
+      }
       draw(t, revealAt);
       if (revealAt && t - revealAt >= T.HUSH + T.OPEN) {
         setRun(null);
@@ -288,6 +328,8 @@ export function Passage() {
 
     return () => {
       cancelAnimationFrame(raf);
+      // Never leave a page waiting on a card that has gone.
+      liftCard();
       root.removeEventListener("pointerdown", onSkip);
       window.removeEventListener("keydown", onKey);
     };

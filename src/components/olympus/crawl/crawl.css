@@ -94,6 +94,7 @@
   gap: 0.5rem;
   width: clamp(12rem, 19vw, 17rem);
   pointer-events: none;
+  transition: opacity 300ms var(--ease-smooth);
 }
 .crawl-corner-map {
   transition: opacity 300ms var(--ease-smooth);
