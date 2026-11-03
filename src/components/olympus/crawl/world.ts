@@ -32,7 +32,6 @@ export type Target =
   | { kind: "note"; text: string }
   | { kind: "mirror" }
   | { kind: "item"; id: string }
-  | { kind: "keeper" }
   | { kind: "arcade" }
   | { kind: "blackjack" };
 
@@ -132,6 +131,9 @@ export type Room = Omit<RoomSpec, "doors" | "sconces" | "fires"> & {
 
 /** The square on the Hall's floor: 5 × 5 tiles of `tile` pixels, from (x, y). */
 export const SQUARE = { x: 142, y: 78, tile: 20 };
+/** The Hall's two loose stones, a tile each, out past the fires on either side of the square. */
+export const FLOOR_STONES = { lift: { x: 86, y: 118 }, restart: { x: 278, y: 118 } } as const;
+export type FloorStone = keyof typeof FLOOR_STONES;
 /** How far a door's opening runs either side of its middle. */
 export const DOOR_HALF = 16;
 
@@ -467,7 +469,6 @@ const SPECS: RoomSpec[] = [
     ],
     spots: [
       { target: { kind: "mirror" }, x: 90, y: 76, r: 20, capY: 2 },
-      { target: { kind: "keeper" }, x: 204, y: 110, r: 20, capX: 178, capY: 66, label: "Talk" },
       ...FOR_SALE.map((item, i): Spot => {
         const { x, y } = ware(i);
         return { target: { kind: "item", id: item.id }, x, y: y + 4, r: 14, capY: y - 34 };

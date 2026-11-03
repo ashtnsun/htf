@@ -6,7 +6,14 @@ import {
   type Look,
   DEFAULT_LOOK,
 } from "@/components/olympus/crawl/cosmetics";
-import { CELL, TILE, type Prop, type Room, type ThemeId } from "@/components/olympus/crawl/world";
+import {
+  CELL,
+  FLOOR_STONES,
+  TILE,
+  type Prop,
+  type Room,
+  type ThemeId,
+} from "@/components/olympus/crawl/world";
 
 /**
  * The tomb's pictures, all made in the browser: solid cells, no files. Each room's walls and floor
@@ -305,18 +312,21 @@ export function dinoFrame(step: number, blink: boolean, flip: boolean, look: Loo
           if (ink) cell(item.x + x, item.y + y, ink);
         }),
       );
-    wear(cosmeticById(look.back));
+    const back = cosmeticById(look.back);
+    if (!back?.over) wear(back);
     const rows = [...DINO_PIXELS.slice(0, 18), ...LEGS[step]!];
     rows.forEach((row, y) =>
       [...row].forEach((ch, x) => {
-        if (ch !== "#") return;
-        cell(x, y, DINO_ARM.some(([ax, ay]) => ax === x && ay === y) ? color.light : color.body);
+        if (ch === "#") cell(x, y, color.body);
       }),
     );
     if (blink) cell(DINO_EYE.x, DINO_EYE.y, color.body);
+    if (back?.over) wear(back);
     wear(cosmeticById(look.face));
     wear(cosmeticById(look.head));
     wear(cosmeticById(look.hand));
+    // Last, so what is held passes behind the hand that holds it.
+    for (const [x, y] of DINO_ARM) cell(x, y, color.light);
     return canvas;
   });
 }
@@ -1430,6 +1440,23 @@ function paintSquareBed(
       drawSquareTile(ctx, sq.x + col * sq.tile, sq.y + row * sq.tile, sq.tile, t);
     }
   }
+  for (const { x, y } of Object.values(FLOOR_STONES)) {
+    fill(ctx, t.s0, x - 3, y - 3, sq.tile + 6, sq.tile + 6);
+    fill(ctx, t.s4, x - 3, y - 3, sq.tile + 6, 1);
+    fill(ctx, t.s4, x - 3, y - 3, 1, sq.tile + 6);
+    fill(ctx, t.s3, x + sq.tile + 2, y - 3, 1, sq.tile + 6);
+    fill(ctx, t.s3, x - 3, y + sq.tile + 2, sq.tile + 6, 1);
+    drawSquareTile(ctx, x, y, sq.tile, t);
+  }
+}
+
+/** The mark on the stone that lifts a letter: an arrow going back. Middle at (cx, cy). */
+export function drawLiftMark(ctx: CanvasRenderingContext2D, cx: number, cy: number, ink: string) {
+  fill(ctx, ink, cx - 2, cy - 1, 7, 2);
+  fill(ctx, ink, cx - 3, cy - 2, 1, 4);
+  fill(ctx, ink, cx - 4, cy - 1, 1, 2);
+  fill(ctx, ink, cx - 2, cy - 3, 1, 6);
+  fill(ctx, ink, cx - 1, cy - 4, 1, 8);
 }
 
 /** Holes in the floor where the spikes live. */
@@ -1542,54 +1569,6 @@ export function warePicture(price: number, ink: string, dark: string) {
     return canvas;
   });
 }
-
-/** The travelling merchant: a hooded old dinosaur under everything it owns, seen from the side. */
-const MERCHANT = [
-  ".................rrrrrrr......",
-  ".................rRGRRGr......",
-  "................bbb.rrr.......",
-  "...............bBBbb.ppppp....",
-  "......hhhhh....bbbbbpppppppp..",
-  "....hhHHHHHh...pppppppppppppp.",
-  "...hhHHHHHHHh..pPPPPPPPPPPPpp.",
-  "..ssshhhhHHHHh.pPppppppppPPpp.",
-  ".sssssshhhHHHh.pPrRRRRRRrPppp.",
-  ".ssessshhhHHHhcpPrRRRRRRrPppp.",
-  "..sssssshHHHhccpPrRRRRRRrPpp..",
-  "...ssshhhHHhcccpPPPPPPPPPPPpp.",
-  "......hhhhhccccppppppppppppp..",
-  ".....cccccccccccppppppppppp...",
-  "....ccCcccccccccc.iiiiiiii....",
-  "...cccCcccccccccc.iGIIGIIi....",
-  "...ccCCccccccccccc.iiiiii.....",
-  "...ccCcccccccccccc............",
-  "...ccCccccccccccccc...........",
-  "...GGGGGGGGGGGGGGGG...........",
-  "....ccccccccccccccc.........s.",
-  "....ccccccccccccccc........ss.",
-  "....cccccccccccccccs......sss.",
-  ".....ccccccccccccccsssssssss..",
-  ".....sss.....sss...sssssss....",
-  ".....ssss....ssss.............",
-];
-const MERCHANT_INKS = {
-  h: "#3a2350",
-  H: "#55337a",
-  s: "#7f9b5a",
-  e: "#f2c84b",
-  c: "#7a2f24",
-  C: "#a14534",
-  G: "#e0bd7a",
-  p: "#5e3f20",
-  P: "#8a6233",
-  r: "#1e2f55",
-  R: "#35508a",
-  i: "#7a5a1e",
-  I: "#c0902f",
-  b: "#a8842f",
-  B: "#e9c46a",
-};
-export const merchantPicture = () => kept("merchant", () => fromRows(MERCHANT, MERCHANT_INKS));
 
 /** A covered wagon: it has been a long way. */
 export function wagonPicture() {

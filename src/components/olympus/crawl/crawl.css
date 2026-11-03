@@ -180,42 +180,27 @@
   }
 }
 
-/* The shopkeeper's speech. */
-.crawl-bubble-at {
+/* A hint from the tomb, on a scrap of parchment, to the left of the map. */
+.crawl-hint-at {
   position: absolute;
-  z-index: 5;
   top: 0;
-  left: 0;
-  width: 0;
-  height: 0;
-  pointer-events: none;
+  right: calc(100% + 0.5rem);
+  width: clamp(12rem, 18vw, 16rem);
+  transition: opacity 300ms var(--ease-smooth);
 }
-.crawl-bubble {
-  position: absolute;
-  bottom: 0.5rem;
-  left: 0;
-  width: max-content;
-  max-width: 19rem;
+.crawl-hint {
   padding: 0.5rem 0.875rem;
-  transform: translateX(-88%);
   background: #e6d6ad;
   color: #24160a;
   border: 3px solid #3e2a14;
   font-size: 1.125rem;
   font-weight: 600;
-  line-height: 1.2;
-  animation: journey-fade 250ms var(--ease-smooth) both;
+  line-height: 1.25;
+  animation: journey-fade 500ms var(--ease-smooth) both;
 }
-.crawl-bubble::after {
-  content: "";
-  position: absolute;
-  left: 88%;
-  bottom: -12px;
-  width: 12px;
-  height: 9px;
-  background: #e6d6ad;
-  border-inline: 3px solid #3e2a14;
-  border-bottom: 3px solid #3e2a14;
+.crawl-hint b {
+  font-weight: 800;
+  letter-spacing: 0.04em;
 }
 
 /* ------------------------------------------------------------------ the machines */

@@ -34,13 +34,15 @@ import { Finale } from "@/components/olympus/journey/Finale";
 import { whenPassageLifts } from "@/components/olympus/Passage";
 import { roman } from "@/components/olympus/shared";
 
-type Open = Exclude<Target, { kind: "note" | "item" | "keeper" }>;
+type Open = Exclude<Target, { kind: "note" | "item" }>;
 
 /** Milliseconds: the close-up fading out, and the camera coming back. */
 const LEAVE = 240;
 const RETURN = 620;
 /** Milliseconds from the passage's cells starting to open to the world starting to move. */
 const OPENING_BEAT = 500;
+/** Milliseconds a solved close-up stays up, to be seen and read, before it lets go by itself. */
+const HOLD = { stone: 3000, seal: 2600 };
 
 const LABELS: Record<Open["kind"], string> = {
   tablet: "A riddle",
@@ -53,35 +55,6 @@ const LABELS: Record<Open["kind"], string> = {
   arcade: "The arcade machine",
   blackjack: "The blackjack machine",
 };
-
-/** The shopkeeper talks at you: no choices, only a bubble. Never a family's word (cosmetics.ts). */
-const KEEPER_IDLE = [
-  "Nine seas I have carried this. You will not find it cheaper.",
-  "Solve things, earn coin. That is the whole economy down here.",
-  "That helm was worn by a hero. Briefly.",
-  "No refunds. I will be gone by morning.",
-  "There is a mirror against the wall. Free of charge. For now.",
-  "The machines past the spikes? Don't. Or do. I sold them those.",
-  "You have an honest face. For a lizard.",
-  "Mind the rugs. They have been further than you ever will.",
-];
-const KEEPER_WELCOME = "Ah! A traveller. Sit, look, buy. I leave when the lamp runs out.";
-const KEEPER_SOLD = [
-  "Sold! It suits you. Try the mirror.",
-  "A fine choice. I was going to say that about any of them.",
-  "Pleasure. Wear it in good health. The mirror's there.",
-];
-const KEEPER_BROKE = [
-  "That costs more than you have. Come back with coin.",
-  "Coin first, little one. Solve something.",
-  "I admire the confidence. Not the purse.",
-];
-const KEEPER_BROWSE = [
-  "Ooh. Good eye.",
-  "That one's nearly new.",
-  "Go on. Touch it and it's yours. Touch it and pay, I mean.",
-];
-const pick = (lines: readonly string[]) => lines[Math.floor(Math.random() * lines.length)]!;
 
 /**
  * A family's tomb: the same trials as /olympus, walked as a game. A T-rex in a hat falls through the
@@ -123,7 +96,6 @@ export function Crawl({
   const [muted, setMuted] = useState(false);
   const [cine, setCine] = useState(false);
   const [coinPop, setCoinPop] = useState(0);
-  const [keeperLine, setKeeperLine] = useState("");
   const [bjRound, setBjRound] = useState<Round | null>(null);
   const [coinSrc, setCoinSrc] = useState("");
   const [score] = useState(() => new TombSound());
@@ -144,7 +116,6 @@ export function Crawl({
   const openKind = useRef<Open["kind"] | null>(null);
   const settleTimer = useRef(0);
   const dotRef = useRef<SVGRectElement>(null);
-  const bubbleRef = useRef<HTMLDivElement>(null);
 
   const patch = useCallback(
     (p: Partial<TombSave> | ((s: TombSave) => Partial<TombSave>)) => {
@@ -177,7 +148,7 @@ export function Crawl({
       if (!item || s.owned.includes(id)) return;
       if (s.coins < item.price) {
         score.thud();
-        setKeeperLine(pick(KEEPER_BROKE));
+        setBark((b) => ({ text: "Not enough coin.", id: (b?.id ?? 0) + 1 }));
         return;
       }
       // On at once: the newest purchase goes straight on the dinosaur.
@@ -187,7 +158,6 @@ export function Crawl({
         look: { ...s.look, [item.slot]: id },
       });
       score.buy();
-      setKeeperLine(pick(KEEPER_SOLD));
     },
     [patch, score],
   );
@@ -242,10 +212,6 @@ export function Crawl({
       const s = latest.current;
       if (target.kind === "note") return say(target.text);
       if (target.kind === "item") return buy(target.id);
-      if (target.kind === "keeper") {
-        score.talk();
-        return setKeeperLine(pick(KEEPER_IDLE));
-      }
       if (target.kind === "gate") {
         if (s.word) return say("It has heard you.");
         const empty = s.solved.filter((answer) => !answer).length;
@@ -311,6 +277,16 @@ export function Crawl({
     [closeTrial],
   );
 
+  /** Solved, with something to read: the close-up holds a moment, then lets go by itself. */
+  const settleAfter = useCallback(
+    (kind: Open["kind"], event: WorldEvent, ms: number) => {
+      if (openKind.current !== kind) return engineRef.current?.play(event);
+      pendingEvent.current = event;
+      settleTimer.current = window.setTimeout(() => closeTrial(), ms);
+    },
+    [closeTrial],
+  );
+
   // The engine calls these; they always see the latest closures.
   /**
    * Letters pressed on the floor. The server is asked after every press, so the door opens the
@@ -346,14 +322,10 @@ export function Crawl({
       canvas,
       signal,
       {
-        onPrompt: (label) => {
-          setPrompt(label);
-          if (label?.startsWith("Buy ") && Math.random() < 0.4) setKeeperLine(pick(KEEPER_BROWSE));
-        },
+        onPrompt: setPrompt,
         onInteract: (target) => handlers.current.openTrial(target),
         onRoom: (id, x, y) => {
           setRoom(id);
-          if (id === "shop") setKeeperLine(KEEPER_WELCOME);
           const seen = latest.current.visited.includes(id);
           if (!seen) setTitle((t) => ({ text: ROOMS[id].title, id: (t?.id ?? 0) + 1 }));
           handlers.current.patch((s) => ({
@@ -368,18 +340,15 @@ export function Crawl({
           // Its name was said behind the passage's card, so say it again for the room to hear.
           setTitle((t) => ({ text: ROOMS.mural.title, id: (t?.id ?? 0) + 1 }));
         },
-        onCine: (focus) => {
+        onCine: (on) => {
           const world = worldRef.current;
           if (!world) return;
-          setCine(!!focus);
-          if (focus) {
-            world.style.transformOrigin = `${focus.x * 100}% ${focus.y * 100}%`;
+          setCine(on);
+          if (on) {
+            // The engine has the subject in the middle of the canvas, so this closes in on it.
+            world.style.transformOrigin = "50% 50%";
             world.dataset.cine = "";
           } else delete world.dataset.cine;
-        },
-        onKeeper: (at) => {
-          const bubble = bubbleRef.current;
-          if (bubble && at) bubble.style.transform = `translate(${at.x}px, ${at.y}px)`;
         },
         onPlace: (x, y) => {
           dotRef.current?.setAttribute("x", String(Math.round(x - 12)));
@@ -470,13 +439,6 @@ export function Crawl({
     };
   }, [family, patch, save.carved, save.names, save.word]);
 
-  // The shopkeeper keeps talking whether anyone answers or not.
-  useEffect(() => {
-    if (room !== "shop") return;
-    const id = window.setInterval(() => setKeeperLine(pick(KEEPER_IDLE)), 7000);
-    return () => window.clearInterval(id);
-  }, [room]);
-
   useEffect(() => {
     if (process.env.NODE_ENV !== "development") return;
     (window as unknown as { __give: (n: number) => void }).__give = (n) =>
@@ -514,6 +476,15 @@ export function Crawl({
     return () => window.removeEventListener("keydown", onKey);
   }, [score, trial]);
 
+  // The mask's word, kept in the corner until the gears it set going have been found and read. It
+  // arrives when the mask's moment is over, with the sound of them; a refresh brings it back silently.
+  const hintWord = save.word && !save.stoneRead ? save.word : null;
+  const [hintArrived, setHintArrived] = useState(!!opening.word);
+  if (hintWord && !hintArrived && !trial && !cine) setHintArrived(true);
+  useEffect(() => {
+    if (hintArrived && !opening.word) score.gears();
+  }, [hintArrived, opening.word, score]);
+
   const answers = save.solved.filter((a): a is string => !!a);
   const onClose = useCallback(() => closeTrial(), [closeTrial]);
 
@@ -534,21 +505,20 @@ export function Crawl({
       <div aria-hidden="true" className="crawl-vignette" />
       <div aria-hidden="true" data-on={cine ? "" : undefined} className="crawl-bars" />
 
-      {/* The shopkeeper's speech, placed by the engine. */}
-      <div
-        ref={bubbleRef}
-        className="crawl-bubble-at"
-        hidden={room !== "shop" || !!trial || cine || !keeperLine}
-      >
-        <p key={keeperLine} role="status" className="crawl-bubble font-oracle">
-          {keeperLine}
-        </p>
-      </div>
-
       {/* There from the landing on: the map when it can be seen, under it the family's clock. */}
       <div className={falling ? "crawl-corner crawl-hud-hidden" : "crawl-corner"}>
         <div className={trial || cine ? "crawl-corner-map crawl-hud-hidden" : "crawl-corner-map"}>
           <TombMap room={room} visited={save.visited} solved={save} dotRef={dotRef} />
+        </div>
+        <div
+          aria-live="polite"
+          className={trial || cine ? "crawl-hint-at crawl-hud-hidden" : "crawl-hint-at"}
+        >
+          {hintWord && hintArrived ? (
+            <p className="crawl-hint font-oracle">
+              Remember &ldquo;<b>{hintWord}</b>&rdquo;&hellip; you hear gears shifting.
+            </p>
+          ) : null}
         </div>
         <SwapTimer paused={cine || falling} />
       </div>
@@ -720,7 +690,7 @@ export function Crawl({
               onRead={() => {
                 patch({ stoneRead: true });
                 addCoins(1);
-                pendingEvent.current = { kind: "stone" };
+                settleAfter("stone", { kind: "stone" }, HOLD.stone);
               }}
             />
           ) : trial.kind === "door" ? (
@@ -736,7 +706,7 @@ export function Crawl({
               onBroken={({ seal, clue, square }) => {
                 patch({ seal, clue, square });
                 addCoins(1);
-                pendingEvent.current = { kind: "square" };
+                settleAfter("door", { kind: "square" }, HOLD.seal);
               }}
               onWrongWord={() => engineRef.current?.clearStamps()}
               onSpoken={(finalWord) => {

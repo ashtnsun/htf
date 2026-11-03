@@ -456,6 +456,20 @@ export class TombSound {
     this.run([74, 78, 81, 86], 0.05, 0.22, 0.62);
   }
 
+  /** Somewhere off in the tomb, gears shift: a heavy ratchet slowing down, and a low note under it. */
+  gears() {
+    const gaps = [0, 90, 190, 300, 430, 590, 790, 1060];
+    gaps.forEach((ms, i) => {
+      this.later(ms, () => {
+        this.burst("bandpass", i % 2 ? 620 : 840, 0.2, 0.05, true);
+        this.tone(170 - i * 8, 90, 0.12, 0.07);
+      });
+    });
+    this.tone(62, 44, 0.22, 1.5, "triangle");
+    this.pluck(38, 1.15, 0.26);
+    this.pluck(45, 1.3, 0.16);
+  }
+
   /** Something refused: two low notes falling, and a dull knock. */
   thud() {
     this.tone(95, 45, 0.4, 0.3);

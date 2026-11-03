@@ -13,6 +13,7 @@ import {
   drawGlyphs,
   drawGreek,
   drawLetter,
+  drawLiftMark,
   drawPathStone,
   drawSquareTile,
   drawWord,
@@ -22,7 +23,6 @@ import {
   lightPicture,
   makeCanvas,
   maskPicture,
-  merchantPicture,
   miniDino,
   MIRROR,
   MIRROR_GLASS,
@@ -41,6 +41,7 @@ import {
 import { cosmeticById, FOR_SALE, type Look } from "@/components/olympus/crawl/cosmetics";
 import type { TombSound } from "@/components/olympus/crawl/sound";
 import {
+  FLOOR_STONES,
   OPPOSITE,
   ware,
   ROOM_LIST,
@@ -51,6 +52,7 @@ import {
   TILE,
   type Door,
   type Fire,
+  type FloorStone,
   type Room,
   type RoomId,
   type Side,
@@ -91,12 +93,10 @@ export type Hooks = {
   onFirstMove: () => void;
   /** The fall in through the roof is over. */
   onLanded: () => void;
-  /** A moment the camera holds on, as fractions of the screen; null when it lets go. */
-  onCine: (focus: { x: number; y: number } | null) => void;
+  /** A moment has taken the camera, or let it go. */
+  onCine: (on: boolean) => void;
   /** Where the dinosaur is on the whole map. */
   onPlace: (x: number, y: number) => void;
-  /** Where the shopkeeper's mouth is on screen, in CSS pixels; null out of his sight. */
-  onKeeper: (at: { x: number; y: number } | null) => void;
 };
 
 export type WorldEvent =
@@ -113,12 +113,12 @@ const FALL = 0.6;
 const DROP = 0.8;
 const SPIKE_PERIOD = 2.6;
 /** The fires' clock, in milliseconds. */
-const BEAT = { FLASH: 140, FLASH_GAP: 130, AFTER_FLARE: 1400, LIT: 2000, DARK: 700, END: 3200 };
+const BEAT = { FLASH: 240, FLASH_GAP: 180, AFTER_FLARE: 1400, LIT: 2000, DARK: 700, END: 3200 };
 
 type Beat = { left: number; right: number; ms: number; flare?: boolean };
 
 /**
- * The signal, from the top: every fire flashes red three times, fast, so the restart can never be
+ * The signal, from the top: every fire flashes red three times, quickly, so the restart can never be
  * taken for a letter (5 and 5 being a letter too); under reduced motion it is one steady red. Then
  * each letter, held in green.
  */
@@ -153,7 +153,8 @@ type Live = {
   solids: { x: number; y: number; w: number; h: number }[];
   motes: { x: number; y: number; s: number; p: number }[];
 };
-type Cine = { x: number; y: number; ms: number; start?: () => void };
+/** A held shot, centred on (x, y); `beside` is the room to draw past the edge of this one. */
+type Cine = { x: number; y: number; ms: number; beside?: RoomId; start?: () => void };
 
 const MURAL = { x: 120, y: 4, w: 144, h: 88, ix: 128, iy: 12, iw: 128, ih: 72 };
 const MASK = { x: 156, y: 2, w: 72, h: 78 };
@@ -163,7 +164,6 @@ const GREAT_DOOR = { x: 152, y: 2, w: 80, h: 62 };
 const MECHANISM = { x: 192, foot: 146 };
 
 const mirrorX = (spot: Spot) => spot.x;
-const KEEPER = { x: 204, foot: 96 };
 const WAGON = { x: 228, foot: 100 };
 /** Lamps hung in the merchant's camp. */
 const LANTERNS = [
@@ -228,8 +228,6 @@ export function labelOf(spot: Spot, flags: Flags): string {
       return "Look";
     case "mirror":
       return "Look in the mirror";
-    case "keeper":
-      return "Talk";
     case "arcade":
     case "blackjack":
       return "Play";
@@ -284,7 +282,6 @@ export class CrawlEngine {
   /** Where the room being drawn sits, for the things drawn after the dark. */
   private litAt: { live: Live; ox: number; oy: number } | null = null;
   private litLayer = makeCanvas(96, 96);
-  private keeperAt = "";
   /** The fall in through the roof, the first time. */
   private drop = 0;
   private iris = 1;
@@ -307,6 +304,7 @@ export class CrawlEngine {
   private prompt: string | null = null;
   private here: Spot | null = null;
   private tile: { r: number; c: number; letter: string } | null = null;
+  private stone: FloorStone | null = null;
   private stamps: { r: number; c: number }[] = [];
   private flags: Flags;
   private muralStart = -1;
@@ -318,7 +316,10 @@ export class CrawlEngine {
   private stonePulse = -1;
   private cine: Cine[] = [];
   private cineLeft = 0;
-  /** What the camera is looking at: the dinosaur, unless a moment has taken it elsewhere. */
+  /** When the fires last began their signal: the restart stone moves this. */
+  private fireStart = 0;
+  private beside: Live | null = null;
+  /** The middle of the shot while something has taken the camera off the dinosaur. */
   private look = { x: 0, y: 0 };
   private lookTarget: { x: number; y: number } | null = null;
   private lookAway = false;
@@ -407,10 +408,20 @@ export class CrawlEngine {
 
   /** The mural wakes: the camera settles square on it and the dinosaur steps out of the way. */
   faceMural() {
-    this.lookTarget = { x: MURAL.ix + MURAL.iw / 2, y: 104 };
-    if (!this.lookAway) this.look = { x: this.x, y: this.y };
-    this.lookAway = true;
+    this.takeCamera({ ...this.framed(MURAL.ix + MURAL.iw / 2, 104) });
     this.aside = 132;
+  }
+
+  /** The middle of the shot that shows (x, y) from inside the room, as the camera normally would. */
+  private framed(x: number, y: number) {
+    const cam = this.cameraAt(this.current, x, y);
+    return { x: cam.x + this.viewW / 2, y: cam.y + this.viewH / 2 };
+  }
+
+  private takeCamera(target: { x: number; y: number }) {
+    if (!this.lookAway) this.look = this.framed(this.x, this.y);
+    this.lookAway = true;
+    this.lookTarget = target;
   }
 
   /** The camera goes back to following the dinosaur. */
@@ -468,11 +479,12 @@ export class CrawlEngine {
         this.slabStart = now + 1900;
         this.score.fanfare();
         this.playCine([
-          { x: 192, y: 56, ms: 1700 },
+          { x: MURAL.x + MURAL.w / 2, y: MURAL.y + MURAL.h / 2, ms: 1700 },
           {
-            x: 384,
+            x: 376,
             y: 160,
             ms: 2400,
+            beside: "hall",
             start: () => {
               this.shake(1400, 2);
               this.score.rumble(0.8);
@@ -490,12 +502,12 @@ export class CrawlEngine {
         this.shake(900, 2);
         this.score.rumble(0.6);
         this.score.secret();
-        this.playCine([{ x: 192, y: 48, ms: 2400 }]);
+        this.playCine([{ x: MASK.x + MASK.w / 2, y: MASK.y + MASK.h / 2, ms: 2400 }]);
         break;
       case "stone":
         this.stonePulse = now;
         this.score.secret();
-        this.playCine([{ x: 192, y: 116, ms: 2000 }]);
+        this.playCine([{ x: MECHANISM.x, y: MECHANISM.foot - 29, ms: 2000 }]);
         break;
       case "square":
         this.squareStart = now + 500;
@@ -503,14 +515,18 @@ export class CrawlEngine {
         this.score.rumble(0.8);
         this.score.whoosh(0.15, 1.4);
         this.score.secret();
-        this.playCine([{ x: 192, y: 118, ms: 2800 }]);
+        this.playCine([
+          { x: SQUARE.x + SQUARE.tile * 2.5, y: SQUARE.y + SQUARE.tile * 2.5, ms: 2800 },
+        ]);
         break;
       case "door":
         this.doorStart = now + 500;
         this.shake(2000, 2);
         this.score.rumble(1);
         this.score.fanfare();
-        this.playCine([{ x: 192, y: 40, ms: 3000 }]);
+        this.playCine([
+          { x: GREAT_DOOR.x + GREAT_DOOR.w / 2, y: GREAT_DOOR.y + GREAT_DOOR.h / 2, ms: 3000 },
+        ]);
         break;
     }
   }
@@ -530,16 +546,17 @@ export class CrawlEngine {
     if (!beat) {
       this.cineLeft = 0;
       this.lookTarget = null;
-      this.hooks.onCine(null);
+      this.beside = null;
+      this.hooks.onCine(false);
       return;
     }
     this.cineLeft = beat.ms / 1000;
     beat.start?.();
-    this.lookTarget = { x: beat.x, y: beat.y };
-    if (!this.lookAway) this.look = { x: this.x, y: this.y };
-    this.lookAway = true;
-    const cam = this.cameraAt(this.current, beat.x, beat.y);
-    this.hooks.onCine({ x: (beat.x - cam.x) / this.viewW, y: (beat.y - cam.y) / this.viewH });
+    // Not pulled in from the room's edges, as the camera normally is: the subject goes dead centre,
+    // the one place the bars and the zoom can never cut it.
+    this.takeCamera({ x: beat.x, y: beat.y });
+    this.beside = beat.beside ? this.live.get(beat.beside)! : null;
+    this.hooks.onCine(true);
   }
 
   /** Dev only: jump to a room, for the screenshots. */
@@ -552,6 +569,8 @@ export class CrawlEngine {
     this.drop = 0;
     this.iris = 0;
     this.slide = null;
+    this.lookAway = false;
+    this.lookTarget = null;
     this.hooks.onRoom(room, this.x, this.y);
   }
 
@@ -617,9 +636,7 @@ export class CrawlEngine {
     this.keys.add(code);
     if (code === "KeyE" || code === "Enter") this.interact();
     if (code === "Backspace" && this.stamps.length && this.current.room.id === "hall") {
-      this.stamps.pop();
-      this.emitStamps();
-      this.score.tick(600, 0.08);
+      this.liftLetter();
     }
   };
 
@@ -643,7 +660,22 @@ export class CrawlEngine {
       this.emitStamps();
       this.score.press(this.stamps.length);
       this.spray(this.x, this.y, C.green, 6);
+      return;
     }
+    if (this.stone === "restart") {
+      this.fireStart = performance.now();
+      this.score.whoosh(0.1, 0.5);
+      this.score.tick(180, 0.12);
+      this.spray(this.x, this.y, C.red, 8);
+    } else if (this.stone === "lift" && this.stamps.length) this.liftLetter();
+  }
+
+  /** The last letter pressed comes back up. */
+  private liftLetter() {
+    this.stamps.pop();
+    this.emitStamps();
+    this.score.tick(600, 0.08);
+    this.spray(this.x, this.y, C.green, 4);
   }
 
   /* ---------------------------------------------------------------- building */
@@ -737,10 +769,9 @@ export class CrawlEngine {
           },
         });
       });
-      // The wagon along the wall, and the merchant beside it with a lamp on a staff.
+      // The wagon along the wall.
       const wagon = wagonPicture();
       solids.push({ x: WAGON.x, y: 64, w: 76, h: WAGON.foot - 64 });
-      solids.push({ x: KEEPER.x - 12, y: KEEPER.foot - 8, w: 26, h: 9 });
       items.push({
         y: WAGON.foot,
         draw: (ctx) => {
@@ -838,15 +869,17 @@ export class CrawlEngine {
 
   private camera(live: Live) {
     if (live !== this.current) return this.cameraAt(live, live.room.W / 2, live.room.H / 2);
-    return this.lookAway
-      ? this.cameraAt(live, this.look.x, this.look.y)
-      : this.cameraAt(live, this.x, this.y);
+    if (!this.lookAway) return this.cameraAt(live, this.x, this.y);
+    return {
+      x: Math.round(this.look.x - this.viewW / 2),
+      y: Math.round(this.look.y - this.viewH / 2),
+    };
   }
 
   /** The camera drifts to what a moment shows, and back to the dinosaur when it is over. */
   private stepLook(dt: number) {
     if (!this.lookAway) return;
-    const target = this.lookTarget ?? { x: this.x, y: this.y };
+    const target = this.lookTarget ?? this.framed(this.x, this.y);
     const k = Math.min(1, dt * 3);
     this.look.x += (target.x - this.look.x) * k;
     this.look.y += (target.y - this.look.y) * k;
@@ -866,6 +899,8 @@ export class CrawlEngine {
     const from = this.current;
     const cam = this.camera(from);
     const camFrom = { x: cam.x + from.room.at[0], y: cam.y + from.room.at[1] };
+    this.lookAway = false;
+    this.lookTarget = null;
     const to = this.live.get(door.to)!;
     const landing = to.room.doors[OPPOSITE[side]]!.landing;
     const sx = this.x + from.room.at[0] - to.room.at[0];
@@ -903,6 +938,26 @@ export class CrawlEngine {
     const r = Math.floor((this.y - 2 - SQUARE.y) / SQUARE.tile);
     const letter = rows[r]?.[c];
     return letter ? { r, c, letter } : null;
+  }
+
+  /** The Hall's two loose stones, under the feet. The lift only wakes with the letters. */
+  private stoneUnderFoot(): FloorStone | null {
+    if (this.current.room.id !== "hall") return null;
+    for (const [id, at] of Object.entries(FLOOR_STONES) as [
+      FloorStone,
+      { x: number; y: number },
+    ][]) {
+      if (id === "lift" && !this.flags.square) continue;
+      if (
+        this.x >= at.x &&
+        this.x < at.x + SQUARE.tile &&
+        this.y - 2 >= at.y &&
+        this.y - 2 < at.y + SQUARE.tile
+      ) {
+        return id;
+      }
+    }
+    return null;
   }
 
   private spikesUp(strip: Spikes, time: number) {
@@ -1125,15 +1180,18 @@ export class CrawlEngine {
     }
     this.here = best;
     this.tile = this.flags.final || best ? null : this.tileUnderFoot();
+    this.stone = this.flags.final || best ? null : this.stoneUnderFoot();
     if (best) this.setPrompt(labelOf(best, this.flags));
     else if (this.tile) {
       this.setPrompt(`Press ${this.tile.letter === "I" ? "I / J" : this.tile.letter}`);
+    } else if (this.stone) {
+      this.setPrompt(this.stone === "lift" ? "Lift the last letter" : "Restart the fires");
     } else this.setPrompt(null);
   }
 
   /** What the fires are saying right now. */
   private fireNow(): FireNow {
-    let t = performance.now() % this.cycle;
+    let t = (performance.now() - this.fireStart) % this.cycle;
     for (const beat of this.beats) {
       if (t < beat.ms) return { left: beat.left, right: beat.right, flare: !!beat.flare };
       t -= beat.ms;
@@ -1167,20 +1225,6 @@ export class CrawlEngine {
     if (place !== this.lastPlace) {
       this.lastPlace = place;
       this.hooks.onPlace(this.x + room.at[0], this.y + room.at[1]);
-    }
-    // The shopkeeper's speech follows him on screen.
-    if (room.id === "shop" && !this.slide) {
-      const cam = this.camera(this.current);
-      const c = this.cssCell;
-      const x = Math.round((KEEPER.x - cam.x) * c);
-      const y = Math.round((KEEPER.foot - 38 - cam.y) * c);
-      if (`${x},${y}` !== this.keeperAt) {
-        this.keeperAt = `${x},${y}`;
-        this.hooks.onKeeper({ x, y });
-      }
-    } else if (this.keeperAt) {
-      this.keeperAt = "";
-      this.hooks.onKeeper(null);
     }
   };
 
@@ -1239,6 +1283,13 @@ export class CrawlEngine {
       dark.fillRect(b.x, b.y, s.to.room.W, s.to.room.H);
     } else {
       const cam = this.camera(this.current);
+      if (this.beside) {
+        const [ax, ay] = this.current.room.at;
+        const [bx, by] = this.beside.room.at;
+        const x = bx - ax - cam.x + sx;
+        const y = by - ay - cam.y + sy;
+        this.drawRoom(this.beside, x, y, now, time, flameTime, fire, false);
+      }
       this.drawRoom(this.current, -cam.x + sx, -cam.y + sy, now, time, flameTime, fire, true);
     }
 
@@ -1301,7 +1352,10 @@ export class CrawlEngine {
   private drawFloorLife(room: Room, time: number, withPlayer: boolean) {
     const ctx = this.ctx;
     const t = THEMES[room.theme];
-    if (room.id === "hall") this.drawSquare(performance.now(), t);
+    if (room.id === "hall") {
+      this.drawSquare(performance.now(), t);
+      this.drawFloorStones(performance.now(), t);
+    }
     if (room.spikes) {
       for (const strip of room.spikes) {
         const state = this.spikesUp(strip, time);
@@ -1393,6 +1447,33 @@ export class CrawlEngine {
     if (this.tile) {
       const x = SQUARE.x + this.tile.c * t;
       const y = SQUARE.y + this.tile.r * t;
+      ctx.fillStyle = C.green;
+      ctx.fillRect(x, y, t, 1);
+      ctx.fillRect(x, y + t - 1, t, 1);
+      ctx.fillRect(x, y, 1, t);
+      ctx.fillRect(x + t - 1, y, 1, t);
+    }
+  }
+
+  /** The marks on the Hall's loose stones: the flare that restarts the fires, and the lifted letter. */
+  private drawFloorStones(now: number, th: Theme) {
+    const ctx = this.ctx;
+    const t = SQUARE.tile;
+    const restart = FLOOR_STONES.restart;
+    // It takes the colour of what it does when the fires flare.
+    drawFlame(ctx, restart.x + 10, restart.y + 15, 4, 11, 1, 2, true);
+    const lift = FLOOR_STONES.lift;
+    if (this.flags.square) {
+      const age = this.squareStart < 0 ? 1e9 : now - this.squareStart;
+      if (age >= 0)
+        drawLiftMark(ctx, lift.x + 10, lift.y + 10, this.stamps.length ? C.mint : th.s7);
+      if (age >= 0 && age < 500) {
+        ctx.fillStyle = `rgba(3,198,82,${0.55 * (1 - age / 500)})`;
+        ctx.fillRect(lift.x + 1, lift.y + 1, t - 2, t - 2);
+      }
+    }
+    if (this.stone) {
+      const { x, y } = FLOOR_STONES[this.stone];
       ctx.fillStyle = C.green;
       ctx.fillRect(x, y, t, 1);
       ctx.fillRect(x, y + t - 1, t, 1);
@@ -1893,33 +1974,6 @@ export class CrawlEngine {
   private drawCharacters(time: number) {
     const lit = this.litAt;
     if (!lit) return;
-    if (lit.live.room.id === "shop") {
-      // Breathing, in whole cells; the lamp on the staff swings a cell either way.
-      const bob = !this.reduce && Math.floor(time * 1.2) % 2 ? 1 : 0;
-      const swing = this.reduce ? 0 : Math.round(Math.sin(time * 1.6));
-      const picture = merchantPicture();
-      this.drawLit(KEEPER.x, KEEPER.foot, time, (ctx) => {
-        const left = KEEPER.x - 18;
-        ctx.fillStyle = "rgba(0,0,0,0.45)";
-        ctx.fillRect(left + 2, KEEPER.foot - 1, 24, 3);
-        ctx.fillStyle = "#5e3f20";
-        ctx.fillRect(left - 4, KEEPER.foot - 34, 2, 35);
-        ctx.fillRect(left - 8, KEEPER.foot - 34, 5, 2);
-        // The lamp.
-        const lampX = left - 9 + swing;
-        const lampY = KEEPER.foot - 31;
-        ctx.fillStyle = "#3e2a14";
-        ctx.fillRect(lampX + 1, lampY, 1, 2);
-        ctx.fillRect(lampX - 1, lampY + 2, 5, 1);
-        ctx.fillStyle = "#ffcf7a";
-        ctx.fillRect(lampX - 1, lampY + 3, 5, 5);
-        ctx.fillStyle = "#fff0c4";
-        ctx.fillRect(lampX, lampY + 4, 3, 3);
-        ctx.fillStyle = "#3e2a14";
-        ctx.fillRect(lampX - 1, lampY + 8, 5, 1);
-        ctx.drawImage(picture, left, KEEPER.foot - picture.height + 1 + bob - 1);
-      });
-    }
     if (this.drop > 0) {
       const { ctx, R } = this;
       ctx.setTransform(R, 0, 0, R, lit.ox * R, lit.oy * R);
@@ -2160,8 +2214,6 @@ export class CrawlEngine {
           pool(lamp.x, lamp.y + 10, 72 + flicker(lamp.x));
           tint(lamp.x, lamp.y + 10, 72, "#e8953a", 0.1);
         }
-        pool(KEEPER.x - 26, KEEPER.foot - 26, 72 + flicker(9));
-        tint(KEEPER.x - 26, KEEPER.foot - 26, 72, "#e8953a", 0.14);
         pool(90, 120, 80);
         pool(240, 140, 80);
         tint(160, 140, 120, "#a8582a", 0.05);
