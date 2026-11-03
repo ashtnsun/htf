@@ -88,6 +88,35 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 16n — 2026-11-02 (the Prologue, Ashton's first notes)
+
+**Asked:** no god named or drawn after the Olympus title, straight to the execs. More room between the Greek key bands and the exec photos. A chain that shows the real number of trials and looks better. No numerals before the setup headings, "One laptop." in green. The site is htfpurdue.org, then scroll to the Olympus section on the home page. After the column, a good luck slide and no instructions for the trials, then an animated transition to /oracle with an instruction to bring the final word.
+
+**Built:** the deck is now 11 beats, not 15.
+
+- The roll call and the pantheon are gone, and so is the gods' sprite import: /prologue loads no god's name (checked over everything the production page fetches).
+- "Nine execs have taken a god's name." The gap either side of the photos grew from 84 to 136 slide pixels, leaving 44 of clear air round each band.
+- The chain: six great links numbered I to VI, the numbering on the families' own title cards, bolted to a column and sagging to a fire on a stand (VII, The Oracle). Each link lands on a hammer blow with a shake and sparks, the fire catches last, and a charge then runs down the links on a loop. The line now says "Six trials."
+- Setup: no numerals, "One laptop." green, `htfpurdue.org` typed into the browser, "Then scroll down to the Olympus section.", the column.
+- Removed: the camera and tab slide, the Oracle explanation, the demo of typing a word and holding REVEAL, the dark god, "Who is your god?".
+- "Good luck." on the lit summit with the address under it. The next press plays the ending without another press: the Oracle's fire rises, "Bring your final word to the Oracle." holds for 7 seconds (a press skips the wait, back cancels it), the fire takes the whole screen as the letterbox opens, whites out, and /oracle fades in.
+- /oracle keeps the line on screen above the box, since it stays up on the projectors for the whole activity. It fades out once a word is being typed, so it is not there during a reveal.
+
+**Decisions (mine, for Ashton to overrule):**
+
+- Six trials: mural, riddles, word, inscription, herald, fires. The seventh title card, "The Oracle", is the fire and not a link. `TRIALS` in formations, and the word "Six" in the slide, if that count is wrong.
+- "Final word", not "final message": the laptop's last screen says "Bring this word to the Oracle", and the herald's step already has a message in it.
+- The address stays under "Good luck." so a family that missed it can still read it.
+- The camera and tab warnings left with the slide they were on. The trial asks for the camera itself; "a new tab starts you over" is now only said if the presenter says it.
+
+**Verified:** typecheck, lint and `pnpm build` clean. The whole deck on the production build at 1920×1080 ending on /oracle, no console errors. The finished beats at 1366×768, 1280×800, 1440×900 and 1024×768 in dev, and the fire transition frame by frame at 960×540 in dev. Back during the hold cancels the fire; a resume on that beat waits for a press; reduced motion walks every beat and leaves only on a press. axe 0 violations on /prologue and /oracle at 1440 and 390 on the production build (`MSYS_NO_PATHCONV=1`, or Git Bash turns `--routes=/prologue` into a Windows path and scans a 404). Screenshots: `docs/screenshots/session-16n/`.
+
+**Not verified:** the sound by ear, a real projector or clicker, and the home page's Olympus section on the live site (it is still off the page).
+
+**TODO for the day:** render `OlympusSection` on the home page again (`src/app/page.tsx` says how). The slide sends every family there, and it is not on the page today.
+
+**Next session starts with:** Ashton's second look at /prologue, then whether it ships.
+
 ## Session 16m — 2026-11-02 (the Prologue: the family reveal's slides)
 
 **Asked:** slides for the family reveal, presented from the site and clicked through: a cinematic reveal of the Greek-god theme, the task (find whose family you are in), the setup (one laptop per family, the site) and the Oracle (bring the final word to the presentation laptop).
