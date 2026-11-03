@@ -90,15 +90,18 @@ src/components/
                     The address on screen is the constant `SITE` (htfpurdue.org): families scroll down
                     the home page, so home/olympus/OlympusSection has to be back on it for the day
   crawl/            /olympus3, the family reveal as a game (an event page like /olympus: no site chrome,
-                    noindex, ends at the same /oracle): world.ts (nine rooms as data), art.ts (all pictures
-                    painted in the browser, string maps, the 5 x 7 letters, dithered light), engine.ts
-                    (CrawlEngine: one canvas, no game library, per-frame state in the class, steps its
-                    resolution down by itself on a slow machine), Crawl.tsx (the shell and HUD), trials/*
-                    (the close-ups: real DOM over the world, Esc steps away), square.ts (the fires' square,
-                    keyed by the seal word because the fires burn from the first step), save.ts (per tab),
-                    sound.ts. Every trial is open at once; app/olympus3/actions.ts holds the order by asking
-                    each step for proof of the last, so never trust the client's order there. `window.__crawl`
-                    exists in dev only (`debugGo(room)` jumps rooms)
+                    noindex, ends at the same /oracle): world.ts (seven rooms on one real map as data; shapes
+                    from a grid of 8-pixel cells, doors must meet, checked in dev), art.ts (all pictures painted
+                    in the browser per room stone, `THEMES`; the mask; gears redrawn cell by cell), engine.ts
+                    (CrawlEngine: one canvas, no game library, per-frame state in the class, a door is a pan
+                    along the map, `playCine` holds the camera on big changes, steps its resolution down by
+                    itself on a slow machine), Crawl.tsx (the shell, HUD and map), trials/* (the close-ups: real
+                    DOM over the world, Esc steps away; WordGate is the mask, StoneWheels the bronze machine),
+                    square.ts (the fires' square, keyed by the seal word because the fires burn from the first
+                    step), save.ts (per tab), sound.ts. The first room's door stays shut until the photo; after
+                    that every trial is open and app/olympus3/actions.ts holds the order by asking each step for
+                    proof of the last, so never trust the client's order there. `window.__crawl` exists in dev
+                    only (`debugGo(room)` jumps rooms)
   apply/            ApplyForm (client): the Google Form in a frame tall enough that no
                     section scrolls inside it — two measured heights, the first section and
                     the rest (`scripts/measure-apply-form.mjs`), never a count of sections,

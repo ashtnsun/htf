@@ -88,6 +88,33 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 17b — 2026-11-02 (/olympus3, Ashton's first notes)
+
+**Asked:** no combat, no dash, arrow keys, "Move" not "Walk", a bigger map. The first room more special and holding the mural, every other room locked until the photo is taken. One or two rooms fewer, none without a point, rooms that look different and aren't all rectangles, a final room that feels like the end. Doors that line up, a better transition. Wordle and the wheels more distinct (Wordle looked like a door that never opened). The great door opening by itself when the word is pressed out on the floor. Cutscenes as an idea; separating the seal from the fires was raised, then withdrawn, so they stay together in the Hall.
+
+**Built:**
+
+- Seven rooms, on one real map (`world.ts`: `at` is a room's place, doors must meet, a dev-time check throws if they do not). Shapes come from a grid of 8-pixel cells, and walls, shade and the map follow it.
+  - **The Mural** (start): sandstone octagon, the dinosaur falls through the roof onto a Greek mosaic in a pool of daylight. A stone slab shuts the only door until the photo is set.
+  - **The Hall of Fires**: as it was, plus one riddle tablet on its wall. Seal and fires stay here.
+  - **The Crypt**: cold blue cross. The riddles are on the sarcophagus lids; answered, the lid slides off onto a green stone.
+  - **The Teeth**: rust-red L, the spikes between you and the far tablet.
+  - **The Mask** (was the Word Gate): a half-round violet theatre facing a giant Greek tragic mask. Five sockets in its crown, its eyes light when all are filled, and its mouth drops open with the word in it, so nothing there looks like a door.
+  - **The Mechanism** (was the stone): a round green-bronze room, a hidden path over the chasm to an island holding an Antikythera-style machine whose gears turn once the plate is carved.
+  - **The Sanctum**: all gold, coins and marble floor, the family's word on the wall.
+- Removed the Antechamber and the Gallery, and the dash.
+- Doors: the camera pans from room to room along the real map while the dinosaur walks through; the room left sinks into the dark, the one ahead comes out of it.
+- Close-ups: the Wordle board sits in the mask's howling mouth, guesses as rows of teeth. The wheels are bronze gears that really turn, redrawn cell by cell at each angle, on a verdigris plate. Same two games.
+- Cutscenes: the photo (mural dissolves, then the camera goes to the slab as it opens), the word, the plate, the floor rising, the great door. Letterbox bars, a slow lean-in, the controls wait. Off under reduced motion.
+- The server is asked after every floor press, so the door opens the moment the word is whole; a wrong word typed at the door is denied; nothing answers a wrong press, so length gives nothing away.
+- The map is much larger and draws each room's true shape, with the dinosaur on it.
+
+**Decisions (mine, for Ashton to overrule):** the Mask and the Mechanism as the new names and images; the Crypt holds three of the five riddles; a riddle's lid carries the same glyphs as any tablet; sconces still burn the signal in every room but the Sanctum; cutscenes last 2 to 5 seconds and cannot be skipped.
+
+**Verified:** typecheck, lint, build clean. A full playthrough on the new map with real keys (arrows and WASD): the sealed door and its line, keys ignored during a cutscene, all five riddles, mask shut with a socket empty, machine blank before the word, seal held before the machine was read, another family's seal rejected, a wrong word denied at the door, the door opening by itself on the seventh press, the Sanctum, refresh keeps the place, 0 console errors. Production, headless with no GPU: 60 fps at 1366x657 and 1920x1080; with the CPU slowed 4x, 15 fps until it steps its resolution down by itself, then 51 fps. axe 0 violations on /olympus3 and /olympus3/1 at 1440 and 390, and with the mural open. Reduced motion loaded and moved without errors (not played through). No word or seal in the page or the chunks. Screenshots: `docs/screenshots/session-17b/`.
+
+**Not tested:** a real webcam with real faces, the sound by ear, a real low-end laptop, a real family's pacing. A dev "1 Issue" badge appeared once mid-edit and did not recur in the three runs after; the console stayed clean in those runs, so I did not identify it.
+
 ## Session 17 — 2026-11-02 (/olympus3, the family reveal as a game)
 
 **Asked:** a new variant of the family reveal at /olympus3: the same trials as a 2D top-down dungeon crawler in the pixel style, the dino as the player, every trial open at once so working out the order is part of it, the puzzles tweaked so none can be skipped, and the trials as things in the world (the photo a mural that really updates, riddles carved on walls, fires as real braziers), Indiana Jones in feel. /olympus stays as it was.
