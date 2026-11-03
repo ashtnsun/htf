@@ -71,14 +71,16 @@ src/components/
                     column per group, built on load by TempleBuild), RevealGate (hold to reveal); the gods' sprites are dino/reveal.ts; content/olympus.ts is server only (answers);
                     prologue/ is /prologue, the slides that open the event (noindex, no site chrome,
                     client only): Prologue (the beats, one per press; keys in its comment; "Good luck"'s
-                    press raises the Oracle's fire, which burns out and eases through dark to /oracle by
-                    itself, a dark sheet fading off the new page in place of the site's page transition),
+                    press lifts the scene away and eases through dark to /oracle, a dark sheet fading off
+                    the new page in place of the site's page transition),
                     stage (one canvas of solid cells that fly from scene to
                     scene, snapped to the grid, plus the camera, the rock's flat spans and the sparks),
-                    blaze (the live fire: heat averaged upward through a climbing noise, drawn on the
-                    stage's cells), formations (the pictures as cell lists; `TRIALS` links in the chain,
+                    formations (the pictures as cell lists, flames as hand-drawn frames in the language of
+                    journey/Torches that the stage steps, never a simulation; `TRIALS` links in the chain,
                     one per step of journey/save's STAGES less the last), score (ambience and effects synthesised
-                    in the browser, no music: fire, wind, thunder, iron, whooshes; on by default, S mutes,
+                    in the browser, no music: `AMBIENCES` gives each stretch of the deck its own place (fire,
+                    wind, a stone hall, a quiet room; drips, chains, far thunder, keys), with thunder, iron
+                    and whooshes on cue; on by default, S mutes,
                     it wakes on the presenter's first key or click; keep its energy between 200 Hz and
                     5 kHz, the room's speakers cannot play below that). soundtrack and cuesheet are a full
                     synthesised score Ashton took off as too much (2026-11-02): stored, imported by

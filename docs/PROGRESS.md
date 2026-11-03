@@ -129,6 +129,24 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 **Not tested:** a real webcam with real faces (the fake camera has none, so faces were marked by hand; the finder is the same code as /olympus); audio by ear (nothing here can listen); a real low-end laptop; a family actually playing it, so difficulty and pacing are unproven.
 
+## Session 16r — 2026-11-02 (the Prologue: a flame that belongs, a place for each scene, the Oracle before Good luck)
+
+**Asked:** the fire graphic is too detailed and looks out of place; the ambience should not be wind the whole time; "Bring your final word to the Oracle" goes before the good luck slide.
+
+**Built:**
+
+- `blaze.ts` is gone. The great flame is three hand-drawn frames (15 × 16, deep green skin, green, a mint heart), stepped at the pace of the fires on /olympus, on a flat white brazier in the same language as journey/Torches. They are ordinary cells (`FX.FRAME`), so they fly in and out with the rest of the deck. The embers went with the simulation. The summit's small flames are Torches' own frames. The first try read as a Christmas tree: too wide at the base and merging into the bowl.
+- `AMBIENCES` in score.ts gives each stretch its own place: the hearth (fire); the mountain (wind, far thunder); the summit (less wind, braziers, far thunder, also under "Good luck."); the hall for the execs and roulette (stone air, torches, water drips); the forge for the chain (the hall, chains shifting, the fire joining when it catches); the study for the laptop and site slides (a quiet room, someone typing); the temple for the column (stone, drips, a breath of air); the Oracle (fire in the stone room).
+- The order is now column, "Bring your final word to the Oracle.", "Good luck." The Oracle slide no longer advances by itself; the press on "Good luck." lifts the scene away into /oracle.
+
+**Measured** on a recording of the production deck: fire slides -24 to -25 dB RMS, hall -27, mountain -27, temple -29, summit and study -31 to -33. Biggest hit peaks 0.83, nothing at full scale.
+
+**Verified (production build):** typecheck, lint, `pnpm build`. The whole deck in the new order to /oracle with no console errors; neither the Oracle slide nor "Good luck." moves without a press; no frame over 50 ms through the leave at 1920; S to silence and back; reduced motion shows a still flame and leaves only on a press; the standby, chain, Oracle and "Good luck." slides at 1366×768 and 1024×768; axe 0 violations on /prologue and /oracle at 1440 and 390; no god's name in anything /prologue fetches. Screenshots: `docs/screenshots/session-16r/`.
+
+**Not verified:** how any of it sounds by ear, and a real room's speakers.
+
+**Next session starts with:** Ashton's look and listen, then whether it ships. Still open: the Olympus section back on the home page for the day, and the /oracle line (Session 16o).
+
 ## Session 16q — 2026-11-02 (the Prologue: ambience, not a soundtrack)
 
 **Asked:** the soundtrack is too much and a little too loud: keep it stored, take it off the Prologue, just ambience and sound effects.
