@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition, type FormEvent } from "react";
-import { checkFinal } from "@/app/olympus/actions";
+import { checkFinal } from "@/app/archive/olympus/actions";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
 import { OFFLINE, StageHeading, shake, wrong } from "@/components/olympus/journey/parts";
 import { roman } from "@/components/olympus/journey/numeral";

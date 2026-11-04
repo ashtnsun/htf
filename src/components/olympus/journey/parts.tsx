@@ -76,7 +76,7 @@ export function StageHeading({
   steady?: boolean;
   /** The line as a small aside. Its row keeps its height, so the title does not move. */
   smallLine?: boolean;
-  /** No numeral over the title: /olympus3, where the order is the family's to find. */
+  /** No numeral over the title: the game, where the order is the family's to find. */
   unnumbered?: boolean;
 }) {
   return (

@@ -83,7 +83,7 @@ function GreekPlate() {
 
 /**
  * The Mechanism, up close: a Greek machine of old bronze, five geared wheels under a plate carved in
- * a Vigenère cipher, as on /olympus (each wheel turns every fifth letter; the counts under them are
+ * a Vigenère cipher (each wheel turns every fifth letter; the counts under them are
  * never explained). The plate says nothing but old Greek until the family has both the word and their names,
  * because it is carved from them. The counts are readable from the start: they are how a family
  * learns what else they need. The wheels start on the word once they have it. Read, the machine goes
@@ -227,10 +227,11 @@ export function StoneWheels({
                   }}
                   onBlur={() => setFocused(null)}
                   onChange={(e) => {
-                    const letter = e.target.value
-                      .toUpperCase()
-                      .replace(/[^A-Z]/g, "")
-                      .slice(-1);
+                    const typed = e.target.value.toUpperCase().replace(/[^A-Z]/g, "");
+                    // A click can leave the caret before the wheel's letter, so the new one is
+                    // whichever of the two is not already there, not simply the last.
+                    const letter =
+                      typed.length > 1 && typed.endsWith(w) ? typed[0]! : typed.slice(-1);
                     turn(i, letter || UNSET);
                     if (letter) document.getElementById(`wheel-${i + 1}`)?.focus();
                   }}

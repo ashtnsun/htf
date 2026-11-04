@@ -1,5 +1,5 @@
 /**
- * The fires' square in /olympus3. On /olympus the fires only start once the seal is broken; here
+ * The fires' square. On the archived flow the fires only start once the seal is broken; here
  * they burn from the first step, so the square they count on is keyed: the family's seal word
  * first (repeats dropped), then the rest of the alphabet. Without the seal the counts spell
  * nothing, even to someone who knows Polybius. Nothing secret lives here; the words stay in

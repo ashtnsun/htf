@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useRef, useState, useTransition, type FormEvent } from "react";
-import { checkRiddle } from "@/app/olympus/actions";
+import { checkRiddle } from "@/app/archive/olympus/actions";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
 import { OFFLINE, shake, wrong } from "@/components/olympus/journey/parts";
 import { roman } from "@/components/olympus/journey/numeral";

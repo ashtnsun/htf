@@ -50,6 +50,8 @@ export function Colonnade({
 }) {
   const reduce = useReducedMotionSafe();
   const [order, setOrder] = useState(() => Array.from({ length: total }, (_, i) => i));
+  // A word of eight letters or more runs into its neighbour at the full size, so they all come down.
+  const longest = Math.max(0, ...words.map((word) => word.length));
   return (
     <section aria-label="Solved" className="flex w-full flex-col items-center">
       <ol
@@ -66,8 +68,9 @@ export function Colonnade({
               className="flex flex-col items-center"
             >
               <span
+                style={{ fontSize: `clamp(0.6rem, 2.6vw, ${longest >= 8 ? 0.7 : 0.9}rem)` }}
                 className={cn(
-                  "mb-2 h-5 font-olympus text-[clamp(0.6rem,2.6vw,0.9rem)] leading-5 font-semibold tracking-wide whitespace-nowrap uppercase transition-opacity duration-1000 ease-smooth",
+                  "mb-2 h-5 font-olympus leading-5 font-semibold tracking-wide whitespace-nowrap uppercase transition-opacity duration-1000 ease-smooth",
                   word ? "opacity-100" : "opacity-0",
                 )}
               >

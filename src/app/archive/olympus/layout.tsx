@@ -1,21 +1,23 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
+import { ButtonMenu } from "@/components/olympus/buttons/ButtonMenu";
 import { cinzel, cormorant } from "@/components/olympus/fonts";
 import { Meander } from "@/components/olympus/Meander";
 import { Passage } from "@/components/olympus/Passage";
 
 export const metadata: Metadata = {
-  title: "Olympus (snapshot)",
+  title: "Olympus",
   description: "Hack the Future's family reveal: solve your riddles and meet your god.",
   robots: { index: false, follow: false },
 };
 
 /**
- * The /olympuz snapshot (2026-10-31), the same frame as /olympus. The family reveal: an event page, not part of the site (not in the navigation or the
+ * The family reveal before it became a game, kept. Only its pages are `.dev.tsx`, so this layout has nothing to wrap in a deploy. An event page, not part of the site (not in the navigation or the
  * sitemap, no site header or footer). The logo goes home; the Greek key runs under it.
  */
-export default function OlympusLayout({ children }: LayoutProps<"/olympuz">) {
+export default function OlympusLayout({ children }: { children: ReactNode }) {
   return (
     <div
       className={`${cinzel.variable} ${cormorant.variable} relative flex min-h-dvh flex-col overflow-x-clip`}
@@ -30,6 +32,7 @@ export default function OlympusLayout({ children }: LayoutProps<"/olympuz">) {
         {children}
       </div>
       <Passage />
+      <ButtonMenu />
     </div>
   );
 }

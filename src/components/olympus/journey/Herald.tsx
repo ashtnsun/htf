@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { breakSeal } from "@/app/olympus/actions";
+import { breakSeal } from "@/app/archive/olympus/actions";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
 import { sentence } from "@/components/olympus/journey/cipher";
 import { OFFLINE, StageHeading, shake } from "@/components/olympus/journey/parts";

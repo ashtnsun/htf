@@ -11,8 +11,8 @@ export const metadata: Metadata = { title: "The herald's letters" };
  * The herald's letters for step V, to print: one A4 sheet per group, folded in three as a Z
  * (back along the first mark, forward along the second) so the address and the seal face out.
  * Inside: the clue to the fires and the group's seal word, which the family types on the
- * laptop. Live on the deployed site so the letters can be printed from it (noindex through the
- * Olympus layout, linked from nowhere), which means anyone with the URL can read the seal words.
+ * laptop. Dev only since 2026-11-03: print them from `pnpm dev`, because a deployed page would show
+ * every seal word to anyone with the URL.
  */
 export default function LettersPage() {
   return (

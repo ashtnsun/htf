@@ -27,6 +27,8 @@ const COIN_EVERY = 5;
  */
 const BRUTAL_AT = 10 * COIN_EVERY;
 const BRUTAL_RAMP = 3;
+/** Milliseconds after a run ends before Space starts the next. The button works at once. */
+const RESTART_AFTER = 700;
 
 const MARBLE = { "#": "#e8e4d8", "+": "#a8a294", "-": "#6f6a5e" };
 const TERRACOTTA = { o: "#c96f33", O: "#8e4a1f", k: "#14100c" };
@@ -395,6 +397,8 @@ export function DinoRun({
   const earned = useRef(0);
   const coinsRef = useRef(coins);
   const start = useRef<() => void>(() => {});
+  // When the last run ended: a jump mashed as the dinosaur dies must not spend the next coin.
+  const overAt = useRef(0);
 
   useEffect(() => {
     handlers.current = { onCoin, onBest };
@@ -412,6 +416,7 @@ export function DinoRun({
         handlers.current.onCoin();
       },
       (score) => {
+        overAt.current = performance.now();
         setLast({ score, earned: earned.current });
         if (score > bestRef.current) handlers.current.onBest(score);
         setPhase("over");
@@ -445,7 +450,7 @@ export function DinoRun({
         event.preventDefault();
         if (event.repeat) return;
         if (game.running) game.jump();
-        else start.current();
+        else if (performance.now() - overAt.current > RESTART_AFTER) start.current();
       } else if (event.code === "ArrowDown" || event.code === "KeyS") {
         event.preventDefault();
         game.duck(true);
@@ -501,7 +506,9 @@ export function DinoRun({
         <span>
           <kbd className="crawl-key">↓</kbd> Duck
         </span>
-        <span className="crawl-panel-coins">{coins} coins</span>
+        <span className="crawl-panel-coins">
+          {coins} {coins === 1 ? "coin" : "coins"}
+        </span>
       </div>
     </div>
   );

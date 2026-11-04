@@ -4,8 +4,8 @@ import { FAMILIES } from "@content/olympuz";
 import { matches, normalize } from "@/lib/olympus/match";
 
 /**
- * The /olympuz snapshot's checks (the family reveal before the cipher chain). Its words still
- * open the Oracle: consultOracle in app/olympus/actions.ts accepts them.
+ * The /olympuz snapshot's checks (the family reveal before the cipher chain). Its words no longer
+ * open the Oracle (since 2026-11-03): the live consultOracle does not read this snapshot.
  */
 function family(n: unknown) {
   return typeof n === "number" && Number.isInteger(n) ? FAMILIES[n - 1] : undefined;

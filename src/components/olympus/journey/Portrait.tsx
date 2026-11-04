@@ -64,11 +64,11 @@ export function Portrait({
   inWorld = false,
 }: {
   onDone: (result: PortraitResult) => void;
-  /** /olympus3: no step numeral, and the last button says what it does there. */
+  /** The game: no step numeral, and the last button says what it does there. */
   unnumbered?: boolean;
   doneLabel?: string;
   /**
-   * /olympus3: the frame is the mural on the tomb's wall, from before the camera is even asked
+   * The game: the frame is the mural on the tomb's wall, from before the camera is even asked
    * for, so there is no first screen of its own: the bare wall shows through the empty frame.
    */
   inWorld?: boolean;
@@ -170,7 +170,7 @@ export function Portrait({
           : phase === "review"
             ? faces.length
               ? {
-                  title: `${roman(faces.length)} faces in the stone`,
+                  title: `${roman(faces.length)} ${faces.length === 1 ? "face" : "faces"} in the stone`,
                   line: "(If anyone was not identified, click on their face to add them)",
                   smallLine: true,
                 }

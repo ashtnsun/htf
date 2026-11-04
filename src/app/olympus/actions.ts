@@ -1,9 +1,9 @@
 "use server";
 
 import { CLUE, FAMILIES } from "@content/olympus";
-import { FAMILIES as SNAPSHOT } from "@content/olympuz";
 import { REVEAL_SPRITES } from "@/components/dino/reveal";
-import { inscriptionKey, polybius, vigenere, type Mark } from "@/components/olympus/journey/cipher";
+import { inscriptionKey, vigenere, type Mark } from "@/components/olympus/journey/cipher";
+import { keyedSquare } from "@/components/olympus/crawl/square";
 import type { GodReveal, SceneId } from "@/components/olympus/shared";
 import { matches, normalize } from "@/lib/olympus/match";
 
@@ -20,14 +20,16 @@ const SCENES: Record<string, SceneId> = {
   Artemis: "forest",
 };
 
+/**
+ * The tomb's checks (/olympus), and the Oracle's. Every trial is open from the first step, so each of these asks
+ * for proof of what comes before it instead of trusting the order: the gate wants the five
+ * answers, the stone wants the word and the names, the seal wants the stone's key, the fires'
+ * word wants the seal, the altar wants the fires' word. The flow from before the game keeps its
+ * own checks in app/archive/olympus/actions.ts, which nothing in a deploy imports.
+ */
+
 function family(n: unknown) {
   return typeof n === "number" && Number.isInteger(n) ? FAMILIES[n - 1] : undefined;
-}
-
-/** Whether `key` is family n's word: every step after the Wordle asks for it again. */
-function keyed(n: number, key: unknown) {
-  const f = family(n);
-  return f && typeof key === "string" && normalize(key) === normalize(f.word) ? f : undefined;
 }
 
 function cleanNames(names: unknown) {
@@ -43,19 +45,16 @@ export async function checkRiddle(n: number, index: number, guess: string) {
   return matches(guess, [riddle.answer, ...(riddle.also ?? [])]) ? riddle.answer : null;
 }
 
-/**
- * One Wordle guess at the family's word: a mark per letter (green "hit", yellow "near", "miss"),
- * counted the way Wordle counts repeated letters. Right, it also carries the word and the
- * inscription it unlocks, still carved (the family decodes it with the word).
- */
-export async function guessWord(
+/** One Wordle guess at the Word Gate. No marks at all until all five riddles are answered. */
+export async function guessGate(
   n: number,
   guess: string,
-  names: string[],
-): Promise<{ marks: Mark[]; word?: string; inscription?: string } | null> {
+  answers: readonly string[],
+): Promise<{ marks: Mark[]; word?: string } | null> {
   const f = family(n);
   const g = typeof guess === "string" ? guess.toUpperCase().replace(/[^A-Z]/g, "") : "";
-  if (!f || g.length !== f.word.length) return null;
+  if (!f || g.length !== f.word.length || !Array.isArray(answers)) return null;
+  if (!f.riddles.every((r, i) => r.answer === answers[i])) return null;
   const marks: Mark[] = [...g].map((c, i) => (c === f.word[i] ? "hit" : "miss"));
   const left = [...f.word].filter((c, i) => g[i] !== c);
   marks.forEach((mark, i) => {
@@ -64,61 +63,68 @@ export async function guessWord(
     marks[i] = "near";
     left.splice(at, 1);
   });
-  if (g !== f.word) return { marks };
-  return { marks, word: f.word, inscription: vigenere(f.hiding, stoneKey(n, names)!, 1) };
+  return g === f.word ? { marks, word: f.word } : { marks };
 }
 
-/** The inscription's key for family n: its word moved on by the five counts (cipher.ts). */
-function stoneKey(n: number, names: unknown) {
+/** The stone's carving: it stays blank until the family has both the word and their names. */
+export async function carveStone(n: number, word: string, names: string[]) {
   const f = family(n);
-  return f ? inscriptionKey(f.word, cleanNames(names), n) : undefined;
+  const clean = cleanNames(names);
+  if (!f || !clean.length || typeof word !== "string" || normalize(word) !== normalize(f.word)) {
+    return null;
+  }
+  return vigenere(f.hiding, inscriptionKey(f.word, clean, n), 1);
 }
 
 /** Whether `key` reads family n's stone (its word moved by the five counts). */
 export async function readInscription(n: number, key: string, names: string[]) {
-  return !!family(n) && typeof key === "string" && key === stoneKey(n, names);
+  const f = family(n);
+  return !!f && typeof key === "string" && key === inscriptionKey(f.word, cleanNames(names), n);
 }
 
 /**
- * The seal on the family's letter (found in the room, step V), typed on the laptop. Right, the
- * letter's message and the torch signal of the final word, one [row, column] per letter;
- * otherwise null. Another family's seal is wrong too.
+ * The seal on the great door, with the word out of the family's letter. It only breaks for a
+ * family who has read the stone, and hands back the square the fires have been counting on.
  */
-export async function breakSeal(n: number, key: string, seal: string) {
-  const f = keyed(n, key);
-  if (!f || typeof seal !== "string" || normalize(seal) !== normalize(f.seal)) return null;
-  return { clue: CLUE, torches: polybius(f.finalWord) };
+export async function breakDoorSeal(n: number, stoneKey: string, names: string[], seal: string) {
+  const f = family(n);
+  const clean = cleanNames(names);
+  if (!f || !clean.length || typeof seal !== "string") return null;
+  if (stoneKey !== inscriptionKey(f.word, clean, n)) return null;
+  if (normalize(seal) !== normalize(f.seal)) return null;
+  return { clue: CLUE, square: keyedSquare(f.seal) };
 }
 
-/**
- * The final word as written when the family has read the torches right, otherwise null. Never
- * the god: the family takes the word to the Oracle (/oracle), which reveals it to the room.
- */
-export async function checkFinal(n: number, key: string, guess: string) {
-  const f = keyed(n, key);
-  if (!f || typeof guess !== "string" || normalize(guess) !== normalize(f.finalWord)) return null;
-  return f.finalWord;
+/** The fires' word, spoken at the door. It opens the door and is worth nothing at the Oracle. */
+export async function speakWord(n: number, seal: string, guess: string) {
+  const f = family(n);
+  if (!f || typeof seal !== "string" || typeof guess !== "string") return null;
+  if (normalize(seal) !== normalize(f.seal)) return null;
+  return normalize(guess) === normalize(f.doorWord) ? f.doorWord : null;
+}
+
+/** The word for the Oracle, from the altar past the door. Never the god: that waits at the Oracle. */
+export async function takeWord(n: number, seal: string, doorWord: string) {
+  const f = family(n);
+  if (!f || typeof seal !== "string" || typeof doorWord !== "string") return null;
+  if (normalize(seal) !== normalize(f.seal)) return null;
+  return normalize(doorWord) === normalize(f.doorWord) ? f.finalWord : null;
 }
 
 /**
  * The Oracle (/oracle): the god behind whichever family's final word this is, otherwise null.
- * The /olympuz snapshot's words (content/olympuz.ts) still open their gods too.
+ * Only `finalWord` opens it: the archived snapshot's words stopped working on 2026-11-03.
  */
 export async function consultOracle(guess: string): Promise<GodReveal | null> {
   if (typeof guess !== "string" || !normalize(guess)) return null;
   const g = normalize(guess);
-  let i = FAMILIES.findIndex((f) => normalize(f.finalWord) === g);
-  let word = FAMILIES[i]?.finalWord;
-  if (i < 0) {
-    i = SNAPSHOT.findIndex((f) => normalize(f.word) === g);
-    word = SNAPSHOT[i]?.word;
-  }
+  const i = FAMILIES.findIndex((f) => normalize(f.finalWord) === g);
   const f = FAMILIES[i];
-  if (!f || !word) return null;
+  if (!f) return null;
   const sprite = REVEAL_SPRITES[f.god]!;
   // The body is the colour most cells share.
   const counts = sprite.palette.map((_, c) => sprite.cells.filter((v) => v === c + 1).length);
   const color = sprite.palette[counts.indexOf(Math.max(...counts))]!;
   const scene = SCENES[f.god]!;
-  return { family: i + 1, god: f.god, exec: f.exec, word, sprite, color, scene };
+  return { family: i + 1, god: f.god, exec: f.exec, word: f.finalWord, sprite, color, scene };
 }

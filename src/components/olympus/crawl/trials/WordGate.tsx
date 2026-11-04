@@ -2,21 +2,22 @@
 
 import { Delete } from "lucide-react";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { guessGate } from "@/app/olympus3/actions";
+import { guessGate } from "@/app/olympus/actions";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
 import { Colonnade } from "@/components/olympus/Colonnade";
+import { MASK_QUIET, MASK_TRIES } from "@/components/olympus/crawl/save";
 import type { Mark } from "@/components/olympus/journey/cipher";
 import { OFFLINE, Silence, shake, useQuiet, wrong } from "@/components/olympus/journey/parts";
 import { cn } from "@/lib/utils";
 
 const KEY_ROWS = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
 const LENGTH = 5;
-const ROWS = 6;
-const QUIET = 60_000;
+const ROWS = MASK_TRIES;
+const QUIET = MASK_QUIET;
 const FLIP = 520;
 const STAGGER = 260;
 
-/** Wordle's marks, as on /olympus: gold only ever a tile behind dark text. */
+/** Wordle's marks: gold only ever a tile behind dark text. */
 const MARK_STYLE: Record<Mark, React.CSSProperties> = {
   hit: { "--mark-bg": "var(--green)", "--mark-fg": "var(--bg)" } as React.CSSProperties,
   near: { "--mark-bg": "#E9C46A", "--mark-fg": "var(--bg)" } as React.CSSProperties,
@@ -32,7 +33,7 @@ const SAY: Record<Mark, string> = {
 export type Guess = { guess: string; marks: Mark[] };
 
 /**
- * The Mask, up close: the same Wordle as /olympus, nothing but its grid, the five columns and the
+ * The Mask, up close: Wordle, nothing but its grid, the five columns and the
  * keys. Nothing says the word comes from the answers on the columns. The server gives no marks
  * until all five riddles are answered, so it cannot be played instead of them; the shell keeps the
  * mask silent until then. Six tries, then a minute's silence, kept through a refresh.
@@ -112,6 +113,8 @@ export function WordGate({
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
+      // Only Backspace repeats: E held as the mask opened must not fill the row.
+      if (event.repeat && event.key !== "Backspace") return;
       if (event.key === "Enter") {
         if (!(event.target instanceof HTMLButtonElement)) enter();
       } else if (event.key === "Backspace") back();
@@ -215,9 +218,11 @@ export function WordGate({
         <div className="journey-rise w-full" style={{ "--d": "150ms" } as React.CSSProperties}>
           <Colonnade total={answers.length} words={answers} scramble />
         </div>
+        {/* A key clicked with the mouse keeps no focus, or Enter would press it again, not submit. */}
         <div
           role="group"
           aria-label="Keyboard"
+          onMouseDown={(event) => event.preventDefault()}
           className="journey-rise flex w-full flex-col gap-1.5"
           style={{ "--d": "300ms" } as React.CSSProperties}
         >

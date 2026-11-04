@@ -103,6 +103,20 @@
 .crawl-corner-map {
   transition: opacity 300ms var(--ease-smooth);
 }
+/*
+ * On a small laptop a close-up reaches under the empty place where the map was, so with a close-up
+ * open the clock waits beside the way back instead, clear of everything the close-ups draw.
+ */
+@media (max-width: 1499px) {
+  .crawl-corner[data-trial] {
+    right: 15rem;
+    width: 14rem;
+  }
+  .crawl-corner[data-trial] .crawl-corner-map,
+  .crawl-corner[data-trial] .crawl-hint-at {
+    display: none;
+  }
+}
 .crawl-map {
   display: block;
   width: 100%;
@@ -112,10 +126,22 @@
   outline: 1px solid var(--line-strong);
 }
 
+/* Easing out as a new room goes on the map, at the walk's unhurried pace. */
+.crawl-map-zoom {
+  transform-origin: 0 0;
+  transition: transform 1600ms var(--ease-in-out-soft);
+}
+.crawl-map-dot {
+  transition-property: x, y, width, height;
+  transition-duration: 1600ms;
+  transition-timing-function: var(--ease-in-out-soft);
+}
+
 .crawl-timer {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+  gap: 0.75rem;
   padding: 0.375rem 0.75rem;
   background: rgb(4 4 4 / 0.88);
   outline: 1px solid var(--line-strong);
@@ -123,13 +149,19 @@
   letter-spacing: 0.08em;
   transition: outline-color 300ms var(--ease-smooth);
 }
+/* Whose turn it is. Twenty-four letters can be typed, so a long name is cut rather than the clock. */
 .crawl-timer-label {
+  min-width: 0;
+  overflow: hidden;
   font-size: 0.75rem;
+  text-overflow: ellipsis;
   text-transform: uppercase;
+  white-space: nowrap;
   letter-spacing: 0.16em;
-  color: var(--muted);
+  color: var(--text);
 }
 .crawl-timer-time {
+  flex: none;
   font-size: 1.5rem;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -141,23 +173,33 @@
   color: var(--green);
 }
 
-/* Swap: one word, big and green, for half a second, over a game that goes on playing. */
+/* Swap: the next player's name, big and green, for a second and a half, over a game that goes on playing. */
 .crawl-swap {
   position: fixed;
   z-index: 30;
   inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  color: var(--green);
-  font-size: clamp(6rem, 20vw, 16rem);
   font-weight: 600;
-  letter-spacing: 0.06em;
   text-transform: uppercase;
   text-shadow:
     0 6px 0 #000,
     0 0 60px rgb(0 0 0 / 0.9);
+}
+.crawl-swap-to {
+  color: var(--text);
+  font-size: clamp(1rem, 2.4vw, 1.75rem);
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+}
+.crawl-swap-name {
+  color: var(--green);
+  line-height: 1.1;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
 }
 
 /* The purse. */
@@ -200,15 +242,15 @@
   font-size: 1.125rem;
   font-weight: 600;
   line-height: 1.25;
-  animation: crawl-hint 5000ms var(--ease-smooth) both;
+  animation: crawl-hint 8000ms var(--ease-smooth) both;
 }
 @keyframes crawl-hint {
   0%,
   100% {
     opacity: 0;
   }
-  10%,
-  90% {
+  6%,
+  94% {
     opacity: 1;
   }
 }
@@ -386,6 +428,45 @@
   justify-content: center;
   gap: 0.375rem;
 }
+/* The shoe the cards come out of: a few backs, stepped, in the table's corner. */
+.crawl-shoe {
+  position: absolute;
+  top: 2.25rem;
+  right: 1.5rem;
+  width: 4.25rem;
+  height: 6rem;
+}
+.crawl-shoe > .crawl-card {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+.crawl-shoe > .crawl-card:nth-child(1) {
+  transform: translate(-6px, 6px);
+}
+.crawl-shoe > .crawl-card:nth-child(2) {
+  transform: translate(-3px, 3px);
+}
+/* In whole steps, like everything else on the table. */
+.crawl-card-dealt {
+  z-index: 3;
+  animation: crawl-card-deal 300ms steps(8) both;
+}
+@keyframes crawl-card-deal {
+  from {
+    transform: translate(var(--from-x, 0), var(--from-y, 0));
+  }
+}
+.crawl-card-flip {
+  z-index: 3;
+  animation: crawl-card-flip 200ms steps(4) both;
+}
+@keyframes crawl-card-flip {
+  from {
+    transform: scaleX(0);
+  }
+}
+
 /* A card off a painted pot: fired clay, a black key at its head and foot, the figure in black. */
 .crawl-card {
   position: relative;
@@ -396,7 +477,6 @@
   color: #14100c;
   border: 2px solid #14100c;
   box-shadow: 0 3px 0 rgb(0 0 0 / 0.5);
-  animation: journey-rise 300ms var(--ease-glide) both;
 }
 .crawl-card::before,
 .crawl-card::after {
@@ -722,6 +802,24 @@
 }
 .crawl-legend[data-moved] {
   opacity: 0.55;
+}
+
+/* The pause menu: over the world, under the corner, so the stopped clock can still be read. */
+.crawl-pause {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  background: rgb(3 5 4 / 0.72);
+  animation: crawl-trial-in 200ms var(--ease-smooth) both;
+}
+/* Every CSS animation under it stops with the game: a hint fading, a room's name. */
+.crawl[data-halted] > :not(.crawl-pause) * {
+  animation-play-state: paused !important;
 }
 
 /* ------------------------------------------------------------------ the close-ups */

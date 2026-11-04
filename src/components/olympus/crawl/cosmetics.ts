@@ -310,15 +310,15 @@ export const SLOTS: readonly { slot: Slot; name: string }[] = [
 
 /** The nine colours in the mirror, each named for something Greek but no one's family. */
 export const DINO_COLORS = [
-  { id: "olympus", name: "Olive Grove", body: "#03c652", light: "#00eb88" },
-  { id: "aegean", name: "Aegean Blue", body: "#2f7fe0", light: "#6fb0ff" },
-  { id: "kymata", name: "Sea Foam", body: "#19c7c0", light: "#7cefe6" },
-  { id: "amethyst", name: "Amethyst", body: "#8d5be0", light: "#bb97f5" },
-  { id: "rose", name: "Dawn Rose", body: "#ef5da8", light: "#ff9bcb" },
-  { id: "wine", name: "Wine Dark", body: "#c0263f", light: "#ef5a70" },
-  { id: "clay", name: "Red Clay", body: "#d9692b", light: "#f39a63" },
-  { id: "gilt", name: "Gilt", body: "#e0b235", light: "#f7d875" },
-  { id: "marble", name: "Marble", body: "#d8d4c8", light: "#f5f5f5" },
+  { id: "olympus", name: "Olive Grove", body: "#03c652" },
+  { id: "aegean", name: "Aegean Blue", body: "#2f7fe0" },
+  { id: "kymata", name: "Sea Foam", body: "#19c7c0" },
+  { id: "amethyst", name: "Amethyst", body: "#8d5be0" },
+  { id: "rose", name: "Dawn Rose", body: "#ef5da8" },
+  { id: "wine", name: "Wine Dark", body: "#c0263f" },
+  { id: "clay", name: "Red Clay", body: "#d9692b" },
+  { id: "gilt", name: "Gilt", body: "#e0b235" },
+  { id: "marble", name: "Marble", body: "#d8d4c8" },
 ] as const;
 
 export type Look = {

@@ -8,6 +8,10 @@
  * What happens in the game is played on instruments, not bleeps: a plucked lyre (a real string
  * model, Karplus-Strong, rendered once per note), a breathy ocarina, and coins as struck metal. The
  * phrases are this game's own, in the spirit of a Zelda secret or item jingle; none is a copy.
+ *
+ * One instance (`tombSound`) serves the temple on /olympus and then the game: the click on a column
+ * is what a browser asks for before it plays anything, so the sound has to live through the route
+ * change, and so does a mute. A fresh page cannot make a sound before its first key or click.
  */
 const MASTER = 0.7;
 /** The drifting top note of the hum: A, C, E, D, a minor-ish wander that never resolves. */
@@ -17,6 +21,17 @@ const TOP_NOTES = [220, 261.63, 329.63, 293.66, 220, 196];
 const pitch = (note: number) => 440 * 2 ** ((note - 69) / 12);
 /** A dorian scale on D, what the Hall's letters climb. */
 const SCALE = [62, 64, 65, 67, 69, 71, 72, 74];
+/** The temple's nine columns, as strings: the same scale, left to right. */
+const COLUMN_NOTES = [62, 64, 65, 67, 69, 71, 72, 74, 76];
+/** What someone plays on a lyre in the empty temple, a phrase at a time. */
+const TEMPLE_PHRASES = [
+  [62, 69, 74],
+  [65, 72, 77],
+  [69, 74, 76, 81],
+  [60, 67, 72],
+  [62, 65, 69, 74],
+  [57, 64, 69],
+];
 /** A struck coin's partials: frequency, level, how quickly each dies. Inharmonic, as metal is. */
 const COIN_PARTIALS = [
   [2650, 1, 0.14],
@@ -25,6 +40,9 @@ const COIN_PARTIALS = [
   [7270, 0.32, 0.05],
   [9120, 0.2, 0.03],
 ] as const;
+
+type Place = "temple" | "tomb";
+export type SoundState = "blocked" | "on" | "off";
 
 export class TombSound {
   private ctx: AudioContext | null = null;
@@ -36,17 +54,73 @@ export class TombSound {
   private strings = new Map<number, { buffer: AudioBuffer; rate: number }>();
   private clinks: AudioBuffer[] = [];
   private timers = new Set<number>();
+  private place: Place = "tomb";
+  /** Which background is playing, if any. */
+  private playing: Place | null = null;
+  /** A column has been chosen: the temple's page may go, the sound stays for the game. */
+  private handedOver = false;
+  /** The landing came before the browser would let anything play. */
+  private introWaiting = false;
+  private closing = 0;
+  private listeners = new Set<() => void>();
   on = true;
 
+  /** Whether the browser is letting it play, for the temple's button. */
+  state = (): SoundState => (!this.on ? "off" : this.ctx?.state === "running" ? "on" : "blocked");
+
+  subscribe = (listener: () => void) => {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  };
+
+  private changed() {
+    this.listeners.forEach((listener) => listener());
+  }
+
+  /** Which page it is playing for. Nothing can be heard until `arm`. */
+  enter(place: Place) {
+    window.clearTimeout(this.closing);
+    // Back from the game: its hum and drips end with it.
+    if (place === "temple" && this.playing === "tomb") this.close();
+    this.place = place;
+    this.handedOver = false;
+    if (this.ctx) this.startBackground();
+  }
+
+  /** Off the temple's page, unless a column has taken it into the game. */
+  leaveTemple() {
+    if (!this.handedOver) this.closeSoon();
+  }
+
+  /** Arms only if this tab has already had the click or key the browser asks for. */
+  armIfAllowed() {
+    if (navigator.userActivation?.hasBeenActive) this.arm();
+    return !!this.ctx;
+  }
+
   arm() {
-    if (this.on && !this.ctx) this.wake();
-    else if (this.on && this.ctx?.state === "suspended") void this.ctx.resume();
+    if (!this.on) return;
+    // Every key goes through here: a browser that cannot make sound must still get to play.
+    try {
+      if (!this.ctx) this.wake();
+      else if (this.ctx.state === "suspended") this.ctx.resume().catch(() => {});
+      if (this.introWaiting) {
+        this.introWaiting = false;
+        this.arrival();
+      }
+    } catch {
+      this.on = false;
+      this.changed();
+    }
   }
 
   toggle() {
     this.on = !this.on;
     if (this.on) this.arm();
     this.master?.gain.setTargetAtTime(this.on ? MASTER : 0, this.now, 0.15);
+    this.changed();
     return this.on;
   }
 
@@ -57,6 +131,7 @@ export class TombSound {
   private wake() {
     const ctx = new AudioContext();
     this.ctx = ctx;
+    ctx.onstatechange = () => this.changed();
     const limiter = ctx.createDynamicsCompressor();
     limiter.connect(ctx.destination);
     const master = ctx.createGain();
@@ -89,12 +164,37 @@ export class TombSound {
     room.connect(wet);
     wet.connect(master);
     this.room = room;
+    this.startBackground();
+  }
 
+  private clearTimers() {
+    for (const id of this.timers) window.clearTimeout(id);
+    this.timers.clear();
+  }
+
+  private startBackground() {
+    if (this.playing === this.place) return;
+    this.clearTimers();
+    this.playing = this.place;
+    if (this.place === "temple") {
+      this.lyreLater(400);
+      return;
+    }
     this.startHum();
     this.startTopNote();
     this.dripLater();
     this.settleLater();
     this.crackleLater();
+  }
+
+  /** The temple's only background: a phrase on the lyre, far off, then a long rest. */
+  private lyreLater(ms: number, last = -1) {
+    this.later(ms, () => {
+      let at = Math.floor(Math.random() * TEMPLE_PHRASES.length);
+      if (at === last) at = (at + 1) % TEMPLE_PHRASES.length;
+      if (this.on) this.run(TEMPLE_PHRASES[at]!, 0.42, 0.07);
+      this.lyreLater(4500 + Math.random() * 3000, at);
+    });
   }
 
   private later(ms: number, run: () => void) {
@@ -277,9 +377,8 @@ export class TombSound {
 
   /** Something heavy moving: the door, the floor. A low grinding, not a hiss. */
   rumble(weight = 1) {
-    this.tone(70, 28, 0.6 * weight, 1.6);
-    this.tone(46, 33, 0.35 * weight, 2.2, "triangle");
-    this.burst("lowpass", 320, 0.25 * weight, 1.2);
+    this.boom(0, 90, 42, 0.28 * weight, 0.8);
+    this.rolling(2.2, 0.22 * weight);
   }
 
   /** Air moving past: a door, the camera closing in. Short and low. */
@@ -456,18 +555,16 @@ export class TombSound {
     this.run([74, 78, 81, 86], 0.05, 0.22, 0.62);
   }
 
-  /** Somewhere off in the tomb, gears shift: a heavy ratchet slowing down, and a low note under it. */
+  /** Somewhere off in the tomb, gears shift: a heavy ratchet slowing down, over a rumble. */
   gears() {
     const gaps = [0, 90, 190, 300, 430, 590, 790, 1060];
     gaps.forEach((ms, i) => {
       this.later(ms, () => {
-        this.burst("bandpass", i % 2 ? 620 : 840, 0.2, 0.05, true);
-        this.tone(170 - i * 8, 90, 0.12, 0.07);
+        this.burst("bandpass", i % 2 ? 620 : 840, 0.08, 0.05, true);
+        this.tone(170 - i * 8, 90, 0.05, 0.07);
       });
     });
-    this.tone(62, 44, 0.22, 1.5, "triangle");
-    this.pluck(38, 1.15, 0.26);
-    this.pluck(45, 1.3, 0.16);
+    this.rolling(3, 0.24);
   }
 
   /** Something refused: two low notes falling, and a dull knock. */
@@ -532,14 +629,58 @@ export class TombSound {
     this.pluck(81, 0.04, 0.14);
   }
 
-  /** Far off, something huge moves and settles: a long low roll, a second one under it, a low string. */
-  farRumble() {
-    this.rumble(0.8);
-    this.pluck(38, 0.15, 0.3);
-    this.later(800, () => {
-      this.tone(58, 30, 0.34, 1.8, "triangle");
-      this.burst("lowpass", 240, 0.16, 0.9, true);
+  /**
+   * A real rumble: no edge at all, it swells up from nothing, rolls unevenly and dies away. Four low
+   * reeds a little out of tune beat against each other through a filter, so the growl sits where a
+   * laptop can play it (their overtones, 150 to 300 Hz) and the weight where a good speaker can.
+   */
+  private rolling(seconds: number, level: number) {
+    if (!this.on || !this.ctx) return;
+    const ctx = this.ctx;
+    const t = this.now;
+    const filter = ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.value = 300;
+    filter.Q.value = 0.4;
+    const a = Math.random() * 6.28;
+    const b = Math.random() * 6.28;
+    const curve = Float32Array.from({ length: 256 }, (_, i) => {
+      const u = i / 255;
+      const swell =
+        u < 0.35
+          ? Math.sin((u / 0.35) * (Math.PI / 2)) ** 2
+          : Math.cos(((u - 0.35) / 0.65) * (Math.PI / 2)) ** 2;
+      const roll =
+        0.75 + 0.15 * Math.sin(u * seconds * 5 + a) + 0.1 * Math.sin(u * seconds * 11 + b);
+      return level * swell * roll;
     });
+    const gain = ctx.createGain();
+    gain.gain.value = 0;
+    gain.gain.setValueCurveAtTime(curve, t, seconds);
+    filter.connect(gain);
+    gain.connect(this.master!);
+    gain.connect(this.room!);
+    for (const [hz, voice] of [
+      [49, 0.5],
+      [51.5, 0.5],
+      [73.5, 0.32],
+      [110.5, 0.14],
+    ] as const) {
+      const osc = ctx.createOscillator();
+      osc.type = "sawtooth";
+      osc.frequency.value = hz;
+      const part = ctx.createGain();
+      part.gain.value = voice;
+      osc.connect(part);
+      part.connect(filter);
+      osc.start(t);
+      osc.stop(t + seconds + 0.05);
+    }
+  }
+
+  /** Far off, something huge moves and settles. */
+  farRumble() {
+    this.rolling(3, 0.34);
   }
 
   /** One pair of the Sanctum's bowls catching, a step up each time. */
@@ -588,6 +729,14 @@ export class TombSound {
     else gain.setValueAtTime(this.on ? MASTER : 0, this.now);
   }
 
+  /** The pause menu: everything fades out and carries on silently, ready to come back. */
+  hush(held: boolean) {
+    if (!this.master) return;
+    const gain = this.master.gain;
+    gain.cancelScheduledValues(this.now);
+    gain.setTargetAtTime(!held && this.on ? MASTER : 0, this.now, 0.08);
+  }
+
   /** The blast: a long fall under a low chord on every string at once. */
   revealStrike() {
     this.tone(120, 24, 0.9, 2.8);
@@ -621,16 +770,177 @@ export class TombSound {
     this.run([74, 81, 86], 0.08, 0.22);
   }
 
+  /** The fifth coin: the lid lifting, and a short climb on the lyre. */
+  chestOpen() {
+    this.run([62, 69, 74, 77, 81], 0.11, 0.2, 0.05);
+  }
+
+  /** The floor parting and the altar coming up: one long rumble, under everything. */
+  altarRises(seconds: number) {
+    this.rolling(seconds, 0.3);
+  }
+
+  /** The altar home: stone settling, the lyre swept, and its flame catching. */
+  altarSet() {
+    this.boom(0, 100, 48, 0.24, 0.6);
+    this.secret();
+  }
+
   /** A card down on the table. */
   card() {
     this.burst("bandpass", 2300, 0.07, 0.035);
     this.burst("lowpass", 500, 0.08, 0.05);
   }
 
+  /** A low note falling, on the audio clock, so a busy main thread cannot make it late. */
+  private boom(
+    at: number,
+    from: number,
+    to: number,
+    peak: number,
+    seconds: number,
+    type: OscillatorType = "sine",
+  ) {
+    if (!this.on || !this.ctx) return;
+    const ctx = this.ctx;
+    const t = this.now + at;
+    const osc = ctx.createOscillator();
+    osc.type = type;
+    osc.frequency.setValueAtTime(from, t);
+    osc.frequency.exponentialRampToValueAtTime(to, t + seconds * 0.6);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(peak, t + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + seconds);
+    osc.connect(gain);
+    gain.connect(this.master!);
+    gain.connect(this.room!);
+    osc.start(t);
+    osc.stop(t + seconds + 0.05);
+  }
+
+  /** A bronze horn: two reeds a hair apart through a filter that opens as the note speaks. */
+  private horn(note: number, at: number, seconds: number, level = 0.055) {
+    if (!this.on || !this.ctx) return;
+    const ctx = this.ctx;
+    const t = this.now + at;
+    const filter = ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(500, t);
+    filter.frequency.exponentialRampToValueAtTime(2400, t + 0.09);
+    filter.frequency.exponentialRampToValueAtTime(1500, t + Math.min(0.5, seconds));
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(level, t + 0.05);
+    gain.gain.setValueAtTime(level, t + Math.max(0.06, seconds - 0.28));
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + seconds);
+    filter.connect(gain);
+    gain.connect(this.master!);
+    gain.connect(this.room!);
+    for (const detune of [-6, 6]) {
+      const osc = ctx.createOscillator();
+      osc.type = "sawtooth";
+      osc.frequency.value = pitch(note);
+      osc.detune.value = detune;
+      osc.connect(filter);
+      osc.start(t);
+      osc.stop(t + seconds + 0.05);
+    }
+  }
+
+  /** The temple building itself, for a page that already may play: the strings, bottom to top. */
+  templeRise(seconds: number) {
+    this.run(COLUMN_NOTES, seconds / COLUMN_NOTES.length, 0.09, 0.3);
+    for (const note of [50, 57, 62]) this.pluck(note, seconds + 0.3, 0.12);
+  }
+
+  /**
+   * A column chosen, the whole passage laid out on the audio clock at once: its string, the lyre
+   * climbing as it gathers light, the burst, then the horn over the group's card.
+   */
+  passage(index: number, burst: number) {
+    this.handedOver = true;
+    this.clearTimers();
+    this.pluck(COLUMN_NOTES[index % COLUMN_NOTES.length]!, 0, 0.24);
+    const climb = [62, 65, 69, 72, 74, 77, 81, 84, 86];
+    climb.forEach((note, i) => {
+      const u = i / climb.length;
+      this.pluck(note, burst * (1 - (1 - u) ** 1.7), 0.07 + u * 0.1);
+    });
+    this.boom(burst, 140, 55, 0.16, 0.6);
+    for (const note of [50, 57, 62]) this.pluck(note, burst, 0.15);
+    const call = burst + 0.35;
+    this.horn(62, call, 0.3);
+    this.horn(69, call + 0.3, 0.3);
+    this.horn(74, call + 0.6, 1.7, 0.062);
+    this.horn(69, call + 0.6, 1.7, 0.036);
+    this.run([69, 74, 77, 81, 86], 0.07, 0.14, call + 0.72);
+  }
+
+  /** The first fall into the tomb: a long whistle, down the whole way. */
+  introFall(seconds: number) {
+    if (!this.on || !this.ctx) return;
+    const ctx = this.ctx;
+    const t = this.now;
+    const osc = ctx.createOscillator();
+    osc.frequency.setValueAtTime(1500, t);
+    osc.frequency.exponentialRampToValueAtTime(240, t + seconds);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(0.05, t + 0.08);
+    gain.gain.setValueAtTime(0.05, t + seconds - 0.12);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + seconds);
+    osc.connect(gain);
+    gain.connect(this.master!);
+    gain.connect(this.room!);
+    osc.start(t);
+    osc.stop(t + seconds + 0.02);
+  }
+
+  /** The first landing. Held until the first key or click when the browser would not play yet. */
+  introLand() {
+    if (!this.on) return;
+    if (this.ctx?.state === "running") this.arrival();
+    else this.introWaiting = true;
+  }
+
+  /** Down in the dark, and the tomb answers: a soft footfall, a chord, the ocarina's own short phrase. */
+  private arrival() {
+    this.boom(0, 110, 55, 0.12, 0.45);
+    this.burst("lowpass", 420, 0.04, 0.1);
+    for (const note of [50, 57, 62]) this.pluck(note, 0.02, 0.13);
+    const phrase = [
+      [74, 0.2, 50],
+      [77, 0.2, 57],
+      [81, 0.55, 62],
+      [79, 0.2, 55],
+      [76, 0.2, 57],
+      [74, 1.4, 50],
+    ] as const;
+    let at = 0.5;
+    for (const [note, seconds, under] of phrase) {
+      this.ocarina(note, at, seconds, 0.07);
+      this.pluck(under, at, 0.2);
+      at += seconds;
+    }
+    this.run([62, 69, 74], 0.09, 0.14, at - 1.4);
+  }
+
+  /** After the current tick, so a React double mount in dev does not cut what is ringing. */
+  closeSoon() {
+    window.clearTimeout(this.closing);
+    this.closing = window.setTimeout(() => this.close(), 50);
+  }
+
   close() {
-    for (const id of this.timers) window.clearTimeout(id);
-    this.timers.clear();
+    this.clearTimers();
+    this.playing = null;
+    this.introWaiting = false;
     void this.ctx?.close();
     this.ctx = null;
+    this.changed();
   }
 }
+
+/** The one instance: see the top of this file. */
+export const tombSound = new TombSound();

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { tombSound } from "@/components/olympus/crawl/sound";
 import { Meander } from "@/components/olympus/Meander";
 import { roman } from "@/components/olympus/shared";
 
@@ -40,9 +41,8 @@ let begin: ((link: Element) => void) | null = null;
 
 /** The code behind a column, fetched ahead so that nothing waits for it behind the card. */
 const preload = (path: string) =>
-  path.startsWith("/olympus3")
-    ? import("@/components/olympus/crawl/Crawl")
-    : import("@/components/olympus/Trial");
+  // Only the game: naming the archived Trial here would ship its server actions in every deploy.
+  path.startsWith("/olympus") ? import("@/components/olympus/crawl/Crawl") : undefined;
 
 /** Who is waiting behind the card; null when no card is up. */
 let behindCard: Set<() => void> | null = null;
@@ -118,6 +118,7 @@ export function Passage() {
     router.prefetch(run.href);
     void preload(run.href);
     behindCard = new Set();
+    tombSound.passage(run.n - 1, T.BURST / 1000);
 
     const w = window.innerWidth;
     const h = window.innerHeight;

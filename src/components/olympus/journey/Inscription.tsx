@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useTransition } from "react";
-import { readInscription } from "@/app/olympus/actions";
+import { readInscription } from "@/app/archive/olympus/actions";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
 import { Meander } from "@/components/olympus/Meander";
 import {

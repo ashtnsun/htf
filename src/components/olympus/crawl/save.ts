@@ -29,6 +29,8 @@ export type TombSave = {
   coins: number;
   /** A coin is lying in the middle of the den, waiting to be walked over. */
   denCoin: boolean;
+  /** Coins already given to the chest in the Sanctum. */
+  chestCoins: number;
   /** Cosmetics bought. */
   owned: string[];
   look: Look;
@@ -55,6 +57,7 @@ export const emptySave = (riddles: number): TombSave => ({
   visited: [],
   coins: 0,
   denCoin: false,
+  chestCoins: 0,
   owned: [],
   look: DEFAULT_LOOK,
   best: 0,
@@ -62,10 +65,21 @@ export const emptySave = (riddles: number): TombSave => ({
 
 const keyOf = (family: number) => `olympus3.4:${family}`;
 
+/** The mask's tries, and how long it goes silent once they are spent. */
+export const MASK_TRIES = 6;
+export const MASK_QUIET = 60_000;
+
 export function loadSave(family: number, riddles: number): TombSave {
   try {
     const saved = JSON.parse(sessionStorage.getItem(keyOf(family)) ?? "null") as TombSave | null;
-    if (saved) return { ...emptySave(riddles), ...saved };
+    if (saved) {
+      const save = { ...emptySave(riddles), ...saved };
+      // The silence only starts once the last row has turned, on a timer a refresh kills: without
+      // this, a refresh in those seconds leaves a full board and no way to ever type again.
+      return save.guesses.length >= MASK_TRIES && !save.word
+        ? { ...save, guesses: [], quietUntil: Date.now() + MASK_QUIET }
+        : save;
+    }
   } catch {}
   return emptySave(riddles);
 }

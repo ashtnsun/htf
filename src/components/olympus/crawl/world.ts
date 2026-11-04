@@ -1,5 +1,5 @@
 /**
- * The tomb (/olympus3): nine rooms on one map, as plain data. Everything is in logical pixels (one
+ * The tomb (/olympus): nine rooms on one map, as plain data. Everything is in logical pixels (one
  * logical pixel is one cell of the picture, drawn at a whole number of screen pixels). `at` is a
  * room's place on the map, so rooms really touch and their doors really meet: a door's `at` is
  * along the wall in the room's own coordinates, and a check below makes both sides agree.
@@ -14,6 +14,8 @@ import { FOR_SALE } from "@/components/olympus/crawl/cosmetics";
 
 export const TILE = 16;
 export const CELL = 8;
+/** What the chest at the side of the Sanctum takes, one at a time, before the altar rises. */
+export const CHEST_COINS = 5;
 
 export type Side = "n" | "s" | "e" | "w";
 export type RoomId =
@@ -29,6 +31,7 @@ export type Target =
   | { kind: "stone" }
   | { kind: "door" }
   | { kind: "altar" }
+  | { kind: "chest" }
   | { kind: "note"; text: string }
   | { kind: "mirror" }
   | { kind: "item"; id: string }
@@ -440,7 +443,11 @@ const SPECS: RoomSpec[] = [
       { kind: "amphora", x: 36, y: 180, seed: 1 },
       { kind: "amphora", x: 284, y: 180, seed: 2 },
     ],
-    spots: [{ target: { kind: "altar" }, x: 160, y: 128, r: 28, capY: 62 }],
+    spots: [
+      { target: { kind: "altar" }, x: 160, y: 128, r: 28, capY: 62 },
+      // To the side, by the left wall: the middle of the room is left clear for the altar.
+      { target: { kind: "chest" }, x: 40, y: 170, r: 26, capY: 124 },
+    ],
   },
   {
     id: "shop",

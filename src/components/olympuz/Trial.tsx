@@ -5,7 +5,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Delete } from "lucide-react";
 import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
-import { checkRiddle, checkWord } from "@/app/olympuz/actions";
+import { checkRiddle, checkWord } from "@/app/archive/olympuz/actions";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
 import { Colonnade } from "@/components/olympus/Colonnade";
 import { roman } from "@/components/olympus/shared";

@@ -15,12 +15,16 @@ import "server-only";
  *    `KEY_STEPS`: + the shortest name, − the faces, + the group × 2, + the longest name, − the
  *    nine execs). The family turns five wheels; nothing says the counts start from the word
  *    (the stone can also be cracked by eye, slowly).
- * 4. The herald's letter: a folded A4 sheet hidden in the room (printed from /olympus/letters,
- *    which exists only in `next dev`), addressed to the group, holding CLUE and the group's
- *    `seal`. Typing the seal on the laptop breaks it.
- * 5. `finalWord`, signalled by torches on Polybius's square, which is never drawn: the family
- *    builds it themselves (no J: I and J share a cell). They take the word to the Oracle
- *    (/oracle), which reveals the god to the whole room.
+ * 4. The herald's letter: a folded A4 sheet hidden in the room (printed from
+ *    /archive/olympus/letters, which exists only in `next dev`), addressed to the group, holding
+ *    CLUE and the group's `seal`. Typing the seal on the laptop breaks it.
+ * 5. `doorWord`, signalled by the Hall's fires on a square keyed by the seal, pressed on the floor
+ *    to open the great door (no J: I and J share a cell).
+ * 6. `finalWord`, given by the altar past the door. They take it to the Oracle (/oracle), which
+ *    reveals the god to the whole room.
+ *
+ * The game is components/olympus/crawl. app/archive/olympus keeps the flow from before it, in
+ * `next dev` only, where the fires spell `finalWord` on the plain square.
  *
  * Server only: every answer is checked in app/olympus/actions.ts, and nothing of a later step
  * reaches the browser before the step before it is solved.
@@ -44,7 +48,7 @@ export type Family = {
   /** The word printed inside the family's letter, typed on the laptop to break its seal. */
   seal: string;
   /**
-   * /olympus3 only: what the fires spell there. It opens the great door and nothing else; the
+   * What the fires spell. It opens the great door and nothing else; the
    * Sanctum's altar then gives `finalWord`, which this must never equal. No J: the fires' square
    * has none, so a word with one could not be pressed on the floor.
    */

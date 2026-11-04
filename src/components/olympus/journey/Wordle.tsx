@@ -2,7 +2,7 @@
 
 import { Delete } from "lucide-react";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { guessWord } from "@/app/olympus/actions";
+import { guessWord } from "@/app/archive/olympus/actions";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
 import { Colonnade } from "@/components/olympus/Colonnade";
 import type { Mark } from "@/components/olympus/journey/cipher";

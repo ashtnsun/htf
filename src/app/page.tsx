@@ -28,7 +28,7 @@ const linkClass = "font-medium text-green transition-colors hover:text-text";
  * hard-coded except section copy.
  *
  * The way into /olympus (home/olympus/OlympusSection, 2026-10-30) is off the page since
- * 2026-11-01, kept to come back: /olympus is reached by its URL only. To restore it, import
+ * 2026-11-01, kept to come back: /olympus (the game) is reached by its URL only. To restore it, import
  * OlympusSection and render it between <Hero /> and <WhatWeDo />.
  */
 export default function HomePage() {

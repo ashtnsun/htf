@@ -67,7 +67,7 @@ function Cells({ cells, top, className }: { cells: Cell[]; top: number; classNam
   ));
 }
 
-/** `base`: where the columns lead (the /olympuz snapshot passes its own). */
+/** `base`: where the columns lead (the archived routes pass their own). */
 export function Temple({ count, base = "/olympus" }: { count: number; base?: string }) {
   const W = MARGIN * 2 + count * COL_W + (count - 1) * GAP;
   const cx = (W - 1) / 2;

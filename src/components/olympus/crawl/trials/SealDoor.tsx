@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
-import { breakDoorSeal } from "@/app/olympus3/actions";
+import { breakDoorSeal } from "@/app/olympus/actions";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
 import { inscriptionKey, sentence } from "@/components/olympus/journey/cipher";
 import { roman } from "@/components/olympus/journey/numeral";

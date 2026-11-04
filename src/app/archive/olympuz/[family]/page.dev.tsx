@@ -10,8 +10,8 @@ export function generateStaticParams() {
   return FAMILIES.map((_, i) => ({ family: String(i + 1) }));
 }
 
-/** The /olympuz snapshot: one family's trial. Answers are checked in app/olympuz/actions.ts. */
-export default async function FamilyPage({ params }: PageProps<"/olympuz/[family]">) {
+/** The /olympuz snapshot: one family's trial. Answers are checked in app/archive/olympuz/actions.ts. */
+export default async function FamilyPage({ params }: { params: Promise<{ family: string }> }) {
   const n = Number((await params).family);
   const riddles = FAMILIES[n - 1]!.riddles.map((r) => r.riddle);
   return (
@@ -19,7 +19,7 @@ export default async function FamilyPage({ params }: PageProps<"/olympuz/[family
       {/* far left in the layout's logo bar (4rem tall) */}
       <div className="absolute top-0 left-0 flex h-16 items-center pl-6 md:pl-10">
         <Link
-          href="/olympuz"
+          href="/archive/olympuz"
           className="inline-flex min-h-11 items-center gap-2 text-sm text-muted transition-colors hover:text-green"
         >
           <ArrowLeft className="size-4" aria-hidden="true" />

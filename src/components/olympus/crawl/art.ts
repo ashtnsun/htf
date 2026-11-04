@@ -326,7 +326,7 @@ export function dinoFrame(step: number, blink: boolean, flip: boolean, look: Loo
     wear(cosmeticById(look.head));
     wear(cosmeticById(look.hand));
     // Last, so what is held passes behind the hand that holds it.
-    for (const [x, y] of DINO_ARM) cell(x, y, color.light);
+    for (const [x, y] of DINO_ARM) cell(x, y, color.body);
     return canvas;
   });
 }
