@@ -88,6 +88,22 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 17n — 2026-11-03 (/oracle: Ashton's first listen)
+
+Three notes on Session 17m's sound, all in `components/olympus/revealSound.ts`:
+
+1. **No pause at a full bar.** Ashton: "there's like a slight pause that makes it feel like it lagged". That was the 0.42 s `breath` of silence before the flash, so it is gone, and the hit and the flash land the instant the bar fills, straight out of the rise.
+2. **No bell on the name.** "I don't want the last ding after the dino has been fully revealed." The bell at `REVEAL_CUES.name` is removed. The soft high chord under the name stays, and the bell on the hit stays.
+3. **Starts a little louder, same peak.** The swell's floor went from 0.12 to 0.22 and the first drum beats from 0.12 to 0.18; both reach the same level at the top.
+
+**Measured** on recordings of real mouse holds in dev at 1920×1080. First second -34.2 to -30.6 dB RMS, about 3.6 dB louder; last 0.3 s of the hold -16.4 to -16.0, and the hold's peak 0.68 to 0.69, within what repeat runs vary by; the hit's peak 0.86, unchanged. The old bell's fundamental at the name fell from 48.8 to 17.5 dB in its band. No silent stretch between the rise and the hit on the spectrogram (`docs/screenshots/session-17n/`).
+
+**Verified:** typecheck and `pnpm build` clean, ESLint clean on these files, `pnpm a11y` 0 violations (it does not visit /oracle). Bar at 0.999 to the first frame with the flash: 61 to 64 ms over four runs in dev, headless. 0 console errors.
+
+**Not tested:** how it sounds, and whether the straight cut into the hit satisfies the anticipation without the silence; both are Ashton's ear. Real projector speakers.
+
+**Next session starts with:** Ashton's next listen to /oracle, then the level in the real room.
+
 ## Session 17m — 2026-11-03 (/oracle: sound for the hold and the reveal)
 
 Ashton asked for sound on the Oracle, above all on the REVEAL hold, to build anticipation. The page stays silent until the press, then one held breath and its release. New file: `components/olympus/revealSound.ts`, synthesised like the Prologue's, with no audio files.
