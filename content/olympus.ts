@@ -78,8 +78,8 @@ export const FAMILIES: readonly Family[] = [
     riddles: [
       {
         riddle:
-          "I’m an arch with no stones and a bridge no foot has crossed. I keep a promise made after a flood, you only see me with your back to the light, and seven is my number. What am I?",
-        answer: "Rainbow",
+          "I eat bridges and ships without a single tooth. Water and air set my table, and a whole red planet is dressed in me. What am I?",
+        answer: "Rust",
       },
       {
         riddle:
@@ -94,8 +94,8 @@ export const FAMILIES: readonly Family[] = [
       },
       {
         riddle:
-          "I have five fingers but no flesh or bone. Thrown down, I start a duel; I’m only warm when I’m worn, and I’m forever losing my other half. What am I?",
-        answer: "Glove",
+          "I was sand until fire changed my mind. People look through me all day without seeing me, and one high note is said to be enough to shatter me. What am I?",
+        answer: "Glass",
       },
       {
         riddle:
@@ -116,20 +116,19 @@ export const FAMILIES: readonly Family[] = [
     riddles: [
       {
         riddle:
-          "We are a family of twenty-six who never meet in person. Together we have written every book; alone, most of us say nothing at all. What are we?",
-        answer: "Alphabet",
-        also: ["ABC", "ABCs"],
+          "I do my best work lying on the bottom, holding a giant still with a grip on nothing but mud. Sailors raise me to leave, and every evening news desk has someone named after me. What am I?",
+        answer: "Anchor",
       },
       {
         riddle:
-          "I’m a car that never runs right, a fruit that never sweetens, and the start of life’s most famous piece of advice. What am I?",
-        answer: "Lemon",
+          "I lend and never charge interest. I hold a thousand voices and ask you to keep yours down, and if you don’t bring back what you took, I’ll fine you. What am I?",
+        answer: "Library",
+        also: ["Libraries"],
       },
       {
         riddle:
-          "Twenty-one eyes and not one of them sees. I decide fortunes with a single throw, and a general once cast me before crossing a river. What am I?",
-        answer: "Dice",
-        also: ["Die"],
+          "I’m a film shown to an audience of one, with the eyes closed. I’m usually gone by breakfast, and a preacher once told a quarter of a million people he had me. What am I?",
+        answer: "Dream",
       },
       {
         riddle:
@@ -154,14 +153,14 @@ export const FAMILIES: readonly Family[] = [
     riddles: [
       {
         riddle:
-          "I’m loved the night before and hated the morning after. I’m set but never placed, and I go off without ever leaving. What am I?",
-        answer: "Alarm",
-        also: ["Alarm clock"],
+          "I have feathers but no wings and a head but no thoughts. I go nowhere until I’m pulled back. What am I?",
+        answer: "Arrow",
       },
       {
         riddle:
-          "I have rings but no fingers and a trunk but no luggage. I’m usually older than anyone who climbs me, and your family is drawn as one of me. What am I?",
-        answer: "Tree",
+          "Twice a day I come in and twice I leave, always on schedule, with no clock. The moon pulls my strings, and no sandcastle survives me. What am I?",
+        answer: "Tide",
+        also: ["High tide", "Low tide"],
       },
       {
         riddle:
@@ -170,9 +169,8 @@ export const FAMILIES: readonly Family[] = [
       },
       {
         riddle:
-          "Born of water, I float on my own mother. The sun kills me, the cold brings me back, and I once sank a ship that could not sink. What am I?",
-        answer: "Ice",
-        also: ["Iceberg"],
+          "I’m surrounded on all sides and have never surrendered. Castaways get stuck on me, and a poet swore that no man is one of me. What am I?",
+        answer: "Island",
       },
       {
         riddle:
@@ -192,12 +190,13 @@ export const FAMILIES: readonly Family[] = [
     riddles: [
       {
         riddle:
-          "I’m sealed with a lick, I carry words I never read, and I’m torn open the moment I arrive. What am I?",
-        answer: "Envelope",
+          "I know every story in the building and I’ve never told one. I go up without climbing and down without falling, and one press of a button calls me. What am I?",
+        answer: "Elevator",
+        also: ["Lift"],
       },
       {
         riddle:
-          "I have more buttons than a coat but no shirt to fasten. I rule a glowing box from across the room, and I vanish into the sofa exactly when I’m needed. What am I?",
+          "I have more buttons than a coat but no shirt to fasten. I rule a glowing box from across the room, and I hide exactly when I’m needed. What am I?",
         answer: "Remote",
         also: ["Remote control"],
       },
@@ -208,13 +207,13 @@ export const FAMILIES: readonly Family[] = [
       },
       {
         riddle:
-          "Nobody agrees whether I was named for a colour or the colour was named for me, and poets have searched for my rhyme for centuries. What am I?",
-        answer: "Orange",
+          "I keep my armour shut and hide a jewel I made from an irritation. The whole world is said to be me, and I’m usually swallowed alive. What am I?",
+        answer: "Oyster",
       },
       {
         riddle:
-          "A worker spends her whole life making a twelfth of a spoonful of me. I never spoil: jars of me came out of ancient tombs still sweet. What am I?",
-        answer: "Honey",
+          "I’m a line no one has ever crossed. Walk toward me for a lifetime and I keep my distance, and every sunset goes down behind me. What am I?",
+        answer: "Horizon",
       },
     ],
   },
@@ -234,14 +233,14 @@ export const FAMILIES: readonly Family[] = [
       },
       {
         riddle:
-          "I’m built without tools, given eyes of coal and a nose from the vegetable drawer, and a single warm afternoon is my whole life story. What am I?",
-        answer: "Snowman",
-        also: ["Snowmen", "Snow man"],
+          "I copy your every move without a sound. I’m longest when the sun is lowest, I vanish in the dark, and a boy who never grew up once lost his. What am I?",
+        answer: "Shadow",
       },
       {
         riddle:
-          "I carry fifty times my own weight, I farm smaller insects for their sweetness, and the queen I serve is also my mother. What am I?",
-        answer: "Ant",
+          "I cost nothing, yet pride can’t afford me. I’m easy to owe and hard to give, and the later I arrive the less I’m worth. What am I?",
+        answer: "Apology",
+        also: ["Sorry"],
       },
       {
         riddle:
@@ -250,8 +249,8 @@ export const FAMILIES: readonly Family[] = [
       },
       {
         riddle:
-          "I’m neither plant nor animal. I wear a cap with no head and stand on a stem with no flower, and one of my family is said to have killed an emperor. What am I?",
-        answer: "Mushroom",
+          "Everyone makes me and no one wants to claim me. I can’t be unmade, yet you learn more from me than from being right. What am I?",
+        answer: "Mistake",
       },
     ],
   },
@@ -303,13 +302,13 @@ export const FAMILIES: readonly Family[] = [
     riddles: [
       {
         riddle:
-          "We’re born in pairs and die alone, because something in the laundry eats one of us every week. What are we?",
-        answer: "Sock",
+          "Say my name and you break me. I’m said to be golden, and a library begs for me. What am I?",
+        answer: "Silence",
       },
       {
         riddle:
-          "I’m an art with one rule: one square, no cuts. Make a thousand of my cranes and you’re granted a wish. What am I?",
-        answer: "Origami",
+          "I show up before the trouble does. I can be good or bad, and one black cat crossing your path is enough to make me. What am I?",
+        answer: "Omen",
       },
       {
         riddle:
@@ -323,8 +322,8 @@ export const FAMILIES: readonly Family[] = [
       },
       {
         riddle:
-          "I cry tears of wax as I work and shrink as I shine. Once a year someone makes a wish and then kills me with a breath. What am I?",
-        answer: "Candle",
+          "I have a needle and I’ve never sewn a stitch. I have no legs and I’ve never been lost, and I’ve pointed the same way my whole life. What am I?",
+        answer: "Compass",
       },
     ],
   },
@@ -339,29 +338,30 @@ export const FAMILIES: readonly Family[] = [
     riddles: [
       {
         riddle:
-          "I’m one side of the oldest argument about who came first. I must be broken before I’m any use, and every spring I’m hidden for children to find. What am I?",
-        answer: "Egg",
+          "You reach for me the moment you’re late. I’m easy to make and hard to believe, and I’ve never fixed anything. What am I?",
+        answer: "Excuse",
       },
       {
         riddle:
-          "I’m made with hands but never held. I’m loudest at the end, and an actor fears me most when I stop too soon. What am I?",
-        answer: "Applause",
+          "I paint whole forests without a brush, then strip them bare. I have two names, and one of them is what my leaves do. What am I?",
+        answer: "Autumn",
+        also: ["Fall"],
       },
       {
         riddle:
-          "I keep the moon on a leash I never let go. I hold your feet down and your hopes humble, and a falling apple introduced me. What am I?",
-        answer: "Gravity",
+          "I have no weight, yet people carry me for decades. I’m nursed but never healed, and I only hurt the one holding me. What am I?",
+        answer: "Grudge",
+        also: ["Guilt"],
       },
       {
         riddle:
-          "I’m water in a place that forgot water. Travellers chase me, and sometimes I’m only a lie the heat tells. What am I?",
-        answer: "Oasis",
-        also: ["Oases"],
+          "I have no words, yet I bring grown adults to tears. Peel me back and there’s only more of me. What am I?",
+        answer: "Onion",
       },
       {
         riddle:
-          "I’m a face that belongs to no one. Greek actors wore me to become gods and kings, and at certain balls I’m the price of entry. What am I?",
-        answer: "Mask",
+          "I can be jogged without running and lost without going anywhere. I fade as you age, and I play tricks on you. What am I?",
+        answer: "Memory",
       },
     ],
   },
@@ -376,13 +376,14 @@ export const FAMILIES: readonly Family[] = [
     riddles: [
       {
         riddle:
-          "I live in a tube and get squeezed every morning, and I’m the reason orange juice tastes terrible right after. What am I?",
-        answer: "Toothpaste",
+          "I’m always on my way and I never arrive. You can promise me anything, and the moment you reach me I’ve changed my name. What am I?",
+        answer: "Tomorrow",
       },
       {
         riddle:
-          "I start as a whisper on a mountainside and end as a roar in the valley. Shout too loudly and you might wake me. What am I?",
-        answer: "Avalanche",
+          "Every question is looking for me. I’m kept at the back of the book, and you’re hunting for me right now. What am I?",
+        answer: "Answer",
+        also: ["Solution"],
       },
       {
         riddle:
@@ -391,13 +392,15 @@ export const FAMILIES: readonly Family[] = [
       },
       {
         riddle:
-          "I have more than seven thousand faces. Some of me are dying, one of me rules the Church though no one is born speaking it, and you are using me this very second. What am I?",
-        answer: "Language",
+          "I can’t be earned, only wished on you. Beginners are said to have me, and gamblers swear theirs is about to change. What am I?",
+        answer: "Luck",
+        also: ["Fortune"],
       },
       {
         riddle:
-          "I’m the highest room in the house and the lowest in its regard. Old things come to me to be forgotten, and in ancient Greece my name meant “from Athens.” What am I?",
-        answer: "Attic",
+          "I’m only a name, worth nothing until that name gets famous. Fans queue for hours for me. What am I?",
+        answer: "Autograph",
+        also: ["Signature"],
       },
     ],
   },

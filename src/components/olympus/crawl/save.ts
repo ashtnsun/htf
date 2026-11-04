@@ -63,7 +63,7 @@ export const emptySave = (riddles: number): TombSave => ({
   best: 0,
 });
 
-const keyOf = (family: number) => `olympus3.4:${family}`;
+const keyOf = (family: number) => `olympus3.5:${family}`;
 
 /** The mask's tries, and how long it goes silent once they are spent. */
 export const MASK_TRIES = 6;
