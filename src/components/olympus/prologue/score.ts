@@ -354,7 +354,10 @@ export class Score {
     CLIMB_CHORDS.forEach((chord, c) => {
       chord.forEach((midi, i) => this.padVoice(midi, i, t + c * step, 2.5, step, 2.5));
     });
-    TOP_CHORD.forEach((midi, i) => this.padVoice(midi, i, t + arrive, 2, strike - arrive, 0.5));
+    // The swell has to fit inside the hold, or its envelope's points land out of order.
+    const held = strike - arrive;
+    const swell = Math.min(2, held * 0.6);
+    TOP_CHORD.forEach((midi, i) => this.padVoice(midi, i, t + arrive, swell, held, 0.5));
 
     let at = 0.8;
     for (let n = 0; at < arrive; n += 1) {

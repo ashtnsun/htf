@@ -91,6 +91,30 @@ function Address({ shown = SITE.length }: { shown?: number }) {
 const CARD_W = 186;
 const CARD_H = 248;
 
+/**
+ * Two of the nine photos are wide shots, the face far smaller than the other seven. On these slides
+ * only (/about keeps the whole photo) they are cropped in: where the face sits in the frame, as
+ * fractions of it, and how far to zoom. The face lands at `FACE_Y` down the frame, like the others.
+ */
+const CLOSE_UPS: Readonly<Record<string, { x: number; y: number; zoom: number }>> = {
+  "exec.arushi-ravula-2026": { x: 0.457, y: 0.44, zoom: 2.6 },
+  "exec.ashton-sun-2026": { x: 0.478, y: 0.483, zoom: 2.6 },
+};
+const FACE_Y = 0.37;
+
+/** A zoomed photo has to be fetched larger to stay sharp. The preload asks for the same file. */
+const photoSizes = (photo: string) => (CLOSE_UPS[photo] ? "640px" : "240px");
+
+function closeUpStyle(photo: string): React.CSSProperties | undefined {
+  const crop = CLOSE_UPS[photo];
+  if (!crop) return undefined;
+  const { x, y, zoom } = crop;
+  return {
+    transformOrigin: `${x * 100}% ${y * 100}%`,
+    transform: `translate(${(0.5 - x) * 100}%, ${(FACE_Y - y) * 100}%) scale(${zoom})`,
+  };
+}
+
 function ExecRow({
   execs,
   lit,
@@ -118,7 +142,15 @@ function ExecRow({
           style={{ "--d": `${200 + i * 110}ms` } as React.CSSProperties}
         >
           <span className="pro-exec-frame">
-            <Media src={photo} alt="" fill sizes="240px" priority className="object-cover" />
+            <Media
+              src={photo}
+              alt=""
+              fill
+              sizes={photoSizes(photo)}
+              priority
+              className="object-cover"
+              style={closeUpStyle(photo)}
+            />
           </span>
           <span className="pro-exec-name">{name}</span>
         </li>
@@ -155,7 +187,7 @@ function execBands(stage: CellStage) {
 
 /** Milliseconds up the mountain, then held still at the top before the lightning. */
 const CLIMB = 11500;
-const TOP_HOLD = 4000;
+const TOP_HOLD = 1200;
 const STRIKE = CLIMB + TOP_HOLD;
 
 /** Milliseconds over which the chain is forged, first link to fire. */
@@ -773,7 +805,7 @@ export function Prologue({ execs }: { execs: readonly PrologueExec[] }) {
             alt=""
             width={CARD_W}
             height={CARD_H}
-            sizes="240px"
+            sizes={photoSizes(photo)}
             priority
           />
         ))}
