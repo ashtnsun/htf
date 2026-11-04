@@ -88,6 +88,26 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 17m — 2026-11-03 (/oracle: sound for the hold and the reveal)
+
+Ashton asked for sound on the Oracle, above all on the REVEAL hold, to build anticipation. The page stays silent until the press, then one held breath and its release. New file: `components/olympus/revealSound.ts`, synthesised like the Prologue's, with no audio files.
+
+1. **The hold follows the charge itself** (`follow(p)` every frame), so the sound cannot disagree with the button. Eight voices start in one muddy low cluster and fan out to a wide Bsus4, climbing faster and faster and reaching the chord only at the very top, while the filter opens and a tremolo quickens. Under it a drum closes up from one beat every half second to a roll. Once the Oracle knows the word, a note on each beat climbs with the charge; a word it does not know gets no notes, as it gets no scene.
+2. **Letting go sinks the pitch and fades the level in step with the drain**, so an exec teasing the button is heard doing it.
+3. **The breath.** At a full hold everything stops, sound and rumble together, for 0.42 s. The flash now comes that much later; `BREATH` is the number.
+4. **The reveal.** The hit lands on the flash and resolves the held chord to E major. Twelve rising notes run while the cells switch on, and a bell and a soft high chord bring in the name, timed off `REVEAL_CUES`, which GodRevealView now exports. It rings out to silence with no loop, so the room can talk over the end.
+5. **The wrong word:** the same rise, no climbing notes, one dull thud at the top, and the swell sinks with the drain.
+
+**Decisions:** silent before the press, since Ashton has turned down every bed so far (no noise beds, nothing wind-like): the only noise is the few milliseconds of a drum's skin and the hit's crack. No mute key, because the page's only control is a text box. All gods share one reveal sound. `LEVEL` at the top of the file is the one volume number. `softClip` and `roomImpulse` are now exported from `prologue/score.ts` and shared.
+
+**Measured** on a recording of real mouse holds in dev at 1920×1080, three runs: empty box, no sound starts; the swell about -41 dB RMS after the press rising to -15.6 at the top, beats peaking 0.20 rising to 0.65; silence for 0.37 s; the hit -14.6 dB, peak 0.865, nothing at full scale; the name -20.8; under -40 by about 4 s after the hit. A let-go at half charge falls from -25 to -43 in half a second. Next group then a second hold works; the wrong word stays on the gate. 69 to 99% of the energy between 200 Hz and 5 kHz through the hold, 91% in the quarter second of the hit. The recorder's own buffering (85 to 170 ms) means the hit against the flash cannot be measured finer than that; `strike()` is called in the same tick as `setReveal`. 0 console errors. Spectrogram and frame: `docs/screenshots/session-17m/`.
+
+**Verified:** typecheck and `pnpm build` clean, `pnpm a11y` 0 violations (it does not visit /oracle; no markup changed there). ESLint is clean on these files; `pnpm lint` as a whole reports 61 errors, all in `.tmp-qa-*.mts` scratch files at the repo root that this session did not write.
+
+**Not tested:** how it sounds. Nothing here can listen, so it is only measured. Also not tested: real projector speakers, or a touch screen, where a browser may hold sound back until the first finger lifts (typing the word first should already have unlocked it).
+
+**Next session starts with:** Ashton's listen to the hold on /oracle, then the level in the real room.
+
 ## Session 17l — 2026-11-03 (the Prologue: the Oracle slide after the chain)
 
 **Asked:** move "Bring your final word to the Oracle." to after the chain slide. The order is now standby, opening, execs, question, chain, Oracle, laptop, site, column, Good luck. The press on "Good luck." still leaves for /oracle.

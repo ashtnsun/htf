@@ -59,7 +59,7 @@ src/components/
                     Polybius fires; Finale, the word for /oracle), every step checked in
                     app/olympus/actions.ts, Curtain between steps, styles in journey/journey.css;
                     /olympuz is the frozen pre-chain snapshot (components/olympuz, content/olympuz.ts),
-                    GodRevealView (the god's /dino sprite cell by cell),
+                    GodRevealView (the god's /dino sprite cell by cell), revealSound (the Oracle's sound, silent until REVEAL is pressed: `follow` drives a swell and a quickening drum from the charge, `breath` stops everything for a moment at a full hold, `strike` lands on the flash and plays against GodRevealView's `REVEAL_CUES`; `LEVEL` is the one volume number),
                     Meander (the pixel Greek key), Colonnade (the solved
                     words on pixel columns at the foot of the page), OlympusButton (every
                     button on /olympus and /oracle instead of SplitButton: Cinzel capitals in one
