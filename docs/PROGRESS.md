@@ -88,6 +88,16 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 17q — 2026-11-04 (the Olympus section back on the home page)
+
+**Changed:** `OlympusSection` renders between the hero and What we do in `src/app/page.tsx`, about an hour before the event. /prologue tells every family to scroll down to it, and the live home page did not have it. Its links already went to /olympus.
+
+**Verified:** `pnpm typecheck`, `lint`, `build`, `pnpm a11y` against a production build; desktop and phone looked at; clicking the section lands on /olympus with no console errors.
+
+**After the event:** take `OlympusSection` off `src/app/page.tsx` if the home page should go back to how it was.
+
+**Next session starts with:** the pointers in Session 17p.
+
 ## Session 17p — 2026-11-04 (/olympus: the riddles rebalanced)
 
 **Asked:** keep the riddles Ashton likes, write new ones so each family's five are about equally hard.

@@ -89,7 +89,7 @@ src/components/
                     It sets the families off and stops there: it names and draws no god
                     (it never imports content/olympus.ts or the gods' sprites) and explains no trial.
                     The address on screen is the constant `SITE` (htfpurdue.org): families scroll down
-                    the home page, so home/olympus/OlympusSection has to be back on it for the day
+                    the home page to home/olympus/OlympusSection
   crawl/            /olympus, the family reveal as a game, and what runs on the day (an event page: no site chrome,
                     noindex, ends at the same /oracle): world.ts (nine boxy rooms on one real map as data; shapes
                     from a grid of 8-pixel cells, doors must meet, checked in dev), art.ts (all pictures painted
@@ -168,9 +168,9 @@ src/components/
                     Chat / Badge show only on /dev/ui), SeasonNote, OnThisPage (/privacy only)
   home/             Hero (renders heroes/PhotoHero; Globe, Atlas, Typewriter, Cells and
                     Wordmark remain in heroes/ but are unreachable since the menu went;
-                    HeroShell is the shared frame), olympus/ (the way into /olympus, off the
-                    home page since 2026-11-01 and kept to come back, so /olympus is reached
-                    by URL only: OlympusScene, one centred link, an SVG cell grid drawn like
+                    HeroShell is the shared frame), olympus/ (the way into /olympus, back on the
+                    home page for the event since 2026-11-04, between the hero and What we do:
+                    OlympusScene, one centred link, an SVG cell grid drawn like
                     olympus/Temple: Olympus as a floating island in a night sky (temple, braziers
                     with green flames, ruins, vines, banked and drifting clouds, moon, stars),
                     the T-rex on a ledge with stepping stones up to it, each rock bobbing

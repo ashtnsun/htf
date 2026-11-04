@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Hero } from "@/components/home/Hero";
 import { HomeIntro } from "@/components/home/HomeIntro";
 import { ImpactBand } from "@/components/home/ImpactBand";
+import { OlympusSection } from "@/components/home/olympus/OlympusSection";
 import { Process } from "@/components/home/Process";
 import { WhatWeDo } from "@/components/home/WhatWeDo";
 import { WhoWeServe } from "@/components/home/WhoWeServe";
@@ -27,15 +28,16 @@ const linkClass = "font-medium text-green transition-colors hover:text-text";
  * FAQ → contact CTA. Every section reads from content/ and content/site.ts; nothing here is
  * hard-coded except section copy.
  *
- * The way into /olympus (home/olympus/OlympusSection, 2026-10-30) is off the page since
- * 2026-11-01, kept to come back: /olympus (the game) is reached by its URL only. To restore it, import
- * OlympusSection and render it between <Hero /> and <WhatWeDo />.
+ * The way into /olympus (home/olympus/OlympusSection) sits between the hero and "what we do", back
+ * on the page for the event (2026-11-04): /prologue sends every family to it. To take it off after
+ * the event, remove OlympusSection here; /olympus then goes back to being reached by its URL only.
  */
 export default function HomePage() {
   return (
     <>
       <HomeIntro />
       <Hero />
+      <OlympusSection />
       <WhatWeDo services={getServices()} />
       <Process steps={getProcess()} />
       <ImpactBand stats={getStats()} testimonials={getTestimonials()} awards={getAwards()} />
