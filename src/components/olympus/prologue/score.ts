@@ -7,7 +7,8 @@
  * The music is four soft chords, ten seconds each, and now and then one slow note over them. There
  * is no beat, and no noise bed of any kind: no wind, no room tone, nothing that hisses. Each stretch
  * of the deck only moves its level and brightness (AMBIENCES); a slide with a fire on it also gets
- * the fire's crackle.
+ * the fire's crackle. The one exception is the opening: `rise` builds up the mountain and holds at
+ * the top, a breath of silence comes before the lightning, and `land` opens out under the thunder.
  *
  * On by default, S mutes; a browser plays nothing before the presenter's first key or click, so the
  * first press is what wakes it (`arm`). The energy sits between 200 Hz and 5 kHz, because laptops
@@ -68,7 +69,28 @@ const NOTES: readonly (readonly (readonly [number, number])[])[] = [
   [[3, 69]],
 ];
 
+/** The climb's chords, higher each time, as the camera goes up. */
+const CLIMB_CHORDS = [
+  [52, 59, 62, 67],
+  [55, 60, 64, 67, 72],
+  [55, 62, 67, 69, 74],
+  [57, 64, 67, 72, 76, 79],
+] as const;
+/** Held at the top, wanting to go somewhere: Dsus4. */
+const TOP_CHORD = [57, 62, 67, 74, 79, 86] as const;
+/** What it goes to, under the thunder: E minor, wide open. */
+const LAND_CHORD = [52, 59, 64, 67, 71, 76, 83] as const;
+/** The music's level at the top of the climb and at the end of the hold. */
+const RISE_TOP = 1.6;
+const RISE_PEAK = 2.1;
+/** Seconds of near silence before the lightning. */
+const BREATH = 0.45;
+
 const hz = (midi: number) => 440 * 2 ** ((midi - 69) / 12);
+const PENTATONIC = [0, 3, 5, 7, 10];
+/** E minor pentatonic, counted up from E4. */
+const pentatonic = (step: number) =>
+  64 + 12 * Math.floor(step / 5) + PENTATONIC[((step % 5) + 5) % 5]!;
 
 type Mood = {
   /** The music's level, 0 to 1. */
@@ -84,8 +106,6 @@ type Mood = {
 export const AMBIENCES = {
   /** Standby: the fire, and the chords barely there. */
   hearth: { level: 0.55, bright: 650, notes: false, fire: 0.7 },
-  /** The climb. */
-  mountain: { level: 0.9, bright: 900, notes: true },
   /** The top, the braziers close by. */
   summit: { level: 1, bright: 1300, notes: true, fire: 0.15 },
   /** The execs. */
@@ -124,6 +144,10 @@ export class Score {
   private music: GainNode | null = null;
   private padFilter: BiquadFilterNode | null = null;
   private noteBus: GainNode | null = null;
+  /** What is playing now, by way of these: replacing them fades it, however far ahead it is booked. */
+  private padSection: GainNode | null = null;
+  private noteSection: GainNode | null = null;
+  private rising = false;
   private noise: AudioBuffer | null = null;
   private brown: AudioBuffer | null = null;
   private current: Mood = SILENT;
@@ -148,11 +172,13 @@ export class Score {
 
   /** Moves the music to this stretch of the deck over `seconds`. */
   ambience(name: Ambience, seconds = 1.5) {
+    this.endRise(1);
     this.current = AMBIENCES[name];
     this.applyMood(seconds);
   }
 
   private applyMood(seconds: number) {
+    if (this.rising) return;
     const { level, bright, notes, fire = 0 } = this.current;
     const rate = seconds / 3;
     this.music?.gain.setTargetAtTime(level, this.now, rate);
@@ -278,12 +304,94 @@ export class Score {
     notes.gain.value = 0;
     notes.connect(music);
     this.noteBus = notes;
+    this.freshSection(0);
+  }
+
+  /** Fades out everything booked so far and opens the way for what comes next. */
+  private freshSection(fade: number) {
+    const ctx = this.ctx!;
+    for (const old of [this.padSection, this.noteSection]) {
+      old?.gain.setTargetAtTime(0, ctx.currentTime, fade / 3);
+    }
+    this.padSection = ctx.createGain();
+    this.padSection.connect(this.padFilter!);
+    this.noteSection = ctx.createGain();
+    this.noteSection.connect(this.noteBus!);
+  }
+
+  /**
+   * The opening: `arrive` seconds up the mountain and held until `strike`. The chords climb and the
+   * notes run up the scale, closer and closer, until the camera stops; then only one held chord,
+   * growing, until the breath before the lightning.
+   */
+  rise(arrive: number, strike: number) {
+    const ctx = this.ctx;
+    if (!ctx) return;
+    this.rising = true;
+    this.current = SILENT;
+    this.freshSection(1.2);
+    const t = ctx.currentTime + 0.05;
+    // The usual chords wait until after the strike; `land` says exactly when.
+    this.nextBarAt = t + strike;
+
+    const hold = (param: AudioParam, from: number) => {
+      param.cancelScheduledValues(ctx.currentTime);
+      param.setValueAtTime(from, ctx.currentTime);
+    };
+    const level = this.music!.gain;
+    hold(level, level.value);
+    level.linearRampToValueAtTime(0.8, t + 1.5);
+    level.linearRampToValueAtTime(RISE_TOP, t + arrive);
+    level.linearRampToValueAtTime(RISE_PEAK, t + strike - BREATH);
+    level.linearRampToValueAtTime(0.03, t + strike - 0.05);
+    const bright = this.padFilter!.frequency;
+    hold(bright, 500);
+    bright.linearRampToValueAtTime(1900, t + arrive);
+    bright.linearRampToValueAtTime(3000, t + strike - BREATH);
+    hold(this.noteBus!.gain, 1);
+
+    const step = arrive / CLIMB_CHORDS.length;
+    CLIMB_CHORDS.forEach((chord, c) => {
+      chord.forEach((midi, i) => this.padVoice(midi, i, t + c * step, 2.5, step, 2.5));
+    });
+    TOP_CHORD.forEach((midi, i) => this.padVoice(midi, i, t + arrive, 2, strike - arrive, 0.5));
+
+    let at = 0.8;
+    for (let n = 0; at < arrive; n += 1) {
+      const up = at / arrive;
+      this.note(pentatonic(n), t + at, NOTE_LEVEL * (0.7 + 0.5 * up));
+      at += 1.5 - 1.05 * up;
+    }
+  }
+
+  /** The lightning: the climb's chord gives way at once to one wide open chord, under the thunder. */
+  land() {
+    const ctx = this.ctx;
+    if (!ctx) return;
+    this.endRise(0.2);
+    const t = ctx.currentTime;
+    LAND_CHORD.forEach((midi, i) => this.padVoice(midi, i, t, 0.2, 7, 6, PAD_VOICE * 1.4));
+    this.bar = 1;
+    this.nextBarAt = t + 8;
+  }
+
+  private endRise(fade: number) {
+    const ctx = this.ctx;
+    if (!ctx || !this.rising) return;
+    this.rising = false;
+    this.freshSection(fade);
+    for (const param of [this.music!.gain, this.padFilter!.frequency, this.noteBus!.gain]) {
+      param.cancelScheduledValues(ctx.currentTime);
+      param.setValueAtTime(param.value, ctx.currentTime);
+    }
+    this.bar = 0;
+    this.nextBarAt = ctx.currentTime + 0.05;
   }
 
   /** Puts the next bars on the audio clock a little ahead of time. */
   private schedule = () => {
     const ctx = this.ctx;
-    if (!ctx || this.ending) return;
+    if (!ctx || this.ending || this.rising) return;
     while (this.nextBarAt < ctx.currentTime + LOOK_AHEAD) {
       const at = Math.max(this.nextBarAt, ctx.currentTime + 0.05);
       CHORDS[this.bar % CHORDS.length]!.forEach((midi, i) => this.padVoice(midi, i, at));
@@ -294,17 +402,25 @@ export class Score {
   };
 
   /** One voice of a chord: two triangles a few cents apart, so it breathes, spread across the room. */
-  private padVoice(midi: number, index: number, at: number) {
+  private padVoice(
+    midi: number,
+    index: number,
+    at: number,
+    attack = SWELL,
+    hold = BAR,
+    release = SWELL,
+    level = PAD_VOICE,
+  ) {
     const ctx = this.ctx!;
     const gain = ctx.createGain();
     gain.gain.setValueAtTime(0, at);
-    gain.gain.linearRampToValueAtTime(PAD_VOICE, at + SWELL);
-    gain.gain.setValueAtTime(PAD_VOICE, at + BAR);
-    gain.gain.linearRampToValueAtTime(0, at + BAR + SWELL);
+    gain.gain.linearRampToValueAtTime(level, at + attack);
+    gain.gain.setValueAtTime(level, at + hold);
+    gain.gain.linearRampToValueAtTime(0, at + hold + release);
     const pan = ctx.createStereoPanner();
-    pan.pan.value = (index / 4) * 0.9 - 0.45;
+    pan.pan.value = ((index % 5) / 4) * 0.9 - 0.45;
     gain.connect(pan);
-    pan.connect(this.padFilter!);
+    pan.connect(this.padSection!);
     for (const cents of [-5, 5]) {
       const osc = ctx.createOscillator();
       osc.type = "triangle";
@@ -312,21 +428,21 @@ export class Score {
       osc.detune.value = cents;
       osc.connect(gain);
       osc.start(at);
-      osc.stop(at + BAR + SWELL + 0.05);
+      osc.stop(at + hold + release + 0.05);
     }
   }
 
   /** One slow note: a soft strike that takes a few seconds to die, with a little octave in it. */
-  private note(midi: number, at: number) {
+  private note(midi: number, at: number, level = NOTE_LEVEL) {
     const ctx = this.ctx!;
     const gain = ctx.createGain();
     gain.gain.setValueAtTime(0.0001, at);
-    gain.gain.exponentialRampToValueAtTime(NOTE_LEVEL, at + 0.02);
+    gain.gain.exponentialRampToValueAtTime(level, at + 0.02);
     gain.gain.exponentialRampToValueAtTime(0.0001, at + 3.2);
     const pan = ctx.createStereoPanner();
     pan.pan.value = ((midi * 7) % 5) * 0.15 - 0.3;
     gain.connect(pan);
-    pan.connect(this.noteBus!);
+    pan.connect(this.noteSection!);
     for (const [ratio, level] of [
       [1, 1],
       [2, 0.22],
@@ -435,44 +551,43 @@ export class Score {
     this.burst(this.noise!, "bandpass", freq, level, 0.04, 0.15);
   }
 
-  /**
-   * One peg of a big wooden prize wheel going past its flapper: a snap of the leather and a knock of
-   * wood under it. `spent` runs 0 to 1 as the wheel loses speed: the knock drops and darkens, and the
-   * flapper starts to fall back onto the peg with a second, smaller knock.
-   */
-  peg(spent = 0) {
-    const ctx = this.ctx;
-    if (!ctx) return;
-    const t = ctx.currentTime;
-    const out = ctx.createGain();
-    out.connect(this.mix!);
-    const send = ctx.createGain();
-    send.gain.value = 0.22;
-    out.connect(send);
-    send.connect(this.wet!);
+  /** One stop of the randomizer, like a game's selector: a soft square blip that climbs the scale. */
+  blip(step: number) {
+    if (!this.ctx) return;
+    this.chip(hz(pentatonic(step)), this.ctx.currentTime, 0.14, 0.09, 0.12);
+  }
 
-    const knock = (at: number, level: number) => {
-      const start = (640 - 200 * spent) * (0.97 + Math.random() * 0.06);
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime(level, at);
-      gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.075);
-      gain.connect(out);
-      for (const [type, ratio] of [
-        ["triangle", 1],
-        ["sine", 2.3],
-      ] as const) {
-        const osc = ctx.createOscillator();
-        osc.type = type;
-        osc.frequency.setValueAtTime(start * ratio, at);
-        osc.frequency.exponentialRampToValueAtTime(start * ratio * 0.62, at + 0.04);
-        osc.connect(gain);
-        osc.start(at);
-        osc.stop(at + 0.09);
-      }
-    };
-    knock(t, 0.3);
-    if (spent > 0.55) knock(t + 0.05 + 0.03 * spent, 0.1 * spent);
-    this.burst(this.noise!, "bandpass", 3000 - 900 * spent, 0.22, 0.016);
+  /** The randomizer locking in: four notes run quickly up and left to ring. */
+  lockIn() {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    for (let i = 0; i < 4; i += 1) {
+      this.chip(hz(pentatonic(10 + i)), t + i * 0.055, 0.12, i === 3 ? 0.7 : 0.3, 0.45);
+    }
+  }
+
+  /** One game-sound note: a square wave with its harshest top taken off, dipping as it starts. */
+  private chip(freq: number, at: number, level: number, seconds: number, room: number) {
+    const ctx = this.ctx!;
+    const osc = ctx.createOscillator();
+    osc.type = "square";
+    osc.frequency.setValueAtTime(freq * 1.03, at);
+    osc.frequency.exponentialRampToValueAtTime(freq, at + 0.03);
+    const filter = ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.value = 4000;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(level, at);
+    gain.gain.exponentialRampToValueAtTime(0.0001, at + seconds);
+    const send = ctx.createGain();
+    send.gain.value = room;
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.mix!);
+    gain.connect(send);
+    send.connect(this.wet!);
+    osc.start(at);
+    osc.stop(at + seconds + 0.02);
   }
 
   /** A stone set down: the setup steps. */

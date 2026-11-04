@@ -36,12 +36,18 @@ type Cue = {
   setPhase: (phase: number) => void;
   /** Morphs, or sets when instant. */
   place: (dots: readonly Dot[], options?: MorphOptions) => void;
+  /** What the next forward press does while this beat is still playing, instead of moving on. */
+  onPress: (fn: (() => void) | null) => void;
 };
+
+type Glow = "summit" | "fire" | "ember";
 
 type Beat = {
   /** Letterbox bars: narrative scenes yes, the practical setup no. */
   bars: boolean;
-  glow?: "summit" | "fire" | "ember";
+  glow?: Glow | ((phase: number) => Glow | undefined);
+  /** The phase this beat shows when it is landed on finished (a step back, a resume, reduced motion). */
+  endPhase?: number;
   view?: (props: ViewProps) => ReactNode;
   cue: (cue: Cue) => void;
 };
@@ -127,10 +133,11 @@ function ExecRow({
  */
 const ROULETTE = Array.from({ length: 22 }, (_, i) => ({
   card: (i * 4 + 2) % 9,
+  // Two up, one back, so the blips climb with a wobble in them.
+  step: i % 2 ? (i + 3) / 2 : i / 2,
   ms: Math.round(70 * i + 3.4 * i * i + 5 * Math.max(0, i - 15) ** 3),
 }));
-const ROULETTE_LAST = ROULETTE.at(-1)!.ms;
-const ROULETTE_END = ROULETTE_LAST + 640;
+const ROULETTE_END = ROULETTE.at(-1)!.ms + 640;
 const DARK = 100;
 
 /** Slide pixels from the middle of the screen to the top of each Greek key band over the execs. */
@@ -145,6 +152,11 @@ function execBands(stage: CellStage) {
     Math.round(rows / 2 + stage.units(BAND_BELOW)),
   );
 }
+
+/** Milliseconds up the mountain, then held still at the top before the lightning. */
+const CLIMB = 11500;
+const TOP_HOLD = 4000;
+const STRIKE = CLIMB + TOP_HOLD;
 
 /** Milliseconds over which the chain is forged, first link to fire. */
 const FORGE = 4200;
@@ -196,40 +208,11 @@ const BEATS: readonly Beat[] = [
     },
   },
 
-  // ------------------------------------------------------------ the mountain
+  // ------------------------------------------------------------ the climb, the pause, the strike
   {
     bars: true,
-    view: () => (
-      <div className="pro-lines">
-        <p className="pro-passing pro-voice" style={{ "--d": "600ms" } as React.CSSProperties}>
-          Before the first commit.
-        </p>
-        <p className="pro-passing pro-voice" style={{ "--d": "3700ms" } as React.CSSProperties}>
-          Before the first all-nighter.
-        </p>
-        <In d={9000} className="pro-voice pro-mountain-line">
-          There was a mountain.
-        </In>
-      </div>
-    ),
-    cue: ({ stage, score, instant }) => {
-      score.ambience("mountain", 4);
-      const { dots, rock } = climb(stage.grid);
-      if (instant) {
-        stage.set(dots);
-        stage.backdrop(rock, { instant: true });
-        return;
-      }
-      stage.morph(dots, { kindle: true, spread: 400, exit: "fall", duration: 2200 });
-      stage.backdrop(rock);
-      stage.pan(CLIMB_FROM, 0, 11500);
-    },
-  },
-
-  // ------------------------------------------------------------ the strike, the title
-  {
-    bars: true,
-    glow: "summit",
+    endPhase: 1,
+    glow: (phase) => (phase > 0 ? "summit" : undefined),
     view: ({ phase }) =>
       phase > 0 ? (
         <div className="pro-title-card">
@@ -241,28 +224,54 @@ const BEATS: readonly Beat[] = [
             The family reveal
           </In>
         </div>
-      ) : null,
-    cue: ({ stage, score, instant, at, flash, setPhase }) => {
+      ) : (
+        <div className="pro-lines">
+          <p className="pro-passing pro-voice" style={{ "--d": "600ms" } as React.CSSProperties}>
+            Before the first commit.
+          </p>
+          <p className="pro-passing pro-voice" style={{ "--d": "3700ms" } as React.CSSProperties}>
+            Before the first all-nighter.
+          </p>
+          <In d={9000} className="pro-voice pro-mountain-line">
+            There was a mountain.
+          </In>
+        </div>
+      ),
+    cue: ({ stage, score, instant, at, flash, setPhase, onPress }) => {
       const light = () => {
         const { dots, rock } = climb(stage.grid, { lit: true });
         stage.set(dots);
         stage.backdrop(rock, { instant: true });
       };
-      score.ambience("summit");
       if (instant) {
+        score.ambience("summit");
         light();
-        setPhase(1);
         return;
       }
-      at(1000, () => {
+      const { dots, rock } = climb(stage.grid);
+      stage.morph(dots, { kindle: true, spread: 400, exit: "fall", duration: 2200 });
+      stage.backdrop(rock);
+      stage.pan(CLIMB_FROM, 0, CLIMB);
+      score.rise(CLIMB / 1000, STRIKE / 1000);
+
+      let struck = false;
+      const strike = () => {
+        if (struck) return;
+        struck = true;
+        onPress(null);
         light();
         const { x, y } = summitPoint(stage.grid);
         stage.strike(x, 0, y);
         stage.shake(600, 2);
         flash(1, 800);
+        score.land();
+        score.ambience("summit", 0.6);
         score.thunder();
         setPhase(1);
-      });
+      };
+      at(STRIKE, strike);
+      // A press during the climb goes to the strike, never past it to the execs.
+      onPress(strike);
     },
   },
 
@@ -307,16 +316,17 @@ const BEATS: readonly Beat[] = [
         setPhase(DARK);
         return;
       }
-      for (const { card, ms } of ROULETTE) {
+      for (const { card, step, ms } of ROULETTE) {
         at(900 + ms, () => {
           setPhase(card + 1);
-          score.peg(ms / ROULETTE_LAST);
+          score.blip(step);
         });
       }
       at(900 + ROULETTE_END, () => {
         setPhase(DARK);
         flash(0.25, 400);
         stage.shake(240, 1);
+        score.lockIn();
         score.thud(1.5);
       });
     },
@@ -373,7 +383,7 @@ const BEATS: readonly Beat[] = [
           <span className="text-green">One laptop.</span>
         </In>
         <In d={1100} className="pro-body">
-          Two minutes at the keys, then swap.
+          Swap every 2 minutes!
         </In>
       </div>
     ),
@@ -489,7 +499,8 @@ const BEATS: readonly Beat[] = [
 
 /**
  * The Prologue (/prologue): the slides for the family reveal, presented from the site by the exec
- * at the projectors. Each press plays one beat. The picture is one field of cells that reshapes
+ * at the projectors. Each press plays one beat; the opening climb, its pause at the top and the
+ * lightning are one beat, with the music building to the strike. The picture is one field of cells that reshapes
  * itself from scene to scene (stage.ts, formations.ts); the type sits over it, scaled like a
  * slide (`--u` is one pixel of a 1920 × 1080 slide). It starts on a fire so it can sit on
  * the projectors while the room settles. The last slides say where the final word goes, then "Good
@@ -518,13 +529,20 @@ export function Prologue({ execs }: { execs: readonly PrologueExec[] }) {
   });
   // A beat's own progress; it belongs to the beat that set it, so the next never draws it.
   const [progress, setProgress] = useState({ of: -1, value: 0 });
-  const phase = progress.of === nav.index ? progress.value : 0;
+  const phase =
+    progress.of === nav.index
+      ? progress.value
+      : nav.instant || reduce
+        ? (BEATS[nav.index]!.endPhase ?? 0)
+        : 0;
   const [leaving, setLeaving] = useState(false);
   const [black, setBlack] = useState(false);
   const [note, setNote] = useState("");
   const [resized, setResized] = useState(0);
   const { index, instant } = nav;
   const beat = BEATS[index]!;
+  const glow = typeof beat.glow === "function" ? beat.glow(phase) : beat.glow;
+  const pressRef = useRef<(() => void) | null>(null);
 
   const flash = useCallback(
     (strength = 1, ms = 700) => {
@@ -600,20 +618,30 @@ export function Prologue({ execs }: { execs: readonly PrologueExec[] }) {
         at,
         flash,
         setPhase: (value) => setProgress({ of: index, value }),
+        onPress: (fn) => {
+          pressRef.current = fn;
+        },
         place: (dots, options) => (now ? stage.set(dots) : stage.morph(dots, options)),
       });
     });
     history.replaceState(null, "", index ? `#${index}` : location.pathname);
-    return () => timers.forEach((t) => window.clearTimeout(t));
+    return () => {
+      pressRef.current = null;
+      timers.forEach((t) => window.clearTimeout(t));
+    };
   }, [stage, index, instant, reduce, resized, leaving, score, flash]);
 
   const go = useCallback(
     (delta: number) => {
       if (leaving) return;
       setBlack(false);
+      if (delta > 0 && pressRef.current) return pressRef.current();
       if (delta > 0 && index === BEATS.length - 1) return leave();
       const to = Math.min(BEATS.length - 1, Math.max(0, index + delta));
-      if (to !== index) setNav({ index: to, instant: delta < 0 });
+      if (to === index) return;
+      // A beat's progress must not outlive it: coming back to it plays it from the start.
+      setProgress({ of: -1, value: 0 });
+      setNav({ index: to, instant: delta < 0 });
     },
     [index, leave, leaving],
   );
@@ -684,7 +712,7 @@ export function Prologue({ execs }: { execs: readonly PrologueExec[] }) {
       className="pro-root"
       data-instant={instant || reduce || undefined}
       data-bars={(beat.bars && !leaving) || undefined}
-      data-glow={leaving ? undefined : beat.glow}
+      data-glow={leaving ? undefined : glow}
       data-leaving={leaving || undefined}
       onClick={() => go(1)}
     >
