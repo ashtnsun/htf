@@ -1459,6 +1459,34 @@ export function drawLiftMark(ctx: CanvasRenderingContext2D, cx: number, cy: numb
   fill(ctx, ink, cx - 1, cy - 4, 1, 8);
 }
 
+const RESTART_MARK = [
+  "...####...#",
+  "..######..#",
+  ".##....##.#",
+  "##......###",
+  "##....#####",
+  "##.........",
+  "##.......##",
+  "##.......##",
+  ".##.....##.",
+  "..#######..",
+  "...#####...",
+];
+
+/** The mark on the stone that restarts the fires: an arrow coming round. Middle at (cx, cy). */
+export function drawRestartMark(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  ink: string,
+) {
+  RESTART_MARK.forEach((row, y) => {
+    for (let x = 0; x < row.length; x++) {
+      if (row[x] === "#") fill(ctx, ink, cx - 5 + x, cy - 5 + y, 1, 1);
+    }
+  });
+}
+
 /** Holes in the floor where the spikes live. */
 function paintSpikeBeds(ctx: CanvasRenderingContext2D, room: Room, t: Theme) {
   for (const s of room.spikes ?? []) {

@@ -14,6 +14,7 @@ import {
   drawGreek,
   drawLetter,
   drawLiftMark,
+  drawRestartMark,
   drawPathStone,
   drawSquareTile,
   drawWord,
@@ -666,7 +667,7 @@ export class CrawlEngine {
       this.fireStart = performance.now();
       this.score.whoosh(0.1, 0.5);
       this.score.tick(180, 0.12);
-      this.spray(this.x, this.y, C.red, 8);
+      this.spray(this.x, this.y, C.mint, 8);
     } else if (this.stone === "lift" && this.stamps.length) this.liftLetter();
   }
 
@@ -1455,13 +1456,12 @@ export class CrawlEngine {
     }
   }
 
-  /** The marks on the Hall's loose stones: the flare that restarts the fires, and the lifted letter. */
+  /** The marks on the Hall's loose stones: the arrow that restarts the fires, and the lifted letter. */
   private drawFloorStones(now: number, th: Theme) {
     const ctx = this.ctx;
     const t = SQUARE.tile;
     const restart = FLOOR_STONES.restart;
-    // It takes the colour of what it does when the fires flare.
-    drawFlame(ctx, restart.x + 10, restart.y + 15, 4, 11, 1, 2, true);
+    drawRestartMark(ctx, restart.x + 10, restart.y + 10, C.mint);
     const lift = FLOOR_STONES.lift;
     if (this.flags.square) {
       const age = this.squareStart < 0 ? 1e9 : now - this.squareStart;

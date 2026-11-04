@@ -132,7 +132,7 @@ export type Room = Omit<RoomSpec, "doors" | "sconces" | "fires"> & {
 /** The square on the Hall's floor: 5 × 5 tiles of `tile` pixels, from (x, y). */
 export const SQUARE = { x: 142, y: 78, tile: 20 };
 /** The Hall's two loose stones, a tile each, out past the fires on either side of the square. */
-export const FLOOR_STONES = { lift: { x: 86, y: 118 }, restart: { x: 278, y: 118 } } as const;
+export const FLOOR_STONES = { restart: { x: 86, y: 118 }, lift: { x: 278, y: 118 } } as const;
 export type FloorStone = keyof typeof FLOOR_STONES;
 /** How far a door's opening runs either side of its middle. */
 export const DOOR_HALF = 16;

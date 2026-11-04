@@ -88,6 +88,15 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 17h — 2026-11-03 (/olympus3, the Hall's floor stones)
+
+Ashton's note: swap the two stones and give the restart a restart icon, not the flame, and not red. The
+restart stone is now left of the square and the lift stone right (`FLOOR_STONES`); the restart's mark is an
+arrow coming round (`drawRestartMark`), mint like the lift's, and so is the spray when it is pressed. The
+fires' own flare stays red. Driven in the Hall: both prompts, the restart moving the fires' start and leaving
+the letters alone, the lift removing a letter, no page errors. `pnpm typecheck`, `lint` and `build` pass; `a11y`
+not rerun, since this only changes canvas drawing. Frame in `docs/screenshots/session-17h/`.
+
 ## Session 17g — 2026-11-03 (/olympus3, Ashton's fifth notes)
 
 Ashton's notes after playing: every cosmetic looked wrong when worn, the merchant had to go, the fires'
