@@ -88,6 +88,36 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 17p — 2026-11-04 (/olympus: the riddles rebalanced)
+
+**Asked:** keep the riddles Ashton likes, write new ones so each family's five are about equally hard.
+
+**Changed:** `content/olympus.ts`: 18 of the 45 riddles untouched, 27 replaced or edited after three rounds of Ashton's notes.
+Every new answer starts with the letter it replaced, so no Mask, seal, door or final word moved. Ratings out of 10, which are my
+estimates, total 23-24 per family. Ashton cut closing lines of trivia or pop culture, so the new ones lean on wordplay. The save
+key went to `olympus3.5`: the Mask compares saved answers, so a tab mid-game would otherwise be stuck there.
+
+**Verified:** a script over the real file: 45 distinct answers, each family's first letters spell its word's letters, none equal to
+a chain word or containing its own answer. `pnpm typecheck`, `lint`, `build` pass; a production build serves the new text, not the
+old, and no answers in `.next/static` or the page. The longest answer is now AUTOGRAPH (9), below TOOTHPASTE (10) on the columns.
+**Not verified:** no play-through, screenshots or `pnpm a11y` (text only); difficulty with real people.
+
+**Next session starts with:** a dry run of the new riddles with someone who has not seen them, then the pointers below.
+
+## Session 17o — 2026-11-04 (the Prologue: a shorter wait for the lightning)
+
+**Asked:** the delay before the lightning strike and Olympus showing up is a little too long, then, after a first cut to 2.5 s, still a little too long. And on the exec slide, zoom in on Ashton's and Arushi's pictures to match the framing of the others.
+
+**Changed:**
+
+- `TOP_HOLD` in `prologue/Prologue.tsx` from 4 s to 1.2 s, so the lightning lands 12.7 s after the press instead of 15.5 s. The climb stays 11.5 s and the line timings are untouched; `score.rise` is given `STRIKE`, so the held chord and its breath shorten with it.
+- `score.rise`: the top chord's swell was a fixed 2 s, longer than the new hold, which would have put its envelope's points out of order (a jump in level). It now takes 60% of the hold, at most 2 s.
+- `CLOSE_UPS` in `Prologue.tsx`: a crop for those two photos, on the deck only (the roulette uses the same row; /about keeps the whole photo). Zoom 2.6, face placed 37% down the frame. Those two are fetched at `sizes="640px"` so they stay sharp.
+
+**Verified:** `tsc`, ESLint on both files; in dev at 1920×1080, the title's arrival timed from the press, no page errors; the exec row looked at beside the other seven. Not listened to. The full `pnpm build`, screenshots and `pnpm a11y` were not run for these small changes.
+
+**Next session starts with:** Ashton's look and listen at the new timing; below this hold, the wait has to come out of `CLIMB`. Then the pointers in the sessions below.
+
 ## Session 17-QA — 2026-11-03 (/olympus3, a full QA pass: trying to break it)
 
 Ashton asked for a full check of the game, cheating included, with bugs fixed. Played start to finish with real keys,
