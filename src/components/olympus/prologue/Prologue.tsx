@@ -372,6 +372,30 @@ const BEATS: readonly Beat[] = [
     },
   },
 
+  // ------------------------------------------------------------ where the final word goes
+  {
+    bars: true,
+    glow: "fire",
+    view: () => (
+      <div className="pro-oracle">
+        <In d={1300} className="pro-head">
+          Bring your final word to the <span className="text-green">Oracle.</span>
+        </In>
+      </div>
+    ),
+    cue: ({ stage, score, at, place, instant }) => {
+      score.ambience("oracle", 2.5);
+      place(oracleFire(stage.grid), {
+        duration: 1300,
+        spread: 1000,
+        order: "up",
+        exit: "fall",
+        burn: "#03c652",
+      });
+      if (!instant) at(900, () => score.whoosh(0.28, 1.6));
+    },
+  },
+
   // ------------------------------------------------------------ setup: the laptop
   {
     bars: false,
@@ -452,30 +476,6 @@ const BEATS: readonly Beat[] = [
     },
   },
 
-  // ------------------------------------------------------------ where the final word goes
-  {
-    bars: true,
-    glow: "fire",
-    view: () => (
-      <div className="pro-oracle">
-        <In d={1300} className="pro-head">
-          Bring your final word to the <span className="text-green">Oracle.</span>
-        </In>
-      </div>
-    ),
-    cue: ({ stage, score, at, place, instant }) => {
-      score.ambience("oracle", 2.5);
-      place(oracleFire(stage.grid), {
-        duration: 1300,
-        spread: 1000,
-        order: "up",
-        exit: "fall",
-        burn: "#03c652",
-      });
-      if (!instant) at(900, () => score.whoosh(0.28, 1.6));
-    },
-  },
-
   // ------------------------------------------------------------ good luck, on the summit: the last press leaves for /oracle
   {
     bars: true,
@@ -491,7 +491,7 @@ const BEATS: readonly Beat[] = [
     cue: ({ stage, score, place, instant }) => {
       score.ambience("summit");
       const { dots, rock } = climb(stage.grid, { lit: true });
-      place(dots, { duration: 1600, spread: 900, order: "up", burn: "#03c652" });
+      place(dots, { duration: 1600, spread: 900, order: "up" });
       stage.backdrop(rock, { instant });
     },
   },
@@ -503,9 +503,9 @@ const BEATS: readonly Beat[] = [
  * lightning are one beat, with the music building to the strike. The picture is one field of cells that reshapes
  * itself from scene to scene (stage.ts, formations.ts); the type sits over it, scaled like a
  * slide (`--u` is one pixel of a 1920 × 1080 slide). It starts on a fire so it can sit on
- * the projectors while the room settles. The last slides say where the final word goes, then "Good
- * luck"; its press lets the scene lift away, everything easing to dark as /oracle comes up out of
- * it, ready for the first family's word.
+ * the projectors while the room settles. The chain is followed by where the final word goes, then
+ * the setup, then "Good luck"; its press lets the scene lift away, everything easing to dark as
+ * /oracle comes up out of it, ready for the first family's word.
  *
  * It sets the families off and stops there: no god is named or drawn (nothing here imports their
  * sprites or content/olympus.ts), and no trial is explained.
