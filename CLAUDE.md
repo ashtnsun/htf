@@ -76,11 +76,11 @@ src/components/
                     stage (one canvas of solid cells that fly from scene to
                     scene, snapped to the grid, plus the camera, the rock's flat spans and the sparks),
                     formations (the pictures as cell lists, flames as hand-drawn frames in the language of
-                    journey/Torches that the stage steps, never a simulation; `TRIALS` links in the chain,
-                    one per step of journey/save's STAGES less the last), score (ambience and effects synthesised
-                    in the browser, no music: `AMBIENCES` gives each stretch of the deck its own place (fire,
-                    wind, a stone hall, a quiet room; drips, chains, far thunder, keys), with thunder, iron
-                    and whooshes on cue; on by default, S mutes,
+                    journey/Torches that the stage steps, never a simulation; `TRIALS` unnumbered links in the chain,
+                    all of that picture in one pixel size, `CHAIN_PIXEL`), score (one small quiet piece of music under the deck, synthesised in the browser: four
+                    soft chords and a slow note now and then, no beat and no noise beds; `AMBIENCES` moves
+                    only its level and brightness per stretch, fire slides add a crackle; thunder, iron, the
+                    wheel's pegs and stones on cue; on by default, S mutes,
                     it wakes on the presenter's first key or click; keep its energy between 200 Hz and
                     5 kHz, the room's speakers cannot play below that). soundtrack and cuesheet are a full
                     synthesised score Ashton took off as too much (2026-11-02): stored, imported by

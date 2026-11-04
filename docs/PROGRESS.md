@@ -88,6 +88,33 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 17j — 2026-11-03 (the Prologue, lined up with /olympus3, and Ashton's sound notes)
+
+**Asked:** after a report on what the deck says against /olympus3: the chain slide just says six trials, a line about the swap on the laptop slide, no tomb slide, the home section restored on the day and not now, the "Bring your final word" line off /oracle. Also: the wind is annoying, a small simple soundtrack instead, chill and ambient; no quick flash before the lightning; no Greek band on the cinematic bars; "They are not saying who took which." gone; the randomizer to sound like a wheel; the chain's pixels did not match the fire's.
+
+**Built:**
+
+- **Chain slide:** "Six trials." The numerals are off the links, since /olympus3 gives no order and has no numbered title cards. The whole picture is now drawn in one pixel size (`CHAIN_PIXEL`, 2 cells, the size the fire and bowl already were; the links had been 1 cell). The links were redrawn for that size: a first try at the same proportions cut their sides away and read as broken brackets.
+- **Laptop slide:** "Two minutes at the keys, then swap."
+- **Sound (`score.ts`):** every noise bed is gone (wind, fire roar, hall, room) and so are the drips, chains, far thunder and typing. In their place, four soft chords (Em7, Cmaj7, Gadd9, D), ten seconds each and swelling into one another, with a slow note over them now and then. No beat. `AMBIENCES` now moves only the music's level and brightness per stretch. Fire slides keep a light crackle. Effects on cue are unchanged, except that the whoosh on each press is halved and the one on leaving is gone, because both can read as wind. `soundtrack.ts` and `cuesheet.ts` stay stored and unused.
+- **The wheel:** `score.peg()`, one knock of wood and a snap of the flapper per stop, dropping and darkening as the wheel slows, with a small second knock as the flapper falls back. The last stops now coast (gaps up to about 650 ms, was 210), which is a small change to the picture's timing as well.
+- **Title:** the small flash at 120 ms is gone; the lightning is the only flash.
+- **Bars:** plain black. The Greek key bands drawn around the exec photos are a separate thing and stay.
+- **Execs:** the line is gone. With nothing under the photos on either exec slide, the spacer went and the line, photos and bands were re-centred (`BAND_ABOVE`, `BAND_BELOW`, `.pro-execs-scene`).
+- **/oracle:** the line's removal, in the working copy since Session 16o, is committed. "Bring your final word to the Oracle." now appears only on the Prologue's slide.
+
+**Measured** on a recording of the whole deck at 1920×1080 in dev: music alone -30 to -36 dB RMS, about 6 dB under the old beds' loudest; most of its energy 200-500 Hz; tonal, no noise floor. Thunder peaks at 0.80, pegs at 0.70, nothing at full scale. The flash layer reads 0 on every frame until the lightning.
+
+**Verified:** `pnpm typecheck`, `pnpm build`, ESLint on the Prologue; axe 0 violations on /prologue and /oracle at 1440 and 390; the deck end to end to /oracle with no console errors. Frames looked at: `docs/screenshots/session-17j/`.
+
+**Not verified:** how any of it sounds, above all the music and the wheel; nothing here can listen. Real speakers, a projector and a clicker.
+
+**Not asked for, still open:** slide 9 does not say the Oracle is in the room, and it is now the only place the line appears. A family finishing in the tomb's last room could look for another room.
+
+**For the day:** render `OlympusSection` on the home page (`src/app/page.tsx`) and change its two hard-coded `/olympus` links to `/olympus3` (`home/olympus/OlympusScene.tsx`, the `router.push` and the `href`); slide 7 sends every family there. /prologue and /olympus3 are not deployed yet.
+
+**Next session starts with:** Ashton's listen to the new music and the wheel.
+
 ## Session 17h — 2026-11-03 (/olympus3, the Hall's floor stones)
 
 Ashton's note: swap the two stones and give the restart a restart icon, not the flame, and not red. The
