@@ -88,6 +88,131 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 17-QA — 2026-11-03 (/olympus3, a full QA pass: trying to break it)
+
+Ashton asked for a full check of the game, cheating included, with bugs fixed. Played start to finish with real keys,
+real collision and real server calls: group IX partway through the fixes, group IV on the final code.
+
+**Fixed.**
+
+- **A softlock at the Mask.** Refreshing in the seconds after the sixth wrong guess left a full board and no silence
+  coming, so the Mask could never be typed on again in that tab. `loadSave` now starts the silence.
+- **A letter lost on the wheels.** A click could leave the caret before the wheel's letter, so the typed letter was
+  dropped while the focus still moved on. /olympus's `Inscription.tsx` has the same line and was left alone.
+- **The swap clock over the close-ups** at 1499 px wide and under: it covered letters on the wheels' plate, the mirror
+  and the machines. With a close-up open, at those widths, it now waits beside Step away.
+- **A dropped connection.** The plate's carving now retries, instead of leaving the plate blank with nothing said. A press
+  on the floor that is lost says the Oracle is silent and asks again, so a right word never looks wrong.
+- **A late riddle answer** closed whatever had been opened since.
+- **No sound, no game.** A browser that could not start audio threw on every key; `arm` now catches it.
+- **Space mashed as the dinosaur dies** spent a coin on a new run; Space waits 700 ms, the button does not.
+- **Holding E** typed `eeee` into the field or the Wordle row that opened. Key repeat of E and Enter is ignored.
+- **Smaller.** TOOTHPASTE ran into AVALANCHE on the columns (`Colonnade` is shared, so all its labels come down when a
+  word has eight letters or more). A Wordle key clicked with the mouse kept the focus, so Enter pressed it again.
+  "1 coins" and "I faces in the stone".
+
+**Verified, no change needed.** Forged saves and raw server calls (wrong seal, wrong door word, another group's, wrong
+types, no arguments, family 99, 1.5, a string) never gave up the final word. The Oracle refuses every door word, seal,
+mask word, god, exec and riddle answer; each final word opens its own god. Puzzle data for all nine groups: every
+square has 25 letters, the fires spell the door word, the wheels read back with names like María, O'Neil and 李明. A flood
+fill with the engine's own collision reached every spot, door, tile and stone, with no way round the spikes and no way to
+the machine without the hidden path. Blackjack held its invariants over 200,000 random rounds. Every spot opened and
+mashed at three stages, the reveal mashed, resized and refreshed, reduced motion through the door and altar. Every
+close-up fits at 1024×600 to 2560×1300, including 1.25× and 2×, and opens in Firefox and in Playwright's WebKit. No
+answers in `.next/static` or the page's payload; the dev hooks are absent from production. `pnpm typecheck`, `lint`,
+`build` pass; `pnpm a11y` 0 violations on /olympus3, /olympus3/1, /olympus3/9 and /oracle. Frames in
+`docs/screenshots/session-17-qa/`.
+
+**Not verified.** Sound by ear; frame rate on a real family laptop; real Safari on a Mac and a real webcam (the camera was a
+fake stream, though the face finder ran for real on it in production, finding one large face of three, the two it
+missed being small); play by a family, so pacing and difficulty are still unproven.
+
+**Open, Ashton's call.**
+
+- **Every stone reads the placeholder `IN LAWSON COMMONS YOUR LETTER IS HIDDEN`.** It needs each group's real spot, and
+  the letters need printing and hiding (the comma added to `CLUE` means letters printed before it differ).
+- **A laptop with no working camera cannot leave the first room:** there is no way round the photo.
+- ~~Other routes are shortcuts.~~ Closed the same day, below.
+- **Closing the tab loses everything** (the save is per tab, on purpose), with no warning.
+- **Do not deploy during the event:** a new build can break the server calls of tabs already open.
+- The nine door words still await a yes. The game has no touch controls, so a phone cannot play it.
+
+**Not committed:** this pass is mixed into Session 17i's uncommitted files, so nothing was committed.
+
+**Then, on Ashton's word: the game is /olympus and the old routes are shut.** /olympus3 moved to /olympus (the save keys keep their
+`olympus3.` names, unseen). The old /olympus, its letters and the /olympuz snapshot moved to `/archive/olympus`,
+`/archive/olympus/letters` and `/archive/olympuz` as `page.dev.tsx`, so they work in `pnpm dev` and 404 in a deploy. Their layouts stay
+plain `layout.tsx` with no page under them, because a `layout.dev.tsx` breaks `next build`'s type check against `.next/dev/types`. Each
+has its own `actions.ts`; the live `app/olympus/actions.ts` took in `checkRiddle`, `readInscription` and `consultOracle`. `Passage`
+no longer imports the old `Trial`, which would have shipped the old server calls in every deploy. **The Oracle no longer accepts the
+snapshot's words,** so a snapshot run in the archive ends with a word /oracle refuses.
+
+**Verified on a production build:** the temple's columns open the game, all eight live server calls work, the server-action manifest holds no
+old calls, the Oracle refuses all nine snapshot words and each final word opens its god, and /olympus3, /olympuz, /olympus/letters and all of
+/archive answer 404, while the face finder's files still load from `public/olympus`. **In dev:** the archived temple, trial, snapshot and
+all nine letters work. **Not verified:** the running dev server still answered 404 on /olympus after the move, expected to clear on a
+restart, which was left to Ashton since it is their server; and the letters' print layout, now under the same layout as before.
+
+**Then sound on the temple, and an intro.** Ashton's last edits before committing. One `tombSound` now serves /olympus and the game, because
+the click on a column is the gesture a browser asks for and has to last through the route change; a mute lasts too. On the temple
+(`olympus/TempleSound`): a lyre phrase far off every 5 to 7 seconds, the nine columns as strings under the pointer or the focus, a rise as the
+temple builds when the page may already play, and the same M as the game. A fresh page cannot play before a key or click, so the button reads
+"Sound" with a crossed speaker until then instead of a speaker that is not working. Clicking a column lays the whole passage out on the audio
+clock: its string, the lyre climbing as it gathers light, a low strike at the burst, and a bronze horn call (a new instrument) over the group's
+card. The first entry only: a whistle down the fall, then at the landing a low chord and the ocarina's own short phrase, as the light comes up.
+A group that reached the game by URL gets the landing's phrase on their first key; under reduced motion it plays with no fall. A refresh plays
+none of it.
+
+**Measured, not heard.** Recorded from the audio graph through the real flows. In the 200 Hz to 5 kHz band a laptop plays: the temple's lyre about
+-45 dB RMS, a sweep of the strings -33 dB, the intro about -22 dB at its loudest with a -8.6 dB peak, and the game's bed -39 dB, so the intro stands
+out and then settles. No clipping. The first version's landing peaked at -2.5 dB and was brought down. Tested too: no audio engine or autoplay
+warning on a fresh page, one engine carried from temple to game, a mute carried across, the lyre stopping on leaving by the logo and one engine
+on coming back, Firefox through to the game, and production with no errors; the archive's actions are still absent from the build. Found on the way:
+M did nothing while the sound button had the focus (fixed). `pnpm typecheck`, `lint`, `build` pass; `pnpm a11y` 0 violations on /olympus and
+/olympus/1. **Not verified:** how any of it sounds, since no one has heard it.
+
+**Ashton's listen: softer impacts, and the swap clock names the players.** They liked the sound but found the burst of the numeral and the
+dinosaur's landing "a little too aggressive". Both now have a smaller, higher strike, three chord notes instead of five at about half the level, and
+the landing lost its second stone knock; the horn, the climb, the whistle and the ocarina phrase are untouched. In the laptop band the burst went
+from -21 to -27 dB and the landing from -22 to about -28 dB; the full-band peak from -3.9 to -7.7 dB. The swap clock does not exist until the photo
+is set, then starts at a full two minutes, held through the photo's moment. It shows the current player's name, in the order the photo named them,
+and at the end "Swap to" over the next name, big and green, sized so the longest fits on one line. It keeps the player and the time through a
+refresh, per group. A group of one is never told to swap to themselves; their clock simply restarts. The order follows the photo left to right,
+which is Ashton's to change if they want it otherwise. Frames in `docs/screenshots/session-17-qa/` (`swap-*.png`).
+
+**A pause menu.** Esc in the middle of play brings up "Paused" and a Resume button; Esc again or the button goes back, and that is all it does. The world
+truly stops: the canvas stops drawing, the swap clock holds, the sound fades out and comes back, and the fires' signal and the spikes keep their place because
+they now read the engine's own clock (`clock()`), which a pause takes out. Hints, a room's name and a line said by the room wait too. Esc still steps away
+from a close-up, and does nothing during a cutscene, the opening fall or the forging. Tested by trying to break it: 29 checks in dev, including a resize under
+the menu (it would have gone black), a swap due during a pause, a mute kept through one, a refresh while paused and Esc mashed.
+
+**Three notes.** The photo's cutscene no longer draws the Hall past the edge of the Mural (`beside`, used nowhere else, is gone), so the door's shot is
+that room and the black beyond it, with the doorway's green light; the door stays dead centre, per the earlier ruling on cutscenes, which leaves the right half of
+the shot black. The dinosaur's arm is now the body's colour: it was a lighter tint on purpose (`color.light`, gone), drawn last so what is held passes behind the hand, which it
+still does. The map shows only rooms that have been entered, and no longer hints at the rooms next door. It closes in on the first room (at most 2.6×) and eases out over 1.6 s as each new one widens
+the view, reaching the whole map exactly as before with all nine; the player's dot and the map panel stay the same size throughout.
+
+**The hints' rumbles.** Ashton: the leftmost player first is fine, the softened sound is good, but the rumbles with the hints were "too aggressive, doesn't sound
+like rumble". Measured, the old one went from silence to its loudest in 0 ms, with a noise burst and a plucked low string on top. `rolling` in sound.ts replaces it for
+"Something rumbles…" and under the gears: four low sawtooths a little out of tune, through a filter, swelling and rolling over 3 s. 10% to 80% of its loudest now takes
+1.24 s, the energy above 800 Hz fell from -31 to -50 dB, and it still peaks about 12 dB over the room's bed. The gears' ratchet is well under half its old level. Both hints now bring a small shake
+(`shiver`) that grows and fades with the sound, at most 2 cells over 3 s, none under reduced motion. Every timed hint now stays 8 s, not 5, and a pause holds it. **Left alone:** the plain `rumble()` still
+plays in the cutscenes (photo, mask, square, door, the Sanctum), since those were not in the note; it starts as hard as the old one did. **Not verified:** how the new rumble sounds, since no one has heard it.
+
+**A last round of Ashton's notes.**
+
+- **The temple** no longer sounds on hover or focus; the lyre in the background and the click's passage stay.
+- **The swap clock** reads 2:00 for ten seconds after each swap while they change seats, kept through a refresh and held by a pause, and is gone for good once the word is revealed. A group of one gets no hold.
+- **The hard rumble** (`rumble()`, photo, mask, square, door) is now a soft thump over the rolling swell: full-band peak -3.6 to -8.3 dB. The reveal's blast (`revealStrike`) was left alone as the game's peak; it is Ashton's to call.
+- **Blackjack deals.** Cards come out of a shoe in the table's corner one at a time (you, Fates, you, Fates face down), the hole card turns after the player is done, and the Fates draw one at a time. No buttons during it. The result, the purse and the win's sound wait for the last card, but the coins are saved the moment the round is decided, so stepping away or refreshing costs nothing. A table come back to does not deal itself again.
+- **The altar is earned.** The Sanctum opens with no altar: a chest by the left wall takes five coins, one per E, kept through a refresh, with a slot lit for each. A coin going in sounds the same as one picked up. The fifth opens it; the camera goes to the middle of the room, the floor parts, the altar comes up through it over 4 s with the ground shaking, the floor closes round its foot, and its flame catches. Then the player walks over and takes the word, which plays as before. **This is the first time coins gate the chain,** on the client only: the server still asks for the door word, so a forged count gets nothing. The chain itself pays 10 coins, and anyone broke can always earn: the Den leaves a coin for whoever walks in with none, and the arcade pays. Ashton's first version had the chest in front of the altar; they asked for it to the side so there is room.
+
+**Found on the way.** The Sanctum's "already lit" state was counted from page load, so a refresh there sat dark for almost 4 seconds (fixed). The game's root could be scrolled by code, so a focus jump could shift the whole screen (now `overflow-clip`).
+
+**Verified:** in dev through real play: the chest and altar, a walk from one to the other, a refresh mid-rise, no flame before there is an altar, the deal order, a dozen rounds, stepping away mid-deal, the hold's length and reduced motion throughout. `pnpm typecheck`, `lint`, `build` pass; `pnpm a11y` 0 violations. Frames in `docs/screenshots/session-17-qa/`. **Not verified:** how the new sounds land, since no one has heard them; the whole chain from the first room on the final code.
+
+**Next session starts with:** Ashton's listen and look at the chest and altar, their say on the commit, their calls above (the stone lines first), then a dry run with real people on a real laptop.
+
 ## Session 17n — 2026-11-03 (/oracle: Ashton's first listen)
 
 Three notes on Session 17m's sound, all in `components/olympus/revealSound.ts`:
@@ -184,6 +309,79 @@ Ashton asked for sound on the Oracle, above all on the REVEAL hold, to build ant
 **For the day:** render `OlympusSection` on the home page (`src/app/page.tsx`) and change its two hard-coded `/olympus` links to `/olympus3` (`home/olympus/OlympusScene.tsx`, the `router.push` and the `href`); slide 7 sends every family there. /prologue and /olympus3 are not deployed yet.
 
 **Next session starts with:** Ashton's listen to the new music and the wheel.
+
+## Session 17i — 2026-11-03 (/olympus3, a reward in the Sanctum)
+
+Ashton's problem: the last room gave nothing, since the altar handed back the word the family had just
+pressed. Their pick, from a list of ideas: a second word and a bigger entrance, with "a really good animation"
+for the reveal.
+
+- **Two words.** The fires on /olympus3 now spell a new `doorWord` per family (content/olympus.ts), which only
+  opens the great door. The altar's `takeWord` asks for the seal and that word and gives `finalWord`, so the
+  Oracle's word never leaves the server before the altar and the door word is worth nothing at the Oracle.
+  /olympus and /oracle are unchanged. The nine door words are my picks, none with a J, none tied to the family's
+  god, and Ashton has not seen them yet. The save key went to `olympus3.4`, so tabs mid-game start over.
+- **The entrance.** The door takes longer, with its fanfare held until the leaves have parted and gold light on
+  the Hall's floor. The Sanctum stays dark until first walked into, then lights from the door to the altar: near
+  bowls, far bowls, the statues' eyes, the altar's flame, then the whole room and its name. The four bowls are new.
+- **The reveal** (`crawl/reveal.ts`, about 8 seconds, on the room's own cells). The light drains into the altar,
+  sparks spiral in from the bowls, coins and floor, the flame climbs; a white core falls in on itself and the
+  sound drops out for 300 ms; one white blast shows the room; its cells hang in the air and come home letter by
+  letter, each struck white-hot and cooling to green with a climbing note; a light runs across the whole word and
+  it holds, "Bring this word to the Oracle" in the lower bar. Stepping away flies the cells up to the carving on
+  the wall. The letters are cut from Cinzel on a canvas, so the font is loaded first.
+- **Smaller notes the same day.** The SWAP! word stays 1.5 s; the mask has no eyebrows; the restart stone is grey,
+  and blank and dead until the letter grid comes up, like the backspace stone.
+
+**Verified:** played through in dev on family I at 1440×810 and family VIII (the longest word) at 1280×720: the
+old word does not open the door, the door word does, the lighting, the forging, stepping away with Esc and E, the
+wall carving, re-reading at the altar and a refresh mid-Sanctum, no console errors. Reduced motion on family V
+found the Sanctum staying dark (fixed); it now lights at once and shows the word with no animation. No door or
+Oracle word in `.next/static`. `pnpm typecheck`, `lint`, `build` pass; `pnpm a11y` 0 violations on /olympus3/1.
+Frames in `docs/screenshots/session-17i/`. **Not verified:** the sound, which no one has heard; frame rate on a
+real family laptop (on this machine the engine never stepped its resolution down, but frame times were only
+sampled for the reveal's first seconds, not the blast); the whole chain end to end, since these runs
+started from a seeded save at the Hall and sent the door word to the game's handler rather than pressing it.
+
+**Then, on the photo trial and the camera (same day).** Every button row in the photo trial stays in one row (the
+two-button rows were wrapping in a 28rem box); the naming step is Back, the field, Next face, with "First name" as
+a white placeholder and no "Face I of I". Under "… faces in the stone" a small line says a missed face can be
+clicked; hovering a marked face is red, not cyan. `Portrait` and `StageHeading` are shared, so /olympus gets these
+too, not tested there. Cutscene cameras are one eased move of fixed length, in step with a gentler zoom (1.3, not
+1.5), with a pan finer than a cell and a held shot that never restarts its move; shakes are shorter, weaker and die
+away. Measured on the photo's moment: only the three direction changes that the shots themselves ask for.
+Typing in a field never moves the dinosaur now (`typingIn`), and a world remounted behind an open close-up stays
+paused: forcing it unpaused, as a hot reload does, had reproduced the bug. The fifth riddle now brings
+"Something rumbles…" beside the map, with a far rumble and a small shake. Every hint now stays 5 seconds, once,
+and a refresh does not repeat it; the mask's reads "Remember “X”… you hear some gears shifting", and the word stays
+readable in the mask's open mouth once the hint has gone. The wheels' message now starts
+"IN LAWSON COMMONS" (placeholder `HIDING_TODO`, /olympus shares it). **TODO(Ashton):** each family's real line on
+the day, starting the same way.
+
+**The seal and the door.** Breaking the seal now leaves the clue up with nothing to answer, until the family closes
+it; only then does the square's cutscene play, with the square held back until then. The door has no close-up after
+that: its word goes in only by pressing the floor (`SealDoor` lost the field and `speakWord`), and the clue stays in
+the hint box until the door opens, the one hint that does not fade. `CLUE` gained a comma, so a letter printed from
+/olympus/letters from now on differs from one printed before. Played through in dev on family I: wrong seal, right
+seal, the clue held past the old timer, closing, the cutscene, the door refusing E, the Oracle's word refused on the
+floor, the door word pressed tile by tile, the hint gone.
+
+**The reveal's build, on Ashton's note** that it broke its tension at the wrong time. The flame now climbs for longer
+and holds at its height with sparks still pouring in, is pulled down into a white point as the sound keeps rising, and
+the sound cuts for 450 ms before the blast: 5.65 s to the blast, not 3.5 s. The word on the wall is one steady green
+from landing on, and so are the cells flying to it. Green flames have a mint step and a pale heart, like the red
+ones' gradient, everywhere `drawFlame` is used. The build's new sound timing is untested by ear.
+
+**The den and the caravan.** The den leaves a coin in the middle of its floor the first time it is entered, and
+whenever someone walks in with no coins; walking over it takes it, and one left lying stays (`denCoin` in the save).
+Cosmetics: olive wreath, vine crown, wool cap and the whole face slot are gone, cat ears added (black, 2 coins), 14
+for sale on two rugs either side of the door. The wagon's wheels have a dark tyre and pale rim and spokes. The
+dinosaur's eye is solid black in this game instead of a hole; elsewhere on the site it stays carved. The dino game
+reads "500 pts = 1 coin", and past ten coins in one run (5,000 pts, 50 s) it ramps over 3 s to 800 px/s from 540,
+with gaps of 0.34-0.60 s and half the obstacles flying.
+
+**Next session starts with:** Ashton's look and listen at the door, the lighting and the reveal, and their say on
+the nine door words.
 
 ## Session 17h — 2026-11-03 (/olympus3, the Hall's floor stones)
 

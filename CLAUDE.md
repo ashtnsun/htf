@@ -44,21 +44,22 @@ src/app/            routes. page.dev.tsx files exist only in `next dev` (see nex
                     the cover, the write-up with the team and stack in the right column, the
                     gallery and the CTA (no banner, jump links or "More projects");
                     contact/ lists email, LinkedIn and Instagram; portfolio/ and portfoliohost/
-                    are Portfolio Night (below) and olympus/ the family reveal, the only routes with
-                    server actions; no proxy
+                    are Portfolio Night (below) and olympus/ the family reveal (the game), the only routes with
+                    server actions; archive/ keeps the old /olympus, its letters and the /olympuz snapshot, `page.dev.tsx`
+                    only, so they 404 in a deploy (nothing live may import from them, or their server actions ship); no proxy
 src/components/
   portfolio/        Portfolio Night (2026-10-22): PortfolioSidebar (the whole frame; layout/SiteChrome
                     drops the site header and footer on these routes), PortfolioGrid (screenshot
                     cards, filtered by the sidebar's ?q=), AddPortfolio, HostControls, and
                     goals/ (GoalsBoard: the FigJam-style board, Realtime; Sticky)
-  olympus/          the family reveal (/olympus, an event page like Portfolio Night: no site
+  olympus/          the family reveal, shared parts and, in Trial + journey/, the flow from before the game (/archive/olympus, dev only; an event page like Portfolio Night: no site
                     chrome, noindex): Trial runs journey/ on the family's laptop, a cipher chain
                     where no step explains itself (Portrait: webcam photo, faces found on the laptop
                     by MediaPipe and named one by one; Riddles; Wordle; Inscription, a Vigenère stone
-                    with five wheels, keyed by the word plus a count under each wheel; Herald, a folded A4 letter hidden in the room where the stone says, its seal word typed on the laptop (the letters print from /olympus/letters, live since 2026-11-02: noindex and unlinked, but anyone with the URL can read the seal words); Torches,
+                    with five wheels, keyed by the word plus a count under each wheel; Herald, a folded A4 letter hidden in the room where the stone says, its seal word typed on the laptop (the letters print from /archive/olympus/letters, in `pnpm dev` only since 2026-11-03, because a deployed page shows every seal word); Torches,
                     Polybius fires; Finale, the word for /oracle), every step checked in
-                    app/olympus/actions.ts, Curtain between steps, styles in journey/journey.css;
-                    /olympuz is the frozen pre-chain snapshot (components/olympuz, content/olympuz.ts),
+                    app/archive/olympus/actions.ts, Curtain between steps, styles in journey/journey.css;
+                    /archive/olympuz is the frozen pre-chain snapshot (components/olympuz, content/olympuz.ts; its words no longer open the Oracle),
                     GodRevealView (the god's /dino sprite cell by cell), revealSound (the Oracle's sound, silent until REVEAL is pressed: `follow` drives a swell and a quickening drum from the charge, `strike` lands on the flash the instant the hold is full, with no gap, and plays against GodRevealView's `REVEAL_CUES`; `LEVEL` is the one volume number),
                     Meander (the pixel Greek key), Colonnade (the solved
                     words on pixel columns at the foot of the page), OlympusButton (every
@@ -89,7 +90,7 @@ src/components/
                     (it never imports content/olympus.ts or the gods' sprites) and explains no trial.
                     The address on screen is the constant `SITE` (htfpurdue.org): families scroll down
                     the home page, so home/olympus/OlympusSection has to be back on it for the day
-  crawl/            /olympus3, the family reveal as a game (an event page like /olympus: no site chrome,
+  crawl/            /olympus, the family reveal as a game, and what runs on the day (an event page: no site chrome,
                     noindex, ends at the same /oracle): world.ts (nine boxy rooms on one real map as data; shapes
                     from a grid of 8-pixel cells, doors must meet, checked in dev), art.ts (all pictures painted
                     in the browser per room stone, `THEMES`; dinoFrame dressed by a `Look`; the mask; gears redrawn
@@ -99,15 +100,15 @@ src/components/
                     `playCine` holds the camera dead centre on what has changed, clear of its bars, characters drawn after the dark so its dither
                     never falls on them, steps its resolution down by itself on a slow machine), Crawl.tsx (the
                     shell, HUD, map, coins, the hint beside the map; `fitMural` lands the mural's picture exactly under the
-                    photo frame, so the photo trial happens on the wall), SwapTimer.tsx (the family's 2-minute
-                    clock: silent, one big green SWAP! for half a second), trials/* (the close-ups: real DOM over the world, Esc steps away; WordGate is the
+                    photo frame, so the photo trial happens on the wall), the pause menu (Esc in play only: `freeze` / `thaw` in engine.ts stop the canvas and `clock()`, which the fires and spikes read), SwapTimer.tsx (the family's 2-minute
+                    clock, off until the photo names them: the current player's name beside it, silent, "Swap to" and the next name big and green for a second and a half, round the names in the photo's order), trials/* (the close-ups: real DOM over the world, Esc steps away; WordGate is the
                     mask's Wordle, StoneWheels the bronze machine, Mirror the character menu, DinoRun and
                     Blackjack the den's machines, blackjack.ts the rules), square.ts (the fires' square, keyed by
-                    the seal word because the fires burn from the first step), save.ts (per tab), sound.ts (no continuous
+                    the seal word because the fires burn from the first step; here the fires spell `doorWord`, which only opens the great door, and the Sanctum's altar gives `finalWord`, the Oracle's), reveal.ts (WordReveal: the altar forging that word out of the room's own cells, every position worked out from the clock; the Sanctum's first lighting is `kindle` in engine.ts; both are skipped under reduced motion, where the word is just shown), save.ts (per tab), sound.ts (`tombSound`, one instance through the temple on /olympus, `olympus/TempleSound`, and into the game, so the click on a column counts as the gesture audio asks for; no continuous
                     noise; events on instruments, not bleeps: a Karplus-Strong lyre, an ocarina, coins as struck metal, the phrases in the spirit of Zelda and never copied). The first room's door stays shut until the photo; after that
-                    every trial is open and app/olympus3/actions.ts holds the order by asking each step for proof
-                    of the last, so never trust the client's order there; coins are client-side and never touch
-                    the chain. `window.__crawl`, `__give(n)`, `__swap(s)` and `__run` exist in dev only
+                    every trial is open and app/olympus/actions.ts holds the order by asking each step for proof
+                    of the last, so never trust the client's order there; coins are client-side, and the one place they touch
+                    the chain is the Sanctum's chest (five coins raise the altar through the floor), which the server does not check and does not need to: the word still asks for the door word. `window.__crawl`, `__give(n)`, `__swap(s)` and `__run` exist in dev only
                     (`debugGo(room)` jumps rooms)
   apply/            ApplyForm (client): the Google Form in a frame tall enough that no
                     section scrolls inside it — two measured heights, the first section and
@@ -291,7 +292,9 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
   pass; dark text on green (8.6:1) and on lime (16.6:1) pass; white on green FAILS (never);
   green-deep on bg is 3.8:1 → large text or decoration only; pink (6.0:1) and blue (5.7:1) on
   bg pass but stay decoration. `/dev/ui` shows the table. `--red #FF4545` (a raw var, no
-  utility) is only the one-second flash on a wrong answer in /olympus (`journey/parts` `wrong`):
+  utility) is only the one-second flash on a wrong answer in /olympus (`journey/parts` `wrong`)
+  and the fires' opening flare (`journey/Torches`, every brazier red so it reads apart from Z),
+  and the hover on a marked face that a click takes away (`journey/Portrait`):
   a wrong answer there shows no words, only the shake and the flash (a screen reader still
   hears it); the offline message stays visible in cyan.
 
@@ -307,7 +310,7 @@ Path aliases: `@/*` → `src/*`, `@content/*` → `content/*`.
 - Every list renders `li` as the direct child of `ul`/`ol` (put `Reveal` inside the `li`,
   or around the whole list when the cards share rows through `grid-rows-subgrid`, which
   needs the direct grid → `li` → children chain).
-- Every CTA is a `SplitButton` (except on /olympus, /olympus3 and /oracle: `olympus/OlympusButton`) (primary: green label, green arrow cell, 1.5px black divider;
+- Every CTA is a `SplitButton` (except on /olympus and /oracle: `olympus/OlympusButton`) (primary: green label, green arrow cell, 1.5px black divider;
   secondary: outlined, white arrow that turns black on the green hover fill; on hover the
   label rolls up into a copy and the arrow glyph nudges, since 2026-09-08; `presentational`
   renders a span for a button inside a card that is itself the link);
