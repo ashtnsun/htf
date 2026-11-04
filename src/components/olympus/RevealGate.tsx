@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
+import type { RevealSound } from "@/components/olympus/revealSound";
 import { buildScene, rgb, SCENE_GLOW } from "@/components/olympus/scenes";
 import type { SceneId } from "@/components/olympus/shared";
 
@@ -154,20 +155,22 @@ class Charge {
 /**
  * The Oracle's screen (/oracle): `children` (the word) above a REVEAL button that has to be held.
  * Holding fills it with green while light gathers behind it, the god's `scene` (once the Oracle
- * knows it) builds over the whole screen in the god's colours, the screen rumbles harder and the phone
- * buzzes faster; letting go drains it all back. A hold only starts when `onPress` says so, and a
- * full one asks `onOpen`: true opens the reveal, false (a wrong word) lets the charge drain away as
- * if let go. Under reduced motion nothing shakes or flies: the fill, the light and the scene build
- * in place.
+ * knows it) builds over the whole screen in the god's colours, the screen rumbles harder, the phone
+ * buzzes faster and `sound` follows the charge; letting go drains it all back. A hold only starts
+ * when `onPress` says so, and a full one asks `onOpen`: true opens the reveal, false (a wrong word)
+ * lets the charge drain away as if let go. Under reduced motion nothing shakes or flies: the fill,
+ * the light and the scene build in place.
  */
 export function RevealGate({
   children,
   scene,
+  sound,
   onPress,
   onOpen,
 }: {
   children?: ReactNode;
   scene: SceneId | null;
+  sound: RevealSound;
   onPress: () => boolean;
   onOpen: () => boolean | Promise<boolean>;
 }) {
@@ -182,7 +185,10 @@ export function RevealGate({
     openRef.current = onOpen;
     pressRef.current = onPress;
   });
-  useEffect(() => charge.setScene(scene), [charge, scene]);
+  useEffect(() => {
+    charge.setScene(scene);
+    sound.setKnown(scene !== null);
+  }, [charge, scene, sound]);
   const glow = rgb(scene ? SCENE_GLOW[scene] : "#f5f5f5");
 
   useEffect(() => {
@@ -208,6 +214,7 @@ export function RevealGate({
       last = now;
       const p = charge.tick(dt);
       root.style.setProperty("--p", p.toFixed(4));
+      sound.follow(p);
       if (!reduce) {
         // The rumble: whole-pixel jolts that grow with the square of the charge.
         const a = Math.round(p * p * 7);
@@ -216,13 +223,16 @@ export function RevealGate({
       }
       charge.draw(ctx, window.innerWidth, window.innerHeight, dt, reduce);
       if (p >= 1) {
-        // The loop waits on the answer; a wrong word drains away from full.
+        // The screen goes still with the sound. The loop waits on the answer; a wrong word drains
+        // away from full.
+        stage.style.transform = "";
         Promise.resolve(openRef.current())
           .catch(() => false)
           .then((opened) => {
             if (opened) return navigator.vibrate?.(120);
             if (!alive) return;
             charge.release();
+            sound.release();
             last = performance.now();
             raf = requestAnimationFrame(frame);
           });
@@ -236,12 +246,18 @@ export function RevealGate({
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", fit);
     };
-  }, [charge, reduce]);
+  }, [charge, reduce, sound]);
 
   const press = () => {
-    if (pressRef.current()) charge.press();
+    if (pressRef.current()) {
+      charge.press();
+      sound.press();
+    }
   };
-  const release = () => charge.release();
+  const release = () => {
+    charge.release();
+    sound.release();
+  };
 
   return (
     <div

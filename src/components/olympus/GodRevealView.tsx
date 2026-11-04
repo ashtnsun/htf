@@ -10,6 +10,8 @@ const START = 0.5;
 const SPREAD = 1.4;
 /** Pixels per cell: the same on every god, a whole number (the Oracle passes a bigger one). */
 const CELL = 10;
+/** Seconds after the flash: what revealSound.ts plays its notes against. */
+export const REVEAL_CUES = { cells: START, spread: SPREAD, name: START + SPREAD + 0.2 };
 
 /**
  * The reveal: a flash of light, the god's dinosaur (from the /dino editor) switching on cell by
@@ -72,7 +74,7 @@ export function GodRevealView({ reveal, cell = CELL }: { reveal: GodReveal; cell
         className="mt-12"
         initial={reduce ? false : { opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.1, ease: EASE_GLIDE, delay: START + SPREAD + 0.2 }}
+        transition={{ duration: 1.1, ease: EASE_GLIDE, delay: REVEAL_CUES.name }}
       >
         <p className="font-olympus text-sm font-semibold tracking-[0.15em] text-muted">
           Children of

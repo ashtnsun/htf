@@ -127,7 +127,7 @@ export type Ambience = keyof typeof AMBIENCES;
 const SILENT: Mood = { level: 0, bright: 800, notes: false };
 
 /** A soft clipper's curve: linear when quiet, leaning over near full scale, never past it. */
-function softClip() {
+export function softClip() {
   const curve = new Float32Array(2048);
   const k = 1.1;
   for (let i = 0; i < curve.length; i += 1) {
@@ -135,6 +135,23 @@ function softClip() {
     curve[i] = Math.tanh(k * x) / Math.tanh(k);
   }
   return curve;
+}
+
+/** Decaying noise, different in each ear: a room to send sound into. */
+export function roomImpulse(ctx: AudioContext, seconds: number, decay: number) {
+  const length = Math.round(ctx.sampleRate * seconds);
+  const impulse = ctx.createBuffer(2, length, ctx.sampleRate);
+  for (let c = 0; c < 2; c += 1) {
+    const data = impulse.getChannelData(c);
+    let low = 0;
+    for (let i = 0; i < length; i += 1) {
+      const t = i / ctx.sampleRate;
+      const smooth = Math.min(0.9, 0.3 + t * 0.6);
+      low = low * smooth + (Math.random() * 2 - 1) * (1 - smooth);
+      data[i] = low * Math.min(1, t / 0.012) * Math.exp(-t * decay) * 0.4;
+    }
+  }
+  return impulse;
 }
 
 export class Score {
@@ -230,7 +247,7 @@ export class Score {
 
       // A stone room, so the effects sit somewhere and do not click in from nowhere.
       const room = ctx.createConvolver();
-      room.buffer = this.impulse(ctx, 1.6, 4);
+      room.buffer = roomImpulse(ctx, 1.6, 4);
       this.wet = ctx.createGain();
       this.wet.gain.value = 0.6;
       this.wet.connect(room);
@@ -253,23 +270,6 @@ export class Score {
     return buf;
   }
 
-  /** Decaying noise, different in each ear: a room to send sound into. */
-  private impulse(ctx: AudioContext, seconds: number, decay: number) {
-    const length = Math.round(ctx.sampleRate * seconds);
-    const impulse = ctx.createBuffer(2, length, ctx.sampleRate);
-    for (let c = 0; c < 2; c += 1) {
-      const data = impulse.getChannelData(c);
-      let low = 0;
-      for (let i = 0; i < length; i += 1) {
-        const t = i / ctx.sampleRate;
-        const smooth = Math.min(0.9, 0.3 + t * 0.6);
-        low = low * smooth + (Math.random() * 2 - 1) * (1 - smooth);
-        data[i] = low * Math.min(1, t / 0.012) * Math.exp(-t * decay) * 0.4;
-      }
-    }
-    return impulse;
-  }
-
   /** The music's path: chords through a slow filter and the notes, both into a long soft room. */
   private buildMusic(ctx: AudioContext) {
     const music = ctx.createGain();
@@ -278,7 +278,7 @@ export class Score {
     this.music = music;
 
     const space = ctx.createConvolver();
-    space.buffer = this.impulse(ctx, 4, 1.6);
+    space.buffer = roomImpulse(ctx, 4, 1.6);
     const send = ctx.createGain();
     send.gain.value = 0.5;
     music.connect(send);
