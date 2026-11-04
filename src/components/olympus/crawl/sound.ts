@@ -532,6 +532,95 @@ export class TombSound {
     this.pluck(81, 0.04, 0.14);
   }
 
+  /** Far off, something huge moves and settles: a long low roll, a second one under it, a low string. */
+  farRumble() {
+    this.rumble(0.8);
+    this.pluck(38, 0.15, 0.3);
+    this.later(800, () => {
+      this.tone(58, 30, 0.34, 1.8, "triangle");
+      this.burst("lowpass", 240, 0.16, 0.9, true);
+    });
+  }
+
+  /** One pair of the Sanctum's bowls catching, a step up each time. */
+  kindle(step: number) {
+    this.whoosh(0.1, 0.5);
+    this.pluck(50 + step * 7, 0, 0.32);
+    this.pluck(57 + step * 7, 0.04, 0.26);
+  }
+
+  /** The room leaning in on the altar: a low fifth swelling, the lyre climbing faster and faster. */
+  revealRise(seconds: number) {
+    if (!this.on || !this.ctx) return;
+    const ctx = this.ctx;
+    const t = this.now;
+    for (const [from, to, peak] of [
+      [55, 110, 0.3],
+      [82.4, 164.8, 0.2],
+      [110, 440, 0.07],
+    ] as const) {
+      const osc = ctx.createOscillator();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(from, t);
+      osc.frequency.exponentialRampToValueAtTime(to, t + seconds);
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(peak, t + seconds);
+      osc.connect(gain);
+      gain.connect(this.master!);
+      gain.connect(this.room!);
+      osc.start(t);
+      osc.stop(t + seconds + 0.1);
+    }
+    const notes = [50, 53, 57, 60, 62, 65, 69, 72, 74, 77, 81, 84, 86, 89, 93, 96];
+    notes.forEach((note, i) => {
+      const u = i / notes.length;
+      this.pluck(note, seconds * (1 - (1 - u) ** 1.8), 0.14 + u * 0.16);
+    });
+  }
+
+  /** Everything in the tomb holds its breath, the hum too, until it is let go. */
+  breath(held: boolean) {
+    if (!this.master) return;
+    const gain = this.master.gain;
+    gain.cancelScheduledValues(this.now);
+    if (held) gain.setTargetAtTime(this.on ? 0.015 : 0, this.now, 0.03);
+    else gain.setValueAtTime(this.on ? MASTER : 0, this.now);
+  }
+
+  /** The blast: a long fall under a low chord on every string at once. */
+  revealStrike() {
+    this.tone(120, 24, 0.9, 2.8);
+    this.tone(70, 30, 0.6, 3.2, "triangle");
+    this.burst("lowpass", 900, 0.5, 0.7, true);
+    for (const note of [38, 45, 50, 57, 62]) this.pluck(note, 0, 0.42);
+  }
+
+  /** A letter struck home: a hammer on metal, and a note that climbs with each. */
+  revealLetter(index: number) {
+    const notes = [62, 65, 69, 74, 77, 81, 86, 89, 93];
+    this.clink(index % 3, 0, 0.2);
+    this.tone(150, 60, 0.16, 0.16);
+    this.pluck(notes[index % notes.length]!, 0, 0.36);
+  }
+
+  /** The word whole: the climb resolved, the ocarina held over it. */
+  revealWhole() {
+    for (const note of [50, 57, 62, 66, 69]) this.pluck(note, 0, 0.3);
+    this.run([74, 78, 81, 86, 90, 93], 0.07, 0.24, 0.1);
+    this.ocarina(81, 0.3, 0.4, 0.07);
+    this.ocarina(86, 0.7, 2.4, 0.08);
+    this.pluck(38, 0.7, 0.4);
+    this.pluck(62, 0.72, 0.3);
+    this.pluck(69, 0.74, 0.28);
+  }
+
+  /** The word landing on the wall. */
+  revealCarve() {
+    this.stone();
+    this.run([74, 81, 86], 0.08, 0.22);
+  }
+
   /** A card down on the table. */
   card() {
     this.burst("bandpass", 2300, 0.07, 0.035);

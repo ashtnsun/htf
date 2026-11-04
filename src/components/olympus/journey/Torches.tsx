@@ -51,7 +51,8 @@ function signal(torches: readonly [number, number][]): Beat[] {
   ];
 }
 
-function Torch({ lit, cell }: { lit: boolean; cell: number }) {
+/** `flare`: the opening flare, burning red so it reads apart from the letters. */
+function Torch({ lit, flare, cell }: { lit: boolean; flare: boolean; cell: number }) {
   return (
     <svg
       viewBox="0 0 9 14"
@@ -69,13 +70,20 @@ function Torch({ lit, cell }: { lit: boolean; cell: number }) {
             y={-3}
             width={17}
             height={14}
-            className="fill-green opacity-15 [filter:blur(4px)]"
+            className={cn("opacity-15 [filter:blur(4px)]", flare ? "fill-(--red)" : "fill-green")}
           />
           <g className="journey-flame">
             {FLAME_CELLS.map((f, i) => (
               <g key={i}>
                 {f.bright.map(({ x, y }) => (
-                  <rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} className="fill-green" />
+                  <rect
+                    key={`${x}-${y}`}
+                    x={x}
+                    y={y}
+                    width={1}
+                    height={1}
+                    className={flare ? "fill-(--red)" : "fill-green"}
+                  />
                 ))}
                 {f.edge.map(({ x, y }) => (
                   <rect
@@ -84,7 +92,7 @@ function Torch({ lit, cell }: { lit: boolean; cell: number }) {
                     y={y}
                     width={1}
                     height={1}
-                    className="fill-green-deep"
+                    className={flare ? "fill-(--red) opacity-55" : "fill-green-deep"}
                   />
                 ))}
               </g>
@@ -111,97 +119,62 @@ function Torch({ lit, cell }: { lit: boolean; cell: number }) {
 }
 
 /** One wall: five braziers, the first `lit` burning, counted from the top, one to a row of the square. */
-function Wall({ lit, cell }: { lit: number; cell: number }) {
+function Wall({ lit, flare, cell }: { lit: number; flare: boolean; cell: number }) {
   return (
     <div aria-hidden="true" className="flex flex-col">
       {Array.from({ length: 5 }, (_, i) => (
         <div key={i} className="flex h-16 items-center">
-          <Torch lit={i < lit} cell={cell} />
+          <Torch lit={i < lit} flare={flare} cell={cell} />
         </div>
       ))}
     </div>
   );
 }
 
-/** The one cell written in: I and J, row 2, column 4. */
-const IJ = 8;
-const CELL =
-  "flex size-16 items-center justify-center border-r border-b border-line-strong font-olympus text-body-lg font-semibold text-text";
+/** Polybius's square: the alphabet in rows of five, I and J sharing row 2, column 4. */
+const SQUARE = [
+  ["A", "B", "C", "D", "E"],
+  ["F", "G", "H", "I/J", "K"],
+  ["L", "M", "N", "O", "P"],
+  ["Q", "R", "S", "T", "U"],
+  ["V", "W", "X", "Y", "Z"],
+];
 
-/**
- * Polybius's square, empty for the family to fill: five rows of five, each row level with a
- * torch, and only the cell I and J share written in. Each other cell takes one letter; typing
- * moves on to the next cell, Backspace in an empty cell goes back, the arrows move about.
- * Nothing is checked: a wrong square only gives a wrong word.
- */
+/** The square written out, each row level with a torch. */
 function Square({ className }: { className?: string }) {
-  const [letters, setLetters] = useState<string[]>(() => Array(25).fill(""));
-  const cells = useRef<(HTMLInputElement | null)[]>([]);
-
-  /** Focus the nearest open cell from `i` in `step`'s direction, if there is one. */
-  function move(i: number, step: number) {
-    let next = i + step;
-    if (next === IJ) next += step;
-    if (next >= 0 && next < 25) cells.current[next]?.focus();
-  }
-
   return (
-    <div
-      role="group"
+    <table
       aria-label="Polybius's square"
-      className={cn("grid grid-cols-5 border-t border-l border-line-strong", className)}
+      className={cn("border-collapse border-t border-l border-line-strong", className)}
     >
-      {letters.map((letter, i) =>
-        i === IJ ? (
-          <div key={i} className={cn(CELL, "tracking-[0.1em]")}>
-            I/J
-          </div>
-        ) : (
-          <input
-            key={i}
-            ref={(el) => {
-              cells.current[i] = el;
-            }}
-            value={letter}
-            onChange={(e) => {
-              const ch = e.target.value
-                .toUpperCase()
-                .replace(/[^A-Z]/g, "")
-                .slice(-1);
-              setLetters((all) => all.map((l, j) => (j === i ? ch : l)));
-              if (ch) move(i, 1);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Backspace" && !letter) {
-                e.preventDefault();
-                move(i, -1);
-              } else if (e.key === "ArrowRight") move(i, 1);
-              else if (e.key === "ArrowLeft") move(i, -1);
-              else if (e.key === "ArrowDown") move(i, 5);
-              else if (e.key === "ArrowUp") move(i, -5);
-            }}
-            onFocus={(e) => e.target.select()}
-            aria-label={`Row ${Math.floor(i / 5) + 1}, column ${(i % 5) + 1}`}
-            autoComplete="off"
-            autoCapitalize="characters"
-            spellCheck={false}
-            className={cn(
-              CELL,
-              "bg-transparent text-center uppercase transition-[background-color,box-shadow] focus:bg-surface-2 focus:shadow-[inset_0_-2px_0_var(--green)] focus-visible:outline-none",
-            )}
-          />
-        ),
-      )}
-    </div>
+      <tbody>
+        {SQUARE.map((row, r) => (
+          <tr key={r}>
+            {row.map((letter, c) => (
+              <td
+                key={c}
+                aria-label={`Row ${r + 1}, column ${c + 1}: ${letter}`}
+                className={cn(
+                  "size-16 border-r border-b border-line-strong text-center align-middle font-olympus text-body-lg font-semibold text-text",
+                  letter.length > 1 && "tracking-[0.1em]",
+                )}
+              >
+                {letter}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 
 /**
  * Step VI: Polybius's fires. Two walls of five braziers signal the final word one letter at a
  * time: the left wall's lit torches count the row of Polybius's square, the right wall's the
- * column. The square sits between the walls, drawn empty but for the cell I and J share: the
- * family fills in the other 24 letters themselves. Every torch flares once to say the signal
- * begins; then each letter burns and goes dark, and a long dark ends the word before it loops.
+ * column. The square sits between the walls, written out in full. Every torch flares red once
+ * to say the signal begins (red so it cannot be read as a letter, 5 and 5 being Z); then each
+ * letter burns green and goes dark, and a long dark ends the word before it loops.
  * Nothing gives away the word's length. A wrong reading costs nothing but the shake: the family
  * can try again at once. Under reduced motion the flames stand still and the whole signal is
  * also written out as counts (always, for screen readers).
@@ -237,6 +210,7 @@ export function Torches({
   }, [beat, beats, run, solved]);
 
   const now = solved ? { left: 5, right: 5 } : beats[beat]!;
+  const flare = !solved && beat === 0;
 
   function ask(event: FormEvent) {
     event.preventDefault();
@@ -267,9 +241,9 @@ export function Torches({
         className="journey-rise mt-10 grid w-full grid-cols-2 items-start justify-items-center gap-y-8 sm:grid-cols-[auto_auto_auto] sm:justify-between"
         style={{ "--d": "300ms" } as React.CSSProperties}
       >
-        <Wall lit={now.left} cell={4} />
+        <Wall lit={now.left} flare={flare} cell={4} />
         <Square className="order-last col-span-2 sm:order-none sm:col-span-1" />
-        <Wall lit={now.right} cell={4} />
+        <Wall lit={now.right} flare={flare} cell={4} />
       </div>
 
       <div className="journey-rise mt-6" style={{ "--d": "450ms" } as React.CSSProperties}>

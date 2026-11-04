@@ -67,12 +67,15 @@ export function StageHeading({
   title,
   line,
   steady = false,
+  smallLine = false,
   unnumbered = false,
 }: {
   stage: Stage;
   title: string;
   line?: string;
   steady?: boolean;
+  /** The line as a small aside. Its row keeps its height, so the title does not move. */
+  smallLine?: boolean;
   /** No numeral over the title: /olympus3, where the order is the family's to find. */
   unnumbered?: boolean;
 }) {
@@ -96,7 +99,7 @@ export function StageHeading({
           className="journey-rise mt-4 max-w-xl font-oracle text-[1.375rem] leading-snug text-muted italic md:text-2xl"
           style={{ "--d": "200ms" } as React.CSSProperties}
         >
-          <span key={line} className="journey-fade">
+          <span key={line} className={smallLine ? "journey-fade text-body" : "journey-fade"}>
             {line ?? " "}
           </span>
         </p>

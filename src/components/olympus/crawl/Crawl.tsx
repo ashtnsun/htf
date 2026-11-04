@@ -4,7 +4,8 @@ import "@/components/olympus/journey/journey.css";
 import "@/components/olympus/crawl/crawl.css";
 import { Volume2, VolumeX } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { carveStone, speakWord } from "@/app/olympus3/actions";
+import { carveStone, speakWord, takeWord } from "@/app/olympus3/actions";
+import { sentence } from "@/components/olympus/journey/cipher";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
 import { bronzeTexture, coinPicture, stoneTexture } from "@/components/olympus/crawl/art";
 import type { Round } from "@/components/olympus/crawl/blackjack";
@@ -31,6 +32,7 @@ import {
   type Target,
 } from "@/components/olympus/crawl/world";
 import { Finale } from "@/components/olympus/journey/Finale";
+import { OFFLINE } from "@/components/olympus/journey/parts";
 import { whenPassageLifts } from "@/components/olympus/Passage";
 import { roman } from "@/components/olympus/shared";
 
@@ -42,7 +44,9 @@ const RETURN = 620;
 /** Milliseconds from the passage's cells starting to open to the world starting to move. */
 const OPENING_BEAT = 500;
 /** Milliseconds a solved close-up stays up, to be seen and read, before it lets go by itself. */
-const HOLD = { stone: 3000, seal: 2600 };
+const HOLD = { stone: 3000 };
+/** Milliseconds a hint stays beside the map; `crawl-hint` in crawl.css fades over the same length. */
+const HINT_MS = 5000;
 
 const LABELS: Record<Open["kind"], string> = {
   tablet: "A riddle",
@@ -68,7 +72,8 @@ const LABELS: Record<Open["kind"], string> = {
  * riddles fill the mask's crown, its word and the family's names carve the mechanism's plate, the
  * plate says where the letter is, the letter breaks the seal, and the seal shows the square the
  * fires have been counting on since the first step. Pressing the fires' word out on that floor
- * opens the great door by itself.
+ * opens the great door by itself. The Sanctum behind it lights up as it is walked into, and its
+ * altar forges a new word, the one for the Oracle (reveal.ts).
  *
  * Every puzzle and riddle pays a coin. Coins buy clothes from the shop (worn at either mirror) and
  * feed the two machines in the den; none of that ever touches the chain. A clock under the map says
@@ -95,6 +100,11 @@ export function Crawl({
   const [moved, setMoved] = useState(!!save.place);
   const [muted, setMuted] = useState(false);
   const [cine, setCine] = useState(false);
+  // The word is being forged at the altar, or is held there waiting for the family.
+  const [forging, setForging] = useState(false);
+  const [holding, setHolding] = useState(false);
+  // The seal has just broken and its clue is up: the square stays down until that is closed.
+  const [sealOpen, setSealOpen] = useState(false);
   const [coinPop, setCoinPop] = useState(0);
   const [bjRound, setBjRound] = useState<Round | null>(null);
   const [coinSrc, setCoinSrc] = useState("");
@@ -186,6 +196,8 @@ export function Crawl({
         () => {
           setTrial(null);
           setLeaving(false);
+          setHolding(false);
+          setSealOpen(false);
           engine?.wake();
           engine?.releaseLook();
           if (worldRef.current) delete worldRef.current.dataset.zoom;
@@ -205,24 +217,11 @@ export function Crawl({
     [score],
   );
 
-  const openTrial = useCallback(
-    (target: Target) => {
+  const showTrial = useCallback(
+    (target: Open) => {
       const engine = engineRef.current;
-      if (!engine || closing.current) return;
+      if (!engine) return;
       const s = latest.current;
-      if (target.kind === "note") return say(target.text);
-      if (target.kind === "item") return buy(target.id);
-      if (target.kind === "gate") {
-        if (s.word) return say("It has heard you.");
-        const empty = s.solved.filter((answer) => !answer).length;
-        if (empty) {
-          return say(
-            empty === riddles.length
-              ? "Five sockets, all of them empty."
-              : `${roman(empty)} ${empty === 1 ? "socket is" : "sockets are"} still empty.`,
-          );
-        }
-      }
       // The mural lines itself up under its frame instead, once the frame exists (`fitMural`).
       if (worldRef.current && target.kind !== "mural") {
         const at = engine.focus(target);
@@ -245,7 +244,63 @@ export function Crawl({
       openKind.current = target.kind;
       setTrial(target);
     },
-    [buy, riddles.length, say, score],
+    [score],
+  );
+
+  /**
+   * The altar, the first time: the server gives up the word, and the world forges it. The font is
+   * loaded first because the letters are cut from it on a canvas. Under reduced motion the word is
+   * just shown.
+   */
+  const forgeWord = useCallback(
+    (target: Open) => {
+      const engine = engineRef.current;
+      const { seal, doorWord } = latest.current;
+      if (!engine || !seal || !doorWord) return;
+      engine.pause();
+      const face = rootRef.current?.querySelector(".font-olympus");
+      const font = face ? getComputedStyle(face).fontFamily : "serif";
+      void Promise.all([
+        takeWord(family, seal, doorWord),
+        document.fonts.load(`600 48px ${font}`).catch(() => []),
+      ])
+        .then(([word]) => {
+          engine.resume();
+          if (!word) return say(OFFLINE);
+          patch({ finalWord: word });
+          engine.setFlags({ final: word });
+          if (engine.revealWord(word, font)) setForging(true);
+          else showTrial(target);
+        })
+        .catch(() => {
+          engine.resume();
+          say(OFFLINE);
+        });
+    },
+    [family, patch, say, showTrial],
+  );
+
+  const openTrial = useCallback(
+    (target: Target) => {
+      if (!engineRef.current || closing.current) return;
+      const s = latest.current;
+      if (target.kind === "note") return say(target.text);
+      if (target.kind === "item") return buy(target.id);
+      if (target.kind === "gate") {
+        if (s.word) return say("It has heard you.");
+        const empty = s.solved.filter((answer) => !answer).length;
+        if (empty) {
+          return say(
+            empty === riddles.length
+              ? "Five sockets, all of them empty."
+              : `${roman(empty)} ${empty === 1 ? "socket is" : "sockets are"} still empty.`,
+          );
+        }
+      }
+      if (target.kind === "altar" && !s.finalWord) return forgeWord(target);
+      showTrial(target);
+    },
+    [buy, forgeWord, riddles.length, say, showTrial],
   );
 
   /**
@@ -295,12 +350,12 @@ export function Crawl({
   const pressed = useCallback(
     (letters: string) => {
       setStamped(letters);
-      const { seal, finalWord } = latest.current;
-      if (!seal || finalWord || letters.length < 3) return;
+      const { seal, doorWord } = latest.current;
+      if (!seal || doorWord || letters.length < 3) return;
       void speakWord(family, seal, letters)
-        .then((final) => {
-          if (!final || latest.current.finalWord) return;
-          patch({ finalWord: final });
+        .then((spoken) => {
+          if (!spoken || latest.current.doorWord) return;
+          patch({ doorWord: spoken });
           addCoins(1);
           settle(openKind.current ?? "door", { kind: "door" });
           window.setTimeout(() => engineRef.current?.clearStamps(), 3200);
@@ -310,9 +365,14 @@ export function Crawl({
     [addCoins, family, patch, settle],
   );
 
-  const handlers = useRef({ openTrial, patch, pressed });
+  const takeDenCoin = useCallback(() => {
+    patch({ denCoin: false });
+    addCoins(1);
+  }, [addCoins, patch]);
+
+  const handlers = useRef({ openTrial, patch, pressed, takeDenCoin });
   useEffect(() => {
-    handlers.current = { openTrial, patch, pressed };
+    handlers.current = { openTrial, patch, pressed, takeDenCoin };
   });
 
   useEffect(() => {
@@ -327,10 +387,16 @@ export function Crawl({
         onRoom: (id, x, y) => {
           setRoom(id);
           const seen = latest.current.visited.includes(id);
-          if (!seen) setTitle((t) => ({ text: ROOMS[id].title, id: (t?.id ?? 0) + 1 }));
+          // The Sanctum says its name once it has lit up, not in the dark.
+          if (!seen && id !== "sanctum") {
+            setTitle((t) => ({ text: ROOMS[id].title, id: (t?.id ?? 0) + 1 }));
+          }
           handlers.current.patch((s) => ({
             place: { room: id, x, y },
             visited: seen ? s.visited : [...s.visited, id],
+            // The den leaves a coin out the first time, and for anyone who walks in with none, so
+            // its machines can always be tried. One left lying stays until it is picked up.
+            denCoin: s.denCoin || (id === "den" && (!seen || s.coins === 0)),
           }));
         },
         onStamp: (letters) => handlers.current.pressed(letters),
@@ -340,15 +406,29 @@ export function Crawl({
           // Its name was said behind the passage's card, so say it again for the room to hear.
           setTitle((t) => ({ text: ROOMS.mural.title, id: (t?.id ?? 0) + 1 }));
         },
-        onCine: (on) => {
+        onCine: (on, wide) => {
           const world = worldRef.current;
           if (!world) return;
           setCine(on);
-          if (on) {
+          if (!on) setForging(false);
+          if (on && !wide) {
             // The engine has the subject in the middle of the canvas, so this closes in on it.
             world.style.transformOrigin = "50% 50%";
             world.dataset.cine = "";
-          } else delete world.dataset.cine;
+          } else if (world.dataset.cine != null) {
+            // Back out at the camera's pace, so the zoom and the pan stay one move.
+            delete world.dataset.cine;
+            world.dataset.settling = "";
+            window.setTimeout(() => delete world.dataset.settling, 1200);
+          }
+        },
+        onKindled: () => setTitle((t) => ({ text: ROOMS.sanctum.title, id: (t?.id ?? 0) + 1 })),
+        onDenCoin: () => handlers.current.takeDenCoin(),
+        onWordHeld: () => {
+          pendingEvent.current = { kind: "carve" };
+          openKind.current = "altar";
+          setHolding(true);
+          setTrial({ kind: "altar" });
         },
         onPlace: (x, y) => {
           dotRef.current?.setAttribute("x", String(Math.round(x - 12)));
@@ -366,7 +446,10 @@ export function Crawl({
         carved: !!start.carved,
         stoneRead: start.stoneRead,
         square: start.square,
+        open: !!start.doorWord,
         final: start.finalWord,
+        kindled: start.visited.includes("sanctum"),
+        denCoin: start.denCoin,
       },
       start.place,
       matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -381,7 +464,7 @@ export function Crawl({
     const cancel = whenPassageLifts(() => {
       engine.wake();
       beat = window.setTimeout(() => {
-        engine.resume();
+        if (!openKind.current) engine.resume();
         if (!start.place) score.whoosh(0.1, 0.8);
       }, OPENING_BEAT);
     });
@@ -391,6 +474,8 @@ export function Crawl({
       // that only goes unseen here, under the card.
       score.arm();
     }
+    // Remounted with a close-up still open (a hot reload in dev): the new world waits behind it too.
+    if (openKind.current) engine.pause();
     return () => {
       cancel?.();
       window.clearTimeout(beat);
@@ -414,10 +499,12 @@ export function Crawl({
       word: save.word,
       carved: !!save.carved,
       stoneRead: save.stoneRead,
-      square: save.square,
+      square: sealOpen ? null : save.square,
+      open: !!save.doorWord,
       final: save.finalWord,
+      denCoin: save.denCoin,
     });
-  }, [save]);
+  }, [save, sealOpen]);
 
   // The photo is an image the canvas can draw.
   useEffect(() => {
@@ -476,14 +563,37 @@ export function Crawl({
     return () => window.removeEventListener("keydown", onKey);
   }, [score, trial]);
 
-  // The mask's word, kept in the corner until the gears it set going have been found and read. It
-  // arrives when the mask's moment is over, with the sound of them; a refresh brings it back silently.
+  // The hint beside the map says its piece for a few seconds, once each; a refresh does not repeat it.
+  const [hint, setHint] = useState<{ kind: "rumble" } | { kind: "gears"; word: string } | null>(
+    null,
+  );
+  useEffect(() => {
+    if (!hint) return;
+    const id = window.setTimeout(() => setHint(null), HINT_MS);
+    return () => window.clearTimeout(id);
+  }, [hint]);
+
+  // The mask's word, as the mask's moment ends, with the sound of the gears it set going.
   const hintWord = save.word && !save.stoneRead ? save.word : null;
   const [hintArrived, setHintArrived] = useState(!!opening.word);
-  if (hintWord && !hintArrived && !trial && !cine) setHintArrived(true);
+  if (hintWord && !hintArrived && !trial && !cine) {
+    setHintArrived(true);
+    setHint({ kind: "gears", word: hintWord });
+  }
   useEffect(() => {
     if (hintArrived && !opening.word) score.gears();
   }, [hintArrived, opening.word, score]);
+
+  // The fifth riddle answered: the mask has woken, and the tomb says so once the close-up has gone.
+  const riddlesDone = save.solved.every(Boolean) && !save.word;
+  const [rumbled, setRumbled] = useState(opening.solved.every(Boolean));
+  if (riddlesDone && !rumbled && !trial && !cine) {
+    setRumbled(true);
+    setHint({ kind: "rumble" });
+  }
+  useEffect(() => {
+    if (rumbled && !opening.solved.every(Boolean)) engineRef.current?.tremble();
+  }, [opening.solved, rumbled]);
 
   const answers = save.solved.filter((a): a is string => !!a);
   const onClose = useCallback(() => closeTrial(), [closeTrial]);
@@ -506,7 +616,7 @@ export function Crawl({
       <div aria-hidden="true" data-on={cine ? "" : undefined} className="crawl-bars" />
 
       {/* There from the landing on: the map when it can be seen, under it the family's clock. */}
-      <div className={falling ? "crawl-corner crawl-hud-hidden" : "crawl-corner"}>
+      <div className={falling || forging ? "crawl-corner crawl-hud-hidden" : "crawl-corner"}>
         <div className={trial || cine ? "crawl-corner-map crawl-hud-hidden" : "crawl-corner-map"}>
           <TombMap room={room} visited={save.visited} solved={save} dotRef={dotRef} />
         </div>
@@ -514,9 +624,18 @@ export function Crawl({
           aria-live="polite"
           className={trial || cine ? "crawl-hint-at crawl-hud-hidden" : "crawl-hint-at"}
         >
-          {hintWord && hintArrived ? (
-            <p className="crawl-hint font-oracle">
-              Remember &ldquo;<b>{hintWord}</b>&rdquo;&hellip; you hear gears shifting.
+          {hint?.kind === "gears" ? (
+            <p key="gears" className="crawl-hint font-oracle">
+              Remember &ldquo;<b>{hint.word}</b>&rdquo;&hellip; you hear some gears shifting
+            </p>
+          ) : hint?.kind === "rumble" ? (
+            <p key="rumble" className="crawl-hint font-oracle">
+              Something rumbles&hellip;
+            </p>
+          ) : save.clue && !save.doorWord ? (
+            // The door has no close-up any more, so the clue stays here until the fires are answered.
+            <p key="clue" className="crawl-hint crawl-hint-stays font-oracle">
+              {sentence(save.clue)}
             </p>
           ) : null}
         </div>
@@ -620,7 +739,7 @@ export function Crawl({
           leaving={leaving}
           onClose={onClose}
           wide={trial.kind === "stone"}
-          bare={trial.kind === "mural"}
+          bare={trial.kind === "mural" || holding}
           plain={
             trial.kind === "gate" ||
             trial.kind === "mirror" ||
@@ -701,19 +820,15 @@ export function Crawl({
               stoneRead={save.stoneRead}
               seal={save.seal}
               clue={save.clue}
-              stamped={stamped}
               signal={signal}
               onBroken={({ seal, clue, square }) => {
                 patch({ seal, clue, square });
                 addCoins(1);
-                settleAfter("door", { kind: "square" }, HOLD.seal);
-              }}
-              onWrongWord={() => engineRef.current?.clearStamps()}
-              onSpoken={(finalWord) => {
-                patch({ finalWord });
-                addCoins(1);
-                engineRef.current?.clearStamps();
-                closeTrial({ kind: "door" });
+                // Stepped away while the server was answering: nothing to read, so straight on.
+                if (openKind.current !== "door") return engineRef.current?.play({ kind: "square" });
+                // The clue stays up until it is closed, and closing it raises the square.
+                setSealOpen(true);
+                pendingEvent.current = { kind: "square" };
               }}
             />
           ) : trial.kind === "mirror" ? (
@@ -741,12 +856,34 @@ export function Crawl({
               onWin={(n) => addCoins(n)}
               sound={score}
             />
+          ) : holding && save.finalWord ? (
+            <WordHeld word={save.finalWord} onDone={onClose} />
           ) : save.finalWord ? (
             <Finale word={save.finalWord} />
           ) : null}
         </TrialShell>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * The word whole over the altar. The canvas has drawn it, so this says it for a screen reader and
+ * says where to take it, in the lower bar. E or Enter steps away as well as Esc.
+ */
+function WordHeld({ word, onDone }: { word: string; onDone: () => void }) {
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (event.code === "KeyE" || event.code === "Enter") onDone();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onDone]);
+  return (
+    <p role="status" className="crawl-held font-olympus">
+      <span className="sr-only">Your word: {word}. </span>
+      Bring this word to the Oracle
+    </p>
   );
 }
 

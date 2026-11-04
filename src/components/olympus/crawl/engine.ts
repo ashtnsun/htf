@@ -1,6 +1,7 @@
 import { CRACK, SEAL } from "@/components/olympus/journey/Seal";
 import {
   brazierPicture,
+  coinPicture,
   BRONZE,
   C,
   cabinetPicture,
@@ -61,6 +62,7 @@ import {
   type Spot,
   type Target,
 } from "@/components/olympus/crawl/world";
+import { WALL_WORD, WordReveal } from "@/components/olympus/crawl/reveal";
 
 /**
  * The tomb's game loop: one canvas drawn with `fillRect` and small pictures at a whole number of
@@ -81,7 +83,14 @@ export type Flags = {
   stoneRead: boolean;
   /** The square's five rows, once the seal is broken. */
   square: string[] | null;
+  /** The fires' word has been spoken: the great door stands open. */
+  open: boolean;
+  /** The word for the Oracle, once the altar has given it. */
   final: string | null;
+  /** A coin is lying in the middle of the den. */
+  denCoin: boolean;
+  /** The Sanctum has been walked into before. Read once, at the start. */
+  kindled: boolean;
   look: Look;
   owned: string[];
 };
@@ -94,8 +103,14 @@ export type Hooks = {
   onFirstMove: () => void;
   /** The fall in through the roof is over. */
   onLanded: () => void;
-  /** A moment has taken the camera, or let it go. */
-  onCine: (on: boolean) => void;
+  /** A moment has taken the camera, or let it go; a wide one shows the whole frame, unzoomed. */
+  onCine: (on: boolean, wide: boolean) => void;
+  /** The Sanctum has finished lighting up, the first time. */
+  onKindled: () => void;
+  /** The word is whole at the altar and is waiting for the family. */
+  onWordHeld: () => void;
+  /** The dinosaur has walked over the den's coin. */
+  onDenCoin: () => void;
   /** Where the dinosaur is on the whole map. */
   onPlace: (x: number, y: number) => void;
 };
@@ -106,7 +121,8 @@ export type WorldEvent =
   | { kind: "word" }
   | { kind: "stone" }
   | { kind: "square" }
-  | { kind: "door" };
+  | { kind: "door" }
+  | { kind: "carve" };
 
 const SPEED = 104;
 const SLIDE = 0.62;
@@ -155,7 +171,14 @@ type Live = {
   motes: { x: number; y: number; s: number; p: number }[];
 };
 /** A held shot, centred on (x, y); `beside` is the room to draw past the edge of this one. */
-type Cine = { x: number; y: number; ms: number; beside?: RoomId; start?: () => void };
+type Cine = {
+  x: number;
+  y: number;
+  ms: number;
+  beside?: RoomId;
+  wide?: boolean;
+  start?: () => void;
+};
 
 const MURAL = { x: 120, y: 4, w: 144, h: 88, ix: 128, iy: 12, iw: 128, ih: 72 };
 const MASK = { x: 156, y: 2, w: 72, h: 78 };
@@ -163,6 +186,26 @@ const SHUT = { top: 0.62, bottom: 0.68, half: 0.3 };
 const OPEN = { top: 0.54, bottom: 0.9, half: 0.48 };
 const GREAT_DOOR = { x: 152, y: 2, w: 80, h: 62 };
 const MECHANISM = { x: 192, foot: 146 };
+/** How long the great door's leaves take to part, in milliseconds. */
+const DOOR_OPENS = 2800;
+/** The bowls lining the way up the Sanctum, the near pair first. */
+const BOWLS = [
+  { x: 130, y: 186 },
+  { x: 190, y: 186 },
+  { x: 130, y: 146 },
+  { x: 190, y: 146 },
+];
+/** The cell of each statue's carved eye. */
+const STATUE_EYES = [
+  { x: 120, y: 72 },
+  { x: 199, y: 72 },
+];
+/** Milliseconds into the Sanctum's first lighting: near bowls, far bowls, eyes, altar. */
+const KINDLE = [500, 1250, 2000, 2800];
+const KINDLE_END = 4400;
+const ALTAR = { x: 160, foot: 112 };
+/** Where the den's coin lies: the middle of its floor. */
+const DEN_COIN = { x: 112, y: 96 };
 
 const mirrorX = (spot: Spot) => spot.x;
 const WAGON = { x: 228, foot: 100 };
@@ -222,9 +265,9 @@ export function labelOf(spot: Spot, flags: Flags): string {
     case "stone":
       return "Turn the wheels";
     case "door":
-      return flags.square ? "Speak" : "Touch the seal";
+      return "Touch the seal";
     case "altar":
-      return "Take the word";
+      return flags.final ? "Read the word" : "Take the word";
     case "note":
       return "Look";
     case "mirror":
@@ -238,6 +281,16 @@ export function labelOf(spot: Spot, flags: Flags): string {
     }
   }
 }
+
+/** Milliseconds of a camera move in a moment: the same as the zoom in crawl.css, so they are one. */
+const GLIDE = 1200;
+const GLIDE_MAX = 1800;
+/** How often the shake picks a new offset: slow enough to read as weight, not as a buzz. */
+const SHAKE_STEP = 70;
+
+const typingIn = (target: EventTarget | null) =>
+  target instanceof HTMLElement &&
+  (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName));
 
 const lerp = (a: number, b: number, u: number) => a + (b - a) * u;
 const easeInOut = (u: number) => (u < 0.5 ? 2 * u * u : 1 - (-2 * u + 2) ** 2 / 2);
@@ -299,8 +352,11 @@ export class CrawlEngine {
   } | null = null;
   private falling = 0;
   private revealed = new Set<string>();
+  private shakeFrom = 0;
   private shakeUntil = 0;
   private shakeAmp = 0;
+  private shakeNext = 0;
+  private shakeAt = { x: 0, y: 0 };
   private flashUntil = 0;
   private prompt: string | null = null;
   private here: Spot | null = null;
@@ -312,6 +368,13 @@ export class CrawlEngine {
   private slabStart = -1;
   private squareStart = -1;
   private doorStart = -1;
+  /** When the Sanctum began to light, or null while it still lies dark. */
+  private kindleStart: number | null = null;
+  private kindleStep = 0;
+  private kindleDone = false;
+  private reveal: WordReveal | null = null;
+  /** The word is on its way to the wall, not on it yet. */
+  private wallHidden = false;
   private tabletPulse = new Map<number, number>();
   private wordPulse = -1;
   private stonePulse = -1;
@@ -324,6 +387,10 @@ export class CrawlEngine {
   private look = { x: 0, y: 0 };
   private lookTarget: { x: number; y: number } | null = null;
   private lookAway = false;
+  /** The camera's current move: from where, since when, for how long. */
+  private glide = { x: 0, y: 0, start: 0, ms: GLIDE };
+  /** What is left over from the camera's whole cell, for a pan finer than a cell. */
+  private subCell = "";
   private lastPlace = "";
   private reduce: boolean;
   private tints: { x: number; y: number; r: number; ink: string; alpha: number }[] = [];
@@ -343,6 +410,7 @@ export class CrawlEngine {
     this.cycle = this.beats.reduce((sum, b) => sum + b.ms, 0);
     this.flags = flags;
     this.reduce = reduce;
+    if (flags.kindled) this.markKindled();
     for (const room of ROOM_LIST) this.live.set(room.id, this.build(room));
     const known = start && ROOMS[start.room] ? start : null;
     this.current = this.live.get(known?.room ?? "mural")!;
@@ -385,6 +453,8 @@ export class CrawlEngine {
   pause(sleep = false) {
     this.paused = true;
     this.asleep = sleep;
+    // Standing, not stopped mid-stride.
+    this.moving = false;
     this.clearKeys();
     this.setPrompt(null);
   }
@@ -409,8 +479,8 @@ export class CrawlEngine {
 
   /** The mural wakes: the camera settles square on it and the dinosaur steps out of the way. */
   faceMural() {
-    this.takeCamera({ ...this.framed(MURAL.ix + MURAL.iw / 2, 104) });
-    this.aside = 132;
+    this.takeCamera({ ...this.framed(MURAL.ix + MURAL.iw / 2, 104) }, 900);
+    this.aside = 120;
   }
 
   /** The middle of the shot that shows (x, y) from inside the room, as the camera normally would. */
@@ -419,15 +489,30 @@ export class CrawlEngine {
     return { x: cam.x + this.viewW / 2, y: cam.y + this.viewH / 2 };
   }
 
-  private takeCamera(target: { x: number; y: number }) {
+  /** A new move, unless the camera is already on its way there: a held shot never restarts. */
+  private takeCamera(target: { x: number; y: number }, ms?: number) {
     if (!this.lookAway) this.look = this.framed(this.x, this.y);
+    const same = this.lookTarget?.x === target.x && this.lookTarget?.y === target.y;
     this.lookAway = true;
     this.lookTarget = target;
+    if (same) return;
+    const far = Math.hypot(target.x - this.look.x, target.y - this.look.y);
+    this.beginGlide(ms ?? Math.min(GLIDE_MAX, Math.max(GLIDE, far * 7)));
   }
 
-  /** The camera goes back to following the dinosaur. */
-  releaseLook() {
+  private beginGlide(ms: number) {
+    this.glide = { x: this.look.x, y: this.look.y, start: performance.now(), ms };
+  }
+
+  /** The camera goes back to following the dinosaur, as one move. */
+  private letCameraGo() {
+    if (!this.lookTarget) return;
     this.lookTarget = null;
+    this.beginGlide(GLIDE);
+  }
+
+  releaseLook() {
+    this.letCameraGo();
     this.aside = null;
     this.moving = false;
   }
@@ -487,7 +572,7 @@ export class CrawlEngine {
             ms: 2400,
             beside: "hall",
             start: () => {
-              this.shake(1400, 2);
+              this.shake(800, 1);
               this.score.rumble(0.8);
               for (let i = 0; i < 4; i += 1) this.spray(372, 150 + i * 7, THEMES.sand.s7, 6);
             },
@@ -500,7 +585,7 @@ export class CrawlEngine {
         break;
       case "word":
         this.wordPulse = now + 300;
-        this.shake(900, 2);
+        this.shake(600, 1);
         this.score.rumble(0.6);
         this.score.secret();
         this.playCine([{ x: MASK.x + MASK.w / 2, y: MASK.y + MASK.h / 2, ms: 2400 }]);
@@ -512,7 +597,7 @@ export class CrawlEngine {
         break;
       case "square":
         this.squareStart = now + 500;
-        this.shake(1800, 2);
+        this.shake(1000, 1);
         this.score.rumble(0.8);
         this.score.whoosh(0.15, 1.4);
         this.score.secret();
@@ -520,14 +605,40 @@ export class CrawlEngine {
           { x: SQUARE.x + SQUARE.tile * 2.5, y: SQUARE.y + SQUARE.tile * 2.5, ms: 2800 },
         ]);
         break;
-      case "door":
+      case "door": {
         this.doorStart = now + 500;
-        this.shake(2000, 2);
+        this.shake(1400, 1);
         this.score.rumble(1);
-        this.score.fanfare();
+        const x = GREAT_DOOR.x + GREAT_DOOR.w / 2;
+        const y = GREAT_DOOR.y + GREAT_DOOR.h / 2;
+        const dust = (ink: string, count: number) => {
+          for (let i = 0; i < 7; i += 1) this.spray(x - 30 + i * 10, GREAT_DOOR.y + 58, ink, count);
+        };
         this.playCine([
-          { x: GREAT_DOOR.x + GREAT_DOOR.w / 2, y: GREAT_DOOR.y + GREAT_DOOR.h / 2, ms: 3000 },
+          { x, y, ms: 1500, start: () => dust(THEMES.hall.s7, 4) },
+          {
+            x,
+            y,
+            ms: 1800,
+            start: () => {
+              this.score.rumble(0.7);
+              dust(THEMES.hall.s7, 3);
+            },
+          },
+          {
+            x,
+            y,
+            ms: 1500,
+            start: () => {
+              this.score.fanfare();
+              dust(C.gold, 5);
+            },
+          },
         ]);
+        break;
+      }
+      case "carve":
+        this.reveal?.leave(this.flags.final ?? "", now);
         break;
     }
   }
@@ -546,9 +657,9 @@ export class CrawlEngine {
     const beat = this.cine.shift();
     if (!beat) {
       this.cineLeft = 0;
-      this.lookTarget = null;
+      this.letCameraGo();
       this.beside = null;
-      this.hooks.onCine(false);
+      this.hooks.onCine(false, false);
       return;
     }
     this.cineLeft = beat.ms / 1000;
@@ -557,7 +668,123 @@ export class CrawlEngine {
     // the one place the bars and the zoom can never cut it.
     this.takeCamera({ x: beat.x, y: beat.y });
     this.beside = beat.beside ? this.live.get(beat.beside)! : null;
-    this.hooks.onCine(true);
+    this.hooks.onCine(true, !!beat.wide);
+  }
+
+  /** Something has shifted elsewhere in the tomb: felt and heard here, with the camera left alone. */
+  tremble() {
+    this.score.farRumble();
+    this.shake(900, 1);
+  }
+
+  /** Nothing left to light: the Sanctum as it stands from now on. */
+  private markKindled() {
+    this.kindleStart = 0;
+    this.kindleStep = KINDLE.length;
+    this.kindleDone = true;
+  }
+
+  /** Walked into for the first time: the room lights itself, from the door to the altar. */
+  private kindle(now: number) {
+    if (this.kindleStart !== null) return;
+    if (this.reduce) {
+      this.markKindled();
+      this.hooks.onKindled();
+      return;
+    }
+    this.kindleStart = now;
+    this.playCine([{ x: 160, y: 112, ms: KINDLE_END, wide: true }]);
+  }
+
+  private stepKindle(now: number) {
+    if (this.kindleStart === null || this.kindleDone) return;
+    const t = now - this.kindleStart;
+    while (this.kindleStep < KINDLE.length && t >= KINDLE[this.kindleStep]!) {
+      const step = this.kindleStep;
+      this.kindleStep += 1;
+      if (step < 2) {
+        this.score.kindle(step);
+        for (const bowl of BOWLS.slice(step * 2, step * 2 + 2)) {
+          this.spray(bowl.x, bowl.y - 18, C.mint, 10);
+        }
+      } else if (step === 2) {
+        this.score.kindle(2);
+      } else {
+        this.score.rumble(0.6);
+        this.score.fanfare();
+        this.shake(500, 1);
+        this.spray(ALTAR.x, ALTAR.foot - 30, C.mint, 18);
+        this.spray(ALTAR.x, ALTAR.foot - 30, C.gold, 18);
+      }
+    }
+    if (t >= KINDLE_END) {
+      this.kindleDone = true;
+      this.hooks.onKindled();
+    }
+  }
+
+  private lit(step: number, now: number) {
+    return this.kindleStart !== null && now - this.kindleStart >= KINDLE[step]!;
+  }
+
+  private bowlLit(i: number, now: number) {
+    return this.lit(i < 2 ? 0 : 1, now) && (this.reveal?.bowlLit(i, now) ?? true);
+  }
+
+  private altarFlame(now: number) {
+    if (this.reveal) return this.reveal.flame(now);
+    return this.lit(3, now) ? { half: 7, height: 20 } : null;
+  }
+
+  /** How much of the Sanctum's own light is gone, 0 to 1. */
+  private sanctumDim(now: number) {
+    if (this.reveal) return this.reveal.dim(now);
+    if (this.kindleStart === null) return 1;
+    const u = Math.max(0, Math.min(1, (now - this.kindleStart - KINDLE[3]!) / 1000));
+    return 1 - u * u * (3 - 2 * u);
+  }
+
+  /**
+   * The altar gives up the word (reveal.ts). The controls wait, and the camera holds, until the
+   * family steps away. Says no under reduced motion, when the word is simply shown.
+   */
+  revealWord(word: string, font: string) {
+    if (this.reduce) return false;
+    const now = performance.now();
+    const middleY = 92;
+    this.wallHidden = true;
+    this.reveal = new WordReveal(
+      word,
+      font,
+      this.viewW,
+      this.viewH,
+      { x: ALTAR.x, y: ALTAR.foot - 26 },
+      middleY - this.viewH / 2 + this.viewH * 0.27,
+      [
+        ...BOWLS.map((b) => ({ x: b.x, y: b.y - 18 })),
+        ...STATUE_EYES,
+        { x: 40, y: 130 },
+        { x: 280, y: 128 },
+        { x: 106, y: 180 },
+        { x: 216, y: 182 },
+        { x: 36, y: 170 },
+        { x: 284, y: 170 },
+      ],
+      this.score,
+      {
+        shake: (ms, amp) => this.shake(ms, amp),
+        onHeld: () => this.hooks.onWordHeld(),
+        onGone: () => {
+          this.reveal = null;
+          this.wallHidden = false;
+          this.cine = [];
+          this.nextCine();
+        },
+      },
+      now,
+    );
+    this.playCine([{ x: ALTAR.x, y: middleY, ms: 1e9, wide: true }]);
+    return true;
   }
 
   /** Dev only: jump to a room, for the screenshots. */
@@ -577,8 +804,10 @@ export class CrawlEngine {
 
   private shake(ms: number, amp: number) {
     if (this.reduce) return;
-    this.shakeUntil = performance.now() + ms;
+    this.shakeFrom = performance.now();
+    this.shakeUntil = this.shakeFrom + ms;
     this.shakeAmp = amp;
+    this.shakeNext = 0;
   }
 
   private resize = () => {
@@ -630,6 +859,8 @@ export class CrawlEngine {
   private keyDown = (event: KeyboardEvent) => {
     this.score.arm();
     if (this.paused || event.metaKey || event.ctrlKey || event.altKey) return;
+    // Letters typed into a field are never the dinosaur's, whatever state the game is in.
+    if (typingIn(event.target)) return;
     const code = event.code;
     // E and Enter too: the close-up they open takes the focus before the key's letter lands.
     if (code.startsWith("Arrow") || ["KeyE", "Enter"].includes(code)) event.preventDefault();
@@ -734,8 +965,15 @@ export class CrawlEngine {
       solids.push({ x: MECHANISM.x - 34, y: MECHANISM.foot - 40, w: 68, h: 40 });
     }
     if (room.id === "sanctum") {
-      items.push({ y: 112, draw: (ctx, time) => this.drawAltar(ctx, t, 160, 112, time) });
+      items.push({
+        y: ALTAR.foot,
+        draw: (ctx, time) => this.drawAltar(ctx, t, ALTAR.x, ALTAR.foot, time),
+      });
       solids.push({ x: 138, y: 96, w: 44, h: 16 });
+      BOWLS.forEach((bowl, i) => {
+        solids.push({ x: bowl.x - 5, y: bowl.y - 3, w: 10, h: 4 });
+        items.push({ y: bowl.y, draw: (ctx, time) => this.drawBowl(ctx, i, time) });
+      });
     }
     const mirror = MIRRORS[room.id];
     if (mirror) {
@@ -783,6 +1021,18 @@ export class CrawlEngine {
       });
     }
     if (room.id === "den") {
+      const coin = coinPicture();
+      items.push({
+        y: DEN_COIN.y,
+        draw: (ctx, time) => {
+          if (!this.flags.denCoin) return;
+          const x = DEN_COIN.x - Math.floor(coin.width / 2);
+          const lift = !this.reduce && Math.floor(time * 2) % 2 ? 1 : 0;
+          ctx.fillStyle = "rgba(0,0,0,0.5)";
+          ctx.fillRect(x, DEN_COIN.y - 1, coin.width, 2);
+          ctx.drawImage(coin, x, DEN_COIN.y - coin.height - 2 - lift);
+        },
+      });
       const cabinet = (kind: "arcade" | "blackjack", word: string) => {
         const { x, foot } = CABINETS[kind];
         const picture = cabinetPicture(t, word);
@@ -834,7 +1084,7 @@ export class CrawlEngine {
   private sealed(x: number, y: number) {
     const { id } = this.current.room;
     if (id === "mural") return !this.flags.pictured && x >= 368;
-    if (id === "hall") return !this.flags.final && y < 64;
+    if (id === "hall") return !this.flags.open && y < 64;
     return false;
   }
 
@@ -877,16 +1127,39 @@ export class CrawlEngine {
     };
   }
 
-  /** The camera drifts to what a moment shows, and back to the dinosaur when it is over. */
-  private stepLook(dt: number) {
-    if (!this.lookAway) return;
-    const target = this.lookTarget ?? this.framed(this.x, this.y);
-    const k = Math.min(1, dt * 3);
-    this.look.x += (target.x - this.look.x) * k;
-    this.look.y += (target.y - this.look.y) * k;
-    if (!this.lookTarget && Math.hypot(target.x - this.look.x, target.y - this.look.y) < 1) {
-      this.lookAway = false;
+  /**
+   * The camera moves to what a moment shows, and back to the dinosaur when it is over: one eased
+   * move of a fixed length, starting and stopping gently. It can land on a dinosaur still walking,
+   * since the move is always measured to where its target is now.
+   */
+  private stepLook(now: number) {
+    if (!this.lookAway) {
+      this.setSubCell(0, 0);
+      return;
     }
+    const target = this.lookTarget ?? this.framed(this.x, this.y);
+    const { x, y, start, ms } = this.glide;
+    const u = Math.max(0, Math.min(1, (now - start) / ms));
+    const e = u * u * (3 - 2 * u);
+    this.look.x = lerp(x, target.x, e);
+    this.look.y = lerp(y, target.y, e);
+    if (!this.lookTarget && u >= 1) this.lookAway = false;
+    const left = this.look.x - this.viewW / 2;
+    const top = this.look.y - this.viewH / 2;
+    this.setSubCell(left - Math.round(left), top - Math.round(top));
+  }
+
+  /**
+   * The picture is on whole cells, so a slow pan alone would step a cell at a time. The canvas takes
+   * up what is left over, in whole CSS pixels, which leaves every cell crisp.
+   */
+  private setSubCell(x: number, y: number) {
+    const dx = Math.round(-x * this.cssCell);
+    const dy = Math.round(-y * this.cssCell);
+    const next = dx || dy ? `translate(${dx}px, ${dy}px)` : "";
+    if (next === this.subCell) return;
+    this.subCell = next;
+    this.canvas.style.transform = next;
   }
 
   private setPrompt(label: string | null) {
@@ -925,7 +1198,7 @@ export class CrawlEngine {
       };
       this.x = sx;
       this.y = sy;
-    }
+    } else if (to.room.id === "sanctum") this.kindle(performance.now());
     this.score.whoosh(0.05, 0.4);
     this.hooks.onRoom(to.room.id, landing.x, landing.y);
     this.score.fire(fireIn(to.room));
@@ -941,14 +1214,13 @@ export class CrawlEngine {
     return letter ? { r, c, letter } : null;
   }
 
-  /** The Hall's two loose stones, under the feet. The lift only wakes with the letters. */
+  /** The Hall's two loose stones, under the feet. Both sleep until the letters come up. */
   private stoneUnderFoot(): FloorStone | null {
-    if (this.current.room.id !== "hall") return null;
+    if (this.current.room.id !== "hall" || !this.flags.square) return null;
     for (const [id, at] of Object.entries(FLOOR_STONES) as [
       FloorStone,
       { x: number; y: number },
     ][]) {
-      if (id === "lift" && !this.flags.square) continue;
       if (
         this.x >= at.x &&
         this.x < at.x + SQUARE.tile &&
@@ -1000,6 +1272,7 @@ export class CrawlEngine {
         this.x = s.ex;
         this.y = s.ey;
         this.slide = null;
+        if (s.to.room.id === "sanctum") this.kindle(performance.now());
       }
       return;
     }
@@ -1098,8 +1371,17 @@ export class CrawlEngine {
     }
 
     this.hazards(time);
+    this.takeDenCoin();
     this.findSpot();
     this.throwEmbers(dt);
+  }
+
+  private takeDenCoin() {
+    if (!this.flags.denCoin || this.current.room.id !== "den") return;
+    if (Math.hypot(this.x - DEN_COIN.x, this.y - DEN_COIN.y) > 11) return;
+    this.flags = { ...this.flags, denCoin: false };
+    this.spray(DEN_COIN.x, DEN_COIN.y - 6, C.gold, 10);
+    this.hooks.onDenCoin();
   }
 
   private throwEmbers(dt: number) {
@@ -1169,8 +1451,9 @@ export class CrawlEngine {
     let best: Spot | null = null;
     let bestD = Infinity;
     for (const spot of this.current.room.spots) {
-      if (spot.target.kind === "altar" && !this.flags.final) continue;
-      if (spot.target.kind === "door" && this.flags.final) continue;
+      if (spot.target.kind === "altar" && !this.flags.open) continue;
+      // Only the seal is ever opened here: the door itself answers to the floor.
+      if (spot.target.kind === "door" && this.flags.square) continue;
       if (spot.untilPictured && this.flags.pictured) continue;
       if (spot.target.kind === "item" && this.flags.owned.includes(spot.target.id)) continue;
       const d = Math.hypot(this.x - spot.x, (this.y - spot.y) * 1.2);
@@ -1180,8 +1463,8 @@ export class CrawlEngine {
       }
     }
     this.here = best;
-    this.tile = this.flags.final || best ? null : this.tileUnderFoot();
-    this.stone = this.flags.final || best ? null : this.stoneUnderFoot();
+    this.tile = this.flags.open || best ? null : this.tileUnderFoot();
+    this.stone = this.flags.open || best ? null : this.stoneUnderFoot();
     if (best) this.setPrompt(labelOf(best, this.flags));
     else if (this.tile) {
       this.setPrompt(`Press ${this.tile.letter === "I" ? "I / J" : this.tile.letter}`);
@@ -1208,7 +1491,8 @@ export class CrawlEngine {
     this.lastDraw = now;
     this.watchFrames(now);
     // A frame can be stamped a moment before the clock was last read.
-    const dt = Math.max(0, Math.min(0.05, (now - this.last) / 1000));
+    const elapsed = Math.max(0, (now - this.last) / 1000);
+    const dt = Math.min(0.05, elapsed);
     this.last = now;
     const time = now / 1000;
     if (!this.paused) this.update(dt, time);
@@ -1217,8 +1501,11 @@ export class CrawlEngine {
       this.cineLeft -= dt;
       if (this.cineLeft <= 0) this.nextCine();
     }
-    this.stepAside(dt);
-    this.stepLook(dt);
+    this.stepKindle(now);
+    this.reveal?.step(now);
+    // On real time: a machine busy finding faces must not leave it still walking under the naming.
+    this.stepAside(Math.min(0.5, elapsed));
+    this.stepLook(now);
     this.stepMotes(dt);
     this.render(now, time);
     const room = this.current.room;
@@ -1252,8 +1539,18 @@ export class CrawlEngine {
     let sx = 0;
     let sy = 0;
     if (now < this.shakeUntil) {
-      sx = Math.round((Math.random() - 0.5) * 2 * this.shakeAmp);
-      sy = Math.round((Math.random() - 0.5) * 2 * this.shakeAmp);
+      if (now >= this.shakeNext) {
+        // It dies away, and it holds each offset for a moment instead of buzzing.
+        const left = (this.shakeUntil - now) / (this.shakeUntil - this.shakeFrom);
+        const amp = this.shakeAmp * left;
+        this.shakeNext = now + SHAKE_STEP;
+        this.shakeAt = {
+          x: Math.round((Math.random() - 0.5) * 2 * amp),
+          y: Math.round((Math.random() - 0.5) * 2 * amp),
+        };
+      }
+      sx = this.shakeAt.x;
+      sy = this.shakeAt.y;
     }
 
     const dark = this.dark.ctx;
@@ -1308,10 +1605,16 @@ export class CrawlEngine {
     ctx.globalCompositeOperation = "source-over";
 
     this.drawCharacters(time);
+    this.drawSanctumOver(now);
     ctx.setTransform(R, 0, 0, R, 0, 0);
 
     if (now < this.flashUntil) {
       ctx.fillStyle = "rgba(255,69,69,0.22)";
+      ctx.fillRect(0, 0, viewW, viewH);
+    }
+    const blast = this.reveal?.flash(now) ?? 0;
+    if (blast > 0) {
+      ctx.fillStyle = `rgba(255,255,255,${blast * 0.9})`;
       ctx.fillRect(0, 0, viewW, viewH);
     }
   }
@@ -1456,21 +1759,21 @@ export class CrawlEngine {
     }
   }
 
-  /** The marks on the Hall's loose stones: the arrow that restarts the fires, and the lifted letter. */
+  /** The marks on the Hall's loose stones, blank until the letters come up: restart and lift. */
   private drawFloorStones(now: number, th: Theme) {
     const ctx = this.ctx;
     const t = SQUARE.tile;
     const restart = FLOOR_STONES.restart;
-    drawRestartMark(ctx, restart.x + 10, restart.y + 10, C.mint);
     const lift = FLOOR_STONES.lift;
-    if (this.flags.square) {
-      const age = this.squareStart < 0 ? 1e9 : now - this.squareStart;
-      if (age >= 0)
-        drawLiftMark(ctx, lift.x + 10, lift.y + 10, this.stamps.length ? C.mint : th.s7);
-      if (age >= 0 && age < 500) {
-        ctx.fillStyle = `rgba(3,198,82,${0.55 * (1 - age / 500)})`;
-        ctx.fillRect(lift.x + 1, lift.y + 1, t - 2, t - 2);
-      }
+    const age = !this.flags.square ? -1 : this.squareStart < 0 ? 1e9 : now - this.squareStart;
+    if (age >= 0) {
+      drawRestartMark(ctx, restart.x + 10, restart.y + 10, th.s7);
+      drawLiftMark(ctx, lift.x + 10, lift.y + 10, this.stamps.length ? C.mint : th.s7);
+    }
+    if (age >= 0 && age < 500) {
+      ctx.fillStyle = `rgba(3,198,82,${0.55 * (1 - age / 500)})`;
+      ctx.fillRect(restart.x + 1, restart.y + 1, t - 2, t - 2);
+      ctx.fillRect(lift.x + 1, lift.y + 1, t - 2, t - 2);
     }
     if (this.stone) {
       const { x, y } = FLOOR_STONES[this.stone];
@@ -1509,9 +1812,10 @@ export class CrawlEngine {
     }
     if (room.id === "gate") this.drawMask(now, t);
     if (room.id === "hall") this.drawGreatDoor(now, t);
-    if (room.id === "sanctum" && this.flags.final) {
-      drawWord(ctx, this.flags.final, 160, 21, t.s3, 3);
-      drawWord(ctx, this.flags.final, 160, 19, t.s8, 3);
+    if (room.id === "sanctum" && this.flags.final && !this.wallHidden) {
+      const { x, y, size } = WALL_WORD;
+      drawWord(ctx, this.flags.final, x, y + 2, t.s1, size);
+      drawWord(ctx, this.flags.final, x, y, C.green, size);
     }
     for (const f of room.fires) if (!f.big) this.drawFire(ctx, room, f, flameTime, fire);
   }
@@ -1775,11 +2079,7 @@ export class CrawlEngine {
     const H = leaves.height;
     const ix = d.x + 8;
     const iy = d.y + 8;
-    const u = this.flags.final
-      ? this.doorStart < 0
-        ? 1
-        : Math.min(1, Math.max(0, (now - this.doorStart) / 2200))
-      : 0;
+    const u = this.doorOpened(now);
     if (u <= 0) {
       ctx.drawImage(leaves, ix, iy);
       return;
@@ -1804,6 +2104,13 @@ export class CrawlEngine {
       ctx.drawImage(leaves, slide, 0, left, H, ix, iy, left, H);
       ctx.drawImage(leaves, W / 2, 0, left, H, ix + W / 2 + slide, iy, left, H);
     }
+  }
+
+  /** How far the great door's leaves have parted, 0 to 1. */
+  private doorOpened(now: number) {
+    if (!this.flags.open) return 0;
+    if (this.doorStart < 0) return 1;
+    return Math.min(1, Math.max(0, (now - this.doorStart) / DOOR_OPENS));
   }
 
   /** The bronze machine on its island: geared wheels that turn once there is something to read. */
@@ -1894,7 +2201,34 @@ export class CrawlEngine {
     ctx.fillStyle = "rgba(40,20,0,0.45)";
     ctx.fillRect(cx - 22, foot - 1, 44, 3);
     ctx.drawImage(picture, cx - 22, foot - 25);
-    if (this.flags.final) drawFlame(ctx, cx, foot - 26, 7, 20, time, 3, false);
+    const flame = this.altarFlame(performance.now());
+    if (flame) drawFlame(ctx, cx, foot - 26, flame.half, flame.height, time, 3, false);
+  }
+
+  /** One of the bowls lining the way up the Sanctum. */
+  private drawBowl(ctx: CanvasRenderingContext2D, i: number, time: number) {
+    const bowl = BOWLS[i]!;
+    const picture = brazierPicture(true, "gold");
+    const top = bowl.y - picture.height + 1;
+    ctx.fillStyle = "rgba(0,0,0,0.45)";
+    ctx.fillRect(bowl.x - 6, bowl.y - 1, 12, 3);
+    ctx.drawImage(picture, bowl.x - Math.floor(picture.width / 2), top);
+    if (this.bowlLit(i, performance.now())) {
+      drawFlame(ctx, bowl.x, top - 1, 5, 12, time, bowl.x * 0.37 + i * 2.1, false);
+    }
+  }
+
+  /** What burns through the Sanctum's dark: the statues' eyes, and the word. */
+  private drawSanctumOver(now: number) {
+    const lit = this.litAt;
+    if (!lit || lit.live.room.id !== "sanctum") return;
+    const { ctx, R } = this;
+    ctx.setTransform(R, 0, 0, R, lit.ox * R, lit.oy * R);
+    if (this.lit(2, now) && (this.reveal?.eyesLit(now) ?? true)) {
+      ctx.fillStyle = C.mint;
+      for (const eye of STATUE_EYES) ctx.fillRect(eye.x, eye.y, 1, 1);
+    }
+    this.reveal?.draw(ctx, now);
   }
 
   /** The dinosaur's shadow lies on the floor, under the dark; the body is drawn after it. */
@@ -2145,7 +2479,10 @@ export class CrawlEngine {
     const room = live.room;
     // This room's own dark: the first and last rooms are brighter than the rest.
     dark.globalCompositeOperation = "source-over";
-    const ambient = room.ambient + (1 - room.ambient) * Math.min(1, this.iris * 1.4);
+    const now = performance.now();
+    const dim = room.id === "sanctum" ? this.sanctumDim(now) : 0;
+    const open = room.ambient + (1 - room.ambient) * Math.min(1, this.iris * 1.4);
+    const ambient = open + (Math.max(open, 0.97) - open) * dim;
     dark.fillStyle = `rgba(2,5,4,${ambient})`;
     dark.fillRect(ox, oy, room.W, room.H);
     dark.globalCompositeOperation = "destination-out";
@@ -2199,9 +2536,11 @@ export class CrawlEngine {
       case "hall":
         pool(192, 36, 52);
         if (flags.square) pool(192, 128, 84);
-        if (flags.final) {
-          pool(192, 44, 96);
-          tint(192, 40, 56, THEMES.gold.s7, 0.2);
+        if (flags.open) {
+          const u = this.doorOpened(now);
+          pool(192, 44, 52 + 60 * u);
+          tint(192, 40, 56, THEMES.gold.s7, 0.26 * u);
+          tint(192, 96, 68, THEMES.gold.s7, 0.1 * u);
         }
         break;
       case "chasm":
@@ -2220,6 +2559,11 @@ export class CrawlEngine {
         break;
       }
       case "den":
+        // Enough light on the coin to find it from the door.
+        if (flags.denCoin) {
+          pool(DEN_COIN.x, DEN_COIN.y - 6, 32);
+          tint(DEN_COIN.x, DEN_COIN.y - 6, 24, C.gold, 0.14);
+        }
         for (const candle of CANDLES) {
           pool(candle.x, candle.y - 8, 36 + flicker(candle.x) * 1.5);
           tint(candle.x, candle.y - 8, 28, "#e0852a", 0.1);
@@ -2229,11 +2573,30 @@ export class CrawlEngine {
         pool(CABINETS.blackjack.x, 34, 48);
         tint(CABINETS.blackjack.x, 34, 40, "#c96f33", 0.1);
         break;
-      case "sanctum":
-        pool(160, 110, 152);
-        pool(160, 30, 112);
-        tint(160, 100, 140, THEMES.gold.s7, 0.05);
+      case "sanctum": {
+        if (dim < 0.9) {
+          pool(160, 110, 152 * (1 - dim));
+          pool(160, 30, 112 * (1 - dim));
+          tint(160, 100, 140, THEMES.gold.s7, 0.05 * (1 - dim));
+        }
+        BOWLS.forEach((bowl, i) => {
+          if (!this.bowlLit(i, now)) return;
+          pool(bowl.x, bowl.y - 18, 52 + flicker(bowl.x));
+          tint(bowl.x, bowl.y - 18, 44, C.green, 0.12);
+        });
+        if (this.altarFlame(now)) {
+          const radius = this.reveal?.lightRadius(now) ?? 72;
+          if (radius >= 8) {
+            pool(ALTAR.x, ALTAR.foot - 26, radius + flicker(3));
+            tint(ALTAR.x, ALTAR.foot - 26, radius, C.green, 0.16);
+          }
+        }
+        const glow = this.reveal?.glow(now) ?? 0;
+        if (glow > 0 && this.reveal) {
+          tint(this.reveal.middle.x, this.reveal.middle.y, 140, C.green, glow);
+        }
         break;
+      }
       default:
         break;
     }
@@ -2246,7 +2609,7 @@ export class CrawlEngine {
     }
     if (withPlayer) {
       // In the den the dinosaur carries hardly any light of its own.
-      const reach = room.id === "den" ? 44 : 84;
+      const reach = room.id === "den" ? 44 : 84 - (this.reveal ? 76 : 52) * dim;
       const radius = this.iris > 0 ? reach * (1 - this.iris) + 8 : reach;
       pool(this.x, this.y - 10, radius);
     }

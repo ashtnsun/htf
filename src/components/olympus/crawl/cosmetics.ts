@@ -18,7 +18,7 @@
  * no drachma.
  */
 
-export type Slot = "head" | "face" | "back" | "hand";
+export type Slot = "head" | "back" | "hand";
 
 export type Cosmetic = {
   id: string;
@@ -55,42 +55,14 @@ export const COSMETICS: readonly Cosmetic[] = [
 
   // Head.
   {
-    id: "laurel",
-    name: "Olive Wreath",
+    id: "cat",
+    name: "Cat Ears",
     slot: "head",
     price: 2,
-    x: 9,
-    y: -1,
-    rows: ["..g.g.g.g.", ".GgGgGgGgG", "gG........", "g........."],
-    inks: { g: "#d7dc9a", G: "#6f7f35" },
-  },
-  {
-    id: "wool",
-    name: "Red Wool Cap",
-    slot: "head",
-    price: 1,
-    x: 10,
-    y: -5,
-    rows: ["...rrrr...", "..rrrrrrr.", ".rrrrrrRrr", ".rrrrrrr.R", ".rrrrrrr..", "wwwwwwwww."],
-    inks: { r: "#d0402f", R: "#8e2418", w: "#efe6d2" },
-  },
-  {
-    id: "vine",
-    name: "Vine Crown",
-    slot: "head",
-    price: 3,
-    x: 9,
-    y: -2,
-    rows: [
-      "..l.L.l.L.",
-      ".LlLlLlLlL",
-      ".lLlLlLlLl",
-      "pp........",
-      "pPp.......",
-      ".pp.......",
-      "..p.......",
-    ],
-    inks: { l: "#a8cf4f", L: "#47701f", p: "#a56be8", P: "#5f2f9c" },
+    x: 11,
+    y: -4,
+    rows: [".o....o.", "ooo..ooo", "oppo.opo", "oppo.opo", "bbbbbbbb"],
+    inks: { o: "#211e26", p: "#ffb7c5", b: "#211e26" },
   },
   {
     id: "winged",
@@ -163,48 +135,6 @@ export const COSMETICS: readonly Cosmetic[] = [
     y: -3,
     rows: ["g..g..g", "gg.g.gg", "ggggggg", "gRgBgRg"],
     inks: { g: "#e9c46a", R: "#ff4545", B: "#3388ff" },
-  },
-
-  // Face.
-  {
-    id: "glasses",
-    name: "Scholar's Eyeglass",
-    slot: "face",
-    price: 1,
-    x: 10,
-    y: 0,
-    rows: [".RRR..", "RbbbR.", "Rb.bRR", "RbbbR.", ".RRR.."],
-    inks: { R: "#2a2018", b: "#bfe6ff" },
-  },
-  {
-    id: "patch",
-    name: "Eye Patch",
-    slot: "face",
-    price: 1,
-    x: 10,
-    y: 0,
-    rows: [".....s", ".kkks.", ".kkk..", "skkk..", "s....."],
-    inks: { k: "#1c1410", s: "#8a5a2e" },
-  },
-  {
-    id: "beard",
-    name: "Philosopher's Beard",
-    slot: "face",
-    price: 2,
-    x: 14,
-    y: 7,
-    rows: ["wwww", "wwww", ".wWw", ".wwW", "..ww", "..w.", "..w."],
-    inks: { w: "#f5f5f5", W: "#cfcfcf" },
-  },
-  {
-    id: "mask",
-    name: "Theatre Mask",
-    slot: "face",
-    price: 3,
-    x: 10,
-    y: 0,
-    rows: [".wwwwwwww.", "skkkwwwwww", "sk.kwwwwww", "skkkwwwwww", "swwwwrwwww", "swwrrrrrww"],
-    inks: { w: "#f5efe0", k: "#14100c", r: "#d0402f", s: "#8a5a2e" },
   },
 
   // Back.
@@ -374,7 +304,6 @@ export const FOR_SALE = COSMETICS.filter((c) => c.price > 0);
 export const cosmeticById = (id: string | null) => COSMETICS.find((c) => c.id === id);
 export const SLOTS: readonly { slot: Slot; name: string }[] = [
   { slot: "head", name: "Head" },
-  { slot: "face", name: "Face" },
   { slot: "back", name: "Back" },
   { slot: "hand", name: "Hand" },
 ];
@@ -395,7 +324,6 @@ export const DINO_COLORS = [
 export type Look = {
   color: string;
   head: string | null;
-  face: string | null;
   back: string | null;
   hand: string | null;
 };
@@ -403,7 +331,6 @@ export type Look = {
 export const DEFAULT_LOOK: Look = {
   color: "olympus",
   head: "fedora",
-  face: null,
   back: null,
   hand: null,
 };

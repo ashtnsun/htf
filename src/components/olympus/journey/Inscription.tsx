@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useTransition } from "react";
 import { readInscription } from "@/app/olympus/actions";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
@@ -17,16 +17,17 @@ import { OlympusButton } from "@/components/olympus/OlympusButton";
 import { cn } from "@/lib/utils";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-/** A wheel not yet turned: its column stays as carved. */
+/** A wheel cleared by the family: its column stays as carved. */
 const UNSET = "·";
 
 /**
  * Step IV: a stone carved in a Vigenère cipher, and under it a device of five wheels. Each wheel
  * turns the letters of its own column of the stone (every fifth letter), so the stone reads only
  * when all five stand on the key: the family's word, each letter moved on by the count written
- * under its wheel (cipher.ts `KEY_STEPS`: the names, the group, the exec board). Nothing says
- * the counts start from the word: five wheels after a five-letter word is the hint. A family
- * that misses it can still crack the stone by eye, wheel by wheel, hunting for words (slowly). The letters the focused wheel turns are underlined. Once it reads,
+ * under its wheel (cipher.ts `KEY_STEPS`: the names, the group, the exec board). The wheels
+ * start on the word itself, so the counts plainly move on from it. A family can still crack
+ * the stone by eye, wheel by wheel, hunting for words (slowly). The letters the focused wheel
+ * turns are underlined. Once it reads,
  * the stone wakes and its message (where in the room the family's letter is hidden) sends
  * them looking for it (step V, the herald).
  */
@@ -45,7 +46,7 @@ export function Inscription({
 }) {
   const reduce = useReducedMotionSafe();
   const period = word.length;
-  const [wheels, setWheels] = useState<string[]>(() => Array.from({ length: period }, () => UNSET));
+  const [wheels, setWheels] = useState<string[]>(() => [...word]);
   const [focused, setFocused] = useState<number | null>(null);
   const [read, setRead] = useState(false);
   const [error, setError] = useState<string>();
@@ -152,79 +153,81 @@ export function Inscription({
       <div
         role="group"
         aria-label="The wheels"
-        className="journey-rise mt-8 flex items-start justify-center gap-1 sm:gap-3"
+        className="journey-rise mt-8 flex w-[min(48rem,calc(100vw-2rem))] flex-wrap items-start justify-center gap-x-1 gap-y-5 self-center sm:gap-x-3"
         style={{ "--d": "400ms" } as React.CSSProperties}
       >
         {wheels.map((w, i) => (
-          <div key={i} className="flex w-[17vw] max-w-32 flex-col items-center">
-            <button
-              type="button"
-              tabIndex={-1}
-              aria-hidden="true"
-              disabled={awake}
-              onClick={() => step(i, -1)}
-              className="flex h-9 w-12 items-center justify-center text-muted transition-colors hover:text-green disabled:opacity-0 sm:w-14"
-            >
-              <ChevronUp className="size-5" />
-            </button>
-            <label htmlFor={`wheel-${i}`} className="sr-only">
-              Wheel {roman(i + 1)}, {KEY_STEPS[i]}: type a letter, or turn it with the arrow keys
-            </label>
-            <input
-              id={`wheel-${i}`}
-              value={w === UNSET ? "" : w}
-              placeholder={UNSET}
-              disabled={awake}
-              autoComplete="off"
-              autoCapitalize="characters"
-              spellCheck={false}
-              maxLength={2}
-              onFocus={(e) => {
-                setFocused(i);
-                e.currentTarget.select();
-              }}
-              onBlur={() => setFocused(null)}
-              onChange={(e) => {
-                const letter = e.target.value
-                  .toUpperCase()
-                  .replace(/[^A-Z]/g, "")
-                  .slice(-1);
-                turn(i, letter || UNSET);
-                if (letter) document.getElementById(`wheel-${i + 1}`)?.focus();
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "ArrowUp") {
-                  e.preventDefault();
-                  step(i, -1);
-                } else if (e.key === "ArrowDown") {
-                  e.preventDefault();
-                  step(i, 1);
-                } else if (e.key === "ArrowLeft") {
-                  document.getElementById(`wheel-${i - 1}`)?.focus();
-                } else if (e.key === "ArrowRight") {
-                  document.getElementById(`wheel-${i + 1}`)?.focus();
-                }
-              }}
-              className={cn(
-                "size-12 border-2 bg-surface text-center font-olympus text-2xl font-semibold uppercase caret-transparent transition-colors placeholder:text-muted/50 focus:border-b-green focus-visible:outline-none sm:size-14 sm:text-h3",
-                awake ? "anim-olympus-flip border-green" : "border-line-strong",
-              )}
-              style={awake ? { animationDelay: `${i * 160}ms` } : undefined}
-            />
-            <button
-              type="button"
-              tabIndex={-1}
-              aria-hidden="true"
-              disabled={awake}
-              onClick={() => step(i, 1)}
-              className="flex h-9 w-12 items-center justify-center text-muted transition-colors hover:text-green disabled:opacity-0 sm:w-14"
-            >
-              <ChevronDown className="size-5" />
-            </button>
+          <div key={i} className="flex w-28 flex-col items-center sm:w-32">
+            <div className="flex items-center">
+              <button
+                type="button"
+                tabIndex={-1}
+                aria-hidden="true"
+                disabled={awake}
+                onClick={() => step(i, -1)}
+                className="flex h-12 w-7 items-center justify-center text-muted transition-colors hover:text-green disabled:opacity-0 sm:h-14 sm:w-8"
+              >
+                <ChevronLeft className="size-5" />
+              </button>
+              <label htmlFor={`wheel-${i}`} className="sr-only">
+                Wheel {roman(i + 1)}, {KEY_STEPS[i]}: type a letter, or turn it with the arrow keys
+              </label>
+              <input
+                id={`wheel-${i}`}
+                value={w === UNSET ? "" : w}
+                placeholder={UNSET}
+                disabled={awake}
+                autoComplete="off"
+                autoCapitalize="characters"
+                spellCheck={false}
+                maxLength={2}
+                onFocus={(e) => {
+                  setFocused(i);
+                  e.currentTarget.select();
+                }}
+                onBlur={() => setFocused(null)}
+                onChange={(e) => {
+                  const letter = e.target.value
+                    .toUpperCase()
+                    .replace(/[^A-Z]/g, "")
+                    .slice(-1);
+                  turn(i, letter || UNSET);
+                  if (letter) document.getElementById(`wheel-${i + 1}`)?.focus();
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "ArrowUp") {
+                    e.preventDefault();
+                    step(i, -1);
+                  } else if (e.key === "ArrowDown") {
+                    e.preventDefault();
+                    step(i, 1);
+                  } else if (e.key === "ArrowLeft") {
+                    document.getElementById(`wheel-${i - 1}`)?.focus();
+                  } else if (e.key === "ArrowRight") {
+                    document.getElementById(`wheel-${i + 1}`)?.focus();
+                  }
+                }}
+                className={cn(
+                  "size-12 border-2 bg-surface text-center font-olympus text-2xl font-semibold uppercase caret-transparent transition-colors placeholder:text-muted/50 focus:border-b-green focus-visible:outline-none sm:size-14 sm:text-h3",
+                  awake ? "anim-olympus-flip border-green" : "border-line-strong",
+                )}
+                style={awake ? { animationDelay: `${i * 160}ms` } : undefined}
+              />
+              <button
+                type="button"
+                tabIndex={-1}
+                aria-hidden="true"
+                disabled={awake}
+                onClick={() => step(i, 1)}
+                className="flex h-12 w-7 items-center justify-center text-muted transition-colors hover:text-green disabled:opacity-0 sm:h-14 sm:w-8"
+              >
+                <ChevronRight className="size-5" />
+              </button>
+            </div>
             <p
               aria-hidden="true"
               className={cn(
-                "mt-2 text-xs leading-snug text-balance transition-colors duration-500 sm:text-sm",
+                "mt-3 text-xs leading-snug text-balance transition-colors duration-500 sm:text-sm",
                 awake ? "text-green" : focused === i ? "text-text" : "text-muted",
               )}
             >

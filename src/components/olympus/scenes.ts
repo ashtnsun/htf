@@ -999,17 +999,13 @@ const SCENES: Record<SceneId, (p: Painter) => void> = {
     }
   },
 
-  /** Hades: green hellfire climbs from a row of skulls, souls drifting up out of it. */
+  /** Hades: green hellfire climbs from behind a row of skulls, souls drifting up out of it. */
   underworld(p) {
     const { cols, rows, cx, rand, put } = p;
     const ground = rows - 3;
     for (let y = ground; y < rows; y += 1) {
       for (let x = 0; x < cols; x += 1)
         put(x, y, (x + y) % 3 ? "#2a2a2c" : "#3a3a3d", rand() * 0.06);
-    }
-    const skull = [".###.", "#####", "#.#.#", "#####", ".#.#."];
-    for (let x = 2; x < cols - 4; x += 9) {
-      stamp(p, skull, { "#": "#ede6d6" }, x, ground - 5, () => 0.04 + rand() * 0.06);
     }
     const maxH = rows * 0.62;
     for (let x = 0; x < cols; x += 1) {
@@ -1021,16 +1017,36 @@ const SCENES: Record<SceneId, (p: Painter) => void> = {
           0.07 * Math.sin(x * 0.41 + 2) +
           0.05 * Math.sin(x * 0.9)) *
         edge;
-      for (let y = Math.floor(ground - 6 - h); y < ground - 5; y += 1) {
+      // Down to the ground: the skulls are stamped over it, so it shows between them and in their
+      // eyes. The base is a deeper green, licking up raggedly into the white heart, or the bone
+      // would vanish against the white.
+      const base = ground - 8 - 1.5 * Math.sin(x * 0.53) - Math.sin(x * 1.3 + 1);
+      for (let y = Math.floor(ground - 6 - h); y < ground; y += 1) {
         const f = (ground - 6 - y) / h;
         if (f > 0.7 && rand() < (f - 0.7) * 1.8) continue;
-        const ink = f < 0.22 ? "#d9ffe3" : f < 0.5 ? "#7cfc9a" : f < 0.8 ? "#3fcf6b" : "#1f8a45";
+        const ink =
+          y > base
+            ? "#3fcf6b"
+            : y > base - 2
+              ? "#7cfc9a"
+              : f < 0.22
+                ? "#d9ffe3"
+                : f < 0.5
+                  ? "#7cfc9a"
+                  : f < 0.8
+                    ? "#3fcf6b"
+                    : "#1f8a45";
         put(x, y, ink, 0.1 + ((ground - y) / maxH) * 0.7 + rand() * 0.05);
       }
     }
+    const skull = [".###.", "#####", "#.#.#", "#####", ".#.#."];
+    for (let x = 2; x < cols - 4; x += 9) {
+      stamp(p, skull, { "#": "#ede6d6" }, x, ground - 5, () => 0.04 + rand() * 0.06);
+    }
     const soul = [".o.", "oao", "oao", ".a.", ".a."];
     for (let k = 0; k < 14; k += 1) {
-      const x = rand() * cols;
+      // One to a slice of the screen, so no two land on each other.
+      const x = ((k + rand()) / 14) * (cols - 3);
       const y = rows * (0.04 + rand() * 0.3);
       const o = 0.84 + rand() * 0.14;
       stamp(p, soul, { o: "#d9ffe3", a: "#7cfc9a" }, Math.round(x), Math.round(y), () => o);

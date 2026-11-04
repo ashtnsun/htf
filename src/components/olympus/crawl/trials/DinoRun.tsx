@@ -20,6 +20,13 @@ const GROUND = 90;
 const PX = 40;
 /** The score counts a hundred a second; a coin comes back every five seconds lived. */
 const COIN_EVERY = 5;
+/**
+ * Seconds in, ten coins earned in one run, and the machine stops being fair: over a few seconds it
+ * gets half as fast again, the gaps close to about the least a perfect jump can clear, and half of
+ * what comes flies, so every gap asks for a different answer. Still just possible, not a wall.
+ */
+const BRUTAL_AT = 10 * COIN_EVERY;
+const BRUTAL_RAMP = 3;
 
 const MARBLE = { "#": "#e8e4d8", "+": "#a8a294", "-": "#6f6a5e" };
 const TERRACOTTA = { o: "#c96f33", O: "#8e4a1f", k: "#14100c" };
@@ -197,9 +204,14 @@ class RunGame {
     this.draw();
   };
 
+  /** How far past ten coins this run is, 0 to 1. */
+  private get brutal() {
+    return Math.max(0, Math.min(1, (this.t - BRUTAL_AT) / BRUTAL_RAMP));
+  }
+
   private spawn() {
     const x = W + 4;
-    const flying = this.t > 5 && Math.random() < 0.3;
+    const flying = this.t > 5 && Math.random() < (this.brutal > 0 ? 0.5 : 0.3);
     if (flying) {
       // Low ones are jumped; high ones have to be ducked.
       const high = Math.random() < 0.5;
@@ -228,7 +240,7 @@ class RunGame {
   private step(dt: number) {
     this.t += dt;
     // Hard very fast: three times the starting speed within fifteen seconds.
-    this.speed = Math.min(540, 170 + this.t * 24);
+    this.speed = Math.min(540, 170 + this.t * 24) + 260 * this.brutal;
     const paid = Math.floor(this.t / COIN_EVERY);
     if (paid > this.paid) {
       this.paid = paid;
@@ -249,8 +261,8 @@ class RunGame {
     if (this.nextIn <= 0) {
       this.spawn();
       // The gaps close up with the speed, down to just enough to land and go again.
-      const tight = Math.max(0.5, 1.15 - this.t * 0.04);
-      this.nextIn = this.speed * (tight + Math.random() * 0.55);
+      const tight = Math.max(0.5, 1.15 - this.t * 0.04) - 0.16 * this.brutal;
+      this.nextIn = this.speed * (tight + Math.random() * (0.55 - 0.29 * this.brutal));
     }
 
     const left = PX - (this.ducking ? 10 : 7);
@@ -468,9 +480,7 @@ export function DinoRun({
                 {last.earned ? ` · ${last.earned} back` : ""}
               </p>
             ) : (
-              <p className="font-oracle text-xl italic">
-                A coin to play. One back every five seconds you last.
-              </p>
+              <p className="font-oracle text-xl italic">A coin to play. 500 pts = 1 coin</p>
             )}
             {coins >= 1 ? (
               <OlympusButton onClick={begin}>

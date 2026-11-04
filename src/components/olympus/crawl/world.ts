@@ -140,31 +140,24 @@ export const DOOR_HALF = 16;
 const rect = (x0: number, y0: number, x1: number, y1: number) => (x: number, y: number) =>
   x >= x0 && x < x1 && y >= y0 && y < y1;
 
-/** Where each thing for sale lies: on three rugs, not in rows, the way a merchant lays them out. */
+/** Where each thing for sale lies: on two rugs either side of the way in, the way a merchant lays them out. */
 const WARES = [
-  // Hats on the long rug.
-  [40, 116],
-  [68, 116],
-  [96, 116],
-  [124, 116],
-  [40, 154],
-  [68, 154],
-  [96, 154],
-  [124, 154],
-  // Faces on the small one.
-  [152, 128],
-  [180, 128],
-  [152, 158],
-  [180, 158],
+  // Hats on the red rug.
+  [55, 128],
+  [88, 128],
+  [121, 128],
+  [55, 158],
+  [88, 158],
+  [121, 158],
   // Things for the back, then things to carry, on the blue one.
-  [204, 158],
-  [232, 158],
-  [260, 158],
-  [288, 158],
-  [204, 128],
-  [232, 128],
-  [260, 128],
-  [288, 128],
+  [190, 158],
+  [218, 158],
+  [246, 158],
+  [274, 158],
+  [190, 128],
+  [218, 128],
+  [246, 128],
+  [274, 128],
 ] as const;
 export const ware = (i: number) => ({ x: WARES[i]![0], y: WARES[i]![1] });
 

@@ -20,10 +20,15 @@ export type TombSave = {
   seal: string | null;
   clue: string | null;
   square: string[] | null;
+  /** The fires' word, once it has opened the door. */
+  doorWord: string | null;
+  /** The word for the Oracle, once the altar has given it. */
   finalWord: string | null;
   place: { room: RoomId; x: number; y: number } | null;
   visited: RoomId[];
   coins: number;
+  /** A coin is lying in the middle of the den, waiting to be walked over. */
+  denCoin: boolean;
   /** Cosmetics bought. */
   owned: string[];
   look: Look;
@@ -44,16 +49,18 @@ export const emptySave = (riddles: number): TombSave => ({
   seal: null,
   clue: null,
   square: null,
+  doorWord: null,
   finalWord: null,
   place: null,
   visited: [],
   coins: 0,
+  denCoin: false,
   owned: [],
   look: DEFAULT_LOOK,
   best: 0,
 });
 
-const keyOf = (family: number) => `olympus3.3:${family}`;
+const keyOf = (family: number) => `olympus3.4:${family}`;
 
 export function loadSave(family: number, riddles: number): TombSave {
   try {

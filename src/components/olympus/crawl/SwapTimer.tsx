@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 /** Seconds at the controls before the family swaps. */
 const TURN = 120;
 /** How long the word stays on screen. */
-const FLASH_MS = 500;
+const FLASH_MS = 1500;
 const KEY = "olympus3.3:swap";
 
 function loadLeft() {
@@ -17,8 +17,8 @@ function loadLeft() {
 }
 
 /**
- * The family's clock, always on screen under the map: two minutes, then a big green SWAP! for half
- * a second, and it starts again. It makes no sound and nothing stops for it; only a cutscene or the
+ * The family's clock, always on screen under the map: two minutes, then a big green SWAP! for a
+ * second and a half, and it starts again. It makes no sound and nothing stops for it; only a cutscene or the
  * opening fall holds it (`paused`). Kept through a refresh.
  */
 export function SwapTimer({ paused }: { paused: boolean }) {

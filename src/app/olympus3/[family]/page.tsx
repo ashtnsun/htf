@@ -22,7 +22,7 @@ export default async function TombPage({ params }: PageProps<"/olympus3/[family]
       <CrawlLoader
         family={n}
         riddles={f.riddles.map((r) => r.riddle)}
-        signal={signalOn(f.finalWord, keyedSquare(f.seal))}
+        signal={signalOn(f.doorWord, keyedSquare(f.seal))}
       />
     </>
   );

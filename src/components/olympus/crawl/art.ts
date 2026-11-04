@@ -296,7 +296,7 @@ export const colorOf = (id: string) => DINO_COLORS.find((c) => c.id === id) ?? D
 
 /** One frame of the dinosaur as it is dressed: `step` is the walk's place (0-3), `blink` the eye. */
 export function dinoFrame(step: number, blink: boolean, flip: boolean, look: Look = DEFAULT_LOOK) {
-  const key = `dino:${step}:${blink}:${flip}:${look.color}:${look.head}:${look.face}:${look.back}:${look.hand}`;
+  const key = `dino:${step}:${blink}:${flip}:${look.color}:${look.head}:${look.back}:${look.hand}`;
   return kept(key, () => {
     const { canvas, ctx } = makeCanvas(DINO_W, DINO_H);
     const color = colorOf(look.color);
@@ -320,9 +320,9 @@ export function dinoFrame(step: number, blink: boolean, flip: boolean, look: Loo
         if (ch === "#") cell(x, y, color.body);
       }),
     );
-    if (blink) cell(DINO_EYE.x, DINO_EYE.y, color.body);
+    // A solid eye, not a hole: what shows through a hole would change with every room.
+    cell(DINO_EYE.x, DINO_EYE.y, blink ? color.body : C.void);
     if (back?.over) wear(back);
-    wear(cosmeticById(look.face));
     wear(cosmeticById(look.head));
     wear(cosmeticById(look.hand));
     // Last, so what is held passes behind the hand that holds it.
@@ -801,7 +801,7 @@ export function brazierPicture(big: boolean, theme: ThemeId) {
 export type MaskMouth = { top: number; bottom: number; half: number };
 
 /**
- * A Greek tragic mask in marble, `w` × `h` cells: a crown of curls, a heavy brow, hollow eyes and
+ * A Greek tragic mask in marble, `w` × `h` cells: a crown of curls, hollow eyes and
  * the mouth given as fractions of its height and half-width. Shaded by a light from the upper left
  * through a dither, so it holds together at the wall's size and at the close-up's.
  */
@@ -837,10 +837,6 @@ export function maskPicture(w: number, h: number, mouth: MaskMouth, t: Theme) {
       const light = 0.5 - u * 0.34 - (v - 0.5) * 0.28 - a * a * 0.22;
       const band = Math.floor(light * 5 + BAYER[(x % 4) + (y % 4) * 4]! / 16);
       let ink = shades[Math.max(0, Math.min(4, band))]!;
-      // The brow, falling away from the middle: the tragic slant.
-      const brow = 0.235 + a * 0.075;
-      if (Math.abs(v - brow) < 0.017 && a > 0.06 && a < 0.8) ink = t.s3;
-      else if (Math.abs(v - brow - 0.028) < 0.012 && a > 0.1 && a < 0.74) ink = t.s7;
       // Hollow eyes.
       const ex = (a - 0.4) / 0.21;
       const ey = (v - (0.3 + a * 0.05)) / 0.042;
@@ -957,7 +953,9 @@ export function drawFlame(
 ) {
   const ink = flare
     ? { core: "#ffd9d0", mid: C.red, edge: "#8c2020" }
-    : { core: C.mint, mid: C.green, edge: C.deep };
+    : { core: "#d2ffe8", mid: C.green, edge: C.deep };
+  // Green needs one more step than red to climb to its pale heart: green to mint is a small one.
+  const glow = flare ? null : C.mint;
   for (let row = 0; row < height; row += 1) {
     const u = row / height;
     const wob =
@@ -971,6 +969,7 @@ export function drawFlame(
     const x = cx + lean;
     fill(ctx, ink.edge, x - width, y, width * 2 + 1, 1);
     if (width > 1) fill(ctx, ink.mid, x - width + 1, y, width * 2 - 1, 1);
+    if (glow && width > 1 && u < 0.75) fill(ctx, glow, x - width + 2, y, width * 2 - 3, 1);
     if (width > 2 && u < 0.55) fill(ctx, ink.core, x - width + 3, y, Math.max(1, width * 2 - 5), 1);
   }
 }
@@ -1154,9 +1153,8 @@ function paintRug(
 }
 
 function paintCamp(ctx: CanvasRenderingContext2D) {
-  paintRug(ctx, 26, 94, 113, 78, "#7e2528", "#4f1518", "#e0bd7a");
-  paintRug(ctx, 141, 108, 51, 64, "#4d2a55", "#301838", "#d9c08c");
-  paintRug(ctx, 194, 108, 106, 64, "#22345f", "#141f3c", "#d9c08c");
+  paintRug(ctx, 32, 108, 112, 64, "#7e2528", "#4f1518", "#e0bd7a");
+  paintRug(ctx, 176, 108, 112, 64, "#22345f", "#141f3c", "#d9c08c");
 }
 
 /** Pennants on a sagging rope, strung across the wall of the camp. */
@@ -1630,9 +1628,14 @@ export function wagonPicture() {
           const d = Math.hypot(x, y);
           if (d > 10.4) continue;
           const spoke = x === 0 || y === 0 || Math.abs(x) === Math.abs(y);
-          if (d > 8) fill(ctx, "#6f4f2a", cx + x, 47 + y, 1, 1);
-          else if (d < 2.5) fill(ctx, "#3e2a14", cx + x, 47 + y, 1, 1);
-          else if (spoke) fill(ctx, "#9a7344", cx + x, 47 + y, 1, 1);
+          // An iron tyre, a pale wooden rim and spokes, and dark between them, to stand off the box.
+          let ink = "#1c130b";
+          if (d > 9.2) ink = "#14100c";
+          else if (d > 7.6) ink = "#d9b778";
+          else if (d < 1.5) ink = "#d9b778";
+          else if (d < 3) ink = "#14100c";
+          else if (spoke) ink = "#d9b778";
+          fill(ctx, ink, cx + x, 47 + y, 1, 1);
         }
       }
     }
@@ -1647,7 +1650,7 @@ export function miniDino(colorId: string, step: number) {
     return fromRows(
       [
         ".....####",
-        ".....#.##",
+        ".....#k##",
         ".....####",
         ".....##..",
         "#...###..",
@@ -1656,7 +1659,7 @@ export function miniDino(colorId: string, step: number) {
         ".#####...",
         ...legs,
       ],
-      { "#": colorOf(colorId).body },
+      { "#": colorOf(colorId).body, k: C.void },
     );
   });
 }

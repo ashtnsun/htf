@@ -14,12 +14,16 @@
 .crawl-world[data-zoom] {
   transform: scale(var(--zoom, 2.6));
 }
-/* A moment: the camera leans in on what has changed, slowly, and the bars come in. */
+/* A moment: the camera leans in on what has changed, slowly, and the bars come in. The same length
+   as the engine's camera move (GLIDE), so the zoom and the pan read as one. */
 .crawl-world[data-cine] {
-  transform: scale(1.5);
+  transform: scale(1.3);
   transition:
-    transform 1100ms var(--ease-in-out-soft),
-    transform-origin 1100ms var(--ease-in-out-soft);
+    transform 1200ms var(--ease-in-out-soft),
+    transform-origin 1200ms var(--ease-in-out-soft);
+}
+.crawl-world[data-settling] {
+  transition: transform 1200ms var(--ease-in-out-soft);
 }
 .crawl-bars {
   position: absolute;
@@ -196,6 +200,19 @@
   font-size: 1.125rem;
   font-weight: 600;
   line-height: 1.25;
+  animation: crawl-hint 5000ms var(--ease-smooth) both;
+}
+@keyframes crawl-hint {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  10%,
+  90% {
+    opacity: 1;
+  }
+}
+.crawl-hint-stays {
   animation: journey-fade 500ms var(--ease-smooth) both;
 }
 .crawl-hint b {
@@ -742,6 +759,23 @@
   background: none;
 }
 
+/* Where to take the word: in the lower bar, under everything the moment has shown. */
+.crawl-held {
+  position: absolute;
+  inset: auto 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 11%;
+  padding: 0 1rem;
+  text-align: center;
+  font-size: clamp(1rem, 2.4vh, 1.625rem);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
 .crawl-away {
   position: fixed;
   top: 0.875rem;
@@ -932,7 +966,8 @@
   .crawl-world[data-cine] {
     transform: none;
   }
-  .crawl-title {
+  .crawl-title,
+  .crawl-hint {
     animation: none;
   }
 }

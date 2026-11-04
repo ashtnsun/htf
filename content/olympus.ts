@@ -43,17 +43,23 @@ export type Family = {
   hiding: string;
   /** The word printed inside the family's letter, typed on the laptop to break its seal. */
   seal: string;
+  /**
+   * /olympus3 only: what the fires spell there. It opens the great door and nothing else; the
+   * Sanctum's altar then gives `finalWord`, which this must never equal. No J: the fires' square
+   * has none, so a word with one could not be pressed on the floor.
+   */
+  doorWord: string;
   finalWord: string;
 };
 
 /** Inside every letter (step 4), the same for every family. Points to step 5, barely. */
-export const CLUE = "IN THE SQUARE OF POLYBIUS THE LEFT FIRES COUNT THE ROW";
+export const CLUE = "IN THE SQUARE OF POLYBIUS, THE LEFT FIRES COUNT THE ROW";
 
 /**
- * TODO(Ashton): the letters are hidden on the day; replace each family's `hiding` with a
- * cryptic line for its spot. Until then every stone carries this.
+ * TODO(Ashton): the letters are hidden on the day; replace each family's `hiding` with a line for
+ * its spot, every one starting IN LAWSON COMMONS. Until then every stone carries this.
  */
-const HIDING_TODO = "YOUR LETTER IS HIDDEN SOMEWHERE IN THIS ROOM";
+const HIDING_TODO = "IN LAWSON COMMONS YOUR LETTER IS HIDDEN";
 
 /** In family order: index 0 is Family I. */
 export const FAMILIES: readonly Family[] = [
@@ -63,6 +69,7 @@ export const FAMILIES: readonly Family[] = [
     word: "GYROS",
     hiding: HIDING_TODO,
     seal: "ARETE",
+    doorWord: "ITHACA",
     finalWord: "DRACHMA",
     riddles: [
       {
@@ -100,6 +107,7 @@ export const FAMILIES: readonly Family[] = [
     word: "DELTA",
     hiding: HIDING_TODO,
     seal: "KLEOS",
+    doorWord: "CORINTH",
     finalWord: "MARATHON",
     riddles: [
       {
@@ -137,6 +145,7 @@ export const FAMILIES: readonly Family[] = [
     word: "TITAN",
     hiding: HIDING_TODO,
     seal: "XENIA",
+    doorWord: "CYCLOPS",
     finalWord: "PHOENIX",
     riddles: [
       {
@@ -174,6 +183,7 @@ export const FAMILIES: readonly Family[] = [
     word: "HOMER",
     hiding: HIDING_TODO,
     seal: "NOSTOS",
+    doorWord: "LABYRINTH",
     finalWord: "SPARTAN",
     riddles: [
       {
@@ -210,6 +220,7 @@ export const FAMILIES: readonly Family[] = [
     word: "SIGMA",
     hiding: HIDING_TODO,
     seal: "MOIRA",
+    doorWord: "PANDORA",
     finalWord: "PEGASUS",
     riddles: [
       {
@@ -246,6 +257,7 @@ export const FAMILIES: readonly Family[] = [
     word: "PLATO",
     hiding: HIDING_TODO,
     seal: "LOGOS",
+    doorWord: "SPHINX",
     finalWord: "AMPHORA",
     riddles: [
       {
@@ -282,6 +294,7 @@ export const FAMILIES: readonly Family[] = [
     word: "CHAOS",
     hiding: HIDING_TODO,
     seal: "KAIROS",
+    doorWord: "GORGON",
     finalWord: "CENTAUR",
     riddles: [
       {
@@ -317,6 +330,7 @@ export const FAMILIES: readonly Family[] = [
     word: "OMEGA",
     hiding: HIDING_TODO,
     seal: "ETHOS",
+    doorWord: "ARGONAUT",
     finalWord: "MINOTAUR",
     riddles: [
       {
@@ -353,6 +367,7 @@ export const FAMILIES: readonly Family[] = [
     word: "ATLAS",
     hiding: HIDING_TODO,
     seal: "AGON",
+    doorWord: "ACROPOLIS",
     finalWord: "ODYSSEY",
     riddles: [
       {

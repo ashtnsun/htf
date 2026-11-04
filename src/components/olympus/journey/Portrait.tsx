@@ -169,16 +169,17 @@ export function Portrait({
           ? { title: "Finding every face", line: "Hold still." }
           : phase === "review"
             ? faces.length
-              ? { title: `${roman(faces.length)} faces in the stone` }
+              ? {
+                  title: `${roman(faces.length)} faces in the stone`,
+                  line: "(If anyone was not identified, click on their face to add them)",
+                  smallLine: true,
+                }
               : {
                   title: "Mark every face",
                   line: "The stone found no one. Tap each face to mark it.",
                 }
             : phase === "naming"
-              ? {
-                  title: "Who is this?",
-                  line: `Face ${roman(focus + 1)} of ${roman(faces.length)}`,
-                }
+              ? { title: "Who is this?" }
               : { title: "Remember these names" };
 
   const named = names.filter(Boolean).length;
@@ -221,7 +222,7 @@ export function Portrait({
                         event.stopPropagation();
                         setFaces(faces.filter((_, j) => j !== i));
                       }}
-                      className="group journey-fade absolute border-2 border-green transition-colors hover:border-cyan"
+                      className="group journey-fade absolute border-2 border-green transition-colors hover:border-(--red)"
                       style={{
                         left: `${f.x * 100}%`,
                         top: `${f.y * 100}%`,
@@ -229,7 +230,7 @@ export function Portrait({
                         height: `${f.h * 100}%`,
                       }}
                     >
-                      <span className="absolute -top-0.5 left-1/2 flex -translate-x-1/2 -translate-y-full items-center gap-1 bg-green px-1.5 font-olympus text-[0.7rem] leading-5 font-semibold text-bg transition-colors group-hover:bg-cyan">
+                      <span className="absolute -top-0.5 left-1/2 flex -translate-x-1/2 -translate-y-full items-center gap-1 bg-green px-1.5 font-olympus text-[0.7rem] leading-5 font-semibold text-bg transition-colors group-hover:bg-(--red)">
                         {roman(i + 1)}
                         <X className="size-3" aria-hidden="true" />
                       </span>
@@ -251,7 +252,7 @@ export function Portrait({
 
       <div
         key={phase === "naming" ? `naming-${focus}` : phase}
-        className="journey-fade flex w-[min(28rem,calc(100vw-2rem))] justify-center self-start pt-8"
+        className="journey-fade flex w-[min(56rem,calc(100vw-2rem))] justify-center self-start pt-8"
         style={phase === "named" ? rise(400 + named * 120) : undefined}
       >
         {phase === "intro" ? (
@@ -575,7 +576,14 @@ function NameFace({
   }
 
   return (
-    <form ref={formRef} onSubmit={submit} className="flex w-full flex-col items-center gap-3">
+    <form
+      ref={formRef}
+      onSubmit={submit}
+      className="flex w-full max-w-3xl flex-wrap items-center justify-center gap-4 sm:flex-nowrap sm:gap-6"
+    >
+      <OlympusButton variant="secondary" onClick={onBack}>
+        Back
+      </OlympusButton>
       <input
         value={name}
         onChange={(e) => {
@@ -587,28 +595,17 @@ function NameFace({
         autoCapitalize="words"
         spellCheck={false}
         maxLength={24}
+        placeholder="First name"
         aria-label={`First name of face ${roman(index + 1)}`}
         aria-describedby={error ? `face-${index}-error` : undefined}
         aria-invalid={error ? true : undefined}
-        className="w-full border-b-2 border-line-strong bg-transparent pb-2 pl-[0.12em] text-center font-olympus text-h3 font-semibold tracking-[0.12em] uppercase transition-colors focus:border-green focus-visible:outline-none"
+        className="order-first w-full min-w-0 border-b-2 border-line-strong bg-transparent pb-2 pl-[0.12em] text-center font-olympus text-h3 font-semibold tracking-[0.12em] uppercase transition-colors placeholder:text-text placeholder:opacity-100 focus:border-green focus-visible:outline-none sm:order-none sm:w-auto sm:flex-1"
       />
-      {/* The caption under the line. A wrong name is the shake and the red flash; only a screen
-          reader hears it said. */}
-      <p id={`face-${index}-error`} role="status" className="flex min-h-5 items-center">
-        {error ? <span className="sr-only">{error}</span> : null}
-        <span
-          aria-hidden="true"
-          className="font-olympus text-xs font-semibold tracking-[0.2em] text-muted uppercase"
-        >
-          First name
-        </span>
+      <OlympusButton type="submit">Next face</OlympusButton>
+      {/* A wrong name is the shake and the red flash; only a screen reader hears it said. */}
+      <p id={`face-${index}-error`} role="status" className="sr-only">
+        {error}
       </p>
-      <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6">
-        <OlympusButton variant="secondary" onClick={onBack}>
-          Back
-        </OlympusButton>
-        <OlympusButton type="submit">Next face</OlympusButton>
-      </div>
     </form>
   );
 }

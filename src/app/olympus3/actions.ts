@@ -9,7 +9,8 @@ import { normalize } from "@/lib/olympus/match";
  * The tomb's checks (/olympus3). Every trial is open from the first step, so each of these asks
  * for proof of what comes before it instead of trusting the order: the gate wants the five
  * answers, the stone wants the word and the names, the seal wants the stone's key, the fires'
- * word wants the seal. The riddles and the Oracle use the same checks as /olympus.
+ * word wants the seal, the altar wants the fires' word. The riddles and the Oracle use the same
+ * checks as /olympus.
  */
 
 function family(n: unknown) {
@@ -66,10 +67,18 @@ export async function breakDoorSeal(n: number, stoneKey: string, names: string[]
   return { clue: CLUE, square: keyedSquare(f.seal) };
 }
 
-/** The final word, spoken at the door. Never the god: that waits at the Oracle. */
+/** The fires' word, spoken at the door. It opens the door and is worth nothing at the Oracle. */
 export async function speakWord(n: number, seal: string, guess: string) {
   const f = family(n);
   if (!f || typeof seal !== "string" || typeof guess !== "string") return null;
   if (normalize(seal) !== normalize(f.seal)) return null;
-  return normalize(guess) === normalize(f.finalWord) ? f.finalWord : null;
+  return normalize(guess) === normalize(f.doorWord) ? f.doorWord : null;
+}
+
+/** The word for the Oracle, from the altar past the door. Never the god: that waits at the Oracle. */
+export async function takeWord(n: number, seal: string, doorWord: string) {
+  const f = family(n);
+  if (!f || typeof seal !== "string" || typeof doorWord !== "string") return null;
+  if (normalize(seal) !== normalize(f.seal)) return null;
+  return normalize(doorWord) === normalize(f.doorWord) ? f.finalWord : null;
 }
