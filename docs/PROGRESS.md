@@ -88,6 +88,18 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 17l — 2026-11-03 (the Prologue: the Oracle slide after the chain)
+
+**Asked:** move "Bring your final word to the Oracle." to after the chain slide. The order is now standby, opening, execs, question, chain, Oracle, laptop, site, column, Good luck. The press on "Good luck." still leaves for /oracle.
+
+**One side effect fixed:** "Good luck." now flies in from the temple rather than the fire and stars, and with every cell flying green that made a solid green mass behind the title, up to 34% of the screen for about two seconds. On this one change the cells now keep their own colours (no `burn`).
+
+**Verified:** `pnpm typecheck`, ESLint, `pnpm build`; the deck from the question to /oracle in the new order with no console errors. Frames: `docs/screenshots/session-17l/`.
+
+**Worth noting:** "Good luck." still shows the address, and the setup slides now sit between the Oracle slide and it, so the last thing families hear about before starting is the setup.
+
+**Next session starts with:** Ashton's listen to the opening's build and the randomizer (Session 17k).
+
 ## Session 17k — 2026-11-03 (the Prologue: one opening, a game sound for the randomizer, new exec photos)
 
 **Asked:** "Before the first commit", the climb and the lightning as one sequence, with a decent pause at the top and the soundtrack building to the strike. The randomizer sound more gamified. The laptop line changed to "Swap every 2 minutes!". Five new exec photos, framed well (Emily, Arav, Jason, Nakul, Shreeya, in the order Ashton gave them; the other four keep theirs).
