@@ -13,10 +13,10 @@ import { roomImpulse, softClip } from "@/components/olympus/prologue/score";
  * - the glints: once the Oracle knows the word, a note on each pulse climbs with the charge, as the
  *   scene's cells gather. A word it does not know gets no glints, as it gets no scene.
  *
- * Then `breath`: at a full hold everything stops, sound and screen, for under half a second. `strike`
- * lands on the flash and resolves the suspended chord to E major, the cells switch on over a run of
- * rising notes and a bell brings in the name (REVEAL_CUES is GodRevealView's own timing). It rings
- * out to silence: the room should talk over the end of it. `deny` is the wrong word's dull thud.
+ * Then `strike`, the instant the hold is full, with no gap (a pause there reads as the page lagging):
+ * it lands on the flash and resolves the suspended chord to E major, the cells switch on over a run of
+ * rising notes and a soft high chord comes in under the name (REVEAL_CUES is GodRevealView's own
+ * timing). It rings out to silence: the room should talk over the end of it. `deny` is the wrong word's dull thud.
  *
  * The energy sits between 200 Hz and 5 kHz, because laptops and most projector speakers play next to
  * nothing under 150 Hz.
@@ -24,8 +24,6 @@ import { roomImpulse, softClip } from "@/components/olympus/prologue/score";
 
 /** The whole thing's level: the one number to change if the room needs it louder or quieter. */
 const LEVEL = 0.9;
-/** Seconds of silence between a full hold and the flash. */
-const BREATH = 0.42;
 /** Each oscillator of the swell at full charge (there are sixteen). */
 const SWELL_VOICE = 0.05;
 /** Each oscillator of the strike's chord (there are sixteen). */
@@ -163,7 +161,7 @@ export class RevealSound {
     swell.sources.offset.setTargetAtTime(1 - p ** 1.6, now, 0.03);
     // Holding, it grows late and hard; let go, it sinks evenly, so the fall can be heard.
     const level = this.holding
-      ? 0.12 + 0.88 * p ** 2.2
+      ? 0.22 + 0.78 * p ** 2.2
       : this.drain.level * clamp01(p / this.drain.charge);
     this.level = level;
     this.charge = p;
@@ -248,7 +246,7 @@ export class RevealSound {
   /** One beat of the roll: a drum that tightens and rises with the charge, and maybe a glint. */
   private pulse(at: number, p: number) {
     const ctx = this.ctx!;
-    const level = 0.12 + 0.38 * p ** 1.5;
+    const level = 0.18 + 0.32 * p ** 1.5;
     const pitch = 190 + 90 * p;
     const drum = ctx.createOscillator();
     drum.type = "triangle";
@@ -321,26 +319,14 @@ export class RevealSound {
     }
   }
 
-  /** Everything cuts out, and the promise resolves when the silence has lasted. */
-  breath() {
-    this.holding = false;
-    if (this.ctx) {
-      const now = this.now;
-      this.master!.gain.cancelScheduledValues(now);
-      this.master!.gain.setTargetAtTime(0, now, 0.015);
-      this.stopSwell(0.015);
-      this.nextPulse = 0;
-    }
-    return new Promise<void>((done) => window.setTimeout(done, BREATH * 1000));
-  }
-
   /** The flash: the hit, the chord the hold was asking for, then the cells' run and the name. */
   strike() {
     const ctx = this.ctx;
     if (!ctx) return;
     const t = ctx.currentTime;
-    this.master!.gain.cancelScheduledValues(t);
-    this.master!.gain.setValueAtTime(LEVEL, t);
+    this.holding = false;
+    this.nextPulse = 0;
+    this.stopSwell(0.015);
 
     // The hit itself: a drop with enough top to land on a laptop, and the crack on the front of it.
     const body = ctx.createOscillator();
@@ -398,9 +384,8 @@ export class RevealSound {
       this.pluck(midi, at, 0.05 + 0.03 * (i / RUN.length), 0.8, i % 2 ? 0.35 : -0.35);
     });
 
-    // The name: a bell and the chord coming back, high up and soft.
+    // The name: the chord coming back, high up and soft.
     const at = t + name;
-    this.bell(hz(88), at, 0.11);
     const lift = ctx.createGain();
     lift.gain.setValueAtTime(0.0001, at);
     lift.gain.exponentialRampToValueAtTime(1, at + 0.5);

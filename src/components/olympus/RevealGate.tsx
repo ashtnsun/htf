@@ -223,7 +223,7 @@ export function RevealGate({
       }
       charge.draw(ctx, window.innerWidth, window.innerHeight, dt, reduce);
       if (p >= 1) {
-        // The screen goes still with the sound. The loop waits on the answer; a wrong word drains
+        // The rumble stops. The loop waits on the answer (already in, by now); a wrong word drains
         // away from full.
         stage.style.transform = "";
         Promise.resolve(openRef.current())

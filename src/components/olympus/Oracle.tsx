@@ -54,7 +54,6 @@ export function Oracle() {
       // Room for the name and the exec under the dinosaur (about 390px with the frame above).
       const fit = Math.floor((window.innerHeight - 390) / found.sprite.height);
       setCell(Math.max(6, Math.min(16, fit)));
-      await sound.breath();
       sound.strike();
       setReveal(found);
       return true;
