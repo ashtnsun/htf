@@ -301,6 +301,8 @@
   align-items: center;
   justify-content: center;
   gap: calc(var(--u) * 136);
+  /* The line, the photos and the lower band together sit in the middle of the slide. */
+  padding-bottom: calc(var(--u) * 94);
   text-align: center;
 }
 .pro-execs {

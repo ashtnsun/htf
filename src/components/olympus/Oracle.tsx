@@ -92,12 +92,6 @@ export function Oracle() {
   return (
     <RevealGate scene={answer?.scene ?? null} onPress={press} onOpen={open}>
       <h1 className="sr-only">The Oracle</h1>
-      {/* Up for the room between families; it steps aside once a word is being typed. */}
-      <p
-        className={`mb-16 font-olympus text-h3 leading-tight font-semibold text-balance transition-opacity duration-700 md:text-h2 ${guess ? "opacity-0" : ""}`}
-      >
-        Bring your final word to the <span className="text-green">Oracle.</span>
-      </p>
       <label htmlFor="oracle-word" className="sr-only">
         Your family&apos;s word
       </label>

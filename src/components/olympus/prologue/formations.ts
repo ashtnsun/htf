@@ -474,16 +474,21 @@ export function frieze(g: Grid, upper: number, lower: number) {
 
 // ---------------------------------------------------------------- the chain
 
-/** The trials a family has to solve (journey/save's STAGES, less the last, which is the Oracle). */
+/** The trials a family has to solve: mural, riddles, mask, mechanism, seal, fires. */
 const TRIALS = 6;
 
-const LINK_W = 24;
-const LINK_H = 20;
-const LINK_WALL = 3;
-const LINK_GAP = 4;
-const CHAIN_SAG = 7;
+/** Cells to one pixel of the chain's picture, which is the size the fire and its bowl are drawn at. */
+const CHAIN_PIXEL = 2;
 
-/** Whether a cell is inside a `w` × `h` box with corners of radius `r`. */
+/** The sizes below, down to where the picture is expanded in `chain`, are in those pixels. */
+const LINK_W = 13;
+const LINK_H = 12;
+const LINK_WALL = 2;
+const LINK_GAP = 1;
+const CHAIN_SAG = 3;
+const EDGE_SHADE = [WHITE, LIGHT, STONE];
+
+/** Whether a pixel is inside a `w` x `h` box with corners of radius `r`. */
 function rounded(x: number, y: number, w: number, h: number, r: number) {
   if (x < 0 || y < 0 || x >= w || y >= h) return false;
   const dx = Math.max(r - (x + 0.5), x + 0.5 - (w - r));
@@ -492,13 +497,13 @@ function rounded(x: number, y: number, w: number, h: number, r: number) {
 }
 
 /**
- * One great link, face on, a round iron bar lit from the upper left. Its lit edge and its numeral
- * belong to `group`, so the charge running down the chain (FX.SWEEP) catches them in turn.
+ * One great link, face on, an iron bar lit from the upper left. Its lit edge belongs to `group`, so
+ * the charge running down the chain (FX.SWEEP) catches the links in turn.
  */
 function faceLink(x0: number, y0: number, group: number, order: number) {
   const on = (x: number, y: number) =>
-    rounded(x, y, LINK_W, LINK_H, 6) &&
-    !rounded(x - LINK_WALL, y - LINK_WALL, LINK_W - LINK_WALL * 2, LINK_H - LINK_WALL * 2, 3);
+    rounded(x, y, LINK_W, LINK_H, 3) &&
+    !rounded(x - LINK_WALL, y - LINK_WALL, LINK_W - LINK_WALL * 2, LINK_H - LINK_WALL * 2, 1);
   const dots: Dot[] = [];
   for (let y = 0; y < LINK_H; y += 1) {
     for (let x = 0; x < LINK_W; x += 1) {
@@ -519,11 +524,10 @@ function faceLink(x0: number, y0: number, group: number, order: number) {
 
 /** The link between two faces, edge on: a capsule whose ends sit inside the holes either side. */
 function edgeLink(x0: number, y0: number, w: number, order: number) {
-  const shade = [WHITE, LIGHT, LIGHT, LIGHT, STONE, ROCK];
   const dots: Dot[] = [];
-  shade.forEach((ink, dy) => {
+  EDGE_SHADE.forEach((ink, dy) => {
     for (let dx = 0; dx < w; dx += 1) {
-      if ((dy === 0 || dy === shade.length - 1) && (dx === 0 || dx === w - 1)) continue;
+      if ((dy === 0 || dy === EDGE_SHADE.length - 1) && (dx === 0 || dx === w - 1)) continue;
       dots.push({ x: x0 + dx, y: y0 + dy, ink, order });
     }
   });
@@ -531,73 +535,74 @@ function edgeLink(x0: number, y0: number, w: number, order: number) {
 }
 
 /**
- * The chain of trials: one great link for each trial, numbered as the families' own title cards
- * number them, bolted to a column at the left and sagging under its own weight to the fire at the
- * right, which is the Oracle. `order` forges it link by link, left to right. Returns the middle of
- * each link and of the fire's foot, for the sparks.
+ * The chain of trials: one great link for each, with nothing to say which comes first, bolted to a
+ * column at the left and sagging under its own weight to the fire at the right, which is the
+ * Oracle. `order` forges it link by link, left to right. All of it is drawn in pixels of
+ * CHAIN_PIXEL cells, so the iron and the fire are one picture. Returns the middle of each link and
+ * of the fire's foot in cells, for the sparks.
  */
 export function chain(g: Grid) {
-  const cy = Math.round(g.rows * 0.5);
+  const cols = Math.ceil(g.cols / CHAIN_PIXEL);
+  const rows = Math.ceil(g.rows / CHAIN_PIXEL);
+  const cy = Math.round(rows * 0.5);
   const width = TRIALS * LINK_W + (TRIALS - 1) * LINK_GAP;
-  const x0 = Math.floor(g.cols / 2) - Math.floor(width / 2) - 6;
+  const x0 = Math.floor(cols / 2) - Math.floor(width / 2) - 3;
   const pitch = LINK_W + LINK_GAP;
-  const reach = LINK_WALL + 3;
+  const reach = LINK_WALL + 1;
   const top = (i: number) => {
     const u = ((i + 0.5) / TRIALS) * 2 - 1;
     return cy - LINK_H / 2 + Math.round(CHAIN_SAG * (1 - u * u));
   };
 
-  // The edge links first, so each face can be cut one cell clear of the two that pass over it.
-  const columnR = x0 - 8;
+  const columnR = x0 - 4;
   const edges: { x: number; y: number; w: number; order: number }[] = [];
   for (let i = 0; i <= TRIALS; i += 1) {
-    const left = i ? x0 + (i - 1) * pitch + LINK_W - reach : columnR + 3;
-    const right = i < TRIALS ? x0 + i * pitch + reach : x0 + (TRIALS - 1) * pitch + LINK_W + 10;
+    const left = i ? x0 + (i - 1) * pitch + LINK_W - reach : columnR + 1;
+    const right = i < TRIALS ? x0 + i * pitch + reach : x0 + (TRIALS - 1) * pitch + LINK_W + 5;
     const fromY = i ? top(i - 1) + LINK_H / 2 : cy;
     const toY = i < TRIALS ? top(i) + LINK_H / 2 : cy;
     edges.push({
       x: left,
-      y: Math.round((fromY + toY) / 2) - 3,
+      y: Math.round((fromY + toY) / 2) - 1,
       w: right - left,
       order: Math.min(i + 1, TRIALS + 1) / (TRIALS + 1),
     });
   }
-  const clear = (d: Dot) =>
-    edges.every((e) => d.x < e.x - 1 || d.x > e.x + e.w || d.y < e.y - 1 || d.y > e.y + 6);
 
-  const dots: Dot[] = [];
+  const pixels: Dot[] = [];
   // The column at the left and the plate bolted to it.
-  for (let i = 0; i < 14; i += 1) {
-    const ink = i % 3 === 2 ? ROCK : i < 6 ? LIGHT : STONE;
-    dots.push(...rect(columnR - 14 + i, 0, 1, g.rows, ink, { order: 0 }));
+  for (let i = 0; i < 7; i += 1) {
+    const ink = i % 3 === 2 ? ROCK : i < 3 ? LIGHT : STONE;
+    pixels.push(...rect(columnR - 7 + i, 0, 1, rows, ink, { order: 0 }));
   }
-  dots.push(...rect(columnR - 2, cy - 9, 6, 18, WHITE, { order: 0 }));
-  dots.push(...rect(columnR, cy - 7, 2, 2, ROCK, { order: 0 }));
-  dots.push(...rect(columnR, cy + 5, 2, 2, ROCK, { order: 0 }));
+  pixels.push(...rect(columnR - 1, cy - 4, 3, 9, WHITE, { order: 0 }));
+  pixels.push(...rect(columnR, cy - 3, 1, 1, ROCK, { order: 0 }));
+  pixels.push(...rect(columnR, cy + 3, 1, 1, ROCK, { order: 0 }));
 
   const links: { x: number; y: number }[] = [];
   for (let i = 0; i < TRIALS; i += 1) {
     const x = x0 + i * pitch;
     const y = top(i);
-    const order = (i + 1) / (TRIALS + 1);
-    links.push({ x: x + LINK_W / 2, y: y + LINK_H / 2 });
-    dots.push(...faceLink(x, y, i, order).filter(clear));
-    dots.push(
-      ...numeral(NUMERALS[i]!, x + LINK_W / 2, y + LINK_H / 2 - 5, DEEP, {
-        scale: 2,
-        extra: { fx: FX.SWEEP, group: i, order },
-      }),
-    );
+    links.push({ x: (x + LINK_W / 2) * CHAIN_PIXEL, y: (y + LINK_H / 2) * CHAIN_PIXEL });
+    pixels.push(...faceLink(x, y, i, (i + 1) / (TRIALS + 1)));
   }
-  for (const { x, y, w, order } of edges) dots.push(...edgeLink(x, y, w, order));
+  for (const { x, y, w, order } of edges) pixels.push(...edgeLink(x, y, w, order));
 
   // The bowl on its stand, the end of the chain made fast to it, and the fire.
-  const bowlX = x0 + (TRIALS - 1) * pitch + LINK_W + 22;
+  const bowlX = x0 + (TRIALS - 1) * pitch + LINK_W + 11;
   const done = { order: 1 };
-  dots.push(...blit(BRAZIER.slice(0, 4), bowlX - 15, cy + 1, WHITE, { scale: 2, extra: done }));
-  dots.push(...rect(bowlX - 3, cy + 9, 6, g.rows - cy - 9, WHITE, done));
-  dots.push(...flame(FLAME, bowlX, cy, 2, done));
-  return { dots, links, fire: { x: bowlX, y: cy } };
+  pixels.push(...blit(BRAZIER.slice(0, 4), bowlX - 7, cy + 1, WHITE, { extra: done }));
+  pixels.push(...rect(bowlX - 1, cy + 5, 3, rows - cy - 5, WHITE, done));
+  pixels.push(...flame(FLAME, bowlX, cy, 1, done));
+
+  const dots = pixels.flatMap((pixel) =>
+    Array.from({ length: CHAIN_PIXEL * CHAIN_PIXEL }, (_, n) => ({
+      ...pixel,
+      x: pixel.x * CHAIN_PIXEL + (n % CHAIN_PIXEL),
+      y: pixel.y * CHAIN_PIXEL + Math.floor(n / CHAIN_PIXEL),
+    })),
+  );
+  return { dots, links, fire: { x: bowlX * CHAIN_PIXEL, y: cy * CHAIN_PIXEL } };
 }
 
 // ---------------------------------------------------------------- the setup

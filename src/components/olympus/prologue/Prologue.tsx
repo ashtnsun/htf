@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Logo } from "@/components/brand/Logo";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
-import { Meander } from "@/components/olympus/Meander";
 import {
   browser,
   chain,
@@ -40,7 +39,7 @@ type Cue = {
 };
 
 type Beat = {
-  /** Letterbox bars with the Greek key: narrative scenes yes, the practical setup no. */
+  /** Letterbox bars: narrative scenes yes, the practical setup no. */
   bars: boolean;
   glow?: "summit" | "fire" | "ember";
   view?: (props: ViewProps) => ReactNode;
@@ -122,17 +121,21 @@ function ExecRow({
   );
 }
 
-/** The roulette's stops, slowing down: a scrambled walk through the nine (4 and 9 share no factor). */
+/**
+ * The roulette's stops, one peg of the wheel each: a scrambled walk through the nine (4 and 9 share
+ * no factor), and the last few coasting, as a heavy wheel does before it settles.
+ */
 const ROULETTE = Array.from({ length: 22 }, (_, i) => ({
   card: (i * 4 + 2) % 9,
-  ms: Math.round(70 * i + 3.4 * i * i),
+  ms: Math.round(70 * i + 3.4 * i * i + 5 * Math.max(0, i - 15) ** 3),
 }));
-const ROULETTE_END = ROULETTE.at(-1)!.ms + 640;
+const ROULETTE_LAST = ROULETTE.at(-1)!.ms;
+const ROULETTE_END = ROULETTE_LAST + 640;
 const DARK = 100;
 
 /** Slide pixels from the middle of the screen to the top of each Greek key band over the execs. */
-const BAND_ABOVE = 236;
-const BAND_BELOW = 188;
+const BAND_ABOVE = 175;
+const BAND_BELOW = 253;
 
 function execBands(stage: CellStage) {
   const { rows } = stage.grid;
@@ -251,7 +254,6 @@ const BEATS: readonly Beat[] = [
         setPhase(1);
         return;
       }
-      at(120, () => flash(0.16, 260));
       at(1000, () => {
         light();
         const { x, y } = summitPoint(stage.grid);
@@ -273,9 +275,6 @@ const BEATS: readonly Beat[] = [
           Nine execs have taken a god&apos;s name.
         </In>
         <ExecRow execs={execs} />
-        <In d={2300} className="pro-voice">
-          They are not saying who took which.
-        </In>
       </div>
     ),
     cue: ({ stage, score, instant, at, place }) => {
@@ -298,9 +297,6 @@ const BEATS: readonly Beat[] = [
           dim={phase === DARK}
           settled
         />
-        <p className="pro-voice" aria-hidden="true">
-          &nbsp;
-        </p>
         {phase === DARK ? <h2 className="pro-question">Whose family are you in?</h2> : null}
       </div>
     ),
@@ -314,9 +310,7 @@ const BEATS: readonly Beat[] = [
       for (const { card, ms } of ROULETTE) {
         at(900 + ms, () => {
           setPhase(card + 1);
-          // A bright click with some body under it, so each stop lands in a big room.
-          score.tick(2100, 0.75);
-          score.tick(850, 0.6);
+          score.peg(ms / ROULETTE_LAST);
         });
       }
       at(900 + ROULETTE_END, () => {
@@ -338,7 +332,7 @@ const BEATS: readonly Beat[] = [
         </In>
         <div className="pro-chain-under">
           <In d={3000} className="pro-voice">
-            Six trials. Each answer is the key to the next.
+            Six trials.
           </In>
         </div>
       </div>
@@ -377,6 +371,9 @@ const BEATS: readonly Beat[] = [
           One family.
           <br />
           <span className="text-green">One laptop.</span>
+        </In>
+        <In d={1100} className="pro-body">
+          Two minutes at the keys, then swap.
         </In>
       </div>
     ),
@@ -595,7 +592,7 @@ export function Prologue({ execs }: { execs: readonly PrologueExec[] }) {
     const at = (ms: number, fn: () => void) => void timers.push(window.setTimeout(fn, ms));
     const now = instant || reduce;
     at(0, () => {
-      if (!now && index > 0) score.whoosh(0.14, 1);
+      if (!now && index > 0) score.whoosh(0.07, 1);
       BEATS[index]!.cue({
         stage,
         score,
@@ -695,12 +692,8 @@ export function Prologue({ execs }: { execs: readonly PrologueExec[] }) {
       <div aria-hidden="true" className="pro-glow" />
       <div aria-hidden="true" className="pro-vignette" />
 
-      <div aria-hidden="true" className="pro-bar pro-bar-top">
-        <Meander cell={2} className="absolute inset-x-0 bottom-0 text-green-deep" />
-      </div>
-      <div aria-hidden="true" className="pro-bar pro-bar-bottom">
-        <Meander cell={2} className="absolute inset-x-0 top-0 text-green-deep" />
-      </div>
+      <div aria-hidden="true" className="pro-bar pro-bar-top" />
+      <div aria-hidden="true" className="pro-bar pro-bar-bottom" />
 
       <h1 className="sr-only">Olympus: the prologue to the family reveal</h1>
       <div key={index} className="pro-text" aria-live="polite">

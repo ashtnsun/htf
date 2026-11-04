@@ -1,11 +1,13 @@
 /**
- * The Prologue's sound: ambience and effects, no music (the soundtrack that was tried is stored in
- * soundtrack.ts). Synthesised in the browser, so there are no audio files to license or load.
+ * The Prologue's sound: one small, quiet piece of music under the whole deck, and effects on cue
+ * over it (thunder, iron, a stone set down, the wheel's pegs). Synthesised in the browser, so there
+ * are no audio files to license or load. (The full score that was tried and taken off is stored in
+ * soundtrack.ts; this is not that.)
  *
- * Each stretch of the deck has its own place to be in (AMBIENCES), a mix of a few beds (a fire,
- * wind, a stone hall, a quiet room) and of things that happen now and then in it (a drip, a chain
- * shifting, thunder a long way off, someone at a keyboard). On cue, over that: thunder, iron,
- * whooshes, stones, ticks.
+ * The music is four soft chords, ten seconds each, and now and then one slow note over them. There
+ * is no beat, and no noise bed of any kind: no wind, no room tone, nothing that hisses. Each stretch
+ * of the deck only moves its level and brightness (AMBIENCES); a slide with a fire on it also gets
+ * the fire's crackle.
  *
  * On by default, S mutes; a browser plays nothing before the presenter's first key or click, so the
  * first press is what wakes it (`arm`). The energy sits between 200 Hz and 5 kHz, because laptops
@@ -14,38 +16,95 @@
 const MASTER = 1;
 /** How long the sound lasts after the deck has been left, before it closes. */
 const FINALE = 3.5;
-/** How often the scattered sounds get their chance. */
-const SCATTER_MS = 200;
 
-type Bed = "fire" | "wind" | "hall" | "room";
-/** Each is how many a second, on average. */
-type Scatter = "drips" | "chains" | "farThunder" | "keys";
-type Mix = Partial<Record<Bed | Scatter, number>>;
+/** Seconds a chord holds before the next starts to come in over it. */
+const BAR = 10;
+/** Seconds a chord takes to come in and to go, so one is always leaving as the next arrives. */
+const SWELL = 4;
+const SCHEDULE_MS = 500;
+const LOOK_AHEAD = 2;
+/** Each voice of a chord at full level. Quiet on purpose: the room should have to listen for it. */
+const PAD_VOICE = 0.016;
+const NOTE_LEVEL = 0.05;
 
-const BEDS: readonly Bed[] = ["fire", "wind", "hall", "room"];
+/** Em7, Cmaj7, Gadd9, D, as MIDI notes, voiced close so each leads into the next. */
+const CHORDS = [
+  [52, 59, 62, 67, 71],
+  [48, 59, 64, 67, 71],
+  [55, 59, 62, 69, 71],
+  [50, 57, 62, 66, 69],
+] as const;
+
+/** The slow notes, a bar to a line, twice round the chords: [seconds into the bar, MIDI note]. */
+const NOTES: readonly (readonly (readonly [number, number])[])[] = [
+  [
+    [1.5, 71],
+    [3.5, 74],
+    [6, 76],
+  ],
+  [
+    [2, 76],
+    [5, 71],
+  ],
+  [
+    [1.5, 74],
+    [4, 71],
+    [7, 69],
+  ],
+  [
+    [3, 69],
+    [6, 66],
+  ],
+  [],
+  [
+    [2, 67],
+    [4, 71],
+    [6.5, 72],
+  ],
+  [
+    [1.5, 74],
+    [5, 71],
+  ],
+  [[3, 69]],
+];
+
+const hz = (midi: number) => 440 * 2 ** ((midi - 69) / 12);
+
+type Mood = {
+  /** The music's level, 0 to 1. */
+  level: number;
+  /** How bright the chords are: the cut-off of their filter, in Hz. */
+  bright: number;
+  /** Whether the slow notes play over the chords. */
+  notes: boolean;
+  /** How close a fire is: its crackle, 0 to 1. */
+  fire?: number;
+};
 
 export const AMBIENCES = {
-  /** Standby: a fire in the dark and nothing else. */
-  hearth: { fire: 0.8 },
-  /** The climb: wind on the rock, thunder somewhere behind it. */
-  mountain: { wind: 0.85, farThunder: 0.14 },
-  /** The top: less wind, the braziers close by. */
-  summit: { wind: 0.35, fire: 0.2, farThunder: 0.05 },
-  /** The execs: a big stone room with water in it and torches on the wall. */
-  hall: { hall: 0.9, fire: 0.1, drips: 0.55 },
-  /** The chain before it is finished: the room, and iron shifting. */
-  forge: { hall: 0.6, chains: 0.7 },
+  /** Standby: the fire, and the chords barely there. */
+  hearth: { level: 0.55, bright: 650, notes: false, fire: 0.7 },
+  /** The climb. */
+  mountain: { level: 0.9, bright: 900, notes: true },
+  /** The top, the braziers close by. */
+  summit: { level: 1, bright: 1300, notes: true, fire: 0.15 },
+  /** The execs. */
+  hall: { level: 0.75, bright: 800, notes: true },
+  /** The chain being forged: the music steps back for the hammer. */
+  forge: { level: 0.45, bright: 700, notes: false },
   /** The fire has caught. */
-  forged: { hall: 0.45, fire: 0.45, chains: 0.45 },
-  /** The practical slides: a quiet room with people in it, someone typing. */
-  study: { room: 0.9, keys: 1.1 },
-  /** The column: back in the stone, a breath of air through it. */
-  temple: { hall: 0.8, wind: 0.12, drips: 0.3 },
-  /** The Oracle: the fire in that same stone room. */
-  oracle: { fire: 0.8, hall: 0.5 },
-} satisfies Record<string, Mix>;
+  forged: { level: 0.7, bright: 1100, notes: true, fire: 0.35 },
+  /** The practical slides. */
+  study: { level: 0.6, bright: 800, notes: true },
+  /** The column. */
+  temple: { level: 0.75, bright: 900, notes: true },
+  /** The Oracle. */
+  oracle: { level: 0.85, bright: 1000, notes: true, fire: 0.5 },
+} satisfies Record<string, Mood>;
 
 export type Ambience = keyof typeof AMBIENCES;
+
+const SILENT: Mood = { level: 0, bright: 800, notes: false };
 
 /** A soft clipper's curve: linear when quiet, leaning over near full scale, never past it. */
 function softClip() {
@@ -62,12 +121,16 @@ export class Score {
   private ctx: AudioContext | null = null;
   private mix: GainNode | null = null;
   private wet: GainNode | null = null;
-  private beds: Partial<Record<Bed, GainNode>> = {};
+  private music: GainNode | null = null;
+  private padFilter: BiquadFilterNode | null = null;
+  private noteBus: GainNode | null = null;
   private noise: AudioBuffer | null = null;
   private brown: AudioBuffer | null = null;
-  private current: Mix = {};
+  private current: Mood = SILENT;
+  private bar = 0;
+  private nextBarAt = 0;
+  private scheduling = 0;
   private crackling = 0;
-  private scattering = 0;
   private ending = false;
   on = true;
 
@@ -83,17 +146,19 @@ export class Score {
     return this.on;
   }
 
-  /** Crossfades to a place over `seconds`. */
+  /** Moves the music to this stretch of the deck over `seconds`. */
   ambience(name: Ambience, seconds = 1.5) {
     this.current = AMBIENCES[name];
-    this.applyBeds(seconds);
+    this.applyMood(seconds);
   }
 
-  private applyBeds(seconds: number) {
-    for (const bed of BEDS) {
-      this.beds[bed]?.gain.setTargetAtTime(this.current[bed] ?? 0, this.now, seconds / 3);
-    }
-    if ((this.current.fire ?? 0) > 0.01 && !this.crackling) this.crackle();
+  private applyMood(seconds: number) {
+    const { level, bright, notes, fire = 0 } = this.current;
+    const rate = seconds / 3;
+    this.music?.gain.setTargetAtTime(level, this.now, rate);
+    this.padFilter?.frequency.setTargetAtTime(bright, this.now, rate);
+    this.noteBus?.gain.setTargetAtTime(notes ? 1 : 0, this.now, rate);
+    if (fire > 0.01 && !this.crackling) this.crackle();
   }
 
   private get now() {
@@ -139,20 +204,19 @@ export class Score {
 
       // A stone room, so the effects sit somewhere and do not click in from nowhere.
       const room = ctx.createConvolver();
-      room.buffer = this.roomImpulse(ctx);
+      room.buffer = this.impulse(ctx, 1.6, 4);
       this.wet = ctx.createGain();
       this.wet.gain.value = 0.6;
       this.wet.connect(room);
       room.connect(this.mix);
 
-      this.buildFire(ctx);
-      this.buildWind(ctx);
-      this.buildHall(ctx);
-      this.buildRoom(ctx);
-      this.scattering = window.setInterval(this.scatter, SCATTER_MS);
+      this.buildMusic(ctx);
+      this.nextBarAt = ctx.currentTime + 0.05;
+      this.schedule();
+      this.scheduling = window.setInterval(this.schedule, SCHEDULE_MS);
     }
     void this.ctx.resume();
-    this.applyBeds(1.5);
+    this.applyMood(1.5);
   }
 
   private buffer(seconds: number, sample: () => number) {
@@ -163,9 +227,9 @@ export class Score {
     return buf;
   }
 
-  /** Decaying noise, different in each ear. */
-  private roomImpulse(ctx: AudioContext) {
-    const length = Math.round(ctx.sampleRate * 1.6);
+  /** Decaying noise, different in each ear: a room to send sound into. */
+  private impulse(ctx: AudioContext, seconds: number, decay: number) {
+    const length = Math.round(ctx.sampleRate * seconds);
     const impulse = ctx.createBuffer(2, length, ctx.sampleRate);
     for (let c = 0; c < 2; c += 1) {
       const data = impulse.getChannelData(c);
@@ -174,144 +238,107 @@ export class Score {
         const t = i / ctx.sampleRate;
         const smooth = Math.min(0.9, 0.3 + t * 0.6);
         low = low * smooth + (Math.random() * 2 - 1) * (1 - smooth);
-        data[i] = low * Math.min(1, t / 0.012) * Math.exp(-t * 4) * 0.4;
+        data[i] = low * Math.min(1, t / 0.012) * Math.exp(-t * decay) * 0.4;
       }
     }
     return impulse;
   }
 
-  /** A sound that loops until the page goes. */
-  private loop(ctx: AudioContext, buf: AudioBuffer, out: AudioNode) {
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-    src.loop = true;
-    src.connect(out);
-    src.start(0, Math.random() * buf.duration);
+  /** The music's path: chords through a slow filter and the notes, both into a long soft room. */
+  private buildMusic(ctx: AudioContext) {
+    const music = ctx.createGain();
+    music.gain.value = 0;
+    music.connect(this.mix!);
+    this.music = music;
+
+    const space = ctx.createConvolver();
+    space.buffer = this.impulse(ctx, 4, 1.6);
+    const send = ctx.createGain();
+    send.gain.value = 0.5;
+    music.connect(send);
+    send.connect(space);
+    space.connect(this.mix!);
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.value = SILENT.bright;
+    filter.Q.value = 0.4;
+    filter.connect(music);
+    this.padFilter = filter;
+    // So a held chord is never quite still.
+    const drift = ctx.createOscillator();
+    drift.frequency.value = 0.07;
+    const depth = ctx.createGain();
+    depth.gain.value = 140;
+    drift.connect(depth);
+    depth.connect(filter.frequency);
+    drift.start();
+
+    const notes = ctx.createGain();
+    notes.gain.value = 0;
+    notes.connect(music);
+    this.noteBus = notes;
   }
 
-  /** A slow sine moving a parameter by `depth` either side, so a bed never sits still. */
-  private sway(ctx: AudioContext, rate: number, depth: number, param: AudioParam) {
-    const lfo = ctx.createOscillator();
-    lfo.frequency.value = rate;
+  /** Puts the next bars on the audio clock a little ahead of time. */
+  private schedule = () => {
+    const ctx = this.ctx;
+    if (!ctx || this.ending) return;
+    while (this.nextBarAt < ctx.currentTime + LOOK_AHEAD) {
+      const at = Math.max(this.nextBarAt, ctx.currentTime + 0.05);
+      CHORDS[this.bar % CHORDS.length]!.forEach((midi, i) => this.padVoice(midi, i, at));
+      for (const [offset, midi] of NOTES[this.bar % NOTES.length]!) this.note(midi, at + offset);
+      this.bar += 1;
+      this.nextBarAt = at + BAR;
+    }
+  };
+
+  /** One voice of a chord: two triangles a few cents apart, so it breathes, spread across the room. */
+  private padVoice(midi: number, index: number, at: number) {
+    const ctx = this.ctx!;
     const gain = ctx.createGain();
-    gain.gain.value = depth;
-    lfo.connect(gain);
-    gain.connect(param);
-    lfo.start();
+    gain.gain.setValueAtTime(0, at);
+    gain.gain.linearRampToValueAtTime(PAD_VOICE, at + SWELL);
+    gain.gain.setValueAtTime(PAD_VOICE, at + BAR);
+    gain.gain.linearRampToValueAtTime(0, at + BAR + SWELL);
+    const pan = ctx.createStereoPanner();
+    pan.pan.value = (index / 4) * 0.9 - 0.45;
+    gain.connect(pan);
+    pan.connect(this.padFilter!);
+    for (const cents of [-5, 5]) {
+      const osc = ctx.createOscillator();
+      osc.type = "triangle";
+      osc.frequency.value = hz(midi);
+      osc.detune.value = cents;
+      osc.connect(gain);
+      osc.start(at);
+      osc.stop(at + BAR + SWELL + 0.05);
+    }
   }
 
-  private bed(ctx: AudioContext, name: Bed) {
+  /** One slow note: a soft strike that takes a few seconds to die, with a little octave in it. */
+  private note(midi: number, at: number) {
+    const ctx = this.ctx!;
     const gain = ctx.createGain();
-    gain.gain.value = 0;
-    gain.connect(this.mix!);
-    this.beds[name] = gain;
-    return gain;
-  }
-
-  /** The fire's bed: a roar that swells at no fixed rate, spread wide, and a hiss over it. */
-  private buildFire(ctx: AudioContext) {
-    const out = this.bed(ctx, "fire");
-    const roarFilter = ctx.createBiquadFilter();
-    roarFilter.type = "lowpass";
-    roarFilter.frequency.value = 900;
-    const roar = ctx.createGain();
-    roar.gain.value = 0.3;
-    roarFilter.connect(roar);
-    roar.connect(out);
-    for (const side of [-0.6, 0.6]) {
-      const pan = ctx.createStereoPanner();
-      pan.pan.value = side;
-      pan.connect(roarFilter);
-      this.loop(ctx, this.brown!, pan);
-    }
-    // Rates with no common beat: the swell never repeats audibly.
-    this.sway(ctx, 0.31, 0.07, roar.gain);
-    this.sway(ctx, 0.73, 0.05, roar.gain);
-    this.sway(ctx, 0.19, 240, roarFilter.frequency);
-
-    const hissFilter = ctx.createBiquadFilter();
-    hissFilter.type = "highpass";
-    hissFilter.frequency.value = 2600;
-    const hiss = ctx.createGain();
-    hiss.gain.value = 0.022;
-    hissFilter.connect(hiss);
-    hiss.connect(out);
-    this.loop(ctx, this.noise!, hissFilter);
-    this.sway(ctx, 0.47, 0.008, hiss.gain);
-  }
-
-  /** Wind: noise through resonant bands that slide slowly up and down, a different one each ear. */
-  private buildWind(ctx: AudioContext) {
-    const out = this.bed(ctx, "wind");
-    for (const [side, centre, slow, fast] of [
-      [-0.7, 560, 0.07, 0.17],
-      [0.7, 700, 0.053, 0.13],
+    gain.gain.setValueAtTime(0.0001, at);
+    gain.gain.exponentialRampToValueAtTime(NOTE_LEVEL, at + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, at + 3.2);
+    const pan = ctx.createStereoPanner();
+    pan.pan.value = ((midi * 7) % 5) * 0.15 - 0.3;
+    gain.connect(pan);
+    pan.connect(this.noteBus!);
+    for (const [ratio, level] of [
+      [1, 1],
+      [2, 0.22],
     ] as const) {
-      const band = ctx.createBiquadFilter();
-      band.type = "bandpass";
-      band.frequency.value = centre;
-      band.Q.value = 1.1;
-      const gust = ctx.createGain();
-      gust.gain.value = 0.32;
-      const pan = ctx.createStereoPanner();
-      pan.pan.value = side;
-      band.connect(gust);
-      gust.connect(pan);
-      pan.connect(out);
-      this.loop(ctx, this.noise!, band);
-      this.sway(ctx, slow, 280, band.frequency);
-      this.sway(ctx, fast, 130, band.frequency);
-      this.sway(ctx, slow * 1.6, 0.12, gust.gain);
-    }
-  }
-
-  /**
-   * A big stone room with nothing happening in it: a dark, still, low air, with none of the wind's
-   * movement. Two resonances the size of a hall, breathing very slowly.
-   */
-  private buildHall(ctx: AudioContext) {
-    const out = this.bed(ctx, "hall");
-    for (const [side, centre, q, level, rate] of [
-      [-0.5, 210, 2.2, 0.5, 0.041],
-      [0.5, 340, 2.6, 0.36, 0.067],
-    ] as const) {
-      const band = ctx.createBiquadFilter();
-      band.type = "bandpass";
-      band.frequency.value = centre;
-      band.Q.value = q;
-      const gain = ctx.createGain();
-      gain.gain.value = level;
-      const pan = ctx.createStereoPanner();
-      pan.pan.value = side;
-      band.connect(gain);
-      gain.connect(pan);
-      pan.connect(out);
-      this.loop(ctx, this.brown!, band);
-      this.sway(ctx, rate, level * 0.3, gain.gain);
-    }
-  }
-
-  /** A quiet room: the even rush of air and machines, higher and steadier than the hall. */
-  private buildRoom(ctx: AudioContext) {
-    const out = this.bed(ctx, "room");
-    // A loop in each ear, from different places: a room is wide.
-    for (const side of [-0.7, 0.7]) {
-      const low = ctx.createBiquadFilter();
-      low.type = "lowpass";
-      low.frequency.value = 2200;
-      const high = ctx.createBiquadFilter();
-      high.type = "highpass";
-      high.frequency.value = 260;
-      const gain = ctx.createGain();
-      gain.gain.value = 0.05;
-      const pan = ctx.createStereoPanner();
-      pan.pan.value = side;
-      low.connect(high);
-      high.connect(gain);
-      gain.connect(pan);
-      pan.connect(out);
-      this.loop(ctx, this.noise!, low);
-      this.sway(ctx, side < 0 ? 0.09 : 0.067, 0.008, gain.gain);
+      const osc = ctx.createOscillator();
+      osc.frequency.value = hz(midi) * ratio;
+      const voice = ctx.createGain();
+      voice.gain.value = level;
+      osc.connect(voice);
+      voice.connect(gain);
+      osc.start(at);
+      osc.stop(at + 3.3);
     }
   }
 
@@ -322,112 +349,13 @@ export class Score {
     const level = this.current.fire ?? 0;
     if (!this.ctx || level <= 0.01) return;
     const big = Math.random() < 0.1;
-    const freq = big ? 500 + Math.random() * 900 : 1800 + Math.random() * 3600;
-    const peak = (big ? 0.55 : 0.2) * level * (0.35 + Math.random() * 0.65);
+    const freq = big ? 500 + Math.random() * 900 : 1800 + Math.random() * 3200;
+    const peak = (big ? 0.5 : 0.16) * level * (0.35 + Math.random() * 0.65);
     this.burst(this.noise!, "bandpass", freq, peak, big ? 0.07 : 0.022);
     // Exponential gaps are what make them read as random and not as a rhythm.
-    const gap = 25 - Math.log(1 - Math.random()) * 120;
+    const gap = 40 - Math.log(1 - Math.random()) * 170;
     this.crackling = window.setTimeout(this.crackle, gap);
   };
-
-  /** Gives each of this place's scattered sounds its chance. */
-  private scatter = () => {
-    if (!this.ctx || this.ending) return;
-    const chance = (rate = 0) => Math.random() < (rate * SCATTER_MS) / 1000;
-    if (chance(this.current.drips)) this.drip();
-    if (chance(this.current.chains)) this.chainShift();
-    if (chance(this.current.farThunder)) this.farThunder();
-    if (chance(this.current.keys)) this.keyTap();
-  };
-
-  /** Water falling on stone, somewhere off in the room: a little rising bloop, mostly echo. */
-  private drip() {
-    const ctx = this.ctx!;
-    const t = ctx.currentTime;
-    const start = 700 + Math.random() * 800;
-    const osc = ctx.createOscillator();
-    osc.frequency.setValueAtTime(start, t);
-    osc.frequency.exponentialRampToValueAtTime(start * 1.7, t + 0.06);
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(0.13, t + 0.008);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
-    const pan = ctx.createStereoPanner();
-    pan.pan.value = Math.random() * 1.6 - 0.8;
-    osc.connect(gain);
-    gain.connect(pan);
-    pan.connect(this.mix!);
-    const send = ctx.createGain();
-    send.gain.value = 1.4;
-    gain.connect(send);
-    send.connect(this.wet!);
-    osc.start(t);
-    osc.stop(t + 0.1);
-  }
-
-  /** A heavy chain shifting: two or three small high knocks of iron on iron. */
-  private chainShift() {
-    const ctx = this.ctx!;
-    const knocks = 2 + Math.floor(Math.random() * 2);
-    const pan = ctx.createStereoPanner();
-    pan.pan.value = Math.random() * 1.2 - 0.6;
-    pan.connect(this.mix!);
-    pan.connect(this.wet!);
-    for (let k = 0; k < knocks; k += 1) {
-      const t = ctx.currentTime + k * (0.09 + Math.random() * 0.1);
-      const root = 1500 + Math.random() * 900;
-      for (const [ratio, level, decay] of [
-        [1, 0.07, 0.16],
-        [1.83, 0.045, 0.1],
-      ] as const) {
-        const osc = ctx.createOscillator();
-        osc.frequency.value = root * ratio;
-        const gain = ctx.createGain();
-        gain.gain.setValueAtTime(level, t);
-        gain.gain.exponentialRampToValueAtTime(0.0001, t + decay);
-        osc.connect(gain);
-        gain.connect(pan);
-        osc.start(t);
-        osc.stop(t + decay + 0.02);
-      }
-    }
-  }
-
-  /** Thunder a long way off: no crack, only a slow low roll you notice after it has started. */
-  private farThunder() {
-    const ctx = this.ctx!;
-    const t = ctx.currentTime;
-    const seconds = 3.5 + Math.random() * 2;
-    const src = ctx.createBufferSource();
-    src.buffer = this.brown;
-    const filter = ctx.createBiquadFilter();
-    filter.type = "lowpass";
-    filter.frequency.value = 520;
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(0.32, t + seconds * 0.3);
-    gain.gain.exponentialRampToValueAtTime(0.14, t + seconds * 0.55);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t + seconds);
-    src.connect(filter);
-    filter.connect(gain);
-    gain.connect(this.mix!);
-    gain.connect(this.wet!);
-    src.start(t, Math.random() * 2, seconds);
-  }
-
-  /** Someone typing across the room: a short run of quiet, uneven key taps. */
-  private keyTap() {
-    const taps = 2 + Math.floor(Math.random() * 5);
-    let delay = 0;
-    for (let k = 0; k < taps; k += 1) {
-      window.setTimeout(() => {
-        if (!this.ctx) return;
-        const level = 0.05 + Math.random() * 0.05;
-        this.burst(this.noise!, "bandpass", 1500 + Math.random() * 1400, level, 0.03, 0.2);
-      }, delay);
-      delay += 90 + Math.random() * 130;
-    }
-  }
 
   private burst(
     buf: AudioBuffer,
@@ -501,10 +429,50 @@ export class Score {
     gain.gain.exponentialRampToValueAtTime(0.0001, t + 5);
   }
 
-  /** A small dry tick (the roulette, a typed letter, a card landing). */
+  /** A small dry tick (a typed letter, a card landing). */
   tick(freq = 1400, level = 0.2) {
     if (!this.ctx) return;
     this.burst(this.noise!, "bandpass", freq, level, 0.04, 0.15);
+  }
+
+  /**
+   * One peg of a big wooden prize wheel going past its flapper: a snap of the leather and a knock of
+   * wood under it. `spent` runs 0 to 1 as the wheel loses speed: the knock drops and darkens, and the
+   * flapper starts to fall back onto the peg with a second, smaller knock.
+   */
+  peg(spent = 0) {
+    const ctx = this.ctx;
+    if (!ctx) return;
+    const t = ctx.currentTime;
+    const out = ctx.createGain();
+    out.connect(this.mix!);
+    const send = ctx.createGain();
+    send.gain.value = 0.22;
+    out.connect(send);
+    send.connect(this.wet!);
+
+    const knock = (at: number, level: number) => {
+      const start = (640 - 200 * spent) * (0.97 + Math.random() * 0.06);
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(level, at);
+      gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.075);
+      gain.connect(out);
+      for (const [type, ratio] of [
+        ["triangle", 1],
+        ["sine", 2.3],
+      ] as const) {
+        const osc = ctx.createOscillator();
+        osc.type = type;
+        osc.frequency.setValueAtTime(start * ratio, at);
+        osc.frequency.exponentialRampToValueAtTime(start * ratio * 0.62, at + 0.04);
+        osc.connect(gain);
+        osc.start(at);
+        osc.stop(at + 0.09);
+      }
+    };
+    knock(t, 0.3);
+    if (spent > 0.55) knock(t + 0.05 + 0.03 * spent, 0.1 * spent);
+    this.burst(this.noise!, "bandpass", 3000 - 900 * spent, 0.22, 0.016);
   }
 
   /** A stone set down: the setup steps. */
@@ -568,17 +536,16 @@ export class Score {
   finale() {
     if (!this.ctx || this.ending) return;
     this.ending = true;
-    this.current = {};
-    this.applyBeds(1.8);
-    this.whoosh(0.12, 1.8);
+    this.current = SILENT;
+    this.applyMood(1.8);
     window.setTimeout(() => this.shut(), FINALE * 1000);
   }
 
   private shut() {
     window.clearTimeout(this.crackling);
     this.crackling = 0;
-    window.clearInterval(this.scattering);
-    this.scattering = 0;
+    window.clearInterval(this.scheduling);
+    this.scheduling = 0;
     void this.ctx?.close();
     this.ctx = null;
   }
