@@ -70,7 +70,7 @@ src/components/
                     game controls and the REVEAL hold keep their own), Temple (the home: one
                     column per group, built on load by TempleBuild), RevealGate (hold to reveal); the gods' sprites are dino/reveal.ts; content/olympus.ts is server only (answers);
                     prologue/ is /prologue, the slides that open the event (noindex, no site chrome,
-                    client only): Prologue (the beats, one per press; keys in its comment; "Good luck"'s
+                    client only): Prologue (the beats, one per press, the climb and lightning being one; keys in its comment; "Good luck"'s
                     press lifts the scene away and eases through dark to /oracle, a dark sheet fading off
                     the new page in place of the site's page transition),
                     stage (one canvas of solid cells that fly from scene to
@@ -80,7 +80,7 @@ src/components/
                     all of that picture in one pixel size, `CHAIN_PIXEL`), score (one small quiet piece of music under the deck, synthesised in the browser: four
                     soft chords and a slow note now and then, no beat and no noise beds; `AMBIENCES` moves
                     only its level and brightness per stretch, fire slides add a crackle; thunder, iron, the
-                    wheel's pegs and stones on cue; on by default, S mutes,
+                    the randomizer's blips and stones on cue; the opening alone builds (`rise`, `land`) to the lightning; on by default, S mutes,
                     it wakes on the presenter's first key or click; keep its energy between 200 Hz and
                     5 kHz, the room's speakers cannot play below that). soundtrack and cuesheet are a full
                     synthesised score Ashton took off as too much (2026-11-02): stored, imported by

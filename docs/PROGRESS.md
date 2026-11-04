@@ -88,6 +88,28 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 17k — 2026-11-03 (the Prologue: one opening, a game sound for the randomizer, new exec photos)
+
+**Asked:** "Before the first commit", the climb and the lightning as one sequence, with a decent pause at the top and the soundtrack building to the strike. The randomizer sound more gamified. The laptop line changed to "Swap every 2 minutes!". Five new exec photos, framed well (Emily, Arav, Jason, Nakul, Shreeya, in the order Ashton gave them; the other four keep theirs).
+
+**Built:**
+
+- **One press for the opening.** The climb and the strike are now one beat, so the deck has 10 beats and every `#n` after the first moved down by one. 11.5 s up the mountain (`CLIMB`), 4 s still at the top (`TOP_HOLD`), then the lightning at 15.5 s. "There was a mountain." holds through the pause and the title replaces it under the flash. The summit's glow waits for the strike (`glow` can now take the phase), and a beat landed on finished shows its `endPhase`.
+- **A press during the climb goes to the strike**, never past it to the execs, so a stray clicker press cannot lose the title (`onPress`). A beat's progress is now cleared on leaving it, or coming back replayed the title over the climb.
+- **The build (`score.rise`, `score.land`):** four chords climbing in register, notes running up the scale and closing in, the level and brightness rising with the camera. When the camera stops the notes stop, and only a held Dsus4 keeps growing; then 0.4 s of near silence; then the thunder and a wide E minor (`land`), from which the usual chords carry on. Anything booked ahead goes through a section gain, so going back or skipping fades it cleanly.
+- **The randomizer:** `score.blip`, a soft square wave climbing E minor pentatonic two steps up and one back, 330 to 1760 Hz, and `score.lockIn`, four notes run up and left to ring, over the thud. It replaces the wooden peg from Session 17j. The coasting stops stay.
+- **Photos:** cropped to 4:5 with the head at about the same size, from Ashton's originals in `headshots/New folder`. They are new files (`*-2026-b.jpg`) because the image optimiser caches by URL and kept serving the old pictures under the old names; the old five are deleted. These are the same media keys, so /about changes too. Jason's source is the smallest (611 px tall after the crop) and part of a bystander's head remains at its left edge. Shreeya's is framed a little wider to keep the peace sign.
+
+**Measured** on a recording in dev at 1920×1080, RMS per stretch: about -43 dB at the first press, -30 at 3 s, -22 at the top, -22 through the hold, -37 in the breath, -14 at the thunder, then -24. Peak 0.86. The flash layer is 0 until 15.5 s. Twenty-two blips, fundamentals climbing 445 to 1769 Hz.
+
+**Verified:** `pnpm typecheck`, ESLint, `pnpm build`; axe on /prologue, /oracle and /about at 1440 and 390; one press plays through to the title by itself; a press mid-climb lands on the title and the next on the execs; back, standby and forward again replays the climb; a reload resumes on the title; no console errors. Frames looked at: `docs/screenshots/session-17k/`.
+
+**Not verified:** how any of it sounds, above all the build and the blips; nothing here can listen. Real speakers, a projector and a clicker.
+
+**Still open:** as in Session 17j: slide 9's wording, the home section on the day with its links changed to /olympus3, the deploy.
+
+**Next session starts with:** Ashton's listen to the opening's build and the randomizer.
+
 ## Session 17j — 2026-11-03 (the Prologue, lined up with /olympus3, and Ashton's sound notes)
 
 **Asked:** after a report on what the deck says against /olympus3: the chain slide just says six trials, a line about the swap on the laptop slide, no tomb slide, the home section restored on the day and not now, the "Bring your final word" line off /oracle. Also: the wind is annoying, a small simple soundtrack instead, chill and ambient; no quick flash before the lightning; no Greek band on the cinematic bars; "They are not saying who took which." gone; the randomizer to sound like a wheel; the chain's pixels did not match the fire's.
