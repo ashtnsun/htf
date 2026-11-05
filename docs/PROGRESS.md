@@ -88,6 +88,14 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 17r — 2026-11-04 (/olympus: the stones say where the letters are)
+
+**Changed:** every family's `hiding` in `content/olympus.ts` is Ashton's final clue, after "IN LAWSON COMMONS,". The placeholder is gone. Other punctuation in their clues is left out; a comma shows as is on the stone, so the rest could go back.
+
+**Verified:** `pnpm typecheck`, `lint`, `build`; the longest clue and a short one on the real stone at 1366x768. A tab that read the stone before this keeps the old line, since the carving is saved; a new tab gets the clue.
+
+**Next session starts with:** the pointers in Session 17p.
+
 ## Session 17q — 2026-11-04 (the Olympus section back on the home page)
 
 **Changed:** `OlympusSection` renders between the hero and What we do in `src/app/page.tsx`, about an hour before the event. /prologue tells every family to scroll down to it, and the live home page did not have it. Its links already went to /olympus.

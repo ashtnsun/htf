@@ -41,8 +41,8 @@ export type Family = {
   word: string;
   riddles: readonly Riddle[];
   /**
-   * Step 3's message: where the family's letter is hidden, one cryptic line in capitals and
-   * spaces only (the stone carves letters and keeps spaces; punctuation would show as is).
+   * Step 3's message: where the family's letter is hidden, one cryptic line in capitals, after
+   * "IN LAWSON COMMONS," (the stone carves letters and keeps spaces and punctuation as they are).
    */
   hiding: string;
   /** The word printed inside the family's letter, typed on the laptop to break its seal. */
@@ -59,19 +59,13 @@ export type Family = {
 /** Inside every letter (step 4), the same for every family. Points to step 5, barely. */
 export const CLUE = "IN THE SQUARE OF POLYBIUS, THE LEFT FIRES COUNT THE ROW";
 
-/**
- * TODO(Ashton): the letters are hidden on the day; replace each family's `hiding` with a line for
- * its spot, every one starting IN LAWSON COMMONS. Until then every stone carries this.
- */
-const HIDING_TODO = "IN LAWSON COMMONS YOUR LETTER IS HIDDEN";
-
 /** In family order: index 0 is Family I. */
 export const FAMILIES: readonly Family[] = [
   {
     god: "Apollo",
     exec: "Jason",
     word: "GYROS",
-    hiding: HIDING_TODO,
+    hiding: "IN LAWSON COMMONS, SITTING COMFORTABLY WITH THE WORST VIEW OF THE THEATRE",
     seal: "ARETE",
     doorWord: "ITHACA",
     finalWord: "DRACHMA",
@@ -109,7 +103,7 @@ export const FAMILIES: readonly Family[] = [
     god: "Hades",
     exec: "Ben",
     word: "DELTA",
-    hiding: HIDING_TODO,
+    hiding: "IN LAWSON COMMONS, SNEAK PAST THE TYRANT LIZARD KING",
     seal: "KLEOS",
     doorWord: "CORINTH",
     finalWord: "MARATHON",
@@ -146,7 +140,7 @@ export const FAMILIES: readonly Family[] = [
     god: "Athena",
     exec: "Arushi",
     word: "TITAN",
-    hiding: HIDING_TODO,
+    hiding: "IN LAWSON COMMONS, SAD SEAT WAITING TO BE WELCOMED",
     seal: "XENIA",
     doorWord: "CYCLOPS",
     finalWord: "PHOENIX",
@@ -183,7 +177,7 @@ export const FAMILIES: readonly Family[] = [
     god: "Zeus",
     exec: "Arav",
     word: "HOMER",
-    hiding: HIDING_TODO,
+    hiding: "IN LAWSON COMMONS, WHO CONTROLS DAY AND NIGHT",
     seal: "NOSTOS",
     doorWord: "LABYRINTH",
     finalWord: "SPARTAN",
@@ -221,7 +215,7 @@ export const FAMILIES: readonly Family[] = [
     god: "Aphrodite",
     exec: "Khang",
     word: "SIGMA",
-    hiding: HIDING_TODO,
+    hiding: "IN LAWSON COMMONS, BEHIND THE LAW WE BROKE ALREADY",
     seal: "MOIRA",
     doorWord: "PANDORA",
     finalWord: "PEGASUS",
@@ -258,7 +252,7 @@ export const FAMILIES: readonly Family[] = [
     god: "Ares",
     exec: "Naks",
     word: "PLATO",
-    hiding: HIDING_TODO,
+    hiding: "IN LAWSON COMMONS, AN OPENING IN THE WALL GIVES WAY TO THE VIEW",
     seal: "LOGOS",
     doorWord: "SPHINX",
     finalWord: "AMPHORA",
@@ -295,7 +289,7 @@ export const FAMILIES: readonly Family[] = [
     god: "Poseidon",
     exec: "Emily",
     word: "CHAOS",
-    hiding: HIDING_TODO,
+    hiding: "IN LAWSON COMMONS, JOURNEY TOWARDS OLYMPUS BUT ITS NOT ABOUT THE DESTINATION",
     seal: "KAIROS",
     doorWord: "GORGON",
     finalWord: "CENTAUR",
@@ -331,7 +325,7 @@ export const FAMILIES: readonly Family[] = [
     god: "Hermes",
     exec: "Ashton",
     word: "OMEGA",
-    hiding: HIDING_TODO,
+    hiding: "IN LAWSON COMMONS, IN THE SHADOWS OF THE THEATRES LIGHT",
     seal: "ETHOS",
     doorWord: "ARGONAUT",
     finalWord: "MINOTAUR",
@@ -369,7 +363,7 @@ export const FAMILIES: readonly Family[] = [
     god: "Artemis",
     exec: "Shreeya",
     word: "ATLAS",
-    hiding: HIDING_TODO,
+    hiding: "IN LAWSON COMMONS, A COMMON FIRST MOVE IN A GAME OF TIC TAC TOE",
     seal: "AGON",
     doorWord: "ACROPOLIS",
     finalWord: "ODYSSEY",
