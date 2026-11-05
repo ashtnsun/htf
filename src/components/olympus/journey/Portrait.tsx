@@ -22,6 +22,8 @@ const STORED = 1280;
 const CARVING = 1500;
 /** The preview and the photo are both cut to this, so the photo is what the camera showed. */
 const ASPECT = 16 / 9;
+/** The widest a face marked by hand can be, as a share of the photo: eight fit in half its width. */
+const MARKED_FACE = 0.06;
 
 function validName(name: string) {
   return nameLength(name) >= 2 && name.trim().length <= 24;
@@ -119,9 +121,8 @@ export function Portrait({
   });
 
   function addFace(at: { x: number; y: number }) {
-    const w = faces.length
-      ? [...faces.map((f) => f.w)].sort((a, b) => a - b)[Math.floor(faces.length / 2)]!
-      : 0.09;
+    const usual = [...faces.map((f) => f.w)].sort((a, b) => a - b)[Math.floor(faces.length / 2)];
+    const w = Math.min(usual ?? MARKED_FACE, MARKED_FACE);
     const h = w * ASPECT;
     const face = {
       x: Math.min(1 - w, Math.max(0, at.x - w / 2)),
