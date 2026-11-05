@@ -92,7 +92,7 @@ export function inscriptionKey(word: string, names: readonly string[], group: nu
 }
 
 /** Names the carvings use, kept capitalised in sentence case. */
-const PROPER = ["Polybius"];
+const PROPER = ["Polybius", "Lawson Commons", "Olympus"];
 
 /** A carved line in sentence case: "SEEK POLYBIUS…" → "Seek Polybius…". */
 export function sentence(text: string) {

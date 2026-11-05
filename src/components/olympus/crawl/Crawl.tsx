@@ -5,7 +5,7 @@ import "@/components/olympus/crawl/crawl.css";
 import { Volume2, VolumeX } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { carveStone, speakWord, takeWord } from "@/app/olympus/actions";
-import { sentence } from "@/components/olympus/journey/cipher";
+import { inscriptionKey, sentence, vigenere } from "@/components/olympus/journey/cipher";
 import { useReducedMotionSafe } from "@/components/motion/useReducedMotionSafe";
 import { bronzeTexture, coinPicture, stoneTexture } from "@/components/olympus/crawl/art";
 import type { Round } from "@/components/olympus/crawl/blackjack";
@@ -715,6 +715,11 @@ export function Crawl({
           ) : hint?.kind === "rumble" ? (
             <p key="rumble" className="crawl-hint font-oracle">
               Something rumbles&hellip;
+            </p>
+          ) : save.stoneRead && !save.seal && save.carved && save.word ? (
+            // Where the family's letter is hidden, from the wheels until the seal is broken.
+            <p key="letter" className="crawl-hint crawl-hint-stays font-oracle">
+              {sentence(vigenere(save.carved, inscriptionKey(save.word, save.names, family), -1))}
             </p>
           ) : save.clue && !save.doorWord ? (
             // The door has no close-up any more, so the clue stays here until the fires are answered.
