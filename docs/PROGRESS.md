@@ -88,6 +88,16 @@ this file. Checklist items follow the plan's phases (PLAN.md §6, §9).
 
 - [ ] Blog (MDX), nonprofit application reuse, brand-font swap (Cunia + Josefin Sans)
 
+## Session 17s — 2026-11-04 (/olympus: the letter's hint stays, smaller marked faces)
+
+**Changed:** the letter's clue stays beside the map from the wheels until the seal is broken. Group VII's clue says CLIMB, not JOURNEY. A face marked by hand is at most 6% of the photo's width, so eight fit.
+
+**Verified:** typecheck, lint; hint on all nine groups, eight marked faces at 1366x768 and 1280x720. Ashton played it through; no local `pnpm build` before this push.
+
+**Known:** names on "Remember these names" overlap when faces sit close in one row. Left as is for the event.
+
+**Next session starts with:** the pointers in Session 17p.
+
 ## Session 17r — 2026-11-04 (/olympus: the stones say where the letters are)
 
 **Changed:** every family's `hiding` in `content/olympus.ts` is Ashton's final clue, after "IN LAWSON COMMONS,". The placeholder is gone. Other punctuation in their clues is left out; a comma shows as is on the stone, so the rest could go back.
