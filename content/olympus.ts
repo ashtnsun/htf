@@ -289,7 +289,7 @@ export const FAMILIES: readonly Family[] = [
     god: "Poseidon",
     exec: "Emily",
     word: "CHAOS",
-    hiding: "IN LAWSON COMMONS, JOURNEY TOWARDS OLYMPUS BUT ITS NOT ABOUT THE DESTINATION",
+    hiding: "IN LAWSON COMMONS, CLIMB TOWARDS OLYMPUS BUT ITS NOT ABOUT THE DESTINATION",
     seal: "KAIROS",
     doorWord: "GORGON",
     finalWord: "CENTAUR",
